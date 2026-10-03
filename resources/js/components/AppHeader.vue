@@ -1,144 +1,370 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from '@lucide/vue';
-import { computed } from 'vue';
+import {Link, usePage} from '@inertiajs/vue3';
+import {ChevronRight, Menu, Search,} from '@lucide/vue';
+import {computed, reactive, ref, watch,} from 'vue';
+
 import AppLogo from '@/components/AppLogo.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+
+import {Avatar, AvatarFallback, AvatarImage,} from '@/components/ui/avatar';
+
+import {Button} from '@/components/ui/button';
+
+import {Collapsible, CollapsibleContent, CollapsibleTrigger,} from '@/components/ui/collapsible';
+
+import {DropdownMenu, DropdownMenuContent, DropdownMenuTrigger,} from '@/components/ui/dropdown-menu';
+
 import {
     NavigationMenu,
+    NavigationMenuContent,
     NavigationMenuItem,
+    NavigationMenuLink,
     NavigationMenuList,
+    NavigationMenuTrigger,
     navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from '@/components/ui/sheet';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
+
+import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,} from '@/components/ui/sheet';
+
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '@/components/ui/tooltip';
+
 import UserMenuContent from '@/components/UserMenuContent.vue';
-import { useCurrentUrl } from '@/composables/useCurrentUrl';
-import { getInitials } from '@/composables/useInitials';
-import { toUrl } from '@/lib/utils';
-import { dashboard } from '@/routes';
-import type { BreadcrumbItem, NavItem } from '@/types';
+
+import {useCurrentUrl} from '@/composables/useCurrentUrl';
+import {getInitials} from '@/composables/useInitials';
+import {toUrl} from '@/lib/utils';
+
+import {mainNavItems, rightNavItems} from '@/config/navigation';
+
+import {dashboard} from '@/routes';
+
+import type {BreadcrumbItem, NavItem,} from '@/types';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
 };
 
-const props = withDefaults(defineProps<Props>(), {
-    breadcrumbs: () => [],
-});
+const props = withDefaults(
+    defineProps<Props>(),
+    {
+        breadcrumbs: () => [],
+    },
+);
 
 const page = usePage();
+
 const auth = computed(() => page.props.auth);
-const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
+
+const { isCurrentUrl, isCurrentOrParentUrl } = useCurrentUrl();
+
+/*
+|--------------------------------------------------------------------------
+| Navigation
+|--------------------------------------------------------------------------
+*/
 
 const activeItemStyles =
-    'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
+    'bg-accent text-accent-foreground';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
+const hasChildren = (item: NavItem): boolean => {
+    return Boolean(item.items?.length);
+};
 
-const rightNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
+const isItemActive = (item: NavItem): boolean => {
+    if (
+        item.href &&
+        isCurrentOrParentUrl(item.href)
+    ) {
+        return true;
+    }
+
+    return (
+        item.items?.some((subItem) =>
+            isItemActive(subItem),
+        ) ?? false
+    );
+};
+
+/*
+|--------------------------------------------------------------------------
+| Mobile navigation state
+|--------------------------------------------------------------------------
+|
+| Each mobile group has its own open state.
+|
+| Active groups are automatically opened when the
+| current Inertia URL changes.
+|
+*/
+
+const mobileOpenGroups = reactive<
+    Record<string, boolean>
+>({});
+
+const isMobileGroupOpen = (
+    item: NavItem,
+): boolean => {
+    return mobileOpenGroups[item.title] ?? false;
+};
+
+const setMobileGroupOpen = (
+    item: NavItem,
+    open: boolean,
+): void => {
+    mobileOpenGroups[item.title] = open;
+};
+
+const syncMobileGroups = (): void => {
+    mainNavItems.forEach((item) => {
+        if (!hasChildren(item)) {
+            return;
+        }
+
+        if (isItemActive(item)) {
+            mobileOpenGroups[item.title] = true;
+        }
+    });
+};
+
+watch(
+    () => page.url,
+    () => {
+        syncMobileGroups();
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
+        immediate: true,
     },
-];
+);
+
+/*
+|--------------------------------------------------------------------------
+| Mobile sheet state
+|--------------------------------------------------------------------------
+*/
+
+const mobileMenuOpen = computed({
+    get: () => mobileMenuState.value,
+    set: (value: boolean) => {
+        mobileMenuState.value = value;
+    },
+});
+
+const mobileMenuState = ref(false);
+
+/*
+|--------------------------------------------------------------------------
+| Close mobile menu after Inertia navigation
+|--------------------------------------------------------------------------
+*/
+
+watch(
+    () => page.url,
+    () => {
+        mobileMenuState.value = false;
+    },
+);
 </script>
 
 <template>
     <div>
-        <div class="border-b border-sidebar-border/80">
-            <div class="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
-                <!-- Mobile Menu -->
+        <!-- Header -->
+        <div
+            class="border-b border-sidebar-border/80"
+        >
+            <div
+                class="mx-auto flex h-16 items-center px-4 md:max-w-7xl"
+            >
+                <!-- Mobile / Tablet Menu -->
                 <div class="lg:hidden">
-                    <Sheet>
-                        <SheetTrigger :as-child="true">
+                    <Sheet v-model:open="mobileMenuOpen">
+                        <SheetTrigger as-child>
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                class="mr-2 h-9 w-9"
+                                class="mr-2 size-9 cursor-pointer"
                             >
-                                <Menu class="h-5 w-5" />
+                                <Menu
+                                    class="size-5"
+                                    aria-hidden="true"
+                                />
+
+                                <span class="sr-only">
+                                    Open navigation menu
+                                </span>
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="left" class="w-[300px] p-6">
-                            <SheetTitle class="sr-only"
-                                >Navigation menu</SheetTitle
+
+                        <SheetContent
+                            side="left"
+                            class="flex w-[300px] flex-col p-2 sm:w-[340px]"
+                        >
+                            <SheetTitle class="sr-only">
+                                Navigation menu
+                            </SheetTitle>
+
+                            <!-- Mobile Logo -->
+                            <SheetHeader
+                                class="shrink-0 flex-row justify-start space-y-0 text-left"
                             >
-                            <SheetHeader class="flex justify-start text-left">
-                                <AppLogoIcon
-                                    class="size-6 fill-current text-black dark:text-white"
-                                />
+                                <AppLogo />
                             </SheetHeader>
+
+                            <!-- Navigation -->
                             <div
-                                class="flex h-full flex-1 flex-col justify-between space-y-4 py-6"
+                                class="flex min-h-0 flex-1 flex-col"
                             >
-                                <nav class="-mx-3 space-y-1">
-                                    <Link
-                                        v-for="item in mainNavItems"
-                                        :key="item.title"
-                                        :href="item.href"
-                                        class="flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent"
-                                        :class="
-                                            whenCurrentUrl(
-                                                item.href,
-                                                activeItemStyles,
-                                            )
-                                        "
-                                    >
-                                        <component
-                                            v-if="item.icon"
-                                            :is="item.icon"
-                                            class="h-5 w-5"
-                                        />
-                                        {{ item.title }}
-                                    </Link>
+                                <!-- Scrollable navigation -->
+                                <nav
+                                    class="min-h-0 flex-1 overflow-y-auto py-6 pr-2 pt-0"
+                                    aria-label="Mobile navigation"
+                                >
+                                    <div class="space-y-1">
+                                        <template
+                                            v-for="item in mainNavItems"
+                                            :key="item.title"
+                                        >
+                                            <!-- Direct navigation item -->
+                                            <Link
+                                                v-if="
+                                                    !hasChildren(item) &&
+                                                    item.href
+                                                "
+                                                :href="item.href"
+                                                class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
+                                                :class="
+                                                    isItemActive(item)
+                                                        ? activeItemStyles
+                                                        : ''
+                                                "
+                                            >
+                                                <component
+                                                    v-if="item.icon"
+                                                    :is="item.icon"
+                                                    class="size-5 shrink-0"
+                                                    aria-hidden="true"
+                                                />
+
+                                                <span>
+                                                    {{ item.title }}
+                                                </span>
+                                            </Link>
+
+                                            <!-- Navigation group -->
+                                            <Collapsible
+                                                v-else
+                                                :open="
+                                                    isMobileGroupOpen(item)
+                                                "
+                                                class="group/mobile-collapsible"
+                                                @update:open="
+                                                    (open) =>
+                                                        setMobileGroupOpen(
+                                                            item,
+                                                            open,
+                                                        )
+                                                "
+                                            >
+                                                <!-- Group trigger -->
+                                                <CollapsibleTrigger
+                                                    as-child
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        class="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
+                                                        :class="
+                                                            isItemActive(item)
+                                                                ? activeItemStyles
+                                                                : ''
+                                                        "
+                                                    >
+                                                        <component
+                                                            v-if="item.icon"
+                                                            :is="item.icon"
+                                                            class="size-5 shrink-0"
+                                                            aria-hidden="true"
+                                                        />
+
+                                                        <span>
+                                                            {{ item.title }}
+                                                        </span>
+
+                                                        <ChevronRight
+                                                            class="ml-auto size-4 shrink-0 transition-transform duration-200 group-data-[state=open]/mobile-collapsible:rotate-90"
+                                                            aria-hidden="true"
+                                                        />
+                                                    </button>
+                                                </CollapsibleTrigger>
+
+                                                <!-- Group children -->
+                                                <CollapsibleContent>
+                                                    <div
+                                                        class="ml-3 space-y-1 border-l pl-3"
+                                                    >
+                                                        <Link
+                                                            v-for="subItem in item.items"
+                                                            :key="
+                                                                subItem.title
+                                                            "
+                                                            :href="
+                                                                subItem.href!
+                                                            "
+                                                            class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
+                                                            :class="
+                                                                isItemActive(
+                                                                    subItem,
+                                                                )
+                                                                    ? activeItemStyles
+                                                                    : ''
+                                                            "
+                                                        >
+                                                            <component
+                                                                v-if="
+                                                                    subItem.icon
+                                                                "
+                                                                :is="
+                                                                    subItem.icon
+                                                                "
+                                                                class="size-4 shrink-0"
+                                                                aria-hidden="true"
+                                                            />
+
+                                                            <span>
+                                                                {{
+                                                                    subItem.title
+                                                                }}
+                                                            </span>
+                                                        </Link>
+                                                    </div>
+                                                </CollapsibleContent>
+                                            </Collapsible>
+                                        </template>
+                                    </div>
                                 </nav>
-                                <div class="flex flex-col space-y-4">
+
+                                <!-- External links -->
+                                <div
+                                    v-if="rightNavItems.length"
+                                    class="shrink-0 space-y-1 border-t pt-4"
+                                >
                                     <a
                                         v-for="item in rightNavItems"
                                         :key="item.title"
                                         :href="toUrl(item.href)"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="flex items-center space-x-2 text-sm font-medium"
+                                        class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
                                     >
                                         <component
                                             v-if="item.icon"
                                             :is="item.icon"
-                                            class="h-5 w-5"
+                                            class="size-5 shrink-0"
+                                            aria-hidden="true"
                                         />
-                                        <span>{{ item.title }}</span>
+
+                                        <span>
+                                            {{ item.title }}
+                                        </span>
                                     </a>
                                 </div>
                             </div>
@@ -146,91 +372,199 @@ const rightNavItems: NavItem[] = [
                     </Sheet>
                 </div>
 
-                <Link :href="dashboard()" class="flex items-center gap-x-2">
+                <!-- Logo -->
+                <Link
+                    :href="dashboard()"
+                    class="flex items-center gap-x-2"
+                >
                     <AppLogo />
                 </Link>
 
-                <!-- Desktop Menu -->
-                <div class="hidden h-full lg:flex lg:flex-1">
-                    <NavigationMenu class="ml-10 flex h-full items-stretch">
+                <!-- Desktop Navigation -->
+                <div
+                    class="hidden h-full lg:flex lg:flex-1"
+                >
+                    <NavigationMenu
+                        class="ml-6 flex h-full items-stretch xl:ml-10"
+                    >
                         <NavigationMenuList
-                            class="flex h-full items-stretch space-x-2"
+                            class="flex h-full items-stretch space-x-1"
                         >
                             <NavigationMenuItem
-                                v-for="(item, index) in mainNavItems"
-                                :key="index"
+                                v-for="item in mainNavItems"
+                                :key="item.title"
                                 class="relative flex h-full items-center"
                             >
+                                <!-- Direct navigation -->
                                 <Link
+                                    v-if="
+                                        !hasChildren(item) &&
+                                        item.href
+                                    "
+                                    :href="item.href"
                                     :class="[
                                         navigationMenuTriggerStyle(),
-                                        whenCurrentUrl(
-                                            item.href,
-                                            activeItemStyles,
-                                        ),
+                                        isItemActive(item)
+                                            ? activeItemStyles
+                                            : '',
                                         'h-9 cursor-pointer px-3',
                                     ]"
-                                    :href="item.href"
                                 >
                                     <component
                                         v-if="item.icon"
                                         :is="item.icon"
-                                        class="mr-2 h-4 w-4"
+                                        class="mr-2 size-4"
+                                        aria-hidden="true"
                                     />
+
                                     {{ item.title }}
+
+                                    <span
+                                        v-if="isItemActive(item)"
+                                        class="absolute inset-x-0 bottom-0 h-0.5 bg-black dark:bg-white"
+                                        aria-hidden="true"
+                                    />
                                 </Link>
-                                <div
-                                    v-if="isCurrentUrl(item.href)"
-                                    class="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"
-                                ></div>
+
+                                <!-- Navigation group -->
+                                <template v-else>
+                                    <NavigationMenuTrigger
+                                        :class="[
+                                            navigationMenuTriggerStyle(),
+                                            isItemActive(item)
+                                                ? activeItemStyles
+                                                : '',
+                                            'h-9 cursor-pointer px-3',
+                                        ]"
+                                    >
+                                        <component
+                                            v-if="item.icon"
+                                            :is="item.icon"
+                                            class="mr-2 size-4"
+                                            aria-hidden="true"
+                                        />
+
+                                        {{ item.title }}
+                                    </NavigationMenuTrigger>
+
+                                    <NavigationMenuContent>
+                                        <ul class="grid min-w-[160px]">
+                                            <li
+                                                v-for="subItem in item.items"
+                                                :key="subItem.title"
+                                            >
+                                                <NavigationMenuLink
+                                                    as-child
+                                                    :active="
+                                                        isItemActive(
+                                                            subItem,
+                                                        )
+                                                    "
+                                                >
+                                                    <Link
+                                                        :href="
+                                                            subItem.href!
+                                                        "
+                                                        class="flex flex-row flex-nowrap items-center gap-3 rounded-md px-3 py-2.5"
+                                                    >
+                                                        <component
+                                                            v-if="
+                                                                subItem.icon
+                                                            "
+                                                            :is="
+                                                                subItem.icon
+                                                            "
+                                                            class="size-4 shrink-0"
+                                                            aria-hidden="true"
+                                                        />
+
+                                                        <span
+                                                            class="whitespace-nowrap text-sm font-medium"
+                                                        >
+                                                            {{
+                                                                subItem.title
+                                                            }}
+                                                        </span>
+                                                    </Link>
+                                                </NavigationMenuLink>
+                                            </li>
+                                        </ul>
+                                    </NavigationMenuContent>
+
+                                    <!-- Active group indicator -->
+                                    <span
+                                        v-if="isItemActive(item)"
+                                        class="absolute inset-x-0 bottom-0 h-0.5 bg-black dark:bg-white"
+                                        aria-hidden="true"
+                                    />
+                                </template>
                             </NavigationMenuItem>
                         </NavigationMenuList>
                     </NavigationMenu>
                 </div>
 
-                <div class="ml-auto flex items-center space-x-2">
-                    <div class="relative flex items-center space-x-1">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            class="group h-9 w-9 cursor-pointer"
+                <!-- Right side -->
+                <div
+                    class="ml-auto flex items-center space-x-2"
+                >
+                    <div
+                        class="relative flex items-center space-x-1"
+                    >
+                        <!-- External links -->
+                        <div
+                            class="hidden space-x-1 lg:flex"
                         >
-                            <Search
-                                class="size-5 opacity-80 group-hover:opacity-100"
-                            />
-                        </Button>
-
-                        <div class="hidden space-x-1 lg:flex">
                             <template
                                 v-for="item in rightNavItems"
                                 :key="item.title"
                             >
-                                <TooltipProvider :delay-duration="0">
+                                <TooltipProvider
+                                    :delay-duration="0"
+                                >
                                     <Tooltip>
-                                        <TooltipTrigger>
+                                        <TooltipTrigger
+                                            as-child
+                                        >
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
                                                 as-child
-                                                class="group h-9 w-9 cursor-pointer"
+                                                class="group size-9 cursor-pointer"
                                             >
                                                 <a
-                                                    :href="toUrl(item.href)"
+                                                    :href="
+                                                        toUrl(
+                                                            item.href,
+                                                        )
+                                                    "
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                 >
-                                                    <span class="sr-only">{{
-                                                        item.title
-                                                    }}</span>
+                                                    <span
+                                                        class="sr-only"
+                                                    >
+                                                        {{
+                                                            item.title
+                                                        }}
+                                                    </span>
+
                                                     <component
-                                                        :is="item.icon"
+                                                        :is="
+                                                            item.icon
+                                                        "
                                                         class="size-5 opacity-80 group-hover:opacity-100"
+                                                        aria-hidden="true"
                                                     />
                                                 </a>
                                             </Button>
                                         </TooltipTrigger>
+
                                         <TooltipContent>
-                                            <p>{{ item.title }}</p>
+                                            <p>
+                                                {{
+                                                    item.title
+                                                }}
+                                            </p>
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
@@ -238,37 +572,60 @@ const rightNavItems: NavItem[] = [
                         </div>
                     </div>
 
+                    <!-- User menu -->
                     <DropdownMenu>
-                        <DropdownMenuTrigger :as-child="true">
+                        <DropdownMenuTrigger as-child>
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                class="relative size-10 w-auto rounded-full p-1 focus-within:ring-2 focus-within:ring-primary"
+                                class="relative size-10 w-auto cursor-pointer rounded-full p-1 focus-within:ring-2 focus-within:ring-primary"
                             >
                                 <Avatar
                                     class="size-8 overflow-hidden rounded-full"
                                 >
                                     <AvatarImage
-                                        v-if="auth.user.avatar"
-                                        :src="auth.user.avatar"
-                                        :alt="auth.user.name"
+                                        v-if="
+                                            auth.user.avatar
+                                        "
+                                        :src="
+                                            auth.user.avatar
+                                        "
+                                        :alt="
+                                            auth.user.name
+                                        "
                                     />
+
                                     <AvatarFallback
                                         class="rounded-lg bg-neutral-200 font-semibold text-black dark:bg-neutral-700 dark:text-white"
                                     >
-                                        {{ getInitials(auth.user?.name) }}
+                                        {{
+                                            getInitials(
+                                                auth.user?.name,
+                                            )
+                                        }}
                                     </AvatarFallback>
                                 </Avatar>
+
+                                <span class="sr-only">
+                                    Open user menu
+                                </span>
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="w-56">
-                            <UserMenuContent :user="auth.user" />
+
+                        <DropdownMenuContent
+                            align="end"
+                            class="w-56"
+                        >
+                            <UserMenuContent
+                                :user="auth.user"
+                            />
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
             </div>
         </div>
 
+        <!-- Breadcrumbs -->
         <div
             v-if="props.breadcrumbs.length > 1"
             class="flex w-full border-b border-sidebar-border/70"
@@ -276,7 +633,9 @@ const rightNavItems: NavItem[] = [
             <div
                 class="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl"
             >
-                <Breadcrumbs :breadcrumbs="breadcrumbs" />
+                <Breadcrumbs
+                    :breadcrumbs="breadcrumbs"
+                />
             </div>
         </div>
     </div>

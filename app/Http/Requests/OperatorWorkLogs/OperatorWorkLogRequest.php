@@ -1,0 +1,90 @@
+<?php
+
+namespace App\Http\Requests\OperatorWorkLogs;
+
+use App\Enums\UserShift;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class OperatorWorkLogRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'user_id' => [
+                'required',
+                'integer',
+                'exists:users,id',
+            ],
+
+            'work_date' => [
+                'required',
+                'date',
+            ],
+
+            'shift' => [
+                'nullable',
+                Rule::enum(UserShift::class),
+            ],
+
+            'machine_id' => [
+                'required',
+                'integer',
+                'exists:machines,id',
+            ],
+
+            'part_id' => [
+                'required',
+                'integer',
+                'exists:parts,id',
+            ],
+
+            'setup_id' => [
+                'required',
+                'integer',
+                'exists:setups,id',
+            ],
+
+            'part_setup_id' => [
+                'required',
+                'integer',
+                'exists:part_setups,id',
+            ],
+
+            'machine_cycle_time' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
+
+            'actual_cycle_time' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
+
+            'quantity' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
+
+            'rejection_quantity' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+
+            'remarks' => [
+                'nullable',
+                'string',
+                'max:5000',
+            ],
+        ];
+    }
+}

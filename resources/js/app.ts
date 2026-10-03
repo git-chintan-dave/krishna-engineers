@@ -4,6 +4,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
+import vConfirm from '@/directives/confirm';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -29,6 +30,7 @@ void createInertiaApp({
                 }
             },
         });
+        app.directive('confirm', vConfirm);
     },
     progress: {
         color: '#4B5563',

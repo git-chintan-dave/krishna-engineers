@@ -1,82 +1,89 @@
-import type { InertiaLinkProps } from '@inertiajs/vue3';
-import { usePage } from '@inertiajs/vue3';
-import type { ComputedRef, DeepReadonly } from 'vue';
-import { computed, readonly } from 'vue';
-import { toUrl } from '@/lib/utils';
+import {usePage} from '@inertiajs/vue3';
 
-export type UseCurrentUrlReturn = {
-    currentUrl: DeepReadonly<ComputedRef<string>>;
-    isCurrentUrl: (
-        urlToCheck: NonNullable<InertiaLinkProps['href']>,
-        currentUrl?: string,
-        startsWith?: boolean,
-    ) => boolean;
-    isCurrentOrParentUrl: (
-        urlToCheck: NonNullable<InertiaLinkProps['href']>,
-        currentUrl?: string,
-    ) => boolean;
-    whenCurrentUrl: <T, F = null>(
-        urlToCheck: NonNullable<InertiaLinkProps['href']>,
-        ifTrue: T,
-        ifFalse?: F,
-    ) => T | F;
+import type {NavItem} from '@/types';
+
+type NavigationHref = NavItem['href'];
+
+type UrlMethodPair = {
+    url: string;
+    method?: string;
 };
 
-const page = usePage();
-const currentUrlReactive = computed(
-    () =>
-        new URL(
-            page.url,
-            typeof window !== 'undefined'
-                ? window.location.origin
-                : 'http://localhost',
-        ).pathname,
-);
+const getHrefUrl = (
+    href?: NavigationHref,
+): string | null => {
+    if (!href) {
+        return null;
+    }
 
-export function useCurrentUrl(): UseCurrentUrlReturn {
-    function isCurrentUrl(
-        urlToCheck: NonNullable<InertiaLinkProps['href']>,
-        currentUrl?: string,
-        startsWith: boolean = false,
+    if (typeof href === 'string') {
+        return href;
+    }
+
+    if (
+        typeof href === 'object' &&
+        'url' in href &&
+        typeof (href as UrlMethodPair).url === 'string'
     ) {
-        const urlToCompare = currentUrl ?? currentUrlReactive.value;
-        const urlString = toUrl(urlToCheck);
+        return (href as UrlMethodPair).url;
+    }
 
-        const comparePath = (path: string): boolean =>
-            startsWith ? urlToCompare.startsWith(path) : path === urlToCompare;
+    return null;
+};
 
-        if (!urlString.startsWith('http')) {
-            return comparePath(urlString);
-        }
+const normalizePath = (path: string): string => {
+    try {
+        return (
+            new URL(
+                path,
+                window.location.origin,
+            ).pathname.replace(/\/+$/, '') || '/'
+        );
+    } catch {
+        return (
+            path.split('?')[0].replace(/\/+$/, '') || '/'
+        );
+    }
+};
 
-        try {
-            const absoluteUrl = new URL(urlString);
+export function useCurrentUrl() {
+    const page = usePage();
 
-            return comparePath(absoluteUrl.pathname);
-        } catch {
+    const isCurrentUrl = (
+        href?: NavigationHref,
+    ): boolean => {
+        const hrefUrl = getHrefUrl(href);
+
+        if (!hrefUrl) {
             return false;
         }
-    }
 
-    function isCurrentOrParentUrl(
-        urlToCheck: NonNullable<InertiaLinkProps['href']>,
-        currentUrl?: string,
-    ) {
-        return isCurrentUrl(urlToCheck, currentUrl, true);
-    }
+        const currentPath = normalizePath(page.url);
+        const itemPath = normalizePath(hrefUrl);
 
-    function whenCurrentUrl(
-        urlToCheck: NonNullable<InertiaLinkProps['href']>,
-        ifTrue: any,
-        ifFalse: any = null,
-    ) {
-        return isCurrentUrl(urlToCheck) ? ifTrue : ifFalse;
-    }
+        return currentPath === itemPath;
+    };
+
+    const isCurrentOrParentUrl = (
+        href?: NavigationHref,
+    ): boolean => {
+        const hrefUrl = getHrefUrl(href);
+
+        if (!hrefUrl) {
+            return false;
+        }
+
+        const currentPath = normalizePath(page.url);
+        const itemPath = normalizePath(hrefUrl);
+
+        return (
+            currentPath === itemPath ||
+            currentPath.startsWith(`${itemPath}/`)
+        );
+    };
 
     return {
-        currentUrl: readonly(currentUrlReactive),
         isCurrentUrl,
         isCurrentOrParentUrl,
-        whenCurrentUrl,
     };
 }

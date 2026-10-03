@@ -1,0 +1,253 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Enums\SalaryStatus;
+use App\Http\Controllers\Concerns\HasCrudResponses;
+use App\Http\Queries\Concerns\AppliesIndexFilters;
+use App\Http\Requests\BulkDestroyRequest;
+use App\Http\Requests\Salaries\IndexSalaryRequest;
+use App\Http\Requests\Salaries\SalaryPreviewRequest;
+use App\Http\Requests\Salaries\SalaryRequest;
+use App\Http\Resources\SalaryResource;
+use App\Models\Salary;
+use App\Models\User;
+use App\Services\SalaryService;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class SalaryController extends Controller
+{
+    use AppliesIndexFilters, HasCrudResponses;
+
+    private const string MODULE_NAME = 'Salary';
+
+    private const string INDEX_ROUTE = 'salaries.index';
+
+    public function __construct(
+        private readonly SalaryService $salaryService,
+    ) {}
+
+    public function index(IndexSalaryRequest $request): Response
+    {
+        Gate::authorize('viewAny', Salary::class);
+
+        $filters = $request->validated();
+
+        $salaries = $this->applyIndexFilters(
+            Salary::query()->with([
+                'user:id,name,employee_code',
+            ]),
+            $filters,
+            ['salary_period_start'],
+        )
+            ->when(
+                $filters['user_id'] ?? null,
+                fn (Builder $query, int $userId): Builder => $query->where(
+                    'user_id',
+                    $userId,
+                ),
+            )
+            ->when(
+                $filters['status'] ?? null,
+                fn (Builder $query, string $status): Builder => $query->where(
+                    'status',
+                    $status,
+                ),
+            )
+            ->when(
+                $filters['start_date'] ?? null,
+                fn (Builder $query, string $date): Builder => $query->whereDate(
+                    'salary_period_start',
+                    '>=',
+                    $date,
+                ),
+            )
+            ->when(
+                $filters['end_date'] ?? null,
+                fn (Builder $query, string $date): Builder => $query->whereDate(
+                    'salary_period_end',
+                    '<=',
+                    $date,
+                ),
+            )
+            ->paginate($filters['per_page'] ?? 10)
+            ->withQueryString();
+
+        return Inertia::render('Salaries/Index', [
+            'salaries' => SalaryResource::collection($salaries),
+            'filters' => [
+                'search' => $filters['search'] ?? '',
+                'user_id' => $filters['user_id'] ?? 'all',
+                'status' => $filters['status'] ?? 'all',
+                'start_date' => $filters['start_date'] ?? '',
+                'end_date' => $filters['end_date'] ?? '',
+                'perPage' => $filters['per_page'] ?? 10,
+                'sort' => $filters['sort'] ?? 'salary_period_start',
+                'direction' => $filters['direction'] ?? 'desc',
+            ],
+            'employees' => $this->employeeOptions(),
+            'statuses' => SalaryStatus::options(),
+        ]);
+    }
+
+    public function create(): Response
+    {
+        Gate::authorize('create', Salary::class);
+
+        return Inertia::render('Salaries/Create', [
+            'employees' => $this->employeeOptions(),
+        ]);
+    }
+
+    public function store(SalaryRequest $request): RedirectResponse
+    {
+        Gate::authorize('create', Salary::class);
+
+        $data = $request->validated();
+
+        $user = User::query()->findOrFail($data['user_id']);
+
+        $salary = $this->salaryService->generate(
+            user: $user,
+            periodStart: Carbon::parse($data['salary_period_start']),
+            periodEnd: Carbon::parse($data['salary_period_end']),
+        );
+
+        $this->salaryService->recalculate(
+            salary: $salary,
+            upad: (float) $data['upad'],
+            paidLoan: (float) $data['paid_loan'],
+            adjustment: (float) $data['adjustment'],
+            adjustmentReason: $data['adjustment_reason'] ?? null,
+        );
+
+        return $this->successResponse('created');
+    }
+
+    public function show(Salary $salary): Response
+    {
+        Gate::authorize('view', $salary);
+
+        $salary->load([
+            'user:id,name,employee_code',
+        ]);
+
+        return Inertia::render('Salaries/Show', [
+            'salary' => new SalaryResource($salary),
+        ]);
+    }
+
+    public function edit(Salary $salary): Response
+    {
+        Gate::authorize('update', $salary);
+
+        $salary->load([
+            'user:id,name,employee_code',
+        ]);
+
+        return Inertia::render('Salaries/Edit', [
+            'salary' => new SalaryResource($salary),
+            'employees' => $this->employeeOptions(),
+        ]);
+    }
+
+    public function update(
+        SalaryRequest $request,
+        Salary $salary,
+    ): RedirectResponse {
+        Gate::authorize('update', $salary);
+
+        $data = $request->validated();
+
+        $this->salaryService->recalculate(
+            salary: $salary,
+            upad: (float) $data['upad'],
+            paidLoan: (float) $data['paid_loan'],
+            adjustment: (float) $data['adjustment'],
+            adjustmentReason: $data['adjustment_reason'] ?? null,
+        );
+
+        return $this->successResponse('updated');
+    }
+
+    public function markAsPaid(Salary $salary): RedirectResponse
+    {
+        Gate::authorize('markAsPaid', $salary);
+
+        $this->salaryService->markAsPaid($salary);
+
+        return $this->successResponse('paid');
+    }
+
+    public function destroy(Salary $salary): RedirectResponse
+    {
+        Gate::authorize('delete', $salary);
+
+        $salary->delete();
+
+        return $this->successResponse('deleted');
+    }
+
+    public function bulkDestroy(
+        BulkDestroyRequest $request,
+    ): RedirectResponse {
+        Gate::authorize('deleteAny', Salary::class);
+
+        $ids = $request->input('ids', []);
+
+        Salary::query()
+            ->whereIn('id', $ids)
+            ->where('status', SalaryStatus::DRAFT->value)
+            ->delete();
+
+        return $this->successResponse('bulk_deleted');
+    }
+
+    public function preview(
+        SalaryPreviewRequest $request,
+    ): JsonResponse {
+        Gate::authorize('create', Salary::class);
+
+        $data = $request->validated();
+
+        $user = User::query()->findOrFail(
+            $data['user_id'],
+        );
+
+        $preview = $this->salaryService->preview(
+            user: $user,
+            periodStart: Carbon::parse(
+                $data['salary_period_start'],
+            ),
+            periodEnd: Carbon::parse(
+                $data['salary_period_end'],
+            ),
+        );
+
+        return response()->json($preview);
+    }
+
+    private function employeeOptions(): array
+    {
+        return User::query()
+            ->whereNotNull('role')
+            ->where('role', '!=', 'super_admin')
+            ->orderBy('name')
+            ->get([
+                'id',
+                'name',
+                'employee_code',
+            ])
+            ->map(fn (User $user): array => [
+                'value' => (string) $user->id,
+                'label' => "{$user->employee_code} - {$user->name}",
+            ])
+            ->all();
+    }
+}

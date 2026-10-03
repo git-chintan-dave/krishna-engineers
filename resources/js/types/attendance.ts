@@ -1,0 +1,113 @@
+import type {
+    PaginatedResponse,
+    SortDirection,
+} from '@/types/listing';
+
+/*
+|--------------------------------------------------------------------------
+| Attendance
+|--------------------------------------------------------------------------
+*/
+
+export type Attendance = {
+    id: number;
+    uuid: string;
+    user_id: number;
+    user: AttendanceEmployee;
+    attendance_date: string;
+    attendance_date_formatted: string;
+    start_at: string;
+    end_at: string | null;
+    start_at_formatted: string;
+    end_at_formatted: string | null;
+    is_open: boolean;
+    total_working_seconds: number;
+    break_seconds: number;
+    effective_working_seconds: number;
+    breaks: AttendanceBreak[];
+    created_at: string;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Employee
+|--------------------------------------------------------------------------
+*/
+
+export type AttendanceEmployee = {
+    id: number;
+    name: string;
+    employee_code: string;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Break
+|--------------------------------------------------------------------------
+*/
+
+export type AttendanceBreak = {
+    id: number;
+    start_at: string;
+    end_at: string | null;
+    start_at_formatted: string;
+    end_at_formatted: string | null;
+    duration_seconds: number;
+    is_open: boolean;
+};
+
+export type AttendanceFormBreak = {
+    id?: number;
+    start_at: string;
+    end_at: string;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Form
+|--------------------------------------------------------------------------
+*/
+
+export type AttendanceFormData = {
+    user_id: number | string;
+    attendance_date: string;
+    start_at: string;
+    end_at: string | null;
+    breaks: AttendanceFormBreak[];
+};
+
+/*
+|--------------------------------------------------------------------------
+| Filters
+|--------------------------------------------------------------------------
+*/
+
+export type AttendanceSort =
+    | 'attendance_date'
+    | 'start_at'
+    | 'end_at'
+    | 'created_at';
+
+export type AttendanceFilters = {
+    search: string;
+    userId: number | string | 'all';
+    startDate: string;
+    endDate: string;
+    perPage: number;
+    sort: AttendanceSort;
+    direction: SortDirection;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Responses
+|--------------------------------------------------------------------------
+*/
+
+export type AttendanceResponse =
+    PaginatedResponse<Attendance>;
+
+export type AttendanceEmployeeOption = {
+    value: string;
+    label: string;
+};
