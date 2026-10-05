@@ -82,7 +82,6 @@ class SalaryController extends Controller
         return Inertia::render('Salaries/Index', [
             'salaries' => SalaryResource::collection($salaries),
             'filters' => [
-                'search' => $filters['search'] ?? '',
                 'user_id' => $filters['user_id'] ?? 'all',
                 'status' => $filters['status'] ?? 'all',
                 'start_date' => $filters['start_date'] ?? '',
@@ -113,14 +112,10 @@ class SalaryController extends Controller
 
         $user = User::query()->findOrFail($data['user_id']);
 
-        $salary = $this->salaryService->generate(
+        $this->salaryService->generate(
             user: $user,
             periodStart: Carbon::parse($data['salary_period_start']),
             periodEnd: Carbon::parse($data['salary_period_end']),
-        );
-
-        $this->salaryService->recalculate(
-            salary: $salary,
             upad: (float) $data['upad'],
             paidLoan: (float) $data['paid_loan'],
             adjustment: (float) $data['adjustment'],
@@ -231,6 +226,21 @@ class SalaryController extends Controller
         );
 
         return response()->json($preview);
+    }
+
+    public function generateLastMonth(
+        SalaryService $salaryService,
+    ): RedirectResponse {
+        $result = $salaryService->generateForAllEmployees();
+
+        return back()->with(
+            'success',
+            sprintf(
+                'Last month salary generated successfully. %d generated, %d skipped.',
+                $result['generated'],
+                $result['skipped'],
+            ),
+        );
     }
 
     private function employeeOptions(): array

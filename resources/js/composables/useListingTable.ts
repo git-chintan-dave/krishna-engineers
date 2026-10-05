@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/vue3';
+import type { RequestPayload } from '@inertiajs/core';
 import type {
     RowData,
     SortingState,
@@ -22,7 +23,7 @@ type Identifiable = {
 };
 
 type ListingFilters<TSort extends string> = {
-    search: string;
+    search?: string;
     sort: TSort;
     direction: SortDirection;
 };
@@ -35,6 +36,9 @@ type ListingOptions<
     columns: any[];
     filters: ListingFilters<TSort>;
     route: string;
+
+    searchable?: boolean;
+
     additionalFilters?: () => Record<string, unknown>;
 
     enableRowSelection?: (
@@ -66,7 +70,11 @@ export function useListingTable<
     |--------------------------------------------------------------------------
     */
 
-    const searchQuery = ref(options.filters.search);
+    const searchQuery = ref(
+        options.searchable === false
+            ? ''
+            : options.filters.search ?? '',
+    );
 
     /*
     |--------------------------------------------------------------------------
@@ -99,39 +107,51 @@ export function useListingTable<
     */
 
     const visit = ({
-        page = 1,
-        perPage = options.data().meta.per_page,
-        sort,
-        direction,
-        clearSorting = false,
-    }: VisitOptions<TSort> = {}) => {
+                       page = 1,
+                       perPage = options.data().meta.per_page,
+                       sort,
+                       direction,
+                       clearSorting = false,
+                   }: VisitOptions<TSort> = {}) => {
         const currentSorting = getCurrentSorting();
 
         const sortingParams = clearSorting
             ? {
-                  sort: undefined,
-                  direction: undefined,
-              }
+                sort: undefined,
+                direction: undefined,
+            }
             : {
-                  sort: sort ?? currentSorting.sort,
-                  direction:
-                      direction ??
-                      currentSorting.direction,
-              };
+                sort: sort ?? currentSorting.sort,
+                direction:
+                    direction ??
+                    currentSorting.direction,
+            };
+
+        const params: RequestPayload = {
+            per_page: perPage,
+            page,
+
+            ...sortingParams,
+            ...options.additionalFilters?.(),
+        };
+
+        /*
+        |--------------------------------------------------------------------------
+        | Search
+        |--------------------------------------------------------------------------
+        */
+
+        if (options.searchable !== false) {
+            const search = searchQuery.value.trim();
+
+            if (search) {
+                params.search = search;
+            }
+        }
 
         router.get(
             options.route,
-            {
-                search:
-                    searchQuery.value.trim() ||
-                    undefined,
-
-                per_page: perPage,
-                page,
-
-                ...sortingParams,
-                ...options.additionalFilters?.(),
-            },
+            params,
             {
                 preserveState: true,
                 preserveScroll: true,

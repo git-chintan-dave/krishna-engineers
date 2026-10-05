@@ -7,62 +7,48 @@ use App\Models\User;
 
 class SalaryPolicy
 {
+    // View Any
     public function viewAny(User $user): bool
     {
-        return $this->isSuperAdmin($user)
-            || $this->isSupervisor($user);
+        return $user->isSuperAdmin();
     }
 
+    // View
     public function view(User $user, Salary $salary): bool
     {
-        return $this->isSuperAdmin($user)
-            || $this->isSupervisor($user);
+        return $user->isSuperAdmin();
     }
 
+    // Create
     public function create(User $user): bool
     {
-        return $this->isSuperAdmin($user)
-            || $this->isSupervisor($user);
+        return $user->isSuperAdmin();
     }
 
+    // Update
     public function update(User $user, Salary $salary): bool
     {
-        if ($salary->isPaid()) {
-            return false;
-        }
-
-        return $this->isSuperAdmin($user)
-            || $this->isSupervisor($user);
+        return $user->isSuperAdmin()
+            && $salary->isDraft();
     }
 
+    // Delete
     public function delete(User $user, Salary $salary): bool
     {
-        return $this->isSuperAdmin($user);
+        return $user->isSuperAdmin()
+            && $salary->isDraft();
     }
 
+    // Delete Any
     public function deleteAny(User $user): bool
     {
-        return $this->isSuperAdmin($user);
+        return $user->isSuperAdmin();
     }
 
+    // Mark As Paid
     public function markAsPaid(User $user, Salary $salary): bool
     {
-        if ($salary->isPaid()) {
-            return false;
-        }
-
-        return $this->isSuperAdmin($user);
-    }
-
-    private function isSuperAdmin(User $user): bool
-    {
-        return $user->role?->value === 'super_admin'
-            || $user->role === 'super_admin';
-    }
-
-    private function isSupervisor(User $user): bool
-    {
-        return $user->role?->value === 'supervisor'
-            || $user->role === 'supervisor';
+        return $user->isSuperAdmin()
+            && $salary->isDraft();
     }
 }

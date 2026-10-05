@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import {computed} from 'vue';
-import {FlexRender} from '@tanstack/vue-table';
+import { computed } from 'vue';
+import { FlexRender } from '@tanstack/vue-table';
 import {
     ChevronLeft,
     ChevronRight,
 } from '@lucide/vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import {Button} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
     Table as UiTable,
     TableBody,
@@ -157,7 +157,7 @@ const paginationItems = computed<
 
     if (pageCount <= 7) {
         return Array.from(
-            {length: pageCount},
+            { length: pageCount },
             (_, index) => ({
                 type: 'page' as const,
                 page: index + 1,
@@ -228,7 +228,7 @@ const loadingColumnIds = computed(() => {
         props.table.getHeaderGroups()[0];
 
     return Array.from(
-        {length: props.columnsCount},
+        { length: props.columnsCount },
         (_, index) =>
             firstHeaderGroup
                 ?.headers[index]
@@ -238,7 +238,7 @@ const loadingColumnIds = computed(() => {
 
 /*
 |--------------------------------------------------------------------------
-| Column Widths
+| Column Classes
 |--------------------------------------------------------------------------
 */
 
@@ -248,6 +248,30 @@ const getColumnClass = (
     return (
         props.columnWidths[columnId] ?? ''
     );
+};
+
+/*
+|--------------------------------------------------------------------------
+| Column Style
+|--------------------------------------------------------------------------
+*/
+
+const getColumnStyle = (
+    column: any,
+) => {
+    if (
+        !column ||
+        typeof column.getSize !== 'function'
+    ) {
+        return undefined;
+    }
+
+    const size = column.getSize();
+
+    return {
+        width: `${size}px`,
+        minWidth: `${size}px`,
+    };
 };
 
 /*
@@ -293,7 +317,7 @@ const handlePageSizeChange = (
             class="w-full min-w-0 overflow-x-auto overscroll-x-contain"
         >
             <UiTable
-                class="w-full min-w-[max-content] table-fixed"
+                class="w-max min-w-full table-auto"
             >
                 <TableHeader>
                     <TableRow
@@ -304,10 +328,15 @@ const handlePageSizeChange = (
                         <TableHead
                             v-for="header in headerGroup.headers"
                             :key="header.id"
-                            class="h-11 px-4 text-xs font-medium tracking-wide text-muted-foreground"
+                            class="h-11 whitespace-nowrap px-4 text-xs font-medium tracking-wide text-muted-foreground"
                             :class="
                                 getColumnClass(
                                     header.column.id,
+                                )
+                            "
+                            :style="
+                                getColumnStyle(
+                                    header.column,
                                 )
                             "
                         >
@@ -373,6 +402,11 @@ const handlePageSizeChange = (
                                 :class="
                                     getColumnClass(
                                         cell.column.id,
+                                    )
+                                "
+                                :style="
+                                    getColumnStyle(
+                                        cell.column,
                                     )
                                 "
                             >
@@ -451,7 +485,7 @@ const handlePageSizeChange = (
                         class="flex min-w-0 items-center gap-2"
                     >
                         <span
-                            class="shrink-0 text-sm whitespace-nowrap text-muted-foreground"
+                            class="shrink-0 whitespace-nowrap text-sm text-muted-foreground"
                         >
                             Rows per page
                         </span>

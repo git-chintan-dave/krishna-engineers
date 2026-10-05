@@ -1,6 +1,6 @@
 ﻿<script setup lang="ts">
 import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import ListingActions from '@/components/common/ListingActions.vue';
@@ -15,6 +15,7 @@ import { salaryPage } from '@/config/salaries';
 import {
     bulkDestroy,
     create,
+    generateLastMonth,
     destroy,
     index as salariesRoute,
 } from '@/routes/salaries';
@@ -59,21 +60,45 @@ defineOptions({
 */
 
 const filterEmployee = ref<number | 'all'>(
-    props.filters.userId,
+    props.filters.user_id,
 );
 
-const filterStatus = ref<'all' | string>(
+const filterStatus = ref<SalaryFilters['status']>(
     props.filters.status,
 );
 
-const filterStartDate = ref(props.filters.startDate);
-const filterEndDate = ref(props.filters.endDate);
+const filterStartDate = ref(
+    props.filters.start_date,
+);
 
-const handleEmployeeChange = (value: number | null) => {
+const filterEndDate = computed(() => {
+    if (!filterStartDate.value) {
+        return '';
+    }
+
+    const date = new Date(
+        `${filterStartDate.value}T00:00:00`,
+    );
+
+    date.setMonth(date.getMonth() + 1);
+    date.setDate(0);
+
+    return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, '0'),
+        String(date.getDate()).padStart(2, '0'),
+    ].join('-');
+});
+
+const handleEmployeeChange = (
+    value: number | null,
+): void => {
     filterEmployee.value = value ?? 'all';
 };
 
-const handleStatusChange = (value: string | null) => {
+const handleStatusChange = (
+    value: string | null,
+): void => {
     filterStatus.value = value ?? 'all';
 };
 
@@ -83,13 +108,12 @@ const handleStatusChange = (value: string | null) => {
 |--------------------------------------------------------------------------
 */
 
-const columns = createSalaryColumns((id) => {
-    router.delete(destroy(id).url);
+const columns = createSalaryColumns((uuid) => {
+    router.delete(destroy(uuid).url);
 });
 
 const {
     table,
-    searchQuery,
     selectedCount,
     search,
     clearFilters,
@@ -97,15 +121,12 @@ const {
 } = useListingTable<Salary, SalarySort>({
     data: () => props.salaries,
     columns,
-
     filters: {
-        search: props.filters.search,
         sort: props.filters.sort,
         direction: props.filters.direction,
     },
-
     route: salariesRoute.url(),
-
+    searchable: false,
     additionalFilters: () => ({
         user_id:
             filterEmployee.value !== 'all'
@@ -131,11 +152,10 @@ const {
 |--------------------------------------------------------------------------
 */
 
-const handleClearFilters = () => {
+const handleClearFilters = (): void => {
     filterEmployee.value = 'all';
     filterStatus.value = 'all';
     filterStartDate.value = '';
-    filterEndDate.value = '';
 
     clearFilters();
 };
@@ -146,7 +166,7 @@ const handleClearFilters = () => {
 |--------------------------------------------------------------------------
 */
 
-const handleDeleteSelected = () => {
+const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);
 };
 </script>
@@ -156,42 +176,23 @@ const handleDeleteSelected = () => {
         :title="salaryPage.title"
         :description="salaryPage.description"
     >
-        <!--
-        |--------------------------------------------------------------------------
-        | Actions
-        |--------------------------------------------------------------------------
-        -->
-
         <template #actions>
             <ListingActions
                 :create-url="create()"
                 :create-label="salaryPage.createLabel"
+                :generate-url="generateLastMonth()"
+                generate-label="Generate Last Month's Salary"
                 :selected-count="selectedCount"
                 :resource-label="salaryPage.resourceLabel"
                 @delete-selected="handleDeleteSelected"
             />
         </template>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Filters
-        |--------------------------------------------------------------------------
-        -->
-
         <template #filters>
             <ListingFilters
-                v-model:search="searchQuery"
-                :search-placeholder="
-                    salaryPage.searchPlaceholder
-                "
-                :search-button-label="
-                    salaryPage.searchButtonLabel
-                "
-                :clear-button-label="
-                    salaryPage.clearButtonLabel
-                "
+                :searchable="false"
+                :clear-button-label="salaryPage.clearButtonLabel"
                 :clear-disabled="
-                    !searchQuery.trim() &&
                     filterEmployee === 'all' &&
                     filterStatus === 'all' &&
                     !filterStartDate &&
@@ -204,35 +205,28 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-48">
                         <AppEmployeeSelect
                             :model-value="
-                                filterEmployee === 'all'
-                                    ? null
-                                    : filterEmployee
-                            "
-                            :placeholder="
-                                salaryPage.employeePlaceholder
-                            "
+                    filterEmployee === 'all'
+                        ? null
+                        : filterEmployee
+                "
+                            :placeholder="salaryPage.employeePlaceholder"
                             clearable
                             searchable
-                            @update:model-value="
-                                handleEmployeeChange
-                            "
+                            @update:model-value="handleEmployeeChange"
                         />
                     </div>
 
                     <div class="w-full shrink-0 sm:w-36">
                         <AppSalaryStatusSelect
                             :model-value="
-                                filterStatus === 'all'
-                                    ? null
-                                    : filterStatus
-                            "
-                            :placeholder="
-                                salaryPage.statusPlaceholder
-                            "
+                    filterStatus === 'all'
+                        ? null
+                        : filterStatus
+                "
+                            :placeholder="salaryPage.statusPlaceholder"
                             clearable
-                            @update:model-value="
-                                handleStatusChange
-                            "
+                            searchable
+                            @update:model-value="handleStatusChange"
                         />
                     </div>
 
@@ -249,17 +243,12 @@ const handleDeleteSelected = () => {
                             v-model="filterEndDate"
                             type="date"
                             placeholder="End date"
+                            readonly
                         />
                     </div>
                 </template>
             </ListingFilters>
         </template>
-
-        <!--
-        |--------------------------------------------------------------------------
-        | Table
-        |--------------------------------------------------------------------------
-        -->
 
         <template #table>
             <DataTable

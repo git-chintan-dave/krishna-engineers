@@ -11,26 +11,12 @@ import {
 } from '@/routes/salaries';
 import type {
     Salary,
-    SalaryEmployeeOption,
     SalaryFormData,
 } from '@/types/salary';
 
-/*
-|--------------------------------------------------------------------------
-| Props
-|--------------------------------------------------------------------------
-*/
-
 const props = defineProps<{
     salary: Salary;
-    employees: SalaryEmployeeOption[];
 }>();
-
-/*
-|--------------------------------------------------------------------------
-| Layout
-|--------------------------------------------------------------------------
-*/
 
 defineOptions({
     layout: {
@@ -41,16 +27,12 @@ defineOptions({
     },
 });
 
-/*
-|--------------------------------------------------------------------------
-| Form
-|--------------------------------------------------------------------------
-*/
-
 const form = useForm<SalaryFormData>({
     user_id: props.salary.user_id,
-    salary_period_start: props.salary.salary_period_start,
-    salary_period_end: props.salary.salary_period_end,
+    salary_period_start:
+    props.salary.salary_period_start,
+    salary_period_end:
+    props.salary.salary_period_end,
     upad: props.salary.upad,
     paid_loan: props.salary.paid_loan,
     adjustment: props.salary.adjustment,
@@ -58,17 +40,11 @@ const form = useForm<SalaryFormData>({
         props.salary.adjustment_reason ?? '',
 });
 
-/*
-|--------------------------------------------------------------------------
-| Actions
-|--------------------------------------------------------------------------
-*/
-
-const handleSubmit = () => {
-    form.put(update(props.salary.id).url);
+const handleSubmit = (): void => {
+    form.put(update(props.salary.uuid).url);
 };
 
-const handleCancel = () => {
+const handleCancel = (): void => {
     router.visit(salaries().url);
 };
 </script>
@@ -83,7 +59,6 @@ const handleCancel = () => {
         <SalaryForm
             :form="form"
             :salary="salary"
-            :employees="employees"
             :errors="form.errors"
             :processing="form.processing"
             :submit-label="

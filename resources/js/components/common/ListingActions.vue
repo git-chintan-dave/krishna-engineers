@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link, type Href } from '@inertiajs/vue3';
 import {
+    Banknote,
     Download,
     FileUp,
     Plus,
@@ -27,6 +28,9 @@ withDefaults(
         exportUrl?: Href;
         exportLabel?: string;
 
+        generateUrl?: Href;
+        generateLabel?: string;
+
         selectedCount?: number;
         resourceLabel?: string;
 
@@ -39,6 +43,8 @@ withDefaults(
 
         importLabel: 'Import',
         exportLabel: 'Export',
+
+        generateLabel: 'Generate',
 
         selectedCount: 0,
         resourceLabel: 'items',
@@ -65,24 +71,19 @@ const emit = defineEmits<{
     <div
         class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center"
     >
-        <!--
-        |--------------------------------------------------------------------------
-        | Delete Selected
-        |--------------------------------------------------------------------------
-        -->
-
+        <!-- Delete Selected -->
         <Button
             v-if="selectedCount > 0"
             v-confirm="{
-            action: () => emit('deleteSelected'),
-            options: {
-                title:
-                    deleteTitle ||
-                    `Delete selected ${resourceLabel}?`,
-                description: deleteDescription,
-                confirmText: deleteConfirmLabel,
-            },
-        }"
+                action: () => emit('deleteSelected'),
+                options: {
+                    title:
+                        deleteTitle ||
+                        `Delete selected ${resourceLabel}?`,
+                    description: deleteDescription,
+                    confirmText: deleteConfirmLabel,
+                },
+            }"
             type="button"
             variant="destructive"
             size="sm"
@@ -95,23 +96,18 @@ const emit = defineEmits<{
             />
 
             <span class="whitespace-nowrap">
-            Delete selected
+                Delete selected
 
-            <span
-                class="ml-1 opacity-80"
-                aria-hidden="true"
-            >
-                ({{ selectedCount }})
+                <span
+                    class="ml-1 opacity-80"
+                    aria-hidden="true"
+                >
+                    ({{ selectedCount }})
+                </span>
             </span>
-        </span>
         </Button>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Import
-        |--------------------------------------------------------------------------
-        -->
-
+        <!-- Import -->
         <Button
             v-if="importUrl"
             as-child
@@ -129,17 +125,12 @@ const emit = defineEmits<{
                 />
 
                 <span class="whitespace-nowrap">
-                {{ importLabel }}
-            </span>
+                    {{ importLabel }}
+                </span>
             </Link>
         </Button>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Export
-        |--------------------------------------------------------------------------
-        -->
-
+        <!-- Export -->
         <Button
             v-if="exportUrl"
             as-child
@@ -157,17 +148,35 @@ const emit = defineEmits<{
                 />
 
                 <span class="whitespace-nowrap">
-                {{ exportLabel }}
-            </span>
+                    {{ exportLabel }}
+                </span>
             </Link>
         </Button>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Create
-        |--------------------------------------------------------------------------
-        -->
+        <!-- Generate -->
+        <Button
+            v-if="generateUrl"
+            as-child
+            size="sm"
+            class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
+        >
+            <Link
+                :href="generateUrl"
+                method="post"
+                :aria-label="generateLabel"
+            >
+                <Banknote
+                    class="size-4"
+                    aria-hidden="true"
+                />
 
+                <span class="whitespace-nowrap">
+                    {{ generateLabel }}
+                </span>
+            </Link>
+        </Button>
+
+        <!-- Create -->
         <Button
             v-if="createUrl"
             as-child
@@ -184,8 +193,8 @@ const emit = defineEmits<{
                 />
 
                 <span class="whitespace-nowrap">
-                {{ createLabel }}
-            </span>
+                    {{ createLabel }}
+                </span>
             </Link>
         </Button>
     </div>

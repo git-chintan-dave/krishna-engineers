@@ -20,7 +20,6 @@ import type {
     SalaryFormData,
 } from '@/types/salary';
 
-// Types
 type SalaryPreview = {
     base_salary: string;
     working_days: number;
@@ -28,9 +27,9 @@ type SalaryPreview = {
     incentive: string;
     deduction_rate: string;
     deduction: string;
+    final_payable: string;
 };
 
-// Props
 const props = withDefaults(
     defineProps<{
         form: InertiaForm<SalaryFormData>;
@@ -49,19 +48,16 @@ const props = withDefaults(
     },
 );
 
-// Emits
 const emit = defineEmits<{
     submit: [];
     cancel: [];
 }>();
 
-// State
 const previewData = ref<SalaryPreview | null>(null);
 const previewLoading = ref(false);
 
 let previewRequestId = 0;
 
-// Computed
 const isEdit = computed(() => Boolean(props.salary));
 
 const baseSalary = computed(() =>
@@ -79,26 +75,10 @@ const workingDays = computed(
         0,
 );
 
-const incentiveRate = computed(() =>
-    Number(
-        props.salary?.incentive_rate ??
-        previewData.value?.incentive_rate ??
-        0,
-    ),
-);
-
 const incentive = computed(() =>
     Number(
         props.salary?.incentive ??
         previewData.value?.incentive ??
-        0,
-    ),
-);
-
-const deductionRate = computed(() =>
-    Number(
-        props.salary?.deduction_rate ??
-        previewData.value?.deduction_rate ??
         0,
     ),
 );
@@ -138,7 +118,6 @@ const hasAdjustment = computed(
     () => adjustment.value !== 0,
 );
 
-// Preview
 const loadPreview = async (): Promise<void> => {
     if (
         isEdit.value ||
@@ -190,7 +169,6 @@ const loadPreview = async (): Promise<void> => {
     }
 };
 
-// Period
 const setPeriodEndFromStart = (): void => {
     if (
         isEdit.value ||
@@ -225,7 +203,6 @@ const setPeriodEndFromStart = (): void => {
         `${year}-${month}-${day}`;
 };
 
-// Watchers
 watch(
     () => props.form.salary_period_start,
     setPeriodEndFromStart,
@@ -240,7 +217,6 @@ watch(
     loadPreview,
 );
 
-// Helpers
 const formatAmount = (amount: number): string => {
     return `₹${amount.toFixed(2)}`;
 };
@@ -251,7 +227,6 @@ const formatAmount = (amount: number): string => {
         class="min-w-0 space-y-6"
         @submit.prevent="emit('submit')"
     >
-        <!-- Salary Information -->
         <FormSection
             :title="salaryPage.form.sectionTitle"
             :description="
@@ -259,7 +234,6 @@ const formatAmount = (amount: number): string => {
             "
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
-                <!-- Employee -->
                 <AppField
                     :label="
                         salaryPage.form.employeeLabel
@@ -281,7 +255,6 @@ const formatAmount = (amount: number): string => {
                     />
                 </AppField>
 
-                <!-- Period Start -->
                 <AppField
                     :label="
                         salaryPage.form
@@ -311,7 +284,6 @@ const formatAmount = (amount: number): string => {
                     />
                 </AppField>
 
-                <!-- Period End -->
                 <AppField
                     :label="
                         salaryPage.form
@@ -341,7 +313,6 @@ const formatAmount = (amount: number): string => {
                     />
                 </AppField>
 
-                <!-- Base Salary -->
                 <AppField
                     :label="
                         salaryPage.form.baseSalaryLabel
@@ -358,7 +329,6 @@ const formatAmount = (amount: number): string => {
                     />
                 </AppField>
 
-                <!-- Working Days -->
                 <AppField
                     :label="
                         salaryPage.form.workingDaysLabel
@@ -372,24 +342,6 @@ const formatAmount = (amount: number): string => {
                     />
                 </AppField>
 
-                <!-- Incentive Per Day -->
-                <AppField
-                    :label="
-                        salaryPage.form.incentiveRateLabel
-                    "
-                    input-id="salary-incentive-rate"
-                >
-                    <AppInput
-                        id="salary-incentive-rate"
-                        :model-value="
-                            formatAmount(incentiveRate)
-                        "
-                        :icon="IndianRupee"
-                        disabled
-                    />
-                </AppField>
-
-                <!-- Incentive -->
                 <AppField
                     :label="salaryPage.form.incentiveLabel"
                     input-id="salary-incentive"
@@ -404,24 +356,6 @@ const formatAmount = (amount: number): string => {
                     />
                 </AppField>
 
-                <!-- Deduction Per Day -->
-                <AppField
-                    :label="
-                        salaryPage.form.deductionRateLabel
-                    "
-                    input-id="salary-deduction-rate"
-                >
-                    <AppInput
-                        id="salary-deduction-rate"
-                        :model-value="
-                            formatAmount(deductionRate)
-                        "
-                        :icon="IndianRupee"
-                        disabled
-                    />
-                </AppField>
-
-                <!-- Deduction -->
                 <AppField
                     :label="salaryPage.form.deductionLabel"
                     input-id="salary-deduction"
@@ -436,7 +370,6 @@ const formatAmount = (amount: number): string => {
                     />
                 </AppField>
 
-                <!-- Preview Loading -->
                 <div
                     v-if="previewLoading"
                     class="flex items-center gap-2 text-sm text-muted-foreground md:col-span-2"
@@ -453,13 +386,11 @@ const formatAmount = (amount: number): string => {
             </div>
         </FormSection>
 
-        <!-- Payment Adjustments -->
         <FormSection
             title="Payment Adjustments"
             description="Enter any advance, loan payment, or manual salary adjustment."
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
-                <!-- Upad -->
                 <AppField
                     :label="salaryPage.form.upadLabel"
                     input-id="salary-upad"
@@ -481,7 +412,6 @@ const formatAmount = (amount: number): string => {
                     />
                 </AppField>
 
-                <!-- Paid Loan -->
                 <AppField
                     :label="salaryPage.form.paidLoanLabel"
                     input-id="salary-paid-loan"
@@ -503,7 +433,6 @@ const formatAmount = (amount: number): string => {
                     />
                 </AppField>
 
-                <!-- Adjustment -->
                 <AppField
                     :label="
                         salaryPage.form.adjustmentLabel
@@ -526,7 +455,6 @@ const formatAmount = (amount: number): string => {
                     />
                 </AppField>
 
-                <!-- Adjustment Reason -->
                 <AppField
                     :label="
                         salaryPage.form.adjustmentReasonLabel
@@ -552,7 +480,6 @@ const formatAmount = (amount: number): string => {
             </div>
         </FormSection>
 
-        <!-- Salary Summary -->
         <FormSection
             title="Salary Summary"
             description="Review the final payable amount before saving."
@@ -602,7 +529,6 @@ const formatAmount = (amount: number): string => {
             </div>
         </FormSection>
 
-        <!-- Form Actions -->
         <FormActions
             :submit-label="submitLabel"
             :processing="

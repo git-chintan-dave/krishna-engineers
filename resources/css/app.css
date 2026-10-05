@@ -270,3 +270,15 @@
         color: var(--background);
     }
 }
+
+@media print {
+    aside,
+    header,
+    nav {
+        display: none !important;
+    }
+
+    body {
+        overflow: visible !important;
+    }
+}

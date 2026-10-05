@@ -7,6 +7,7 @@ use App\Models\Salary;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -19,15 +20,29 @@ class SalaryService
         User $user,
         CarbonInterface $periodStart,
         CarbonInterface $periodEnd,
+        float $upad = 0,
+        float $paidLoan = 0,
+        float $adjustment = 0,
+        ?string $adjustmentReason = null,
     ): Salary {
         return DB::transaction(function () use (
             $user,
             $periodStart,
             $periodEnd,
+            $upad,
+            $paidLoan,
+            $adjustment,
+            $adjustmentReason,
         ): Salary {
             $existing = $user->salaries()
-                ->where('salary_period_start', $periodStart->toDateString())
-                ->where('salary_period_end', $periodEnd->toDateString())
+                ->where(
+                    'salary_period_start',
+                    $periodStart->toDateString(),
+                )
+                ->where(
+                    'salary_period_end',
+                    $periodEnd->toDateString(),
+                )
                 ->first();
 
             if ($existing) {
@@ -59,9 +74,9 @@ class SalaryService
             $finalPayable = $this->calculateFinalPayable(
                 baseSalary: $baseSalary,
                 incentive: $incentive,
-                adjustment: 0,
-                upad: 0,
-                paidLoan: 0,
+                adjustment: $adjustment,
+                upad: $upad,
+                paidLoan: $paidLoan,
                 deduction: $deduction,
             );
 
@@ -72,8 +87,8 @@ class SalaryService
                 'base_salary' => $baseSalary,
                 'working_days' => $workingDays,
 
-                'upad' => 0,
-                'paid_loan' => 0,
+                'upad' => $upad,
+                'paid_loan' => $paidLoan,
 
                 'incentive_rate' => $incentiveRate,
                 'incentive' => $incentive,
@@ -81,14 +96,106 @@ class SalaryService
                 'deduction_rate' => $deductionRate,
                 'deduction' => $deduction,
 
-                'adjustment' => 0,
-                'adjustment_reason' => null,
+                'adjustment' => $adjustment,
+                'adjustment_reason' => $adjustmentReason,
 
                 'final_payable' => $finalPayable,
 
                 'status' => SalaryStatus::DRAFT,
                 'paid_at' => null,
             ]);
+        });
+    }
+
+    /**
+     * Generate draft salaries for all eligible employees
+     * for the previous calendar month.
+     *
+     * Existing salary records for the period are skipped.
+     *
+     * @return array{
+     *     period_start: string,
+     *     period_end: string,
+     *     total_employees: int,
+     *     generated: int,
+     *     skipped: int,
+     *     salaries: Collection<int, Salary>
+     * }
+     */
+    public function generateForAllEmployees(
+        ?CarbonInterface $referenceDate = null,
+    ): array {
+        $referenceDate = $referenceDate
+            ? Carbon::instance($referenceDate)
+            : now();
+
+        $periodStart = $referenceDate
+            ->copy()
+            ->subMonthNoOverflow()
+            ->startOfMonth();
+
+        $periodEnd = $periodStart
+            ->copy()
+            ->endOfMonth();
+
+        return DB::transaction(function () use (
+            $periodStart,
+            $periodEnd,
+        ): array {
+            /*
+            |--------------------------------------------------------------------------
+            | Employees
+            |--------------------------------------------------------------------------
+            |
+            | Only active employees are eligible for salary generation.
+            |
+            */
+
+            $employees = User::query()
+                ->where('status', 'active')
+                ->get();
+
+            $existingEmployeeIds = Salary::query()
+                ->where(
+                    'salary_period_start',
+                    $periodStart->toDateString(),
+                )
+                ->where(
+                    'salary_period_end',
+                    $periodEnd->toDateString(),
+                )
+                ->pluck('user_id');
+
+            $generated = collect();
+            $skipped = 0;
+
+            foreach ($employees as $employee) {
+                if ($existingEmployeeIds->contains($employee->id)) {
+                    $skipped++;
+
+                    continue;
+                }
+
+                $generated->push(
+                    $this->generate(
+                        user: $employee,
+                        periodStart: $periodStart,
+                        periodEnd: $periodEnd,
+                    ),
+                );
+            }
+
+            return [
+                'period_start' => $periodStart->toDateString(),
+                'period_end' => $periodEnd->toDateString(),
+
+                'total_employees' => $employees->count(),
+
+                'generated' => $generated->count(),
+                'skipped' => $skipped,
+
+                'salaries' => $generated,
+            ];
         });
     }
 

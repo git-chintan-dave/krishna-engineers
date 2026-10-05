@@ -25,21 +25,28 @@ export type Salary = {
     salary_period_end_formatted: string;
 
     base_salary: string;
+    base_salary_formatted: string;
     working_days: number;
 
     upad: string;
+    upad_formatted: string;
     paid_loan: string;
+    paid_loan_formatted: string;
 
     incentive_rate: string;
     incentive: string;
+    incentive_formatted: string;
 
     deduction_rate: string;
     deduction: string;
+    deduction_formatted: string;
 
     adjustment: string;
+    adjustment_formatted: string;
     adjustment_reason: string | null;
 
     final_payable: string;
+    final_payable_formatted: string;
 
     status: SalaryStatus;
     status_label: string;
@@ -73,17 +80,17 @@ export type SalarySort =
     | 'created_at';
 
 export type SalaryFilters = {
-    search: string;
-    userId: number | string | 'all';
+    user_id: number | 'all';
     status: SalaryStatus | 'all';
-    startDate: string;
-    endDate: string;
+    start_date: string;
+    end_date: string;
     perPage: number;
     sort: SalarySort;
     direction: SortDirection;
 };
 
-export type SalaryResponse = PaginatedResponse<Salary>;
+export type SalaryResponse =
+    PaginatedResponse<Salary>;
 
 export type SalaryEmployeeOption = {
     value: string;

@@ -16,12 +16,6 @@ class IndexSalaryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'search' => [
-                'nullable',
-                'string',
-                'max:100',
-            ],
-
             'user_id' => [
                 'nullable',
                 'integer',

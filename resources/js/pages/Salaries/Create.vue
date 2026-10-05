@@ -9,26 +9,7 @@ import {
     index as salaries,
     store,
 } from '@/routes/salaries';
-import type {
-    SalaryEmployeeOption,
-    SalaryFormData,
-} from '@/types/salary';
-
-/*
-|--------------------------------------------------------------------------
-| Props
-|--------------------------------------------------------------------------
-*/
-
-defineProps<{
-    employees: SalaryEmployeeOption[];
-}>();
-
-/*
-|--------------------------------------------------------------------------
-| Layout
-|--------------------------------------------------------------------------
-*/
+import type { SalaryFormData } from '@/types/salary';
 
 defineOptions({
     layout: {
@@ -38,12 +19,6 @@ defineOptions({
         }),
     },
 });
-
-/*
-|--------------------------------------------------------------------------
-| Form
-|--------------------------------------------------------------------------
-*/
 
 const form = useForm<SalaryFormData>({
     user_id: '',
@@ -55,17 +30,11 @@ const form = useForm<SalaryFormData>({
     adjustment_reason: '',
 });
 
-/*
-|--------------------------------------------------------------------------
-| Actions
-|--------------------------------------------------------------------------
-*/
-
-const handleSubmit = () => {
+const handleSubmit = (): void => {
     form.post(store().url);
 };
 
-const handleCancel = () => {
+const handleCancel = (): void => {
     router.visit(salaries().url);
 };
 </script>
@@ -79,7 +48,6 @@ const handleCancel = () => {
     >
         <SalaryForm
             :form="form"
-            :employees="employees"
             :errors="form.errors"
             :processing="form.processing"
             :submit-label="

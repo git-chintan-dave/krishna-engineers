@@ -200,10 +200,15 @@ Route::middleware('auth')->group(function () {
             [SalaryController::class, 'markAsPaid'],
         )->name('salaries.mark-as-paid');
 
+        Route::post(
+            'salaries/generate-last-month',
+            [SalaryController::class, 'generateLastMonth']
+        )->name('salaries.generate-last-month');
+
         Route::resource(
             'salaries',
             SalaryController::class,
-        )->except(['show']);
+        );
     });
 
     /*
