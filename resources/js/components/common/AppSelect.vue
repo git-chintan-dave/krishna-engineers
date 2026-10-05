@@ -1,30 +1,12 @@
 <script setup lang="ts">
-import {
-    computed,
-    useAttrs,
-} from 'vue';
-import {
-    Check,
-    ChevronsUpDown,
-    X,
-} from '@lucide/vue';
+import {computed, useAttrs,} from 'vue';
+import {Check, ChevronsUpDown, X,} from '@lucide/vue';
 
-import { Button } from '@/components/ui/button';
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from '@/components/ui/command';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover';
+import {Button} from '@/components/ui/button';
+import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,} from '@/components/ui/command';
+import {Popover, PopoverContent, PopoverTrigger,} from '@/components/ui/popover';
 
-import type { SelectOption as CommonSelectOption } from '@/types/common';
+import type {SelectOption as CommonSelectOption} from '@/types/common';
 
 defineOptions({
     inheritAttrs: false,
@@ -114,6 +96,10 @@ const emit = defineEmits<{
 */
 
 const attrs = useAttrs();
+
+const inputName = computed(
+    () => attrs.name as string | undefined,
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -226,7 +212,7 @@ const isSelected = (
 
 /*
 |--------------------------------------------------------------------------
-| Native validation
+| Native Validation
 |--------------------------------------------------------------------------
 */
 
@@ -303,38 +289,43 @@ const clearSelection = () => {
 </script>
 
 <template>
-    <div class="min-w-0 w-full">
+    <div class="w-full min-w-0">
         <!--
-            Native select used only for browser form validation.
+            Native select is used only for browser
+            form validation.
 
-            The visible select UI below is custom, so the browser
-            cannot apply native `required` validation to it directly.
-        -->
+        The visible select is a custom Popover,
+        therefore native required validation cannot
+        be applied directly to the Button.
+    -->
         <select
             v-if="required"
-            :name="
-                (attrs.name as string | undefined)
-            "
+            :name="inputName"
             :required="required"
-            :disabled="disabled || loading"
+            :disabled="
+            disabled || loading
+        "
             :multiple="multiple"
             :value="nativeSelectValue"
             tabindex="-1"
             aria-hidden="true"
             class="sr-only"
         >
-            <option value="">
+            <option
+                v-if="!multiple"
+                value=""
+            >
                 {{ placeholder }}
             </option>
 
             <option
                 v-for="option in normalizedOptions"
                 :key="
-                    String(option.value)
-                "
+                String(option.value)
+            "
                 :value="
-                    String(option.value)
-                "
+                String(option.value)
+            "
             >
                 {{ option.label }}
             </option>
@@ -350,108 +341,109 @@ const clearSelection = () => {
                     :aria-invalid="!!error"
                     :aria-required="required"
                     :disabled="
-                        disabled || loading
-                    "
+                    disabled || loading
+                "
                     class="h-9 w-full min-w-0 justify-between font-normal"
                     :class="
-                        error &&
-                        'border-destructive focus-visible:ring-destructive'
-                    "
-                    v-bind="$attrs"
+                    error &&
+                    'border-destructive focus-visible:ring-destructive'
+                "
+                    v-bind="attrs"
+                    :name="undefined"
                 >
                     <!-- Selected Value -->
                     <span
                         class="min-w-0 flex-1 truncate text-left"
                         :class="[
-                            !hasSelection &&
-                                'text-muted-foreground',
-                        ]"
+                        !hasSelection &&
+                            'text-muted-foreground',
+                    ]"
                     >
-                        <!-- Loading -->
-                        <template
-                            v-if="loading"
-                        >
-                            Loading...
-                        </template>
+                    <!-- Loading -->
+                    <template
+                        v-if="loading"
+                    >
+                        Loading...
+                    </template>
 
                         <!-- Multiple -->
-                        <template
-                            v-else-if="
-                                multiple &&
-                                selectedOptions.length
-                            "
-                        >
-                            <span
-                                class="truncate"
-                            >
-                                {{
-                                    selectedOptions[0]
-                                        ?.label
-                                }}
-                            </span>
-
-                            <span
-                                v-if="
-                                    selectedOptions.length >
-                                    1
-                                "
-                                class="ml-1 shrink-0 text-xs text-muted-foreground"
-                            >
-                                +{{
-                                    selectedOptions.length -
-                                    1
-                                }}
-                            </span>
-                        </template>
-
-                        <!-- Single / Empty -->
-                        <template
-                            v-else
+                    <template
+                        v-else-if="
+                            multiple &&
+                            selectedOptions.length
+                        "
+                    >
+                        <span
+                            class="truncate"
                         >
                             {{
-                                selectedLabel ||
-                                placeholder
+                                selectedOptions[0]
+                                    ?.label
                             }}
-                        </template>
-                    </span>
+                        </span>
+
+                        <span
+                            v-if="
+                                selectedOptions.length >
+                                1
+                            "
+                            class="ml-1 shrink-0 text-xs text-muted-foreground"
+                        >
+                            +{{
+                                selectedOptions.length -
+                                1
+                            }}
+                        </span>
+                    </template>
+
+                        <!-- Single / Empty -->
+                    <template
+                        v-else
+                    >
+                        {{
+                            selectedLabel ||
+                            placeholder
+                        }}
+                    </template>
+                </span>
 
                     <!-- Actions -->
                     <span
                         class="ml-2 flex shrink-0 items-center gap-1"
                     >
-                        <!-- Clear -->
-                        <span
-                            v-if="
-                                clearable &&
-                                hasSelection &&
-                                !loading
-                            "
-                            role="button"
-                            tabindex="0"
-                            aria-label="Clear selection"
-                            class="flex size-7 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            @click.stop="
-                                clearSelection
-                            "
-                            @keydown.enter.stop="
-                                clearSelection
-                            "
-                            @keydown.space.prevent.stop="
-                                clearSelection
-                            "
-                        >
-                            <X
-                                class="size-3.5"
-                                aria-hidden="true"
-                            />
-                        </span>
-
-                        <!-- Dropdown Indicator -->
-                        <ChevronsUpDown
-                            class="size-4 shrink-0 text-muted-foreground opacity-70"
+                    <!-- Clear -->
+                    <span
+                        v-if="
+                            clearable &&
+                            hasSelection &&
+                            !loading
+                        "
+                        role="button"
+                        tabindex="0"
+                        aria-label="Clear selection"
+                        class="flex size-7 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        @click.stop="
+                            clearSelection
+                        "
+                        @keydown.enter.stop="
+                            clearSelection
+                        "
+                        @keydown.space.prevent.stop="
+                            clearSelection
+                        "
+                    >
+                        <X
+                            class="size-3.5"
                             aria-hidden="true"
                         />
                     </span>
+
+                        <!-- Dropdown Indicator -->
+                    <ChevronsUpDown
+                        class="size-4 shrink-0 text-muted-foreground opacity-70"
+                        aria-hidden="true"
+                    />
+                </span>
                 </Button>
             </PopoverTrigger>
 
@@ -464,8 +456,8 @@ const clearSelection = () => {
                     <CommandInput
                         v-if="searchable"
                         :placeholder="
-                            searchPlaceholder
-                        "
+                        searchPlaceholder
+                    "
                         class="h-9"
                     />
 
@@ -482,38 +474,37 @@ const clearSelection = () => {
                             <CommandItem
                                 v-for="option in normalizedOptions"
                                 :key="
-                                    String(
-                                        option.value,
-                                    )
-                                "
+                                String(
+                                    option.value,
+                                )
+                            "
                                 :value="
-                                    option.label
-                                "
+                                option.label
+                            "
                                 class="min-w-0 cursor-pointer"
                                 @select="
-                                    selectOption(
-                                        option.value as Primitive,
-                                    )
-                                "
+                                selectOption(
+                                    option.value as Primitive,
+                                )
+                            "
                             >
-                                <span
-                                    class="min-w-0 flex-1 truncate"
-                                >
-                                    {{
-                                        option.label
-                                    }}
-                                </span>
+                            <span
+                                class="min-w-0 flex-1 truncate"
+                            >
+                                {{
+                                    option.label
+                                }}
+                            </span>
 
-                                <!-- Selection Indicator -->
                                 <Check
                                     :class="[
-                                        'ml-3 size-4 shrink-0',
-                                        isSelected(
-                                            option.value as Primitive,
-                                        )
-                                            ? 'opacity-100'
-                                            : 'opacity-0',
-                                    ]"
+                                    'ml-3 size-4 shrink-0',
+                                    isSelected(
+                                        option.value as Primitive,
+                                    )
+                                        ? 'opacity-100'
+                                        : 'opacity-0',
+                                ]"
                                     aria-hidden="true"
                                 />
                             </CommandItem>

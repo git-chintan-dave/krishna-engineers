@@ -1,4 +1,10 @@
 <script setup lang="ts">
+/*
+|--------------------------------------------------------------------------
+| Props
+|--------------------------------------------------------------------------
+*/
+
 withDefaults(
     defineProps<{
         title: string;
@@ -12,28 +18,38 @@ withDefaults(
 
 <template>
     <header
-        class="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
+        class="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
     >
-        <!-- Content -->
+        <!--
+        |--------------------------------------------------------------------------
+        | Content
+        |--------------------------------------------------------------------------
+        -->
+
         <div class="min-w-0 flex-1">
             <h1
-                class="break-words text-2xl leading-tight font-semibold tracking-tight text-foreground"
+                class="wrap-break-word text-2xl leading-tight font-semibold tracking-tight text-foreground"
             >
                 {{ title }}
             </h1>
 
             <p
                 v-if="description"
-                class="mt-1 max-w-3xl break-words text-sm leading-5 text-muted-foreground"
+                class="mt-1 max-w-3xl wrap-break-word text-sm leading-5 text-muted-foreground"
             >
                 {{ description }}
             </p>
         </div>
 
-        <!-- Actions -->
+        <!--
+        |--------------------------------------------------------------------------
+        | Actions
+        |--------------------------------------------------------------------------
+        -->
+
         <div
             v-if="$slots.actions"
-            class="flex min-w-0 w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end"
+            class="flex w-full shrink-0 items-center gap-2 sm:w-auto sm:max-w-[50%] sm:flex-wrap sm:justify-end"
         >
             <slot name="actions" />
         </div>

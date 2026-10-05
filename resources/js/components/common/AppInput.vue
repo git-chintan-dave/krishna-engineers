@@ -10,7 +10,12 @@ import {
     X,
 } from '@lucide/vue';
 import type { Component } from 'vue';
-import { computed, nextTick, ref, useAttrs } from 'vue';
+import {
+    computed,
+    nextTick,
+    ref,
+    useAttrs,
+} from 'vue';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -22,22 +27,11 @@ import {
 } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 
-/*
-|--------------------------------------------------------------------------
-| Options
-|--------------------------------------------------------------------------
-*/
-
 defineOptions({
     inheritAttrs: false,
 });
 
-/*
-|--------------------------------------------------------------------------
-| Types
-|--------------------------------------------------------------------------
-*/
-
+// Types
 type InputType =
     | 'text'
     | 'password'
@@ -56,12 +50,7 @@ type InputType =
 
 type ModelValue = string | number | null;
 
-/*
-|--------------------------------------------------------------------------
-| Props
-|--------------------------------------------------------------------------
-*/
-
+// Props
 const props = withDefaults(
     defineProps<{
         type?: InputType;
@@ -113,60 +102,38 @@ const props = withDefaults(
     },
 );
 
-/*
-|--------------------------------------------------------------------------
-| Model
-|--------------------------------------------------------------------------
-*/
-
+// Model
 const model = defineModel<ModelValue>({
     default: null,
 });
 
-/*
-|--------------------------------------------------------------------------
-| Attributes
-|--------------------------------------------------------------------------
-*/
-
+// Attributes
 const attrs = useAttrs();
 
-/*
-|--------------------------------------------------------------------------
-| Refs
-|--------------------------------------------------------------------------
-*/
-
+// Refs
 const inputRef = ref<HTMLInputElement | null>(null);
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
 
+// State
 const datePickerOpen = ref(false);
 const timePickerOpen = ref(false);
 const datetimePickerOpen = ref(false);
 const showPassword = ref(false);
 
-/*
-|--------------------------------------------------------------------------
-| Time Options
-|--------------------------------------------------------------------------
-*/
-
-const hours = Array.from({ length: 12 }, (_, index) =>
-    String(index + 1).padStart(2, '0'),
+// Time Options
+const hours = Array.from(
+    { length: 12 },
+    (_, index) => String(index + 1).padStart(2, '0'),
 );
 
-const minutes = Array.from({ length: 60 }, (_, index) =>
-    String(index).padStart(2, '0'),
+const minutes = Array.from(
+    { length: 60 },
+    (_, index) => String(index).padStart(2, '0'),
 );
 
 const periods = ['AM', 'PM'] as const;
 
-/*
-|--------------------------------------------------------------------------
-| Input State
-|--------------------------------------------------------------------------
-*/
-
+// Input State
 const isDateInput = computed(
     () => props.type === 'date',
 );
@@ -219,10 +186,20 @@ const hasValue = computed(
         String(model.value).length > 0,
 );
 
+// Normalize nullable model values for shadcn Input/Textarea.
+const nativeModel = computed<
+    string | number | undefined
+>({
+    get: () => model.value ?? undefined,
+    set: (value) => {
+        model.value = value ?? null;
+    },
+});
+
 const inputClasses = computed(() => [
     'flex w-full min-w-0 rounded-md border bg-background text-sm transition-colors',
     'placeholder:text-muted-foreground',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20',
     'disabled:cursor-not-allowed disabled:opacity-50',
     'read-only:cursor-default',
 
@@ -247,12 +224,7 @@ const inputClasses = computed(() => [
         : 'border-input',
 ]);
 
-/*
-|--------------------------------------------------------------------------
-| Date Helpers
-|--------------------------------------------------------------------------
-*/
-
+// Date Helpers
 const getDatePart = (
     value: string,
 ): string => {
@@ -281,12 +253,7 @@ const getTimePart = (
     return value.slice(0, 5);
 };
 
-/*
-|--------------------------------------------------------------------------
-| Date Picker
-|--------------------------------------------------------------------------
-*/
-
+// Date Picker
 const selectedDate = computed<
     DateValue | undefined
 >({
@@ -359,18 +326,20 @@ const formattedDate = computed(() => {
 });
 
 const selectDate = (
-    value: DateValue,
+    value: DateValue | undefined,
 ) => {
+    if (!value) {
+        model.value = null;
+        datePickerOpen.value = false;
+
+        return;
+    }
+
     model.value = value.toString();
     datePickerOpen.value = false;
 };
 
-/*
-|--------------------------------------------------------------------------
-| DateTime Picker
-|--------------------------------------------------------------------------
-*/
-
+// DateTime Picker
 const selectedDatetimeDate = computed<
     DateValue | undefined
 >({
@@ -489,8 +458,14 @@ const formattedDatetime = computed(() => {
 });
 
 const selectDatetimeDate = (
-    value: DateValue,
+    value: DateValue | undefined,
 ) => {
+    if (!value) {
+        model.value = null;
+
+        return;
+    }
+
     const currentTime =
         typeof model.value === 'string'
             ? getTimePart(model.value)
@@ -501,12 +476,7 @@ const selectDatetimeDate = (
     }`;
 };
 
-/*
-|--------------------------------------------------------------------------
-| Time Picker
-|--------------------------------------------------------------------------
-*/
-
+// Time Picker
 const timeParts = computed(() => {
     const value =
         typeof model.value === 'string'
@@ -686,12 +656,7 @@ const selectDatetimePeriod = (
     );
 };
 
-/*
-|--------------------------------------------------------------------------
-| Actions
-|--------------------------------------------------------------------------
-*/
-
+// Actions
 const clear = () => {
     model.value = null;
 
@@ -727,12 +692,7 @@ defineExpose({
 
 <template>
     <div class="w-full min-w-0">
-        <!--
-        |--------------------------------------------------------------------------
-        | Date
-        |--------------------------------------------------------------------------
-        -->
-
+        <!-- Date -->
         <Popover
             v-if="isDateInput"
             v-model:open="datePickerOpen"
@@ -746,7 +706,7 @@ defineExpose({
                     :aria-invalid="hasError"
                     :class="[
                         inputClasses,
-                        'relative cursor-pointer text-left items-center',
+                        'relative cursor-pointer items-center text-left',
                         !formattedDate &&
                             'text-muted-foreground',
                     ]"
@@ -768,7 +728,7 @@ defineExpose({
 
                     <CalendarDays
                         v-else
-                        class="pointer-events-none absolute right-3 size-4"
+                        class="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2"
                         aria-hidden="true"
                     />
 
@@ -796,19 +756,12 @@ defineExpose({
                 <Calendar
                     v-model="selectedDate"
                     initial-focus
-                    @update:model-value="
-                        selectDate
-                    "
+                    @update:model-value="selectDate"
                 />
             </PopoverContent>
         </Popover>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Time
-        |--------------------------------------------------------------------------
-        -->
-
+        <!-- Time -->
         <Popover
             v-else-if="isTimeInput"
             v-model:open="timePickerOpen"
@@ -844,7 +797,7 @@ defineExpose({
 
                     <Clock3
                         v-else
-                        class="pointer-events-none absolute top-1/2 right-3 size-4"
+                        class="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2"
                         aria-hidden="true"
                     />
 
@@ -888,6 +841,7 @@ defineExpose({
                                 :class="[
                                     'flex h-9 w-full items-center justify-center text-sm transition-colors',
                                     'hover:bg-accent hover:text-accent-foreground',
+                                    'focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none',
                                     selectedHour ===
                                         hour &&
                                         'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
@@ -919,6 +873,7 @@ defineExpose({
                                 :class="[
                                     'flex h-9 w-full items-center justify-center text-sm transition-colors',
                                     'hover:bg-accent hover:text-accent-foreground',
+                                    'focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none',
                                     selectedMinute ===
                                         minute &&
                                         'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
@@ -942,9 +897,7 @@ defineExpose({
                             Period
                         </p>
 
-                        <div
-                            class="rounded-md border"
-                        >
+                        <div class="rounded-md border">
                             <button
                                 v-for="period in periods"
                                 :key="period"
@@ -952,6 +905,7 @@ defineExpose({
                                 :class="[
                                     'flex h-9 w-full items-center justify-center text-sm transition-colors',
                                     'hover:bg-accent hover:text-accent-foreground',
+                                    'focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none',
                                     selectedPeriod ===
                                         period &&
                                         'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
@@ -977,9 +931,7 @@ defineExpose({
                         Selected time
                     </span>
 
-                    <span
-                        class="text-sm font-medium"
-                    >
+                    <span class="text-sm font-medium">
                         {{
                             formattedTime ||
                             '—'
@@ -989,12 +941,7 @@ defineExpose({
             </PopoverContent>
         </Popover>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Date & Time
-        |--------------------------------------------------------------------------
-        -->
-
+        <!-- Date & Time -->
         <Popover
             v-else-if="isDatetimeInput"
             v-model:open="datetimePickerOpen"
@@ -1008,7 +955,7 @@ defineExpose({
                     :aria-invalid="hasError"
                     :class="[
                         inputClasses,
-                        'relative cursor-pointer text-left items-center',
+                        'relative cursor-pointer items-center text-left',
                         !formattedDatetime &&
                             'text-muted-foreground',
                     ]"
@@ -1030,7 +977,7 @@ defineExpose({
 
                     <CalendarDays
                         v-else
-                        class="pointer-events-none absolute right-3 size-4"
+                        class="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2"
                         aria-hidden="true"
                     />
 
@@ -1053,7 +1000,7 @@ defineExpose({
 
             <PopoverContent
                 align="start"
-                class="w-auto min-w-[22rem] max-w-[calc(100vw-2rem)] p-3"
+                class="w-auto min-w-88 max-w-[calc(100vw-2rem)] p-3"
             >
                 <div class="space-y-4">
                     <!-- Date -->
@@ -1073,9 +1020,7 @@ defineExpose({
                         </div>
 
                         <Calendar
-                            v-model="
-                                selectedDatetimeDate
-                            "
+                            v-model="selectedDatetimeDate"
                             initial-focus
                             @update:model-value="
                                 selectDatetimeDate
@@ -1084,9 +1029,7 @@ defineExpose({
                     </div>
 
                     <!-- Time -->
-                    <div
-                        class="border-t pt-4"
-                    >
+                    <div class="border-t pt-4">
                         <div
                             class="mb-2 flex items-center gap-2"
                         >
@@ -1124,6 +1067,7 @@ defineExpose({
                                         :class="[
                                             'flex h-8 w-full items-center justify-center text-sm transition-colors',
                                             'hover:bg-accent hover:text-accent-foreground',
+                                            'focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none',
                                             selectedHour ===
                                                 hour &&
                                                 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
@@ -1159,6 +1103,7 @@ defineExpose({
                                         :class="[
                                             'flex h-8 w-full items-center justify-center text-sm transition-colors',
                                             'hover:bg-accent hover:text-accent-foreground',
+                                            'focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none',
                                             selectedMinute ===
                                                 minute &&
                                                 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
@@ -1184,9 +1129,7 @@ defineExpose({
                                     Period
                                 </p>
 
-                                <div
-                                    class="rounded-md border"
-                                >
+                                <div class="rounded-md border">
                                     <button
                                         v-for="period in periods"
                                         :key="period"
@@ -1194,6 +1137,7 @@ defineExpose({
                                         :class="[
                                             'flex h-8 w-full items-center justify-center text-sm transition-colors',
                                             'hover:bg-accent hover:text-accent-foreground',
+                                            'focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none',
                                             selectedPeriod ===
                                                 period &&
                                                 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
@@ -1246,28 +1190,23 @@ defineExpose({
             </PopoverContent>
         </Popover>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Native Inputs
-        |--------------------------------------------------------------------------
-        -->
-
+        <!-- Native Inputs -->
         <div
             v-else
-            class="relative min-w-0 w-full"
+            class="relative w-full min-w-0"
         >
             <!-- Leading Icon -->
             <component
                 v-if="icon"
                 :is="icon"
-                class="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-muted-foreground"
+                class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
                 aria-hidden="true"
             />
 
             <!-- Prefix -->
             <span
                 v-else-if="prefix"
-                class="pointer-events-none absolute top-1/2 left-3 z-10 max-w-[35%] -translate-y-1/2 truncate text-sm text-muted-foreground"
+                class="pointer-events-none absolute top-1/2 left-3 max-w-[35%] -translate-y-1/2 truncate text-sm text-muted-foreground"
             >
                 {{ prefix }}
             </span>
@@ -1275,7 +1214,7 @@ defineExpose({
             <!-- Loading -->
             <LoaderCircle
                 v-if="loading"
-                class="pointer-events-none absolute top-1/2 right-3 z-10 size-4 -translate-y-1/2 animate-spin text-muted-foreground"
+                class="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 animate-spin text-muted-foreground"
                 aria-hidden="true"
             />
 
@@ -1290,7 +1229,7 @@ defineExpose({
                 type="button"
                 tabindex="-1"
                 aria-label="Clear input"
-                class="absolute top-1/2 right-2 z-10 flex size-7 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground"
+                class="absolute top-1/2 right-2 flex size-7 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 @click="clear"
             >
                 <X
@@ -1312,10 +1251,8 @@ defineExpose({
                         ? 'Hide password'
                         : 'Show password'
                 "
-                class="absolute top-1/2 right-2 z-10 flex size-7 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none"
-                @click="
-                    togglePassword
-                "
+                class="absolute top-1/2 right-2 flex size-7 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none"
+                @click="togglePassword"
             >
                 <EyeOff
                     v-if="showPassword"
@@ -1333,7 +1270,7 @@ defineExpose({
             <!-- Suffix -->
             <span
                 v-else-if="suffix"
-                class="pointer-events-none absolute top-1/2 right-3 z-10 max-w-[30%] -translate-y-1/2 truncate text-sm text-muted-foreground"
+                class="pointer-events-none absolute top-1/2 right-3 max-w-[30%] -translate-y-1/2 truncate text-sm text-muted-foreground"
             >
                 {{ suffix }}
             </span>
@@ -1342,7 +1279,7 @@ defineExpose({
             <Textarea
                 v-if="textarea"
                 ref="textareaRef"
-                v-model="model"
+                v-model="nativeModel"
                 :placeholder="placeholder"
                 :disabled="disabled"
                 :readonly="readonly"
@@ -1356,7 +1293,7 @@ defineExpose({
             <Input
                 v-else
                 ref="inputRef"
-                v-model="model"
+                v-model="nativeModel"
                 :type="resolvedInputType"
                 :placeholder="placeholder"
                 :disabled="disabled"
@@ -1367,12 +1304,7 @@ defineExpose({
             />
         </div>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Helper
-        |--------------------------------------------------------------------------
-        -->
-
+        <!-- Helper -->
         <p
             v-if="helper && !error"
             class="mt-1 text-xs text-muted-foreground"
@@ -1380,12 +1312,7 @@ defineExpose({
             {{ helper }}
         </p>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Error
-        |--------------------------------------------------------------------------
-        -->
-
+        <!-- Error -->
         <p
             v-if="error"
             class="mt-1 text-xs text-destructive"
@@ -1393,12 +1320,7 @@ defineExpose({
             {{ error }}
         </p>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Description Slot
-        |--------------------------------------------------------------------------
-        -->
-
+        <!-- Description Slot -->
         <slot name="description" />
     </div>
 </template>

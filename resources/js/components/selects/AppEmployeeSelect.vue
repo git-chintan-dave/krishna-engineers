@@ -4,12 +4,30 @@ import { onMounted, ref, watch } from 'vue';
 import AppSelect from '@/components/common/AppSelect.vue';
 import type { SelectOption } from '@/types/common';
 
+/*
+|--------------------------------------------------------------------------
+| Types
+|--------------------------------------------------------------------------
+*/
+
 type EmployeeRole =
     | 'super_admin'
     | 'supervisor'
     | 'operator'
     | 'bandsaw'
     | 'deburring_packaging';
+
+type AppSelectValue =
+    | string
+    | number
+    | null
+    | (string | number)[];
+
+/*
+|--------------------------------------------------------------------------
+| Props
+|--------------------------------------------------------------------------
+*/
 
 const props = withDefaults(
     defineProps<{
@@ -32,13 +50,31 @@ const props = withDefaults(
     },
 );
 
+/*
+|--------------------------------------------------------------------------
+| Emits
+|--------------------------------------------------------------------------
+*/
+
 const emit = defineEmits<{
     'update:modelValue': [value: number | null];
     change: [value: number | null];
 }>();
 
+/*
+|--------------------------------------------------------------------------
+| State
+|--------------------------------------------------------------------------
+*/
+
 const options = ref<SelectOption<number>[]>([]);
 const loading = ref(false);
+
+/*
+|--------------------------------------------------------------------------
+| Fetch Employees
+|--------------------------------------------------------------------------
+*/
 
 const fetchEmployees = async () => {
     loading.value = true;
@@ -81,10 +117,29 @@ const fetchEmployees = async () => {
     }
 };
 
-const handleUpdate = (value: number | null) => {
-    emit('update:modelValue', value);
-    emit('change', value);
+/*
+|--------------------------------------------------------------------------
+| Value Handling
+|--------------------------------------------------------------------------
+*/
+
+const handleUpdate = (
+    value: AppSelectValue,
+) => {
+    if (
+        value === null ||
+        typeof value === 'number'
+    ) {
+        emit('update:modelValue', value);
+        emit('change', value);
+    }
 };
+
+/*
+|--------------------------------------------------------------------------
+| Lifecycle
+|--------------------------------------------------------------------------
+*/
 
 onMounted(fetchEmployees);
 

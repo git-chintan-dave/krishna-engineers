@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
 import {
     Image,
     Trash2,
@@ -7,6 +7,7 @@ import {
     X,
 } from '@lucide/vue';
 
+// Props
 const props = withDefaults(
     defineProps<{
         modelValue?: File | null;
@@ -30,17 +31,20 @@ const props = withDefaults(
     },
 );
 
+// Emits
 const emit = defineEmits<{
     'update:modelValue': [value: File | null];
     change: [value: File | null];
     remove: [];
 }>();
 
+// State
 const inputRef = ref<HTMLInputElement | null>(null);
 const localPreview = ref<string | null>(null);
 const validationError = ref('');
 const imageRemoved = ref(false);
 
+// Computed
 const previewUrl = computed(() => {
     if (localPreview.value) {
         return localPreview.value;
@@ -53,10 +57,13 @@ const previewUrl = computed(() => {
     return props.currentImage ?? null;
 });
 
-const hasImage = computed(() =>
-    Boolean(previewUrl.value),
+const hasImage = computed(() => Boolean(previewUrl.value));
+
+const displayError = computed(
+    () => validationError.value || props.error,
 );
 
+// Actions
 const openPicker = () => {
     if (props.disabled) {
         return;
@@ -65,15 +72,21 @@ const openPicker = () => {
     inputRef.value?.click();
 };
 
-const validateFile = (
-    file: File,
-): string | null => {
+const revokePreview = () => {
+    if (!localPreview.value) {
+        return;
+    }
+
+    URL.revokeObjectURL(localPreview.value);
+    localPreview.value = null;
+};
+
+const validateFile = (file: File): string | null => {
     if (!file.type.startsWith('image/')) {
         return 'Please select a valid image file.';
     }
 
-    const maxBytes =
-        props.maxSize * 1024 * 1024;
+    const maxBytes = props.maxSize * 1024 * 1024;
 
     if (file.size > maxBytes) {
         return `Image size must not exceed ${props.maxSize} MB.`;
@@ -82,14 +95,9 @@ const validateFile = (
     return null;
 };
 
-const handleFileChange = (
-    event: Event,
-) => {
-    const target =
-        event.target as HTMLInputElement;
-
-    const file =
-        target.files?.[0] ?? null;
+const handleFileChange = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0] ?? null;
 
     validationError.value = '';
 
@@ -103,32 +111,18 @@ const handleFileChange = (
         validationError.value = error;
         target.value = '';
 
-        emit(
-            'update:modelValue',
-            null,
-        );
-
+        emit('update:modelValue', null);
         emit('change', null);
 
         return;
     }
 
-    if (localPreview.value) {
-        URL.revokeObjectURL(
-            localPreview.value,
-        );
-    }
+    revokePreview();
 
-    localPreview.value =
-        URL.createObjectURL(file);
-
+    localPreview.value = URL.createObjectURL(file);
     imageRemoved.value = false;
 
-    emit(
-        'update:modelValue',
-        file,
-    );
-
+    emit('update:modelValue', file);
     emit('change', file);
 };
 
@@ -137,32 +131,28 @@ const removeImage = () => {
         return;
     }
 
-    if (localPreview.value) {
-        URL.revokeObjectURL(
-            localPreview.value,
-        );
-
-        localPreview.value = null;
-    }
+    revokePreview();
 
     if (inputRef.value) {
         inputRef.value.value = '';
     }
 
     imageRemoved.value = true;
+    validationError.value = '';
 
-    emit(
-        'update:modelValue',
-        null,
-    );
-
+    emit('update:modelValue', null);
     emit('change', null);
     emit('remove');
 };
+
+// Lifecycle
+onBeforeUnmount(() => {
+    revokePreview();
+});
 </script>
 
 <template>
-    <div class="space-y-3">
+    <div class="min-w-0 space-y-3">
         <input
             ref="inputRef"
             type="file"
@@ -172,21 +162,22 @@ const removeImage = () => {
             @change="handleFileChange"
         />
 
-        <!-- Image thumbnail -->
+        <!-- Image preview -->
         <div
             v-if="hasImage"
-            class="relative flex h-36 w-48 items-center justify-center overflow-hidden rounded-lg border bg-muted/20"
+            class="relative flex h-36 w-full max-w-52 items-center justify-center overflow-hidden rounded-md border bg-muted/20 sm:w-52"
         >
             <img
                 :src="previewUrl ?? undefined"
                 alt="Selected image"
                 class="h-full w-full object-contain p-2"
+                loading="lazy"
             />
 
             <button
                 v-if="!disabled"
                 type="button"
-                class="absolute right-2 top-2 inline-flex size-7 items-center justify-center rounded-md border bg-background/90 shadow-sm transition hover:bg-background"
+                class="absolute top-2 right-2 inline-flex size-8 items-center justify-center rounded-md border bg-background/95 shadow-sm transition hover:bg-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                 :aria-label="removeLabel"
                 :title="removeLabel"
                 @click="removeImage"
@@ -199,34 +190,29 @@ const removeImage = () => {
         <button
             v-if="!hasImage"
             type="button"
-            class="flex h-36 w-48 flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/20 px-4 text-center transition hover:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-50"
+            class="flex h-36 w-full max-w-52 flex-col items-center justify-center gap-2 rounded-md border border-dashed bg-muted/20 px-4 text-center transition hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-52"
             :disabled="disabled"
             @click="openPicker"
         >
             <div
-                class="flex size-10 items-center justify-center rounded-full border bg-background"
+                class="flex size-10 items-center justify-center rounded-md border bg-background"
             >
                 <Image
                     class="size-5 text-muted-foreground"
+                    aria-hidden="true"
                 />
             </div>
 
             <div class="space-y-1">
-                <p
-                    class="text-sm font-medium"
-                >
+                <p class="text-sm font-medium">
                     {{ placeholder }}
                 </p>
 
-                <p
-                    class="text-xs text-muted-foreground"
-                >
+                <p class="text-xs text-muted-foreground">
                     PNG, JPG or WebP
                 </p>
 
-                <p
-                    class="text-xs text-muted-foreground"
-                >
+                <p class="text-xs text-muted-foreground">
                     Max {{ maxSize }} MB
                 </p>
             </div>
@@ -235,11 +221,11 @@ const removeImage = () => {
         <!-- Image actions -->
         <div
             v-else-if="!disabled"
-            class="flex items-center gap-2"
+            class="flex flex-wrap items-center gap-2"
         >
             <button
                 type="button"
-                class="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition hover:bg-muted"
+                class="inline-flex min-h-9 items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                 @click="openPicker"
             >
                 <Upload class="size-4" />
@@ -248,7 +234,7 @@ const removeImage = () => {
 
             <button
                 type="button"
-                class="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium text-destructive transition hover:bg-destructive/10"
+                class="inline-flex min-h-9 items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium text-destructive transition hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                 @click="removeImage"
             >
                 <Trash2 class="size-4" />
@@ -256,11 +242,12 @@ const removeImage = () => {
             </button>
         </div>
 
+        <!-- Error -->
         <p
-            v-if="error || validationError"
+            v-if="displayError"
             class="text-sm text-destructive"
         >
-            {{ validationError || error }}
+            {{ displayError }}
         </p>
     </div>
 </template>

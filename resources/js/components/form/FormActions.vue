@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ArrowLeft, LoaderCircle, Save } from '@lucide/vue';
+import {ArrowLeft, LoaderCircle, Save} from '@lucide/vue';
 
-import { Button } from '@/components/ui/button';
+import {Button} from '@/components/ui/button';
 
 /*
 |--------------------------------------------------------------------------
@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 |--------------------------------------------------------------------------
 */
 
-withDefaults(
+const props = withDefaults(
     defineProps<{
         submitLabel?: string;
         cancelLabel?: string;
@@ -39,7 +39,12 @@ const emit = defineEmits<{
     <div
         class="flex min-w-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end"
     >
-        <!-- Cancel -->
+        <!--
+        |--------------------------------------------------------------------------
+        | Cancel
+        |--------------------------------------------------------------------------
+        -->
+
         <Button
             type="button"
             variant="outline"
@@ -55,7 +60,12 @@ const emit = defineEmits<{
             {{ cancelLabel }}
         </Button>
 
-        <!-- Submit -->
+        <!--
+        |--------------------------------------------------------------------------
+        | Submit
+        |--------------------------------------------------------------------------
+        -->
+
         <Button
             type="submit"
             class="w-full shrink-0 cursor-pointer sm:w-auto"

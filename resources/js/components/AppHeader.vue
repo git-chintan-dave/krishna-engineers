@@ -1,19 +1,38 @@
 <script setup lang="ts">
-import {Link, usePage} from '@inertiajs/vue3';
-import {ChevronRight, Menu, Search,} from '@lucide/vue';
-import {computed, reactive, ref, watch,} from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import {
+    ChevronRight,
+    Menu,
+} from '@lucide/vue';
+import {
+    computed,
+    reactive,
+    ref,
+    watch,
+} from 'vue';
 
 import AppLogo from '@/components/AppLogo.vue';
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 
-import {Avatar, AvatarFallback, AvatarImage,} from '@/components/ui/avatar';
+import {
+    Avatar,
+    AvatarFallback,
+    AvatarImage,
+} from '@/components/ui/avatar';
 
-import {Button} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 
-import {Collapsible, CollapsibleContent, CollapsibleTrigger,} from '@/components/ui/collapsible';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 
-import {DropdownMenu, DropdownMenuContent, DropdownMenuTrigger,} from '@/components/ui/dropdown-menu';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 import {
     NavigationMenu,
@@ -25,21 +44,44 @@ import {
     navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
 
-import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,} from '@/components/ui/sheet';
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from '@/components/ui/sheet';
 
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '@/components/ui/tooltip';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 import UserMenuContent from '@/components/UserMenuContent.vue';
 
-import {useCurrentUrl} from '@/composables/useCurrentUrl';
-import {getInitials} from '@/composables/useInitials';
-import {toUrl} from '@/lib/utils';
+import { useCurrentUrl } from '@/composables/useCurrentUrl';
+import { getInitials } from '@/composables/useInitials';
+import { toUrl } from '@/lib/utils';
 
-import {mainNavItems, rightNavItems} from '@/config/navigation';
+import {
+    mainNavItems,
+    rightNavItems,
+} from '@/config/navigation';
 
-import {dashboard} from '@/routes';
+import { dashboard } from '@/routes';
 
-import type {BreadcrumbItem, NavItem,} from '@/types';
+import type {
+    BreadcrumbItem,
+    NavItem,
+} from '@/types';
+
+/*
+|--------------------------------------------------------------------------
+| Props
+|--------------------------------------------------------------------------
+*/
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
@@ -52,11 +94,19 @@ const props = withDefaults(
     },
 );
 
+/*
+|--------------------------------------------------------------------------
+| Page
+|--------------------------------------------------------------------------
+*/
+
 const page = usePage();
 
 const auth = computed(() => page.props.auth);
 
-const { isCurrentUrl, isCurrentOrParentUrl } = useCurrentUrl();
+const {
+    isCurrentOrParentUrl,
+} = useCurrentUrl();
 
 /*
 |--------------------------------------------------------------------------
@@ -88,7 +138,7 @@ const isItemActive = (item: NavItem): boolean => {
 
 /*
 |--------------------------------------------------------------------------
-| Mobile navigation state
+| Mobile Navigation State
 |--------------------------------------------------------------------------
 |
 | Each mobile group has its own open state.
@@ -139,9 +189,11 @@ watch(
 
 /*
 |--------------------------------------------------------------------------
-| Mobile sheet state
+| Mobile Menu State
 |--------------------------------------------------------------------------
 */
+
+const mobileMenuState = ref(false);
 
 const mobileMenuOpen = computed({
     get: () => mobileMenuState.value,
@@ -150,11 +202,9 @@ const mobileMenuOpen = computed({
     },
 });
 
-const mobileMenuState = ref(false);
-
 /*
 |--------------------------------------------------------------------------
-| Close mobile menu after Inertia navigation
+| Close Mobile Menu After Navigation
 |--------------------------------------------------------------------------
 */
 
@@ -167,16 +217,28 @@ watch(
 </script>
 
 <template>
-    <div>
-        <!-- Header -->
-        <div
-            class="border-b border-sidebar-border/80"
+    <div
+        class="w-full min-w-0 [scrollbar-gutter:stable]"
+    >
+        <!--
+        |--------------------------------------------------------------------------
+        | Main Header
+        |--------------------------------------------------------------------------
+        -->
+
+        <header
+            class="h-16 w-full border-b border-sidebar-border/80"
         >
             <div
-                class="mx-auto flex h-16 items-center px-4 md:max-w-7xl"
+                class="mx-auto flex h-16 w-full min-w-0 items-center px-4 md:max-w-7xl"
             >
-                <!-- Mobile / Tablet Menu -->
-                <div class="lg:hidden">
+                <!--
+                |--------------------------------------------------------------------------
+                | Mobile / Tablet Menu
+                |--------------------------------------------------------------------------
+                -->
+
+                <div class="shrink-0 lg:hidden">
                     <Sheet v-model:open="mobileMenuOpen">
                         <SheetTrigger as-child>
                             <Button
@@ -204,6 +266,7 @@ watch(
                             </SheetTitle>
 
                             <!-- Mobile Logo -->
+
                             <SheetHeader
                                 class="shrink-0 flex-row justify-start space-y-0 text-left"
                             >
@@ -211,10 +274,12 @@ watch(
                             </SheetHeader>
 
                             <!-- Navigation -->
+
                             <div
                                 class="flex min-h-0 flex-1 flex-col"
                             >
-                                <!-- Scrollable navigation -->
+                                <!-- Scrollable Navigation -->
+
                                 <nav
                                     class="min-h-0 flex-1 overflow-y-auto py-6 pr-2 pt-0"
                                     aria-label="Mobile navigation"
@@ -224,7 +289,8 @@ watch(
                                             v-for="item in mainNavItems"
                                             :key="item.title"
                                         >
-                                            <!-- Direct navigation item -->
+                                            <!-- Direct Navigation Item -->
+
                                             <Link
                                                 v-if="
                                                     !hasChildren(item) &&
@@ -250,7 +316,8 @@ watch(
                                                 </span>
                                             </Link>
 
-                                            <!-- Navigation group -->
+                                            <!-- Navigation Group -->
+
                                             <Collapsible
                                                 v-else
                                                 :open="
@@ -265,7 +332,8 @@ watch(
                                                         )
                                                 "
                                             >
-                                                <!-- Group trigger -->
+                                                <!-- Group Trigger -->
+
                                                 <CollapsibleTrigger
                                                     as-child
                                                 >
@@ -296,7 +364,8 @@ watch(
                                                     </button>
                                                 </CollapsibleTrigger>
 
-                                                <!-- Group children -->
+                                                <!-- Group Children -->
+
                                                 <CollapsibleContent>
                                                     <div
                                                         class="ml-3 space-y-1 border-l pl-3"
@@ -342,7 +411,8 @@ watch(
                                     </div>
                                 </nav>
 
-                                <!-- External links -->
+                                <!-- External Links -->
+
                                 <div
                                     v-if="rightNavItems.length"
                                     class="shrink-0 space-y-1 border-t pt-4"
@@ -372,17 +442,27 @@ watch(
                     </Sheet>
                 </div>
 
-                <!-- Logo -->
+                <!--
+                |--------------------------------------------------------------------------
+                | Logo
+                |--------------------------------------------------------------------------
+                -->
+
                 <Link
                     :href="dashboard()"
-                    class="flex items-center gap-x-2"
+                    class="flex shrink-0 items-center gap-x-2"
                 >
                     <AppLogo />
                 </Link>
 
-                <!-- Desktop Navigation -->
+                <!--
+                |--------------------------------------------------------------------------
+                | Desktop Navigation
+                |--------------------------------------------------------------------------
+                -->
+
                 <div
-                    class="hidden h-full lg:flex lg:flex-1"
+                    class="hidden h-full min-w-0 flex-1 lg:flex"
                 >
                     <NavigationMenu
                         class="ml-6 flex h-full items-stretch xl:ml-10"
@@ -393,9 +473,10 @@ watch(
                             <NavigationMenuItem
                                 v-for="item in mainNavItems"
                                 :key="item.title"
-                                class="relative flex h-full items-center"
+                                class="relative flex h-full shrink-0 items-center"
                             >
-                                <!-- Direct navigation -->
+                                <!-- Direct Navigation -->
+
                                 <Link
                                     v-if="
                                         !hasChildren(item) &&
@@ -426,7 +507,8 @@ watch(
                                     />
                                 </Link>
 
-                                <!-- Navigation group -->
+                                <!-- Navigation Group -->
+
                                 <template v-else>
                                     <NavigationMenuTrigger
                                         :class="[
@@ -491,7 +573,8 @@ watch(
                                         </ul>
                                     </NavigationMenuContent>
 
-                                    <!-- Active group indicator -->
+                                    <!-- Active Group Indicator -->
+
                                     <span
                                         v-if="isItemActive(item)"
                                         class="absolute inset-x-0 bottom-0 h-0.5 bg-black dark:bg-white"
@@ -503,76 +586,70 @@ watch(
                     </NavigationMenu>
                 </div>
 
-                <!-- Right side -->
+                <!--
+                |--------------------------------------------------------------------------
+                | Right Side
+                |--------------------------------------------------------------------------
+                -->
+
                 <div
-                    class="ml-auto flex items-center space-x-2"
+                    class="ml-auto flex shrink-0 items-center space-x-2"
                 >
+                    <!-- External Links -->
+
                     <div
-                        class="relative flex items-center space-x-1"
+                        v-if="rightNavItems.length"
+                        class="hidden items-center space-x-1 lg:flex"
                     >
-                        <!-- External links -->
-                        <div
-                            class="hidden space-x-1 lg:flex"
+                        <template
+                            v-for="item in rightNavItems"
+                            :key="item.title"
                         >
-                            <template
-                                v-for="item in rightNavItems"
-                                :key="item.title"
+                            <TooltipProvider
+                                :delay-duration="0"
                             >
-                                <TooltipProvider
-                                    :delay-duration="0"
-                                >
-                                    <Tooltip>
-                                        <TooltipTrigger
+                                <Tooltip>
+                                    <TooltipTrigger as-child>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
                                             as-child
+                                            class="group size-9 cursor-pointer"
                                         >
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                as-child
-                                                class="group size-9 cursor-pointer"
+                                            <a
+                                                :href="
+                                                    toUrl(item.href)
+                                                "
+                                                target="_blank"
+                                                rel="noopener noreferrer"
                                             >
-                                                <a
-                                                    :href="
-                                                        toUrl(
-                                                            item.href,
-                                                        )
-                                                    "
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
+                                                <span
+                                                    class="sr-only"
                                                 >
-                                                    <span
-                                                        class="sr-only"
-                                                    >
-                                                        {{
-                                                            item.title
-                                                        }}
-                                                    </span>
+                                                    {{ item.title }}
+                                                </span>
 
-                                                    <component
-                                                        :is="
-                                                            item.icon
-                                                        "
-                                                        class="size-5 opacity-80 group-hover:opacity-100"
-                                                        aria-hidden="true"
-                                                    />
-                                                </a>
-                                            </Button>
-                                        </TooltipTrigger>
+                                                <component
+                                                    :is="item.icon"
+                                                    class="size-5 opacity-80 group-hover:opacity-100"
+                                                    aria-hidden="true"
+                                                />
+                                            </a>
+                                        </Button>
+                                    </TooltipTrigger>
 
-                                        <TooltipContent>
-                                            <p>
-                                                {{
-                                                    item.title
-                                                }}
-                                            </p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            </template>
-                        </div>
+                                    <TooltipContent>
+                                        <p>
+                                            {{ item.title }}
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </template>
                     </div>
 
-                    <!-- User menu -->
+                    <!-- User Menu -->
+
                     <DropdownMenu>
                         <DropdownMenuTrigger as-child>
                             <Button
@@ -584,15 +661,9 @@ watch(
                                     class="size-8 overflow-hidden rounded-full"
                                 >
                                     <AvatarImage
-                                        v-if="
-                                            auth.user.avatar
-                                        "
-                                        :src="
-                                            auth.user.avatar
-                                        "
-                                        :alt="
-                                            auth.user.name
-                                        "
+                                        v-if="auth.user.avatar"
+                                        :src="auth.user.avatar"
+                                        :alt="auth.user.name"
                                     />
 
                                     <AvatarFallback
@@ -623,18 +694,27 @@ watch(
                     </DropdownMenu>
                 </div>
             </div>
-        </div>
+        </header>
 
-        <!-- Breadcrumbs -->
+        <!--
+        |--------------------------------------------------------------------------
+        | Breadcrumbs
+        |--------------------------------------------------------------------------
+        |
+        | Keep this row mounted at all times so navigation between
+        | pages never changes the vertical position of the content.
+        |
+        -->
+
         <div
-            v-if="props.breadcrumbs.length > 1"
-            class="flex w-full border-b border-sidebar-border/70"
+            class="h-12 w-full border-b border-sidebar-border/70"
         >
             <div
-                class="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl"
+                class="mx-auto flex h-12 w-full min-w-0 items-center px-4 text-neutral-500 md:max-w-7xl"
             >
                 <Breadcrumbs
-                    :breadcrumbs="breadcrumbs"
+                    v-if="props.breadcrumbs.length > 1"
+                    :breadcrumbs="props.breadcrumbs"
                 />
             </div>
         </div>

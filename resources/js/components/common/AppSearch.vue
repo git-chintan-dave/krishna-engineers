@@ -3,12 +3,7 @@ import { Search } from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 
-/*
-|--------------------------------------------------------------------------
-| Props
-|--------------------------------------------------------------------------
-*/
-
+// Props
 withDefaults(
     defineProps<{
         placeholder?: string;
@@ -30,36 +25,23 @@ withDefaults(
     },
 );
 
-/*
-|--------------------------------------------------------------------------
-| Model
-|--------------------------------------------------------------------------
-*/
-
+// Model
 const model = defineModel<string>({
     default: '',
 });
 
-/*
-|--------------------------------------------------------------------------
-| Events
-|--------------------------------------------------------------------------
-*/
-
+// Emits
 const emit = defineEmits<{
     search: [];
 }>();
 
-/*
-|--------------------------------------------------------------------------
-| Actions
-|--------------------------------------------------------------------------
-*/
-
+// Actions
 const handleKeydown = (event: KeyboardEvent) => {
-    if (event.key === 'Enter') {
-        emit('search');
+    if (event.key !== 'Enter') {
+        return;
     }
+
+    emit('search');
 };
 </script>
 
@@ -75,6 +57,7 @@ const handleKeydown = (event: KeyboardEvent) => {
         :name="name"
         :id="id"
         :icon="Search"
+        aria-label="Search"
         @keydown="handleKeydown"
     />
 </template>

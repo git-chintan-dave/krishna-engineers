@@ -51,7 +51,10 @@ const emit = defineEmits<{
 
 const options = ref<SelectOption<number>[]>([]);
 
-const { loading, sectionSizes } = useLookup();
+const {
+    loading,
+    sectionSizes,
+} = useLookup();
 
 /*
 |--------------------------------------------------------------------------
@@ -87,14 +90,8 @@ onMounted(loadOptions);
 
 watch(
     () => props.sectionId,
-    async (sectionId) => {
+    async () => {
         emit('update:modelValue', null);
-
-        // Section was cleared.
-        if (!sectionId) {
-            options.value = [];
-            return;
-        }
 
         await loadOptions();
     },
@@ -103,14 +100,14 @@ watch(
 
 <template>
     <AppSelect
-        :model-value="props.modelValue"
+        :model-value="modelValue"
         :options="options"
-        :placeholder="props.placeholder"
-        :searchable="props.searchable"
-        :clearable="props.clearable"
-        :disabled="props.disabled"
+        :placeholder="placeholder"
+        :searchable="searchable"
+        :clearable="clearable"
+        :disabled="disabled"
         :loading="loading"
-        :error="props.error"
+        :error="error"
         @update:model-value="
             emit(
                 'update:modelValue',

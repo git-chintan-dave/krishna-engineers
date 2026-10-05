@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 
 withDefaults(
     defineProps<{
-        createUrl: Href;
+        createUrl?: Href;
         createLabel?: string;
 
         importUrl?: Href;
@@ -74,15 +74,15 @@ const emit = defineEmits<{
         <Button
             v-if="selectedCount > 0"
             v-confirm="{
-                action: () => emit('deleteSelected'),
-                options: {
-                    title:
-                        deleteTitle ||
-                        `Delete selected ${resourceLabel}?`,
-                    description: deleteDescription,
-                    confirmText: deleteConfirmLabel,
-                },
-            }"
+            action: () => emit('deleteSelected'),
+            options: {
+                title:
+                    deleteTitle ||
+                    `Delete selected ${resourceLabel}?`,
+                description: deleteDescription,
+                confirmText: deleteConfirmLabel,
+            },
+        }"
             type="button"
             variant="destructive"
             size="sm"
@@ -95,15 +95,15 @@ const emit = defineEmits<{
             />
 
             <span class="whitespace-nowrap">
-                Delete selected
+            Delete selected
 
-                <span
-                    class="ml-1 opacity-80"
-                    aria-hidden="true"
-                >
-                    ({{ selectedCount }})
-                </span>
+            <span
+                class="ml-1 opacity-80"
+                aria-hidden="true"
+            >
+                ({{ selectedCount }})
             </span>
+        </span>
         </Button>
 
         <!--
@@ -129,8 +129,8 @@ const emit = defineEmits<{
                 />
 
                 <span class="whitespace-nowrap">
-                    {{ importLabel }}
-                </span>
+                {{ importLabel }}
+            </span>
             </Link>
         </Button>
 
@@ -157,8 +157,8 @@ const emit = defineEmits<{
                 />
 
                 <span class="whitespace-nowrap">
-                    {{ exportLabel }}
-                </span>
+                {{ exportLabel }}
+            </span>
             </Link>
         </Button>
 
@@ -169,6 +169,7 @@ const emit = defineEmits<{
         -->
 
         <Button
+            v-if="createUrl"
             as-child
             size="sm"
             class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
@@ -183,8 +184,8 @@ const emit = defineEmits<{
                 />
 
                 <span class="whitespace-nowrap">
-                    {{ createLabel }}
-                </span>
+                {{ createLabel }}
+            </span>
             </Link>
         </Button>
     </div>

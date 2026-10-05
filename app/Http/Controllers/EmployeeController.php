@@ -117,15 +117,7 @@ class EmployeeController extends Controller
 
         User::query()
             ->whereIn('id', $request->validated('ids'))
-            ->where(function (Builder $query): void {
-                $query
-                    ->whereNull('role')
-                    ->orWhere(
-                        'role',
-                        '!=',
-                        UserRole::SUPER_ADMIN->value,
-                    );
-            })
+            ->where('role', '!=', UserRole::SUPER_ADMIN->value)
             ->delete();
 
         return $this->successResponse('bulk_deleted');
@@ -140,26 +132,19 @@ class EmployeeController extends Controller
             [
                 'name',
                 'employee_code',
-                'phone_number',
-                'alternate_phone_number',
-                'email',
-                'aadhar_number',
             ],
         )
             ->when(
                 $filters['role'] ?? null,
-                fn (Builder $query, string $role): Builder =>
-                $query->where('role', $role),
+                fn (Builder $query, string $role): Builder => $query->where('role', $role),
             )
             ->when(
                 $filters['shift'] ?? null,
-                fn (Builder $query, string $shift): Builder =>
-                $query->where('shift', $shift),
+                fn (Builder $query, string $shift): Builder => $query->where('shift', $shift),
             )
             ->when(
                 $filters['status'] ?? null,
-                fn (Builder $query, string $status): Builder =>
-                $query->where('status', $status),
+                fn (Builder $query, string $status): Builder => $query->where('status', $status),
             );
     }
 }

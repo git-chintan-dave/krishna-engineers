@@ -17,12 +17,7 @@ class UserResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            /*
-            |--------------------------------------------------------------------------
-            | Employee Information
-            |--------------------------------------------------------------------------
-            */
-
+            // Employee Information
             'id' => $this->id,
             'uuid' => $this->uuid,
             'name' => $this->name,
@@ -30,47 +25,24 @@ class UserResource extends JsonResource
             'phone_number' => $this->phone_number,
             'alternate_phone_number' => $this->alternate_phone_number,
             'email' => $this->email,
-            'joining_date' => $this->joining_date,
+            'joining_date' => $this->joining_date?->format('d M Y'),
 
-            /*
-            |--------------------------------------------------------------------------
-            | Employee Configuration
-            |--------------------------------------------------------------------------
-            */
-
+            // Employee Configuration
             'role' => $this->role?->value,
             'role_label' => $this->role?->label(),
-
             'shift' => $this->shift?->value,
             'shift_label' => $this->shift?->label(),
 
-            /*
-            |--------------------------------------------------------------------------
-            | Salary Configuration
-            |--------------------------------------------------------------------------
-            */
-
+            // Salary Configuration
             'salary' => $this->salary,
             'incentive_per_day' => $this->incentive_per_day,
             'deduction_per_day' => $this->deduction_per_day,
 
-            /*
-            |--------------------------------------------------------------------------
-            | Account Status
-            |--------------------------------------------------------------------------
-            */
+            // Account Status
+            'status' => $this->status?->value,
+            'status_label' => $this->status?->label(),
 
-            'status' => $this->status->value,
-            'status_label' => $this->status->label(),
-            'aadhar_number' => $this->aadhar_number,
-
-            /*
-            |--------------------------------------------------------------------------
-            | Timestamps
-            |--------------------------------------------------------------------------
-            */
-
-            'email_verified_at' => $this->email_verified_at?->toISOString(),
+            // Timestamps
             'created_at' => $this->created_at?->format('d M Y'),
             'updated_at' => $this->updated_at?->format('d M Y'),
         ];

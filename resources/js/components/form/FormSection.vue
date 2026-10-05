@@ -18,10 +18,13 @@ withDefaults(
 </script>
 
 <template>
-    <section
-        class="min-w-0 overflow-hidden rounded-lg border bg-background"
-    >
-        <!-- Header -->
+    <section class="w-full min-w-0 overflow-hidden rounded-lg border bg-background">
+        <!--
+        |--------------------------------------------------------------------------
+        | Header
+        |--------------------------------------------------------------------------
+        -->
+
         <div
             v-if="title || description"
             class="border-b px-4 py-4 md:px-6"
@@ -41,8 +44,13 @@ withDefaults(
             </p>
         </div>
 
-        <!-- Content -->
-        <div class="min-w-0 p-4 md:p-6">
+        <!--
+        |--------------------------------------------------------------------------
+        | Content
+        |--------------------------------------------------------------------------
+        -->
+
+        <div class="w-full min-w-0 p-4 md:p-6">
             <slot />
         </div>
     </section>

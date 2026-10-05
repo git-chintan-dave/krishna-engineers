@@ -1,29 +1,25 @@
 ﻿<script setup lang="ts">
-import {router, useForm} from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {employeePage} from '@/config/employees';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { employeePage } from '@/config/employees';
 import EmployeeForm from '@/pages/Employees/components/EmployeeForm.vue';
-import {index as employees, update as updateEmployee,} from '@/routes/employees';
-import type {Employee, EmployeeFormData,} from '@/types/employee';
+import {
+    index as employees,
+    update as updateEmployee,
+} from '@/routes/employees';
+import type {
+    Employee,
+    EmployeeFormData,
+} from '@/types/employee';
 
-/*
-|--------------------------------------------------------------------------
-| Props
-|--------------------------------------------------------------------------
-*/
-
+// Props
 const props = defineProps<{
     employee: Employee;
 }>();
 
-/*
-|--------------------------------------------------------------------------
-| Layout
-|--------------------------------------------------------------------------
-*/
-
+// Layout
 defineOptions({
     layout: {
         breadcrumbs: useCrudBreadcrumbs('edit', {
@@ -33,17 +29,13 @@ defineOptions({
     },
 });
 
-/*
-|--------------------------------------------------------------------------
-| Form
-|--------------------------------------------------------------------------
-*/
-
+// Form
 const form = useForm<EmployeeFormData>({
     name: props.employee.name,
     employee_code: props.employee.employee_code,
     phone_number: props.employee.phone_number ?? '',
-    alternate_phone_number: props.employee.alternate_phone_number ?? '',
+    alternate_phone_number:
+        props.employee.alternate_phone_number ?? '',
     email: props.employee.email ?? '',
     joining_date: props.employee.joining_date ?? '',
     password: '',
@@ -58,21 +50,14 @@ const form = useForm<EmployeeFormData>({
         props.employee.deduction_per_day,
     ),
     status: props.employee.status === 'active',
-    aadhar_number: props.employee.aadhar_number,
+    aadhar_number: '',
 });
 
-/*
-|--------------------------------------------------------------------------
-| Actions
-|--------------------------------------------------------------------------
-*/
-
+// Actions
 const handleSubmit = () => {
     form.transform((data) => ({
         ...data,
-        status: data.status
-            ? 'active'
-            : 'inactive',
+        status: data.status ? 'active' : 'inactive',
     })).put(
         updateEmployee(props.employee.uuid).url,
     );
@@ -94,7 +79,9 @@ const handleCancel = () => {
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="employeePage.form.editSubmitLabel"
+            :submit-label="
+                employeePage.form.editSubmitLabel
+            "
             :is-edit="true"
             @submit="handleSubmit"
             @cancel="handleCancel"

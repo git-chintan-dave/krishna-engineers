@@ -21,7 +21,7 @@ return new class extends Migration
             // Employee identity
             $table->string('name');
             $table->string('employee_code')->unique();
-            $table->string('phone_number', 10)->unique();
+            $table->string('phone_number', 10)->unique()->nullable();
             $table->string('alternate_phone_number', 10)->nullable();
             $table->string('email')->nullable();
             $table->date('joining_date')->nullable();
@@ -30,9 +30,7 @@ return new class extends Migration
             $table->string('password');
 
             // Employee configuration
-            $table->enum('role', array_column(UserRole::cases(), 'value'))
-                ->nullable()
-                ->index();
+            $table->enum('role', array_column(UserRole::cases(), 'value'))->index();
 
             $table->enum('shift', array_column(UserShift::cases(), 'value'))
                 ->nullable()
@@ -43,11 +41,10 @@ return new class extends Migration
             $table->decimal('incentive_per_day', 12, 2)->default(0);
             $table->decimal('deduction_per_day', 12, 2)->default(0);
 
-            //
-            $table->string('aadhar_number')->nullable()->comment('Aadhar card number');
+            // Employee identification
+            $table->string('aadhar_number', 12)->nullable();
 
             // Account status
-            $table->timestamp('email_verified_at')->nullable();
             $table->enum('status', array_column(Status::cases(), 'value'))
                 ->default(Status::ACTIVE->value)
                 ->index();

@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { FlexRender } from '@tanstack/vue-table';
+import {computed} from 'vue';
+import {FlexRender} from '@tanstack/vue-table';
 import {
     ChevronLeft,
     ChevronRight,
 } from '@lucide/vue';
-import { computed } from 'vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import { Button } from '@/components/ui/button';
+import {Button} from '@/components/ui/button';
 import {
     Table as UiTable,
     TableBody,
@@ -28,11 +28,14 @@ type TableInstance = {
     getRowModel: () => {
         rows: any[];
     };
+
     getCanPreviousPage: () => boolean;
     getCanNextPage: () => boolean;
     getPageCount: () => number;
+
     previousPage: () => void;
     nextPage: () => void;
+
     setPageIndex: (pageIndex: number) => void;
     setPageSize: (pageSize: number) => void;
 };
@@ -50,13 +53,17 @@ type PaginationItem =
 type Props = {
     table: TableInstance;
     columnsCount: number;
+
     total: number;
     pageIndex: number;
     pageSize: number;
+
     selectedCount?: number;
     loading?: boolean;
+
     pageSizeOptions?: number[];
     columnWidths?: Record<string, string>;
+
     emptyText?: string;
     itemLabel?: string;
 };
@@ -115,7 +122,9 @@ const showingFrom = computed(() => {
     }
 
     return (
-        props.pageIndex * props.pageSize + 1
+        props.pageIndex *
+        props.pageSize +
+        1
     );
 });
 
@@ -125,7 +134,8 @@ const showingTo = computed(() => {
     }
 
     return Math.min(
-        (props.pageIndex + 1) * props.pageSize,
+        (props.pageIndex + 1) *
+        props.pageSize,
         props.total,
     );
 });
@@ -136,71 +146,76 @@ const showingTo = computed(() => {
 |--------------------------------------------------------------------------
 */
 
-const paginationItems = computed<PaginationItem[]>(
-    () => {
-        const pageCount =
-            props.table.getPageCount();
-        const currentPage = props.pageIndex + 1;
+const paginationItems = computed<
+    PaginationItem[]
+>(() => {
+    const pageCount =
+        props.table.getPageCount();
 
-        if (pageCount <= 7) {
-            return Array.from(
-                { length: pageCount },
-                (_, index) => ({
-                    type: 'page' as const,
-                    page: index + 1,
-                }),
-            );
-        }
+    const currentPage =
+        props.pageIndex + 1;
 
-        const items: PaginationItem[] = [];
-
-        const addPage = (page: number) => {
-            items.push({
-                type: 'page',
-                page,
-            });
-        };
-
-        const addEllipsis = (key: string) => {
-            items.push({
-                type: 'ellipsis',
-                key,
-            });
-        };
-
-        addPage(1);
-
-        if (currentPage > 4) {
-            addEllipsis('start');
-        }
-
-        const startPage = Math.max(
-            2,
-            currentPage - 1,
+    if (pageCount <= 7) {
+        return Array.from(
+            {length: pageCount},
+            (_, index) => ({
+                type: 'page' as const,
+                page: index + 1,
+            }),
         );
+    }
 
-        const endPage = Math.min(
-            pageCount - 1,
-            currentPage + 1,
-        );
+    const items: PaginationItem[] = [];
 
-        for (
-            let page = startPage;
-            page <= endPage;
-            page++
-        ) {
-            addPage(page);
-        }
+    const addPage = (page: number) => {
+        items.push({
+            type: 'page',
+            page,
+        });
+    };
 
-        if (currentPage < pageCount - 3) {
-            addEllipsis('end');
-        }
+    const addEllipsis = (key: string) => {
+        items.push({
+            type: 'ellipsis',
+            key,
+        });
+    };
 
-        addPage(pageCount);
+    addPage(1);
 
-        return items;
-    },
-);
+    if (currentPage > 4) {
+        addEllipsis('start');
+    }
+
+    const startPage = Math.max(
+        2,
+        currentPage - 1,
+    );
+
+    const endPage = Math.min(
+        pageCount - 1,
+        currentPage + 1,
+    );
+
+    for (
+        let page = startPage;
+        page <= endPage;
+        page++
+    ) {
+        addPage(page);
+    }
+
+    if (
+        currentPage <
+        pageCount - 3
+    ) {
+        addEllipsis('end');
+    }
+
+    addPage(pageCount);
+
+    return items;
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -213,10 +228,11 @@ const loadingColumnIds = computed(() => {
         props.table.getHeaderGroups()[0];
 
     return Array.from(
-        { length: props.columnsCount },
+        {length: props.columnsCount},
         (_, index) =>
-            firstHeaderGroup?.headers[index]?.column
-                ?.id ?? '',
+            firstHeaderGroup
+                ?.headers[index]
+                ?.column?.id ?? '',
     );
 });
 
@@ -226,8 +242,12 @@ const loadingColumnIds = computed(() => {
 |--------------------------------------------------------------------------
 */
 
-const getColumnClass = (columnId: string) => {
-    return props.columnWidths[columnId] ?? '';
+const getColumnClass = (
+    columnId: string,
+) => {
+    return (
+        props.columnWidths[columnId] ?? ''
+    );
 };
 
 /*
@@ -266,22 +286,15 @@ const handlePageSizeChange = (
 
 <template>
     <div
-        class="min-w-0 w-full overflow-hidden rounded-lg border bg-background"
+        class="w-full min-w-0 overflow-hidden rounded-lg border bg-background"
     >
-        <!--
-        |--------------------------------------------------------------------------
-        | Table
-        |--------------------------------------------------------------------------
-        -->
-
-        <div class="relative min-w-0 w-full overflow-x-auto">
-            <UiTable class="w-full min-w-max table-fixed">
-                <!--
-                |--------------------------------------------------------------------------
-                | Header
-                |--------------------------------------------------------------------------
-                -->
-
+        <!-- Table -->
+        <div
+            class="w-full min-w-0 overflow-x-auto overscroll-x-contain"
+        >
+            <UiTable
+                class="w-full min-w-[max-content] table-fixed"
+            >
                 <TableHeader>
                     <TableRow
                         v-for="headerGroup in table.getHeaderGroups()"
@@ -308,15 +321,8 @@ const handlePageSizeChange = (
                     </TableRow>
                 </TableHeader>
 
-                <!--
-                |--------------------------------------------------------------------------
-                | Body
-                |--------------------------------------------------------------------------
-                -->
-
                 <TableBody>
                     <!-- Loading -->
-
                     <template v-if="loading">
                         <TableRow
                             v-for="row in 5"
@@ -324,7 +330,8 @@ const handlePageSizeChange = (
                         >
                             <TableCell
                                 v-for="(
-                                    columnId, index
+                                    columnId,
+                                    index
                                 ) in loadingColumnIds"
                                 :key="index"
                                 class="px-4 py-3"
@@ -342,11 +349,11 @@ const handlePageSizeChange = (
                     </template>
 
                     <!-- Data -->
-
                     <template
                         v-else-if="
-                            table.getRowModel().rows
-                                .length
+                            table
+                                .getRowModel()
+                                .rows.length
                         "
                     >
                         <TableRow
@@ -377,7 +384,6 @@ const handlePageSizeChange = (
                     </template>
 
                     <!-- Empty -->
-
                     <TableRow v-else>
                         <TableCell
                             :colspan="columnsCount"
@@ -394,42 +400,28 @@ const handlePageSizeChange = (
             </UiTable>
         </div>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Footer
-        |--------------------------------------------------------------------------
-        -->
-
+        <!-- Pagination -->
         <div
             class="border-t px-4 py-3 sm:px-5"
         >
             <div class="flex flex-col gap-4">
-                <!--
-                |--------------------------------------------------------------------------
-                | Summary
-                |--------------------------------------------------------------------------
-                -->
-
+                <!-- Summary -->
                 <div class="min-w-0">
                     <p
                         class="break-words text-sm text-muted-foreground"
                     >
                         Showing
-
                         <span
                             class="font-medium text-foreground"
                         >
                             {{ showingFrom }}–{{ showingTo }}
                         </span>
-
                         of
-
                         <span
                             class="font-medium text-foreground"
                         >
                             {{ total }}
                         </span>
-
                         {{ itemLabel }}
 
                         <template
@@ -450,21 +442,11 @@ const handlePageSizeChange = (
                     </p>
                 </div>
 
-                <!--
-                |--------------------------------------------------------------------------
-                | Controls
-                |--------------------------------------------------------------------------
-                -->
-
+                <!-- Pagination Controls -->
                 <div
                     class="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
                 >
-                    <!--
-                    |--------------------------------------------------------------------------
-                    | Page Size
-                    |--------------------------------------------------------------------------
-                    -->
-
+                    <!-- Page Size -->
                     <div
                         class="flex min-w-0 items-center gap-2"
                     >
@@ -477,9 +459,7 @@ const handlePageSizeChange = (
                         <div class="w-24 shrink-0">
                             <AppSelect
                                 :model-value="pageSize"
-                                :options="
-                                    pageSizeOptions
-                                "
+                                :options="pageSizeOptions"
                                 placeholder="10"
                                 :disabled="loading"
                                 @update:model-value="
@@ -489,12 +469,7 @@ const handlePageSizeChange = (
                         </div>
                     </div>
 
-                    <!--
-                    |--------------------------------------------------------------------------
-                    | Pagination
-                    |--------------------------------------------------------------------------
-                    -->
-
+                    <!-- Pages -->
                     <div
                         class="min-w-0 max-w-full overflow-x-auto pb-0.5"
                     >
@@ -503,7 +478,6 @@ const handlePageSizeChange = (
                             aria-label="Pagination"
                         >
                             <!-- Previous -->
-
                             <Button
                                 variant="outline"
                                 size="icon"
@@ -521,20 +495,16 @@ const handlePageSizeChange = (
                                     aria-hidden="true"
                                 />
 
-                                <span
-                                    class="sr-only"
-                                >
+                                <span class="sr-only">
                                     Previous page
                                 </span>
                             </Button>
 
                             <!-- Page Numbers -->
-
                             <template
                                 v-for="item in paginationItems"
                                 :key="
-                                    item.type ===
-                                    'page'
+                                    item.type === 'page'
                                         ? item.page
                                         : item.key
                                 "
@@ -552,13 +522,10 @@ const handlePageSizeChange = (
                                     "
                                     size="icon"
                                     class="size-8 shrink-0 cursor-pointer"
-                                    :disabled="
-                                        loading
-                                    "
+                                    :disabled="loading"
                                     @click="
                                         table.setPageIndex(
-                                            item.page -
-                                                1,
+                                            item.page - 1,
                                         )
                                     "
                                 >
@@ -575,7 +542,6 @@ const handlePageSizeChange = (
                             </template>
 
                             <!-- Next -->
-
                             <Button
                                 variant="outline"
                                 size="icon"
@@ -593,9 +559,7 @@ const handlePageSizeChange = (
                                     aria-hidden="true"
                                 />
 
-                                <span
-                                    class="sr-only"
-                                >
+                                <span class="sr-only">
                                     Next page
                                 </span>
                             </Button>

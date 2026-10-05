@@ -7,7 +7,7 @@ import AppPageHeader from '@/components/common/AppPageHeader.vue';
 |--------------------------------------------------------------------------
 */
 
-withDefaults(
+const props = withDefaults(
     defineProps<{
         title: string;
         description?: string;
@@ -19,18 +19,26 @@ withDefaults(
 </script>
 
 <template>
-    <div
-        class="min-w-0 w-full space-y-6 overflow-x-hidden p-4 md:p-6"
-    >
-        <!-- Page Header -->
+    <div class="w-full min-w-0 space-y-6 overflow-x-hidden p-4 md:p-6">
+        <!--
+        |--------------------------------------------------------------------------
+        | Page Header
+        |--------------------------------------------------------------------------
+        -->
+
         <AppPageHeader
             :title="title"
             :description="description"
         />
 
-        <!-- Form -->
+        <!--
+        |--------------------------------------------------------------------------
+        | Form Content
+        |--------------------------------------------------------------------------
+        -->
+
         <section
-            aria-label="Form"
+            :aria-label="`${title} form`"
             class="min-w-0"
         >
             <slot />

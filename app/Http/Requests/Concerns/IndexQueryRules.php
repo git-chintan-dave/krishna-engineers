@@ -30,12 +30,13 @@ trait IndexQueryRules
             'sort' => [
                 'nullable',
                 'string',
-                ...($sortColumns ? [Rule::in($sortColumns)] : []),
+                ...($sortColumns !== [] ? [
+                    Rule::in($sortColumns),
+                ] : []),
             ],
 
             'direction' => [
                 'nullable',
-                'string',
                 Rule::in(['asc', 'desc']),
             ],
         ];

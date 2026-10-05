@@ -17,8 +17,8 @@ import FormSection from '@/components/form/FormSection.vue';
 import ToggleCardInput from '@/components/form/ToggleCardInput.vue';
 import AppUserRoleSelect from '@/components/selects/AppUserRoleSelect.vue';
 import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
-import {employeePage} from '@/config/employees';
-import type {EmployeeFormData} from '@/types/employee';
+import { employeePage } from '@/config/employees';
+import type { EmployeeFormData } from '@/types/employee';
 
 // Props
 const props = withDefaults(
@@ -279,6 +279,7 @@ const emit = defineEmits<{
                 <AppField
                     :label="employeePage.form.roleLabel"
                     input-id="employee-role"
+                    required
                 >
                     <AppUserRoleSelect
                         v-model="props.form.role"
@@ -317,7 +318,7 @@ const emit = defineEmits<{
             "
         >
             <div
-                class="grid min-w-0 gap-5 md:grid-cols-3"
+                class="grid min-w-0 gap-5 md:grid-cols-2 lg:grid-cols-3"
             >
                 <!-- Salary -->
                 <AppField

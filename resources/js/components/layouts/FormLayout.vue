@@ -19,10 +19,13 @@ withDefaults(
 </script>
 
 <template>
-    <div
-        class="min-w-0 w-full space-y-6 overflow-x-hidden p-4 md:p-6"
-    >
-        <!-- Page Header -->
+    <main class="w-full min-w-0 space-y-6 overflow-x-hidden p-4 md:p-6">
+        <!--
+        |--------------------------------------------------------------------------
+        | Page Header
+        |--------------------------------------------------------------------------
+        -->
+
         <AppPageHeader
             :title="title"
             :description="description"
@@ -35,12 +38,17 @@ withDefaults(
             </template>
         </AppPageHeader>
 
-        <!-- Form Content -->
+        <!--
+        |--------------------------------------------------------------------------
+        | Form Content
+        |--------------------------------------------------------------------------
+        -->
+
         <section
             aria-label="Form"
             class="min-w-0"
         >
             <slot />
         </section>
-    </div>
+    </main>
 </template>

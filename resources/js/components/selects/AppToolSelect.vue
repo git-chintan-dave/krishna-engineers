@@ -5,6 +5,12 @@ import AppSelect from '@/components/common/AppSelect.vue';
 import { useLookup } from '@/composables/useLookup';
 import type { SelectOption } from '@/types/common';
 
+/*
+|--------------------------------------------------------------------------
+| Props
+|--------------------------------------------------------------------------
+*/
+
 const props = withDefaults(
     defineProps<{
         modelValue?: number | null;
@@ -26,10 +32,22 @@ const props = withDefaults(
     },
 );
 
+/*
+|--------------------------------------------------------------------------
+| Emits
+|--------------------------------------------------------------------------
+*/
+
 const emit = defineEmits<{
     'update:modelValue': [value: number | null];
     change: [value: number | null];
 }>();
+
+/*
+|--------------------------------------------------------------------------
+| State
+|--------------------------------------------------------------------------
+*/
 
 const options = ref<SelectOption<number>[]>([]);
 
@@ -37,6 +55,12 @@ const {
     loading,
     tools,
 } = useLookup();
+
+/*
+|--------------------------------------------------------------------------
+| Load Options
+|--------------------------------------------------------------------------
+*/
 
 const loadOptions = async () => {
     options.value = [];
@@ -46,7 +70,19 @@ const loadOptions = async () => {
     );
 };
 
+/*
+|--------------------------------------------------------------------------
+| Lifecycle
+|--------------------------------------------------------------------------
+*/
+
 onMounted(loadOptions);
+
+/*
+|--------------------------------------------------------------------------
+| Watchers
+|--------------------------------------------------------------------------
+*/
 
 watch(
     () => props.type,
@@ -60,14 +96,14 @@ watch(
 
 <template>
     <AppSelect
-        :model-value="props.modelValue"
+        :model-value="modelValue"
         :options="options"
-        :placeholder="props.placeholder"
-        :searchable="props.searchable"
-        :clearable="props.clearable"
-        :disabled="props.disabled"
+        :placeholder="placeholder"
+        :searchable="searchable"
+        :clearable="clearable"
+        :disabled="disabled"
         :loading="loading"
-        :error="props.error"
+        :error="error"
         @update:model-value="
             emit(
                 'update:modelValue',

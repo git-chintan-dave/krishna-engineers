@@ -1,24 +1,18 @@
 ﻿<script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import {router} from '@inertiajs/vue3';
+import {ref} from 'vue';
 
 import ListingActions from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import AppUserRoleSelect from '@/components/selects/AppUserRoleSelect.vue';
-import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { employeePage } from '@/config/employees';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as employeesRoute,
-} from '@/routes/employees';
-import { createEmployeeColumns } from '@/table/employees';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {employeePage} from '@/config/employees';
+import {bulkDestroy, create, destroy, index as employeesRoute,} from '@/routes/employees';
+import {createEmployeeColumns} from '@/table/employees';
 import type {
     Employee,
     EmployeeFilters,
@@ -27,25 +21,16 @@ import type {
     EmployeeSort,
     EmployeesResponse,
 } from '@/types/employee';
-import type { StatusFilter } from '@/types/listing';
+import type {StatusFilter} from '@/types/listing';
+import AppUserShiftSelect from "@/components/selects/AppUserShiftSelect.vue";
 
-/*
-|--------------------------------------------------------------------------
-| Props
-|--------------------------------------------------------------------------
-*/
-
+// Props
 const props = defineProps<{
     employees: EmployeesResponse;
     filters: EmployeeFilters;
 }>();
 
-/*
-|--------------------------------------------------------------------------
-| Page
-|--------------------------------------------------------------------------
-*/
-
+// Page
 defineOptions({
     layout: {
         breadcrumbs: useCrudBreadcrumbs('listing', {
@@ -55,12 +40,7 @@ defineOptions({
     },
 });
 
-/*
-|--------------------------------------------------------------------------
-| Filters
-|--------------------------------------------------------------------------
-*/
-
+// Filters
 const filterRole = ref<EmployeeRole | 'all'>(
     props.filters.role,
 );
@@ -74,7 +54,8 @@ const filterStatus = ref<StatusFilter>(
 );
 
 const handleRoleChange = (value: string | null) => {
-    filterRole.value = (value as EmployeeRole | null) ?? 'all';
+    filterRole.value =
+        (value as EmployeeRole | null) ?? 'all';
 };
 
 const handleShiftChange = (value: string | null) => {
@@ -87,14 +68,9 @@ const handleStatusChange = (value: string | null) => {
         (value as StatusFilter | null) ?? 'all';
 };
 
-/*
-|--------------------------------------------------------------------------
-| Table
-|--------------------------------------------------------------------------
-*/
-
-const columns = createEmployeeColumns((id) => {
-    router.delete(destroy(id).url);
+// Table
+const columns = createEmployeeColumns((uuid) => {
+    router.delete(destroy(uuid).url);
 });
 
 const {
@@ -135,30 +111,17 @@ const {
     }),
 });
 
-/*
-|--------------------------------------------------------------------------
-| Filter Actions
-|--------------------------------------------------------------------------
-*/
-
+// Filter Actions
 const handleClearFilters = () => {
     filterRole.value = 'all';
-    filterShift.value = 'all';
     filterStatus.value = 'all';
 
     clearFilters();
 };
 
-/*
-|--------------------------------------------------------------------------
-| Bulk Actions
-|--------------------------------------------------------------------------
-*/
-
+// Bulk Actions
 const handleDeleteSelected = () => {
-    deleteSelected(
-        bulkDestroy().url,
-    );
+    deleteSelected(bulkDestroy().url);
 };
 </script>
 
@@ -167,12 +130,6 @@ const handleDeleteSelected = () => {
         :title="employeePage.title"
         :description="employeePage.description"
     >
-        <!--
-        |--------------------------------------------------------------------------
-        | Actions
-        |--------------------------------------------------------------------------
-        -->
-
         <template #actions>
             <ListingActions
                 :create-url="create()"
@@ -182,12 +139,6 @@ const handleDeleteSelected = () => {
                 @delete-selected="handleDeleteSelected"
             />
         </template>
-
-        <!--
-        |--------------------------------------------------------------------------
-        | Filters
-        |--------------------------------------------------------------------------
-        -->
 
         <template #filters>
             <ListingFilters
@@ -208,10 +159,10 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-40">
                         <AppUserRoleSelect
                             :model-value="
-                                filterRole === 'all'
-                                    ? null
-                                    : filterRole
-                            "
+                    filterRole === 'all'
+                        ? null
+                        : filterRole
+                "
                             :placeholder="employeePage.rolePlaceholder"
                             clearable
                             @update:model-value="handleRoleChange"
@@ -221,10 +172,10 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-36">
                         <AppUserShiftSelect
                             :model-value="
-                                filterShift === 'all'
-                                    ? null
-                                    : filterShift
-                            "
+                    filterShift === 'all'
+                        ? null
+                        : filterShift
+                "
                             :placeholder="employeePage.shiftPlaceholder"
                             clearable
                             @update:model-value="handleShiftChange"
@@ -234,10 +185,10 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-48">
                         <AppStatusSelect
                             :model-value="
-                                filterStatus === 'all'
-                                    ? null
-                                    : filterStatus
-                            "
+                    filterStatus === 'all'
+                        ? null
+                        : filterStatus
+                "
                             :placeholder="employeePage.statusPlaceholder"
                             clearable
                             @update:model-value="handleStatusChange"
@@ -247,18 +198,14 @@ const handleDeleteSelected = () => {
             </ListingFilters>
         </template>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Table
-        |--------------------------------------------------------------------------
-        -->
-
         <template #table>
             <DataTable
                 :table="table"
                 :columns-count="columns.length"
                 :total="employees.meta.total"
-                :page-index="employees.meta.current_page - 1"
+                :page-index="
+                    employees.meta.current_page - 1
+                "
                 :page-size="employees.meta.per_page"
                 :selected-count="selectedCount"
                 :page-size-options="[10, 25, 50, 100]"

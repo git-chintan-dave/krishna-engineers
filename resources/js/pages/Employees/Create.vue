@@ -1,19 +1,17 @@
 ﻿<script setup lang="ts">
-import {router, useForm} from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {employeePage} from '@/config/employees';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { employeePage } from '@/config/employees';
 import EmployeeForm from '@/pages/Employees/components/EmployeeForm.vue';
-import {index as employees, store,} from '@/routes/employees';
-import type {EmployeeFormData,} from '@/types/employee';
+import {
+    index as employees,
+    store,
+} from '@/routes/employees';
+import type { EmployeeFormData } from '@/types/employee';
 
-/*
-|--------------------------------------------------------------------------
-| Layout
-|--------------------------------------------------------------------------
-*/
-
+// Layout
 defineOptions({
     layout: {
         breadcrumbs: useCrudBreadcrumbs('create', {
@@ -23,12 +21,7 @@ defineOptions({
     },
 });
 
-/*
-|--------------------------------------------------------------------------
-| Form
-|--------------------------------------------------------------------------
-*/
-
+// Form
 const form = useForm<EmployeeFormData>({
     name: '',
     employee_code: '',
@@ -47,18 +40,11 @@ const form = useForm<EmployeeFormData>({
     aadhar_number: '',
 });
 
-/*
-|--------------------------------------------------------------------------
-| Actions
-|--------------------------------------------------------------------------
-*/
-
+// Actions
 const handleSubmit = () => {
     form.transform((data) => ({
         ...data,
-        status: data.status
-            ? 'active'
-            : 'inactive',
+        status: data.status ? 'active' : 'inactive',
     })).post(store().url);
 };
 
@@ -78,7 +64,9 @@ const handleCancel = () => {
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="employeePage.form.createSubmitLabel"
+            :submit-label="
+                employeePage.form.createSubmitLabel
+            "
             @submit="handleSubmit"
             @cancel="handleCancel"
         />

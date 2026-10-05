@@ -5,6 +5,7 @@ namespace App\Http\Requests\Users;
 use App\Enums\Status;
 use App\Enums\UserRole;
 use App\Enums\UserShift;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -12,7 +13,11 @@ class UserRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        if ($this->isMethod('post')) {
+            return $this->user()?->can('create', User::class) ?? false;
+        }
+
+        return $this->user()?->can('update', $this->route('employee')) ?? false;
     }
 
     public function rules(): array
@@ -45,16 +50,12 @@ class UserRequest extends FormRequest
             'alternate_phone_number' => [
                 'nullable',
                 'digits:10',
-                Rule::unique('users', 'alternate_phone_number')
-                    ->ignore($employee),
             ],
 
             'email' => [
                 'nullable',
                 'email',
                 'max:255',
-                Rule::unique('users', 'email')
-                    ->ignore($employee),
             ],
 
             'joining_date' => [
@@ -81,7 +82,7 @@ class UserRequest extends FormRequest
 
             // Employee Configuration
             'role' => [
-                'nullable',
+                'required',
                 Rule::enum(UserRole::class),
             ],
 
@@ -95,18 +96,21 @@ class UserRequest extends FormRequest
                 'required',
                 'numeric',
                 'min:0',
+                'decimal:0,2',
             ],
 
             'incentive_per_day' => [
                 'required',
                 'numeric',
                 'min:0',
+                'decimal:0,2',
             ],
 
             'deduction_per_day' => [
                 'required',
                 'numeric',
                 'min:0',
+                'decimal:0,2',
             ],
 
             // Account Status

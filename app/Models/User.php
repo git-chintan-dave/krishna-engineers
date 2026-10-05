@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\Status;
 use App\Enums\UserRole;
 use App\Enums\UserShift;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -30,6 +31,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 ])]
 #[Hidden([
     'password',
+    'aadhar_number',
     'two_factor_secret',
     'two_factor_recovery_codes',
     'remember_token',
@@ -48,7 +50,6 @@ class User extends Authenticatable
         return 'uuid';
     }
 
-    // Casts
     protected function casts(): array
     {
         return [
@@ -66,6 +67,7 @@ class User extends Authenticatable
     }
 
     // Role Helpers
+
     public function isSuperAdmin(): bool
     {
         return $this->role === UserRole::SUPER_ADMIN;
@@ -92,6 +94,7 @@ class User extends Authenticatable
     }
 
     // Status Helpers
+
     public function isActive(): bool
     {
         return $this->status === Status::ACTIVE;
@@ -103,7 +106,8 @@ class User extends Authenticatable
     }
 
     // Attendance Helpers
-    public function attendanceForDate($date): ?Attendance
+
+    public function attendanceForDate(CarbonInterface|string $date): ?Attendance
     {
         return $this->attendances()
             ->whereDate('attendance_date', $date)
@@ -111,8 +115,11 @@ class User extends Authenticatable
     }
 
     // Salary Helpers
-    public function salaryForPeriod($startDate, $endDate): ?Salary
-    {
+
+    public function salaryForPeriod(
+        CarbonInterface|string $startDate,
+        CarbonInterface|string $endDate
+    ): ?Salary {
         return $this->salaries()
             ->where('salary_period_start', $startDate)
             ->where('salary_period_end', $endDate)
@@ -120,6 +127,7 @@ class User extends Authenticatable
     }
 
     // Relationships
+
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);

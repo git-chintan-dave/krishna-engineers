@@ -49,7 +49,6 @@ const emit = defineEmits<{
 */
 
 const id = useId();
-
 const descriptionId = `${id}-description`;
 const errorId = `${id}-error`;
 
@@ -87,27 +86,27 @@ const describedBy = computed(() => {
 |--------------------------------------------------------------------------
 */
 
-const handleUpdate = (
-    value: boolean | 'indeterminate',
-) => {
+const handleUpdate = (value: boolean | 'indeterminate') => {
     if (value === 'indeterminate') {
         return;
     }
 
-    emit(
-        'update:modelValue',
-        value,
-    );
+    emit('update:modelValue', value);
 };
 </script>
 
 <template>
     <section
-        class="min-w-0 rounded-md border border-input bg-background p-4"
+        class="w-full min-w-0 rounded-md border border-input bg-background p-4"
         :aria-disabled="disabled"
     >
         <div class="min-w-0 space-y-4">
-            <!-- Header -->
+            <!--
+            |--------------------------------------------------------------------------
+            | Header
+            |--------------------------------------------------------------------------
+            -->
+
             <div
                 v-if="title || description"
                 class="min-w-0 space-y-1"
@@ -128,13 +127,14 @@ const handleUpdate = (
                 </p>
             </div>
 
-            <!-- Toggle -->
-            <div
-                class="flex min-w-0 items-center justify-between gap-4"
-            >
-                <div
-                    class="min-w-0 flex-1 space-y-1"
-                >
+            <!--
+            |--------------------------------------------------------------------------
+            | Toggle
+            |--------------------------------------------------------------------------
+            -->
+
+            <div class="flex min-w-0 items-center justify-between gap-4">
+                <div class="min-w-0 flex-1 space-y-1">
                     <p
                         class="break-words text-sm leading-5 font-medium text-foreground"
                     >
@@ -148,29 +148,26 @@ const handleUpdate = (
                     </p>
                 </div>
 
-                <div
-                    class="flex size-10 shrink-0 items-center justify-center"
-                >
+                <div class="flex size-10 shrink-0 items-center justify-center">
                     <Switch
                         :id="id"
                         :model-value="modelValue"
                         :disabled="disabled"
                         :aria-label="label"
                         :aria-describedby="describedBy"
-                        :aria-invalid="
-                            error
-                                ? true
-                                : undefined
-                        "
+                        :aria-invalid="error ? true : undefined"
                         class="cursor-pointer"
-                        @update:model-value="
-                            handleUpdate
-                        "
+                        @update:model-value="handleUpdate"
                     />
                 </div>
             </div>
 
-            <!-- Error -->
+            <!--
+            |--------------------------------------------------------------------------
+            | Error
+            |--------------------------------------------------------------------------
+            -->
+
             <p
                 v-if="error"
                 :id="errorId"

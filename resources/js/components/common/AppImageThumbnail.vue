@@ -3,6 +3,7 @@ import { ref } from 'vue';
 
 import AppImageViewer from '@/components/common/AppImageViewer.vue';
 
+// Props
 const props = withDefaults(
     defineProps<{
         src?: string | null;
@@ -16,8 +17,10 @@ const props = withDefaults(
     },
 );
 
+// State
 const viewerOpen = ref(false);
 
+// Actions
 const openViewer = () => {
     if (!props.src) {
         return;
@@ -31,7 +34,7 @@ const openViewer = () => {
     <template v-if="src">
         <button
             type="button"
-            class="cursor-pointer group relative block overflow-hidden rounded-md border bg-muted/20 transition hover:border-primary/50 hover:shadow-sm"
+            class="group relative block overflow-hidden rounded-md border bg-muted/20 transition hover:border-primary/40 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             :class="
                 size === 'sm'
                     ? 'size-12'
@@ -45,10 +48,13 @@ const openViewer = () => {
                 :src="src"
                 :alt="alt"
                 class="h-full w-full object-contain p-1 transition duration-200 group-hover:scale-105"
+                loading="lazy"
+                decoding="async"
             />
 
             <span
-                class="absolute inset-0 flex items-center justify-center bg-black/0 transition group-hover:bg-black/10"
+                class="pointer-events-none absolute inset-0 bg-black/0 transition group-hover:bg-black/10"
+                aria-hidden="true"
             />
         </button>
 
@@ -62,6 +68,7 @@ const openViewer = () => {
     <span
         v-else
         class="inline-flex size-12 items-center justify-center rounded-md border border-dashed bg-muted/20 text-xs text-muted-foreground"
+        aria-label="No image"
     >
         —
     </span>

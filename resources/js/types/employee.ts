@@ -1,4 +1,8 @@
-import type {PaginatedResponse, SortDirection, Status,} from '@/types/listing';
+import type {
+    PaginatedResponse,
+    SortDirection,
+    Status,
+} from '@/types/listing';
 
 export type EmployeeRole =
     | 'super_admin'
@@ -7,7 +11,11 @@ export type EmployeeRole =
     | 'bandsaw'
     | 'deburring_packaging';
 
-export type EmployeeShift = 'day' | 'night' | '8_hr' | '8_hr_total';
+export type EmployeeShift =
+    | 'day'
+    | 'night'
+    | '8_hr'
+    | '8_hr_total';
 
 export type EmployeeOption = {
     value: string;
@@ -24,8 +32,8 @@ export type Employee = {
     email: string | null;
     joining_date: string | null;
 
-    role: EmployeeRole | null;
-    role_label: string | null;
+    role: EmployeeRole;
+    role_label: string;
 
     shift: EmployeeShift | null;
     shift_label: string | null;
@@ -37,9 +45,6 @@ export type Employee = {
     status: Status;
     status_label: string;
 
-    aadhar_number: string;
-
-    email_verified_at: string | null;
     created_at: string | null;
     updated_at: string | null;
 };

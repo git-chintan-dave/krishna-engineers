@@ -13,9 +13,11 @@ import {Button} from '@/components/ui/button';
 const props = withDefaults(
     defineProps<{
         search: string;
+
         searchPlaceholder?: string;
         searchButtonLabel?: string;
         clearButtonLabel?: string;
+
         clearDisabled?: boolean;
     }>(),
     {
@@ -58,9 +60,11 @@ const searchValue = computed({
 |--------------------------------------------------------------------------
 */
 
-const isClearDisabled = computed(() => {
-    return props.clearDisabled ?? !props.search.trim();
-});
+const isClearDisabled = computed(
+    () =>
+        props.clearDisabled ??
+        !props.search.trim(),
+);
 </script>
 
 <template>
@@ -74,7 +78,7 @@ const isClearDisabled = computed(() => {
         -->
 
         <div
-            class="min-w-0 w-full sm:min-w-56 sm:flex-1"
+            class="w-full min-w-0 sm:min-w-56 sm:flex-1"
         >
             <AppSearch
                 v-model="searchValue"
@@ -93,7 +97,7 @@ const isClearDisabled = computed(() => {
             v-if="$slots.filters"
             class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center"
         >
-            <slot name="filters"/>
+            <slot name="filters" />
         </div>
 
         <!--

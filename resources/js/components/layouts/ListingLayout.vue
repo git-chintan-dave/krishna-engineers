@@ -19,9 +19,7 @@ withDefaults(
 </script>
 
 <template>
-    <main
-        class="min-w-0 w-full space-y-6 overflow-x-hidden p-4 md:p-6"
-    >
+    <main class="w-full min-w-0 space-y-6 overflow-x-hidden p-4 md:p-6">
         <!--
         |--------------------------------------------------------------------------
         | Page Header

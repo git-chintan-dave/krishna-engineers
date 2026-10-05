@@ -1,16 +1,14 @@
-import {createColumnHelper} from '@tanstack/vue-table';
+import { createColumnHelper } from '@tanstack/vue-table';
 
-import {edit} from '@/routes/employees';
-import {createActionsColumn} from '@/table/columns/actionsColumn';
-import {createDateColumn} from '@/table/columns/dateColumn';
-import {createSelectColumn} from '@/table/columns/selectColumn';
-import {createStatusColumn} from '@/table/columns/statusColumn';
-import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
-import {createSortableColumn} from '@/table/helpers/sortableColumn';
-import type {Employee} from '@/types/employee';
+import { edit } from '@/routes/employees';
+import { createActionsColumn } from '@/table/columns/actionsColumn';
+import { createSelectColumn } from '@/table/columns/selectColumn';
+import { createStatusColumn } from '@/table/columns/statusColumn';
+import { createPrimaryColumn } from '@/table/helpers/primaryColumn';
+import { createSortableColumn } from '@/table/helpers/sortableColumn';
+import type { Employee } from '@/types/employee';
 
-const columnHelper =
-    createColumnHelper<any, Employee>();
+const columnHelper = createColumnHelper<any, Employee>();
 
 export const createEmployeeColumns = (
     handleDelete: (uuid: string) => void,
@@ -59,11 +57,6 @@ export const createEmployeeColumns = (
 
         createStatusColumn({
             header: 'Status',
-        }),
-
-        createDateColumn({
-            accessorKey: 'created_at',
-            header: 'Created',
         }),
 
         createActionsColumn({

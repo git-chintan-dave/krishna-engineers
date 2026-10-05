@@ -8,12 +8,7 @@ defineOptions({
     inheritAttrs: false,
 });
 
-/*
-|--------------------------------------------------------------------------
-| Props
-|--------------------------------------------------------------------------
-*/
-
+// Props
 withDefaults(
     defineProps<{
         modelValue?: string;
@@ -27,41 +22,20 @@ withDefaults(
     },
 );
 
-/*
-|--------------------------------------------------------------------------
-| Emits
-|--------------------------------------------------------------------------
-*/
-
+// Emits
 const emit = defineEmits<{
     'update:modelValue': [value: string];
     search: [];
 }>();
 
-/*
-|--------------------------------------------------------------------------
-| Attributes
-|--------------------------------------------------------------------------
-*/
-
+// Attributes
 const attrs = useAttrs();
 
-/*
-|--------------------------------------------------------------------------
-| Actions
-|--------------------------------------------------------------------------
-*/
-
-const handleInput = (
-    event: Event,
-) => {
-    const value = (
-        event.target as HTMLInputElement
-    ).value;
-
+// Actions
+const handleInput = (event: Event) => {
     emit(
         'update:modelValue',
-        value,
+        (event.target as HTMLInputElement).value,
     );
 };
 
@@ -71,20 +45,19 @@ const handleSearch = () => {
 </script>
 
 <template>
-    <div class="relative min-w-0 w-full">
-        <!-- Search Icon -->
+    <div class="relative w-full min-w-0">
         <Search
-            class="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-muted-foreground"
+            class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
             aria-hidden="true"
         />
 
-        <!-- Search Input -->
         <Input
             type="search"
             :value="modelValue"
             :placeholder="placeholder"
             :disabled="disabled"
-            class="h-9 min-w-0 w-full pl-9"
+            aria-label="Search"
+            class="h-9 w-full min-w-0 pl-9"
             v-bind="attrs"
             @input="handleInput"
             @keyup.enter="handleSearch"
