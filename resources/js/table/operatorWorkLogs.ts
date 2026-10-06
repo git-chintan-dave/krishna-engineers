@@ -1,15 +1,15 @@
-import { createColumnHelper } from '@tanstack/vue-table';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit } from '@/routes/operator';
+import {edit} from '@/routes/operator';
 
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createDateColumn } from '@/table/columns/dateColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createDateColumn} from '@/table/columns/dateColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
 
-import { createPrimaryColumn } from '@/table/helpers/primaryColumn';
-import { createSortableColumn } from '@/table/helpers/sortableColumn';
+import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
+import {createSortableColumn} from '@/table/helpers/sortableColumn';
 
-import type { OperatorWorkLog } from '@/types/operatorWorkLog';
+import type {OperatorWorkLog} from '@/types/operatorWorkLog';
 
 const columnHelper =
     createColumnHelper<any, OperatorWorkLog>();
@@ -33,12 +33,14 @@ export const createOperatorWorkLogColumns = (
             header: 'Work Date',
         }),
 
-        createPrimaryColumn({
-            accessorKey: 'user.name',
-            header: 'Operator',
-            size: 180,
-            sortable: false,
-        }),
+        ...(canManage ? [
+            createPrimaryColumn({
+                accessorKey: 'user.name',
+                header: 'Operator',
+                size: 180,
+                sortable: false,
+            }),
+        ] : []),
 
         createPrimaryColumn({
             accessorKey: 'machine.name',
