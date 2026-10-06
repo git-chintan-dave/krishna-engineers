@@ -108,9 +108,19 @@ class LookupService
      *
      * @return array<int, array{value: int, label: string}>
      */
-    public function setups(): array
+    public function setups(?int $partId = null): array
     {
         return Setup::query()
+            ->when(
+                $partId,
+                fn ($query) => $query->whereHas(
+                    'partSetups',
+                    fn ($partSetupQuery) => $partSetupQuery->where(
+                        'part_id',
+                        $partId,
+                    ),
+                ),
+            )
             ->orderBy('name')
             ->get(['id', 'name'])
             ->map(fn (Setup $setup): array => [

@@ -8,26 +8,40 @@ import AppMachineSelect from '@/components/selects/AppMachineSelect.vue';
 import AppPartSelect from '@/components/selects/AppPartSelect.vue';
 import AppSetupSelect from '@/components/selects/AppSetupSelect.vue';
 import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
+
 import ListingActions from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
+
 import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
 import { useListingTable } from '@/composables/useListingTable';
+
 import { operatorWorkLogPage } from '@/config/operatorWorkLogs';
+
 import {
     bulkDestroy,
     create,
     destroy,
     index as operatorWorkLogsRoute,
 } from '@/routes/operator';
+
 import { createOperatorWorkLogColumns } from '@/table/operatorWorkLogs';
+
 import type {
     OperatorWorkLog,
     OperatorWorkLogFilters,
     OperatorWorkLogSort,
     OperatorWorkLogsResponse,
 } from '@/types/operatorWorkLog';
+
+/*
+|--------------------------------------------------------------------------
+| Types
+|--------------------------------------------------------------------------
+*/
+
+type FilterId = number | 'all';
 
 /*
 |--------------------------------------------------------------------------
@@ -38,7 +52,29 @@ import type {
 const props = defineProps<{
     operatorWorkLogs: OperatorWorkLogsResponse;
     filters: OperatorWorkLogFilters;
+    canSelectOperator: boolean;
 }>();
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
+
+const normalizeFilterId = (
+    value: number | string | null | undefined,
+): FilterId => {
+    if (
+        value === null ||
+        value === undefined ||
+        value === '' ||
+        value === 'all'
+    ) {
+        return 'all';
+    }
+
+    return Number(value);
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -61,12 +97,37 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const filterWorkDate = ref(props.filters.workDate);
-const filterShift = ref(props.filters.shift ?? 'all');
-const filterUserId = ref(props.filters.userId ?? 'all');
-const filterMachineId = ref(props.filters.machineId ?? 'all');
-const filterPartId = ref(props.filters.partId ?? 'all');
-const filterSetupId = ref(props.filters.setupId ?? 'all');
+const filterWorkDate = ref<string>(
+    props.filters.workDate ?? '',
+);
+
+const filterShift = ref<string>(
+    props.filters.shift ?? 'all',
+);
+
+const filterUserId = ref<FilterId>(
+    normalizeFilterId(
+        props.filters.userId,
+    ),
+);
+
+const filterMachineId = ref<FilterId>(
+    normalizeFilterId(
+        props.filters.machineId,
+    ),
+);
+
+const filterPartId = ref<FilterId>(
+    normalizeFilterId(
+        props.filters.partId,
+    ),
+);
+
+const filterSetupId = ref<FilterId>(
+    normalizeFilterId(
+        props.filters.setupId,
+    ),
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -74,9 +135,12 @@ const filterSetupId = ref(props.filters.setupId ?? 'all');
 |--------------------------------------------------------------------------
 */
 
-const columns = createOperatorWorkLogColumns((id) => {
-    router.delete(destroy(id).url);
-});
+const columns = createOperatorWorkLogColumns(
+    (uuid) => {
+        router.delete(destroy(uuid).url);
+    },
+    props.canSelectOperator
+);
 
 const {
     table,
@@ -84,8 +148,12 @@ const {
     search,
     clearFilters,
     deleteSelected,
-} = useListingTable<OperatorWorkLog, OperatorWorkLogSort>({
+} = useListingTable<
+    OperatorWorkLog,
+    OperatorWorkLogSort
+>({
     data: () => props.operatorWorkLogs,
+
     columns,
 
     filters: {
@@ -94,9 +162,12 @@ const {
     },
 
     route: operatorWorkLogsRoute.url(),
-    searchable:false,
+
+    searchable: false,
+
     additionalFilters: () => ({
-        work_date: filterWorkDate.value || undefined,
+        work_date:
+            filterWorkDate.value || undefined,
 
         shift:
             filterShift.value !== 'all'
@@ -131,27 +202,57 @@ const {
 |--------------------------------------------------------------------------
 */
 
-const handleShiftChange = (value: string | null) => {
-    filterShift.value = value ?? 'all';
+const handleWorkDateChange = (
+    value: string | number | null,
+): void => {
+    filterWorkDate.value =
+        value === null
+            ? ''
+            : String(value);
 };
 
-const handleUserChange = (value: number | null) => {
-    filterUserId.value = value ?? 'all';
+const handleShiftChange = (
+    value: string | null,
+): void => {
+    filterShift.value =
+        value ?? 'all';
 };
 
-const handleMachineChange = (value: number | null) => {
-    filterMachineId.value = value ?? 'all';
+const handleUserChange = (
+    value: number | null,
+): void => {
+    filterUserId.value =
+        value ?? 'all';
 };
 
-const handlePartChange = (value: number | null) => {
-    filterPartId.value = value ?? 'all';
+const handleMachineChange = (
+    value: number | null,
+): void => {
+    filterMachineId.value =
+        value ?? 'all';
 };
 
-const handleSetupChange = (value: number | null) => {
-    filterSetupId.value = value ?? 'all';
+const handlePartChange = (
+    value: number | null,
+): void => {
+    filterPartId.value =
+        value ?? 'all';
+
+    /*
+     * Setup belongs to the selected Part,
+     * so changing Part resets Setup.
+     */
+    filterSetupId.value = 'all';
 };
 
-const handleClearFilters = () => {
+const handleSetupChange = (
+    value: number | null,
+): void => {
+    filterSetupId.value =
+        value ?? 'all';
+};
+
+const handleClearFilters = (): void => {
     filterWorkDate.value = '';
     filterShift.value = 'all';
     filterUserId.value = 'all';
@@ -168,72 +269,92 @@ const handleClearFilters = () => {
 |--------------------------------------------------------------------------
 */
 
-const handleDeleteSelected = () => {
-    deleteSelected(bulkDestroy().url);
+const handleDeleteSelected = (): void => {
+    deleteSelected(
+        bulkDestroy().url,
+    );
 };
+
+/*
+|--------------------------------------------------------------------------
+| Filter State
+|--------------------------------------------------------------------------
+*/
+
+const hasFilters = (): boolean =>
+    Boolean(filterWorkDate.value) ||
+    filterShift.value !== 'all' ||
+    filterUserId.value !== 'all' ||
+    filterMachineId.value !== 'all' ||
+    filterPartId.value !== 'all' ||
+    filterSetupId.value !== 'all';
 </script>
 
 <template>
     <ListingLayout
         :title="operatorWorkLogPage.title"
-        :description="operatorWorkLogPage.description"
+        :description="
+            operatorWorkLogPage.description
+        "
     >
-        <!--
-        |--------------------------------------------------------------------------
-        | Actions
-        |--------------------------------------------------------------------------
-        -->
+        <!-- Actions -->
 
         <template #actions>
             <ListingActions
                 :create-url="create()"
-                :create-label="operatorWorkLogPage.createLabel"
+                :create-label="
+                    operatorWorkLogPage.createLabel
+                "
                 :selected-count="selectedCount"
-                :resource-label="operatorWorkLogPage.resourceLabel"
-                @delete-selected="handleDeleteSelected"
+                :resource-label="
+                    operatorWorkLogPage.resourceLabel
+                "
+                @delete-selected="
+                    handleDeleteSelected
+                "
             />
         </template>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Filters
-        |--------------------------------------------------------------------------
-        -->
+        <!-- Filters -->
 
         <template #filters>
             <ListingFilters
                 :searchable="false"
                 :clear-button-label="
-                    operatorWorkLogPage.clearButtonLabel
+                    operatorWorkLogPage
+                        .clearButtonLabel
                 "
-                :clear-disabled="
-                    !filterWorkDate &&
-                    filterShift === 'all' &&
-                    filterUserId === 'all' &&
-                    filterMachineId === 'all' &&
-                    filterPartId === 'all' &&
-                    filterSetupId === 'all'
-                "
+                :clear-disabled="!hasFilters()"
                 @search="search"
                 @clear="handleClearFilters"
             >
                 <template #filters>
-                    <div class="w-full shrink-0 sm:w-36">
-                        <AppUserShiftSelect
+                    <!-- Work Date -->
+
+                    <div
+                        class="w-full shrink-0 sm:w-40"
+                    >
+                        <AppInput
                             :model-value="
-                                filterShift === 'all'
-                                    ? null
-                                    : filterShift
+                                filterWorkDate
                             "
+                            type="date"
                             :placeholder="
-                                operatorWorkLogPage.shiftPlaceholder
+                                operatorWorkLogPage
+                                    .workDatePlaceholder
                             "
-                            clearable
-                            @update:model-value="handleShiftChange"
+                            @update:model-value="
+                                handleWorkDateChange
+                            "
                         />
                     </div>
 
-                    <div class="w-full shrink-0 sm:w-44">
+                    <!-- Operator -->
+
+                    <div
+                        v-if="canSelectOperator"
+                        class="w-full shrink-0 sm:w-44"
+                    >
                         <AppEmployeeSelect
                             :model-value="
                                 filterUserId === 'all'
@@ -241,16 +362,45 @@ const handleDeleteSelected = () => {
                                     : filterUserId
                             "
                             :placeholder="
-                                operatorWorkLogPage.operatorPlaceholder
+                                operatorWorkLogPage
+                                    .operatorPlaceholder
                             "
                             searchable
                             clearable
                             role="operator"
-                            @update:model-value="handleUserChange"
+                            @update:model-value="
+                                handleUserChange
+                            "
                         />
                     </div>
 
-                    <div class="w-full shrink-0 sm:w-40">
+                    <!-- Shift -->
+
+                    <div
+                        class="w-full shrink-0 sm:w-36"
+                    >
+                        <AppUserShiftSelect
+                            :model-value="
+                                filterShift === 'all'
+                                    ? null
+                                    : filterShift
+                            "
+                            :placeholder="
+                                operatorWorkLogPage
+                                    .shiftPlaceholder
+                            "
+                            clearable
+                            @update:model-value="
+                                handleShiftChange
+                            "
+                        />
+                    </div>
+
+                    <!-- Machine -->
+
+                    <div
+                        class="w-full shrink-0 sm:w-40"
+                    >
                         <AppMachineSelect
                             :model-value="
                                 filterMachineId === 'all'
@@ -258,15 +408,22 @@ const handleDeleteSelected = () => {
                                     : filterMachineId
                             "
                             :placeholder="
-                                operatorWorkLogPage.machinePlaceholder
+                                operatorWorkLogPage
+                                    .machinePlaceholder
                             "
                             searchable
                             clearable
-                            @update:model-value="handleMachineChange"
+                            @update:model-value="
+                                handleMachineChange
+                            "
                         />
                     </div>
 
-                    <div class="w-full shrink-0 sm:w-40">
+                    <!-- Part -->
+
+                    <div
+                        class="w-full shrink-0 sm:w-40"
+                    >
                         <AppPartSelect
                             :model-value="
                                 filterPartId === 'all'
@@ -274,52 +431,74 @@ const handleDeleteSelected = () => {
                                     : filterPartId
                             "
                             :placeholder="
-                                operatorWorkLogPage.partPlaceholder
+                                operatorWorkLogPage
+                                    .partPlaceholder
                             "
                             searchable
                             clearable
-                            @update:model-value="handlePartChange"
+                            @update:model-value="
+                                handlePartChange
+                            "
                         />
                     </div>
 
-                    <div class="w-full shrink-0 sm:w-48">
+                    <!-- Setup -->
+
+                    <div
+                        class="w-full shrink-0 sm:w-48"
+                    >
                         <AppSetupSelect
                             :model-value="
                                 filterSetupId === 'all'
                                     ? null
                                     : filterSetupId
                             "
+                            :part-id="
+                                filterPartId === 'all'
+                                    ? null
+                                    : filterPartId
+                            "
                             :placeholder="
-                                operatorWorkLogPage.setupPlaceholder
+                                operatorWorkLogPage
+                                    .setupPlaceholder
                             "
                             searchable
                             clearable
-                            @update:model-value="handleSetupChange"
+                            @update:model-value="
+                                handleSetupChange
+                            "
                         />
                     </div>
                 </template>
             </ListingFilters>
         </template>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Table
-        |--------------------------------------------------------------------------
-        -->
+        <!-- Table -->
 
         <template #table>
             <DataTable
                 :table="table"
                 :columns-count="columns.length"
-                :total="operatorWorkLogs.meta.total"
-                :page-index="
-                    operatorWorkLogs.meta.current_page - 1
+                :total="
+                    operatorWorkLogs.meta.total
                 "
-                :page-size="operatorWorkLogs.meta.per_page"
+                :page-index="
+                    operatorWorkLogs.meta
+                        .current_page - 1
+                "
+                :page-size="
+                    operatorWorkLogs.meta.per_page
+                "
                 :selected-count="selectedCount"
-                :page-size-options="[10, 25, 50, 100]"
-                :empty-text="operatorWorkLogPage.emptyText"
-                :item-label="operatorWorkLogPage.itemLabel"
+                :page-size-options="
+                    [10, 25, 50, 100]
+                "
+                :empty-text="
+                    operatorWorkLogPage.emptyText
+                "
+                :item-label="
+                    operatorWorkLogPage.itemLabel
+                "
             />
         </template>
     </ListingLayout>

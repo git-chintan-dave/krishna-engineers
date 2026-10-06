@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Str;
 
 #[Fillable([
     'user_id',
@@ -38,7 +37,12 @@ class OperatorWorkLog extends Model
         return 'uuid';
     }
 
-    // Casts
+    /*
+    |--------------------------------------------------------------------------
+    | Casts
+    |--------------------------------------------------------------------------
+    */
+
     protected function casts(): array
     {
         return [
@@ -51,7 +55,12 @@ class OperatorWorkLog extends Model
         ];
     }
 
-    // Relationships
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -77,24 +86,37 @@ class OperatorWorkLog extends Model
         return $this->belongsTo(PartSetup::class);
     }
 
-    // Scopes
-    public function scopeForUser(Builder $query, int $userId): Builder
-    {
+    /*
+    |--------------------------------------------------------------------------
+    | Scopes
+    |--------------------------------------------------------------------------
+    */
+
+    public function scopeForUser(
+        Builder $query,
+        int $userId
+    ): Builder {
         return $query->where('user_id', $userId);
     }
 
-    public function scopeForDate(Builder $query, string $date): Builder
-    {
+    public function scopeForDate(
+        Builder $query,
+        string $date
+    ): Builder {
         return $query->whereDate('work_date', $date);
     }
 
-    public function scopeFromDate(Builder $query, string $date): Builder
-    {
+    public function scopeFromDate(
+        Builder $query,
+        string $date
+    ): Builder {
         return $query->whereDate('work_date', '>=', $date);
     }
 
-    public function scopeToDate(Builder $query, string $date): Builder
-    {
+    public function scopeToDate(
+        Builder $query,
+        string $date
+    ): Builder {
         return $query->whereDate('work_date', '<=', $date);
     }
 
@@ -106,27 +128,40 @@ class OperatorWorkLog extends Model
         return $query->whereBetween('work_date', [$from, $to]);
     }
 
-    public function scopeForMachine(Builder $query, int $machineId): Builder
-    {
+    public function scopeForMachine(
+        Builder $query,
+        int $machineId
+    ): Builder {
         return $query->where('machine_id', $machineId);
     }
 
-    public function scopeForPart(Builder $query, int $partId): Builder
-    {
+    public function scopeForPart(
+        Builder $query,
+        int $partId
+    ): Builder {
         return $query->where('part_id', $partId);
     }
 
-    public function scopeForSetup(Builder $query, int $setupId): Builder
-    {
+    public function scopeForSetup(
+        Builder $query,
+        int $setupId
+    ): Builder {
         return $query->where('setup_id', $setupId);
     }
 
-    public function scopeForShift(Builder $query, string $shift): Builder
-    {
+    public function scopeForShift(
+        Builder $query,
+        string $shift
+    ): Builder {
         return $query->where('shift', $shift);
     }
 
-    // Helpers
+    /*
+    |--------------------------------------------------------------------------
+    | Helpers
+    |--------------------------------------------------------------------------
+    */
+
     public function calculateProductionSeconds(): int
     {
         return $this->quantity * $this->actual_cycle_time;

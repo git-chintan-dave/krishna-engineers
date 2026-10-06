@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import { useLookup } from '@/composables/useLookup';
 import type { SelectOption } from '@/types/common';
 
 /*
@@ -14,6 +13,7 @@ import type { SelectOption } from '@/types/common';
 const props = withDefaults(
     defineProps<{
         modelValue?: number | null;
+        partId?: number | null;
         placeholder?: string;
         searchable?: boolean;
         clearable?: boolean;
@@ -22,6 +22,7 @@ const props = withDefaults(
     }>(),
     {
         modelValue: null,
+        partId: null,
         placeholder: 'Select setup...',
         searchable: false,
         clearable: false,
@@ -48,23 +49,108 @@ const emit = defineEmits<{
 */
 
 const options = ref<SelectOption<number>[]>([]);
-
-const {
-    loading,
-    setups,
-} = useLookup();
+const loading = ref(false);
 
 /*
 |--------------------------------------------------------------------------
-| Load Options
+| Fetch Setups
 |--------------------------------------------------------------------------
 */
 
-const loadOptions = async () => {
-    options.value = await setups();
+const fetchSetups = async (): Promise<void> => {
+    if (!props.partId) {
+        options.value = [];
+        return;
+    }
+
+    loading.value = true;
+
+    try {
+        const params = new URLSearchParams({
+            part_id: String(props.partId),
+        });
+
+        const response = await fetch(
+            `/lookups/setups?${params.toString()}`,
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                'Failed to fetch setups.',
+            );
+        }
+
+        const data = await response.json();
+
+        options.value = Array.isArray(data)
+            ? data
+            : Array.isArray(data.data)
+                ? data.data
+                : [];
+    } catch (error) {
+        console.error(
+            'Failed to load setups:',
+            error,
+        );
+
+        options.value = [];
+    } finally {
+        loading.value = false;
+    }
 };
 
-onMounted(loadOptions);
+/*
+|--------------------------------------------------------------------------
+| Value Handling
+|--------------------------------------------------------------------------
+*/
+
+const handleUpdate = (
+    value:
+        | string
+        | number
+        | null
+        | (string | number)[],
+): void => {
+    if (
+        value === null ||
+        typeof value === 'number'
+    ) {
+        emit(
+            'update:modelValue',
+            value,
+        );
+
+        emit('change', value);
+    }
+};
+
+/*
+|--------------------------------------------------------------------------
+| Lifecycle
+|--------------------------------------------------------------------------
+*/
+
+onMounted(fetchSetups);
+
+/*
+|--------------------------------------------------------------------------
+| Watch Part
+|--------------------------------------------------------------------------
+*/
+
+watch(
+    () => props.partId,
+    () => {
+        /*
+         * Do not clear modelValue here.
+         *
+         * The parent form may already have a setup_id
+         * from the operator's last report.
+         */
+        fetchSetups();
+    },
+);
 </script>
 
 <template>
@@ -74,20 +160,15 @@ onMounted(loadOptions);
         :placeholder="placeholder"
         :searchable="searchable"
         :clearable="clearable"
-        :disabled="disabled"
+        :disabled="
+            disabled ||
+            loading ||
+            !partId
+        "
         :loading="loading"
         :error="error"
         @update:model-value="
-            emit(
-                'update:modelValue',
-                $event as number | null,
-            )
-        "
-        @change="
-            emit(
-                'change',
-                $event as number | null,
-            )
+            handleUpdate
         "
     />
 </template>

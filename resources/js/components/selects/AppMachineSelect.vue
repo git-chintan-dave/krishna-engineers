@@ -7,24 +7,11 @@ import type { SelectOption } from '@/types/common';
 
 /*
 |--------------------------------------------------------------------------
-| Types
-|--------------------------------------------------------------------------
-*/
-
-type EmployeeRole =
-    | 'super_admin'
-    | 'supervisor'
-    | 'operator'
-    | 'bandsaw'
-    | 'deburring_packaging';
-
-/*
-|--------------------------------------------------------------------------
 | Props
 |--------------------------------------------------------------------------
 */
 
-const props = withDefaults(
+withDefaults(
     defineProps<{
         modelValue?: number | null;
         placeholder?: string;
@@ -32,16 +19,14 @@ const props = withDefaults(
         clearable?: boolean;
         disabled?: boolean;
         error?: string;
-        role?: EmployeeRole | null;
     }>(),
     {
         modelValue: null,
-        placeholder: 'Select employee...',
+        placeholder: 'Select machine...',
         searchable: true,
         clearable: false,
         disabled: false,
         error: '',
-        role: null,
     },
 );
 
@@ -66,7 +51,7 @@ const options = ref<SelectOption<number>[]>([]);
 
 const {
     loading,
-    employees,
+    machines,
 } = useLookup();
 
 /*
@@ -76,9 +61,7 @@ const {
 */
 
 const loadOptions = async () => {
-    options.value = await employees(
-        props.role ?? undefined,
-    );
+    options.value = await machines();
 };
 
 onMounted(loadOptions);

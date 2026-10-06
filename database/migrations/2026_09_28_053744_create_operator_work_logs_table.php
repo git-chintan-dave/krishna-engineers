@@ -63,6 +63,11 @@ return new class extends Migration
                 'work_date',
                 'setup_id',
             ]);
+
+            $table->index([
+                'work_date',
+                'shift',
+            ]);
         });
     }
 

@@ -31,15 +31,19 @@ class OperatorWorkLogPolicy
         User $user,
         OperatorWorkLog $operatorWorkLog
     ): bool {
-        return in_array(
+        if (in_array(
             $user->role,
             [
                 UserRole::SUPER_ADMIN,
                 UserRole::SUPERVISOR,
-                UserRole::OPERATOR,
             ],
             true
-        );
+        )) {
+            return true;
+        }
+
+        return $user->role === UserRole::OPERATOR
+            && $operatorWorkLog->user_id === $user->id;
     }
 
     /**
@@ -70,7 +74,6 @@ class OperatorWorkLogPolicy
             [
                 UserRole::SUPER_ADMIN,
                 UserRole::SUPERVISOR,
-                UserRole::OPERATOR,
             ],
             true
         );
@@ -88,7 +91,6 @@ class OperatorWorkLogPolicy
             [
                 UserRole::SUPER_ADMIN,
                 UserRole::SUPERVISOR,
-                UserRole::OPERATOR,
             ],
             true
         );

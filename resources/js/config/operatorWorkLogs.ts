@@ -1,6 +1,7 @@
 export const operatorWorkLogPage = {
     title: 'Operator Work Logs',
-    description: 'Manage and review production work logs recorded by operators.',
+    description:
+        'Manage and review production work logs recorded by operators.',
 
     createLabel: 'Add Work Log',
 
@@ -44,6 +45,7 @@ export const operatorWorkLogPage = {
 
         machineCycleTimeLabel: 'Machine Cycle Time',
         actualCycleTimeLabel: 'Actual Cycle Time',
+        actualCycleTimePlaceholder: '00:00:00',
 
         quantityLabel: 'Quantity',
         quantityPlaceholder: 'Enter quantity',

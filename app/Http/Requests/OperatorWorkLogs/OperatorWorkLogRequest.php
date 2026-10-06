@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\OperatorWorkLogs;
 
+use App\Enums\UserRole;
 use App\Enums\UserShift;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -17,9 +18,12 @@ class OperatorWorkLogRequest extends FormRequest
     {
         return [
             'user_id' => [
-                'required',
+                'nullable',
                 'integer',
                 'exists:users,id',
+                Rule::requiredIf(
+                    fn () => $this->user()->role !== UserRole::OPERATOR
+                ),
             ],
 
             'work_date' => [
@@ -59,13 +63,13 @@ class OperatorWorkLogRequest extends FormRequest
             'machine_cycle_time' => [
                 'required',
                 'integer',
-                'min:0',
+                'min:1',
             ],
 
             'actual_cycle_time' => [
                 'required',
                 'integer',
-                'min:0',
+                'min:1',
             ],
 
             'quantity' => [
@@ -78,6 +82,7 @@ class OperatorWorkLogRequest extends FormRequest
                 'nullable',
                 'integer',
                 'min:0',
+                'lte:quantity',
             ],
 
             'remarks' => [

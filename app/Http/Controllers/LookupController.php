@@ -57,10 +57,12 @@ class LookupController extends Controller
         ]);
     }
 
-    public function setups(): JsonResponse
+    public function setups(Request $request): JsonResponse
     {
+        $partId = $request->input('part_id');
+
         return response()->json([
-            'data' => $this->lookupService->setups(),
+            'data' => $this->lookupService->setups($partId),
         ]);
     }
 

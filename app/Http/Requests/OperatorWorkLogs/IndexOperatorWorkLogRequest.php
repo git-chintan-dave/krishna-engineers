@@ -27,6 +27,8 @@ class IndexOperatorWorkLogRequest extends FormRequest
                 'part_id',
                 'setup_id',
                 'quantity',
+                'rejection_quantity',
+                'production_seconds',
                 'created_at',
             ]),
 

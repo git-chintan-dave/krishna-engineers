@@ -1,22 +1,32 @@
 import { createColumnHelper } from '@tanstack/vue-table';
 
 import { edit } from '@/routes/operator';
+
 import { createActionsColumn } from '@/table/columns/actionsColumn';
 import { createDateColumn } from '@/table/columns/dateColumn';
 import { createSelectColumn } from '@/table/columns/selectColumn';
+
 import { createPrimaryColumn } from '@/table/helpers/primaryColumn';
 import { createSortableColumn } from '@/table/helpers/sortableColumn';
+
 import type { OperatorWorkLog } from '@/types/operatorWorkLog';
 
-const columnHelper = createColumnHelper<any, OperatorWorkLog>();
+const columnHelper =
+    createColumnHelper<any, OperatorWorkLog>();
 
 export const createOperatorWorkLogColumns = (
     handleDelete: (uuid: string) => void,
+    canManage: boolean,
 ) =>
     columnHelper.columns([
-        createSelectColumn({
-            resourceName: 'operator-work-logs',
-        }),
+        ...(canManage
+            ? [
+                createSelectColumn({
+                    resourceName:
+                        'operator-work-logs',
+                }),
+            ]
+            : []),
 
         createDateColumn({
             accessorKey: 'work_date',
@@ -30,22 +40,25 @@ export const createOperatorWorkLogColumns = (
             sortable: false,
         }),
 
-        createSortableColumn({
+        createPrimaryColumn({
             accessorKey: 'machine.name',
             header: 'Machine',
             size: 160,
+            sortable: false,
         }),
 
-        createSortableColumn({
-            accessorKey: 'part.reference_name',
+        createPrimaryColumn({
+            accessorKey: 'part.name',
             header: 'Part',
             size: 160,
+            sortable: false,
         }),
 
-        createSortableColumn({
+        createPrimaryColumn({
             accessorKey: 'setup.name',
             header: 'Setup',
             size: 100,
+            sortable: false,
         }),
 
         createSortableColumn({
@@ -61,14 +74,23 @@ export const createOperatorWorkLogColumns = (
         }),
 
         createSortableColumn({
-            accessorKey: 'production_seconds_formatted',
+            accessorKey: 'production_seconds',
             header: 'Production Time',
             size: 140,
+            cell: ({ row }) =>
+                row.original.production_seconds_formatted ??
+                '—',
         }),
 
-        createActionsColumn({
-            editUrl: (uuid) => edit(uuid).url,
-            resourceName: 'operator work log',
-            handleDelete,
-        }),
+        ...(canManage
+            ? [
+                createActionsColumn({
+                    editUrl: (uuid) =>
+                        edit(uuid).url,
+                    resourceName:
+                        'operator work log',
+                    handleDelete,
+                }),
+            ]
+            : []),
     ]);

@@ -1,45 +1,56 @@
-import type {
-    PaginatedResponse,
-    SortDirection,
-} from '@/types/listing';
+import type {PaginatedResponse, SortDirection,} from '@/types/listing';
 
 export type OperatorWorkLog = {
     id: number;
     uuid: string;
+
     work_date: string;
     shift: string | null;
+
     user: {
         id: number;
         name: string;
         employee_code: string;
     };
+
     machine: {
         id: number;
         name: string;
         reference_name: string | null;
     };
+
     part: {
         id: number;
         name: string;
         reference_name: string;
     };
+
     setup: {
         id: number;
         name: string;
     };
+
     part_setup_id: number;
+
     machine_cycle_time: number;
     actual_cycle_time: number;
+
     quantity: number;
     rejection_quantity: number;
+
     production_seconds: number;
+    production_seconds_formatted: string;
+
     remarks: string | null;
+
     created_at: string;
     updated_at: string;
+
 };
 
 export type OperatorWorkLogFormData = {
     user_id: number | null;
+
     work_date: string;
     shift: string | null;
 
@@ -55,6 +66,14 @@ export type OperatorWorkLogFormData = {
     rejection_quantity: number;
 
     remarks: string;
+};
+
+export type OperatorWorkLogPartSetupOption = {
+    id: number;
+    part_id: number;
+    setup_id: number;
+    machine_cycle_time_seconds: number;
+    actual_cycle_time_seconds: number;
 };
 
 export type OperatorWorkLogSort =

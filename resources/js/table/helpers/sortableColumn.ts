@@ -10,6 +10,7 @@ import { createSortableHeader } from '@/table/helpers/sortableHeader';
 
 type SortableColumnOptions = {
     accessorKey: string;
+    sortKey?: string;
     header: string;
     size?: number;
     cell?: (context: any) => unknown;
@@ -23,11 +24,20 @@ type SortableColumnOptions = {
 
 export const createSortableColumn = ({
                                          accessorKey,
+                                         sortKey,
                                          header,
                                          size,
                                          cell,
                                      }: SortableColumnOptions) => ({
     accessorKey,
+
+    ...(sortKey !== undefined
+        ? {
+            meta: {
+                sortKey,
+            },
+        }
+        : {}),
 
     header: createSortableHeader({
         label: header,
