@@ -43,8 +43,7 @@ class SalaryController extends Controller
             Salary::query()->with([
                 'user:id,name,employee_code',
             ]),
-            $filters,
-            ['salary_period_start'],
+            $filters
         )
             ->when(
                 $filters['user_id'] ?? null,
@@ -79,8 +78,18 @@ class SalaryController extends Controller
             ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();
 
+        $now = now()->subMonthNoOverflow();
+        $periodStart = $now->clone()->startOfMonth()->toDateString();
+        $periodEnd = $now->clone()->endOfMonth()->toDateString();
+
+        $canGenerateLastMonth = ! Salary::query()
+            ->whereDate('salary_period_start', $periodStart)
+            ->whereDate('salary_period_end', $periodEnd)
+            ->exists();
+
         return Inertia::render('Salaries/Index', [
             'salaries' => SalaryResource::collection($salaries),
+            'can_generate_last_month' => $canGenerateLastMonth,
             'filters' => [
                 'user_id' => $filters['user_id'] ?? 'all',
                 'status' => $filters['status'] ?? 'all',
@@ -90,8 +99,6 @@ class SalaryController extends Controller
                 'sort' => $filters['sort'] ?? 'salary_period_start',
                 'direction' => $filters['direction'] ?? 'desc',
             ],
-            'employees' => $this->employeeOptions(),
-            'statuses' => SalaryStatus::options(),
         ]);
     }
 
@@ -99,9 +106,7 @@ class SalaryController extends Controller
     {
         Gate::authorize('create', Salary::class);
 
-        return Inertia::render('Salaries/Create', [
-            'employees' => $this->employeeOptions(),
-        ]);
+        return Inertia::render('Salaries/Create', []);
     }
 
     public function store(SalaryRequest $request): RedirectResponse
@@ -148,7 +153,6 @@ class SalaryController extends Controller
 
         return Inertia::render('Salaries/Edit', [
             'salary' => new SalaryResource($salary),
-            'employees' => $this->employeeOptions(),
         ]);
     }
 
@@ -231,33 +235,26 @@ class SalaryController extends Controller
     public function generateLastMonth(
         SalaryService $salaryService,
     ): RedirectResponse {
-        $result = $salaryService->generateForAllEmployees();
+        try {
+            $result = $salaryService->generateForAllEmployees();
 
-        return back()->with(
-            'success',
-            sprintf(
-                'Last month salary generated successfully. %d generated, %d skipped.',
-                $result['generated'],
-                $result['skipped'],
-            ),
-        );
-    }
+            return $this->successResponse(
+                'generated',
+                sprintf(
+                    'Last month salary generated successfully. %d generated, %d skipped.',
+                    $result['generated'],
+                    $result['skipped'],
+                ),
+            );
+        } catch (\RuntimeException $e) {
+            return $this->errorResponse(
+                'generated',
+                $e->getMessage(),
+            );
+        } catch (\Throwable $e) {
+            report($e);
 
-    private function employeeOptions(): array
-    {
-        return User::query()
-            ->whereNotNull('role')
-            ->where('role', '!=', 'super_admin')
-            ->orderBy('name')
-            ->get([
-                'id',
-                'name',
-                'employee_code',
-            ])
-            ->map(fn (User $user): array => [
-                'value' => (string) $user->id,
-                'label' => "{$user->employee_code} - {$user->name}",
-            ])
-            ->all();
+            return $this->errorResponse('generated');
+        }
     }
 }

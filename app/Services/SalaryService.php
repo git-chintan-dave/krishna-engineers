@@ -7,6 +7,7 @@ use App\Models\Salary;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -80,30 +81,44 @@ class SalaryService
                 deduction: $deduction,
             );
 
-            return $user->salaries()->create([
-                'salary_period_start' => $periodStart->toDateString(),
-                'salary_period_end' => $periodEnd->toDateString(),
+            try {
+                return $user->salaries()->create([
+                    'salary_period_start' => $periodStart->toDateString(),
+                    'salary_period_end' => $periodEnd->toDateString(),
 
-                'base_salary' => $baseSalary,
-                'working_days' => $workingDays,
+                    'base_salary' => $baseSalary,
+                    'working_days' => $workingDays,
 
-                'upad' => $upad,
-                'paid_loan' => $paidLoan,
+                    'upad' => $upad,
+                    'paid_loan' => $paidLoan,
 
-                'incentive_rate' => $incentiveRate,
-                'incentive' => $incentive,
+                    'incentive_rate' => $incentiveRate,
+                    'incentive' => $incentive,
 
-                'deduction_rate' => $deductionRate,
-                'deduction' => $deduction,
+                    'deduction_rate' => $deductionRate,
+                    'deduction' => $deduction,
 
-                'adjustment' => $adjustment,
-                'adjustment_reason' => $adjustmentReason,
+                    'adjustment' => $adjustment,
+                    'adjustment_reason' => $adjustmentReason,
 
-                'final_payable' => $finalPayable,
+                    'final_payable' => $finalPayable,
 
-                'status' => SalaryStatus::DRAFT,
-                'paid_at' => null,
-            ]);
+                    'status' => SalaryStatus::DRAFT,
+                    'paid_at' => null,
+                ]);
+            } catch (QueryException $e) {
+                if ($this->isUniqueViolation($e)) {
+                    throw new RuntimeException(
+                        'Salary for this period has already been generated.',
+                        previous: $e,
+                    );
+                }
+
+                throw new RuntimeException(
+                    'Unable to generate salary. Please try again.',
+                    previous: $e,
+                );
+            }
         });
     }
 
@@ -446,5 +461,21 @@ class SalaryService
                 '',
             ),
         ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Database Helpers
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Determine whether the database exception is a unique constraint
+     * violation.
+     */
+    private function isUniqueViolation(
+        QueryException $exception,
+    ): bool {
+        return $exception->getCode() === '23000';
     }
 }

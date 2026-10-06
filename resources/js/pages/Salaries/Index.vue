@@ -36,6 +36,7 @@ import type {
 const props = defineProps<{
     salaries: SalaryResponse;
     filters: SalaryFilters;
+    can_generate_last_month: boolean;
 }>();
 
 /*
@@ -180,6 +181,7 @@ const handleDeleteSelected = (): void => {
             <ListingActions
                 :create-url="create()"
                 :create-label="salaryPage.createLabel"
+                :generate-disabled="!can_generate_last_month"
                 :generate-url="generateLastMonth()"
                 generate-label="Generate Last Month's Salary"
                 :selected-count="selectedCount"

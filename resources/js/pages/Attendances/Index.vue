@@ -81,7 +81,6 @@ const columns = createAttendanceColumns((uuid) => {
 
 const {
     table,
-    searchQuery,
     selectedCount,
     search,
     clearFilters,
@@ -89,15 +88,12 @@ const {
 } = useListingTable<Attendance, AttendanceSort>({
     data: () => props.attendances,
     columns,
-
     filters: {
-        search: props.filters.search,
         sort: props.filters.sort,
         direction: props.filters.direction,
     },
-
     route: attendancesRoute.url(),
-
+    searchable: false,
     additionalFilters: () => ({
         user_id:
             filterEmployee.value !== 'all'
@@ -164,12 +160,9 @@ const handleDeleteSelected = () => {
 
         <template #filters>
             <ListingFilters
-                v-model:search="searchQuery"
-                :search-placeholder="attendancePage.searchPlaceholder"
-                :search-button-label="attendancePage.searchButtonLabel"
+                :searchable="false"
                 :clear-button-label="attendancePage.clearButtonLabel"
                 :clear-disabled="
-                    !searchQuery.trim() &&
                     filterEmployee === 'all' &&
                     !filterStartDate &&
                     !filterEndDate

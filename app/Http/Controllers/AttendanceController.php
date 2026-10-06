@@ -50,7 +50,6 @@ class AttendanceController extends Controller
                 'breaks',
             ]),
             $filters,
-            sortColumns: ['attendance_date'],
         )
             ->when(
                 $filters['user_id'] ?? null,

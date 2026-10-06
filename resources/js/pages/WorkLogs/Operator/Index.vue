@@ -80,7 +80,6 @@ const columns = createOperatorWorkLogColumns((id) => {
 
 const {
     table,
-    searchQuery,
     selectedCount,
     search,
     clearFilters,
@@ -90,13 +89,12 @@ const {
     columns,
 
     filters: {
-        search: props.filters.search,
         sort: props.filters.sort,
         direction: props.filters.direction,
     },
 
     route: operatorWorkLogsRoute.url(),
-
+    searchable:false,
     additionalFilters: () => ({
         work_date: filterWorkDate.value || undefined,
 
@@ -204,18 +202,11 @@ const handleDeleteSelected = () => {
 
         <template #filters>
             <ListingFilters
-                v-model:search="searchQuery"
-                :search-placeholder="
-                    operatorWorkLogPage.searchPlaceholder
-                "
-                :search-button-label="
-                    operatorWorkLogPage.searchButtonLabel
-                "
+                :searchable="false"
                 :clear-button-label="
                     operatorWorkLogPage.clearButtonLabel
                 "
                 :clear-disabled="
-                    !searchQuery.trim() &&
                     !filterWorkDate &&
                     filterShift === 'all' &&
                     filterUserId === 'all' &&

@@ -85,7 +85,6 @@ const columns = createBandsawWorkLogColumns((id) => {
 
 const {
     table,
-    searchQuery,
     selectedCount,
     search,
     clearFilters,
@@ -93,15 +92,12 @@ const {
 } = useListingTable<BandsawWorkLog, BandsawWorkLogSort>({
     data: () => props.bandsawWorkLogs,
     columns,
-
     filters: {
-        search: props.filters.search,
         sort: props.filters.sort,
         direction: props.filters.direction,
     },
-
     route: bandsawWorkLogsRoute.url(),
-
+    searchable: false,
     additionalFilters: () => ({
         work_date: filterWorkDate.value || undefined,
 
@@ -201,18 +197,11 @@ const handleDeleteSelected = () => {
 
         <template #filters>
             <ListingFilters
-                v-model:search="searchQuery"
-                :search-placeholder="
-                    bandsawWorkLogPage.searchPlaceholder
-                "
-                :search-button-label="
-                    bandsawWorkLogPage.searchButtonLabel
-                "
+                :searchable="false"
                 :clear-button-label="
                     bandsawWorkLogPage.clearButtonLabel
                 "
                 :clear-disabled="
-                    !searchQuery.trim() &&
                     !filterWorkDate &&
                     filterUserId === 'all' &&
                     filterPartId === 'all' &&

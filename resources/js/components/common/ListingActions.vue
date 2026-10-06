@@ -30,6 +30,7 @@ withDefaults(
 
         generateUrl?: Href;
         generateLabel?: string;
+        generateDisabled?: boolean;
 
         selectedCount?: number;
         resourceLabel?: string;
@@ -45,6 +46,7 @@ withDefaults(
         exportLabel: 'Export',
 
         generateLabel: 'Generate',
+        generateDisabled: false,
 
         selectedCount: 0,
         resourceLabel: 'items',
@@ -158,12 +160,15 @@ const emit = defineEmits<{
             v-if="generateUrl"
             as-child
             size="sm"
-            class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
+            class="h-9 w-full shrink-0 sm:w-auto"
+            :disabled="generateDisabled"
         >
             <Link
                 :href="generateUrl"
                 method="post"
                 :aria-label="generateLabel"
+                :aria-disabled="generateDisabled"
+                :tabindex="generateDisabled ? -1 : undefined"
             >
                 <Banknote
                     class="size-4"

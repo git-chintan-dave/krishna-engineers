@@ -29,6 +29,7 @@ class FlashMessage
             'duplicated' => "{$module} duplicated successfully.",
             'activated' => "{$module} activated successfully.",
             'deactivated' => "{$module} deactivated successfully.",
+            'generated' => "{$module} generated successfully.",
             default => "{$module} action completed successfully.",
         };
     }
@@ -57,6 +58,7 @@ class FlashMessage
             'duplicated' => "Failed to duplicate {$module}.",
             'activated' => "Failed to activate {$module}.",
             'deactivated' => "Failed to deactivate {$module}.",
+            'generated' => "Failed to generate {$module}.",
             default => "{$module} action failed.",
         };
     }
