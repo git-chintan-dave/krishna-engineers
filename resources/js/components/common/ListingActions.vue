@@ -159,6 +159,7 @@ const emit = defineEmits<{
         <Button
             v-if="generateUrl"
             as-child
+            variant="outline"
             size="sm"
             class="h-9 w-full shrink-0 sm:w-auto"
             :disabled="generateDisabled"

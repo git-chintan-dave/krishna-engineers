@@ -3,6 +3,7 @@ export const attendancePage = {
     description: 'Manage employee attendance and working hours.',
 
     createLabel: 'Add Attendance',
+    importLabel: 'Import Attendance',
 
     searchButtonLabel: 'Search',
     clearButtonLabel: 'Clear',
@@ -25,7 +26,23 @@ export const attendancePage = {
         attendanceDatePlaceholder: 'Select attendance date',
 
         startAtLabel: 'Clock In',
+        startAtPlaceholder: 'Select clock-in time',
+
         endAtLabel: 'Clock Out',
+        endAtPlaceholder: 'Select clock-out time',
+
+        breaksSectionTitle: 'Breaks',
+        breaksSectionDescription:
+            'Add break periods taken during the attendance period.',
+
+        breakStartLabel: 'Break Start',
+        breakStartPlaceholder: 'Select start time',
+
+        breakEndLabel: 'Break End',
+        breakEndPlaceholder: 'Select end time',
+
+        addBreakLabel: 'Add Break',
+        removeBreakLabel: 'Remove Break',
 
         createTitle: 'Add Attendance',
         createDescription:

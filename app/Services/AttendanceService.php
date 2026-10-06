@@ -416,10 +416,10 @@ class AttendanceService
                 } catch (RuntimeException $exception) {
                     throw new AttendanceImportException(
                         "Attendance for {$user->name} "
-                        . "({$user->employee_code}) on "
-                        . Carbon::parse($attendanceDate)->format('d M Y')
-                        . ' cannot be imported because the salary '
-                        . 'for this period has already been paid.',
+                        ."({$user->employee_code}) on "
+                        .Carbon::parse($attendanceDate)->format('d M Y')
+                        .' cannot be imported because the salary '
+                        .'for this period has already been paid.',
                         previous: $exception,
                     );
                 }
@@ -445,9 +445,9 @@ class AttendanceService
                 ) {
                     throw new AttendanceImportException(
                         "Attendance for {$user->name} "
-                        . "({$user->employee_code}) on "
-                        . Carbon::parse($attendanceDate)->format('d M Y')
-                        . ' has an invalid clock-out time.',
+                        ."({$user->employee_code}) on "
+                        .Carbon::parse($attendanceDate)->format('d M Y')
+                        .' has an invalid clock-out time.',
                     );
                 }
 
@@ -488,6 +488,8 @@ class AttendanceService
             ->breaks()
             ->sum('duration_seconds');
 
+        $breakSeconds = $breakSeconds === 0 ? 3600 : $breakSeconds;
+
         $attendance->update([
             'total_working_seconds' => $totalWorkingSeconds,
             'break_seconds' => $breakSeconds,
@@ -524,7 +526,7 @@ class AttendanceService
 
         $employeeLabel = $attendance->user?->employee_code
             ? "{$attendance->user->name} "
-            . "({$attendance->user->employee_code})"
+            ."({$attendance->user->employee_code})"
             : 'This employee';
 
         $date = $attendance->attendance_date
@@ -532,9 +534,9 @@ class AttendanceService
 
         throw new AttendanceActionException(
             "Attendance for {$employeeLabel} on "
-            . Carbon::parse($date)->format('d M Y')
-            . ' cannot be changed because the salary for this '
-            . 'period has already been paid.',
+            .Carbon::parse($date)->format('d M Y')
+            .' cannot be changed because the salary for this '
+            .'period has already been paid.',
         );
     }
 
@@ -569,9 +571,9 @@ class AttendanceService
 
         throw new RuntimeException(
             "Attendance for {$employeeLabel} on "
-            . Carbon::parse($date)->format('d M Y')
-            . ' cannot be changed because the salary for this '
-            . 'period has already been paid.',
+            .Carbon::parse($date)->format('d M Y')
+            .' cannot be changed because the salary for this '
+            .'period has already been paid.',
         );
     }
 
@@ -657,8 +659,8 @@ class AttendanceService
 
         throw new AttendanceActionException(
             "Attendance already exists for {$employeeLabel} on "
-            . Carbon::parse($date)->format('d M Y')
-            . '.',
+            .Carbon::parse($date)->format('d M Y')
+            .'.',
         );
     }
 
@@ -684,11 +686,11 @@ class AttendanceService
             $endAt = empty($break['end_at'])
                 ? null
                 : (
-                $break['end_at'] instanceof CarbonInterface
-                    ? $break['end_at']
-                    : Carbon::parse(
-                    $break['end_at'],
-                )
+                    $break['end_at'] instanceof CarbonInterface
+                        ? $break['end_at']
+                        : Carbon::parse(
+                            $break['end_at'],
+                        )
                 );
 
             if (

@@ -31,7 +31,12 @@ defineOptions({
     inheritAttrs: false,
 });
 
-// Types
+/*
+|--------------------------------------------------------------------------
+| Types
+|--------------------------------------------------------------------------
+*/
+
 type InputType =
     | 'text'
     | 'password'
@@ -50,7 +55,12 @@ type InputType =
 
 type ModelValue = string | number | null;
 
-// Props
+/*
+|--------------------------------------------------------------------------
+| Props
+|--------------------------------------------------------------------------
+*/
+
 const props = withDefaults(
     defineProps<{
         type?: InputType;
@@ -102,38 +112,73 @@ const props = withDefaults(
     },
 );
 
-// Model
+/*
+|--------------------------------------------------------------------------
+| Model
+|--------------------------------------------------------------------------
+*/
+
 const model = defineModel<ModelValue>({
     default: null,
 });
 
-// Attributes
+/*
+|--------------------------------------------------------------------------
+| Attributes
+|--------------------------------------------------------------------------
+*/
+
 const attrs = useAttrs();
 
-// Refs
-const inputRef = ref<HTMLInputElement | null>(null);
-const textareaRef = ref<HTMLTextAreaElement | null>(null);
+/*
+|--------------------------------------------------------------------------
+| Refs
+|--------------------------------------------------------------------------
+*/
 
-// State
+const inputRef =
+    ref<HTMLInputElement | null>(null);
+
+const textareaRef =
+    ref<HTMLTextAreaElement | null>(null);
+
+/*
+|--------------------------------------------------------------------------
+| State
+|--------------------------------------------------------------------------
+*/
+
 const datePickerOpen = ref(false);
 const timePickerOpen = ref(false);
 const datetimePickerOpen = ref(false);
 const showPassword = ref(false);
 
-// Time Options
+/*
+|--------------------------------------------------------------------------
+| Time Options
+|--------------------------------------------------------------------------
+*/
+
 const hours = Array.from(
     { length: 12 },
-    (_, index) => String(index + 1).padStart(2, '0'),
+    (_, index) =>
+        String(index + 1).padStart(2, '0'),
 );
 
 const minutes = Array.from(
     { length: 60 },
-    (_, index) => String(index).padStart(2, '0'),
+    (_, index) =>
+        String(index).padStart(2, '0'),
 );
 
 const periods = ['AM', 'PM'] as const;
 
-// Input State
+/*
+|--------------------------------------------------------------------------
+| Input State
+|--------------------------------------------------------------------------
+*/
+
 const isDateInput = computed(
     () => props.type === 'date',
 );
@@ -147,7 +192,9 @@ const isDatetimeInput = computed(
 );
 
 const isNativePickerInput = computed(() =>
-    ['month', 'week'].includes(props.type),
+    ['month', 'week'].includes(
+        props.type,
+    ),
 );
 
 const isPasswordInput = computed(
@@ -159,20 +206,62 @@ const resolvedInputType = computed(() => {
         return props.type;
     }
 
-    return showPassword.value ? 'text' : 'password';
+    return showPassword.value
+        ? 'text'
+        : 'password';
 });
 
+/*
+|--------------------------------------------------------------------------
+| Picker Icon
+|--------------------------------------------------------------------------
+|
+| All special picker inputs use a leading icon.
+|
+| Explicit icon wins over the default icon.
+|
+*/
+
+const pickerIcon = computed<
+    Component | null
+>(() => {
+    if (props.icon) {
+        return props.icon;
+    }
+
+    if (
+        isDateInput.value
+        || isDatetimeInput.value
+        || isNativePickerInput.value
+    ) {
+        return CalendarDays;
+    }
+
+    if (isTimeInput.value) {
+        return Clock3;
+    }
+
+    return null;
+});
+
+/*
+|--------------------------------------------------------------------------
+| Layout State
+|--------------------------------------------------------------------------
+*/
+
 const hasLeadingContent = computed(
-    () => !!props.icon || !!props.prefix,
+    () =>
+        !!pickerIcon.value
+        || !!props.prefix,
 );
 
 const hasTrailingContent = computed(
     () =>
-        !!props.suffix ||
-        props.clearable ||
-        isPasswordInput.value ||
-        props.loading ||
-        isNativePickerInput.value,
+        !!props.suffix
+        || props.clearable
+        || isPasswordInput.value
+        || props.loading,
 );
 
 const hasError = computed(
@@ -181,20 +270,16 @@ const hasError = computed(
 
 const hasValue = computed(
     () =>
-        model.value !== null &&
-        model.value !== undefined &&
-        String(model.value).length > 0,
+        model.value !== null
+        && model.value !== undefined
+        && String(model.value).length > 0,
 );
 
-// Normalize nullable model values for shadcn Input/Textarea.
-const nativeModel = computed<
-    string | number | undefined
->({
-    get: () => model.value ?? undefined,
-    set: (value) => {
-        model.value = value ?? null;
-    },
-});
+/*
+|--------------------------------------------------------------------------
+| Input Classes
+|--------------------------------------------------------------------------
+*/
 
 const inputClasses = computed(() => [
     'flex w-full min-w-0 rounded-md border bg-background text-sm transition-colors',
@@ -224,7 +309,30 @@ const inputClasses = computed(() => [
         : 'border-input',
 ]);
 
-// Date Helpers
+/*
+|--------------------------------------------------------------------------
+| Native Model
+|--------------------------------------------------------------------------
+*/
+
+const nativeModel = computed<
+    string | number | undefined
+>({
+    get: () =>
+        model.value ?? undefined,
+
+    set: (value) => {
+        model.value =
+            value ?? null;
+    },
+});
+
+/*
+|--------------------------------------------------------------------------
+| Date Helpers
+|--------------------------------------------------------------------------
+*/
+
 const getDatePart = (
     value: string,
 ): string => {
@@ -247,20 +355,32 @@ const getTimePart = (
     }
 
     if (value.includes('T')) {
-        return value.split('T')[1]?.slice(0, 5) ?? '';
+        return (
+            value
+                .split('T')[1]
+                ?.slice(0, 5)
+            ?? ''
+        );
     }
 
     return value.slice(0, 5);
 };
 
-// Date Picker
+/*
+|--------------------------------------------------------------------------
+| Date Picker
+|--------------------------------------------------------------------------
+*/
+
 const selectedDate = computed<
     DateValue | undefined
 >({
     get() {
         const value =
             typeof model.value === 'string'
-                ? getDatePart(model.value)
+                ? getDatePart(
+                    model.value,
+                )
                 : '';
 
         if (!value) {
@@ -281,14 +401,17 @@ const selectedDate = computed<
             return;
         }
 
-        model.value = value.toString();
+        model.value =
+            value.toString();
     },
 });
 
 const formattedDate = computed(() => {
     const value =
         typeof model.value === 'string'
-            ? getDatePart(model.value)
+            ? getDatePart(
+                model.value,
+            )
             : '';
 
     if (!value) {
@@ -301,7 +424,11 @@ const formattedDate = computed(() => {
         day,
     ] = value.split('-').map(Number);
 
-    if (!year || !month || !day) {
+    if (
+        !year
+        || !month
+        || !day
+    ) {
         return '';
     }
 
@@ -311,7 +438,11 @@ const formattedDate = computed(() => {
         day,
     );
 
-    if (Number.isNaN(date.getTime())) {
+    if (
+        Number.isNaN(
+            date.getTime(),
+        )
+    ) {
         return '';
     }
 
@@ -327,7 +458,7 @@ const formattedDate = computed(() => {
 
 const selectDate = (
     value: DateValue | undefined,
-) => {
+): void => {
     if (!value) {
         model.value = null;
         datePickerOpen.value = false;
@@ -335,131 +466,157 @@ const selectDate = (
         return;
     }
 
-    model.value = value.toString();
+    model.value =
+        value.toString();
+
     datePickerOpen.value = false;
 };
 
-// DateTime Picker
-const selectedDatetimeDate = computed<
-    DateValue | undefined
->({
-    get() {
-        const value =
-            typeof model.value === 'string'
-                ? getDatePart(model.value)
-                : '';
+/*
+|--------------------------------------------------------------------------
+| DateTime Picker
+|--------------------------------------------------------------------------
+*/
 
-        if (!value) {
-            return undefined;
+const selectedDatetimeDate =
+    computed<
+        DateValue | undefined
+    >({
+        get() {
+            const value =
+                typeof model.value === 'string'
+                    ? getDatePart(
+                        model.value,
+                    )
+                    : '';
+
+            if (!value) {
+                return undefined;
+            }
+
+            try {
+                return parseDate(value);
+            } catch {
+                return undefined;
+            }
+        },
+
+        set(value) {
+            if (!value) {
+                model.value = null;
+
+                return;
+            }
+
+            const currentTime =
+                typeof model.value === 'string'
+                    ? getTimePart(
+                        model.value,
+                    )
+                    : '';
+
+            model.value =
+                `${value.toString()}T${
+                    currentTime || '00:00'
+                }`;
+        },
+    });
+
+const formattedDatetime =
+    computed(() => {
+        if (
+            typeof model.value !== 'string'
+            || !model.value
+        ) {
+            return '';
         }
 
-        try {
-            return parseDate(value);
-        } catch {
-            return undefined;
+        const dateValue =
+            getDatePart(
+                model.value,
+            );
+
+        const timeValue =
+            getTimePart(
+                model.value,
+            );
+
+        if (!dateValue) {
+            return '';
         }
-    },
 
-    set(value) {
-        if (!value) {
-            model.value = null;
+        const [
+            year,
+            month,
+            day,
+        ] = dateValue
+            .split('-')
+            .map(Number);
 
-            return;
+        if (
+            !year
+            || !month
+            || !day
+        ) {
+            return '';
         }
 
-        const currentTime =
-            typeof model.value === 'string'
-                ? getTimePart(model.value)
-                : '';
+        const date = new Date(
+            year,
+            month - 1,
+            day,
+        );
 
-        model.value = `${value.toString()}T${
-            currentTime || '00:00'
-        }`;
-    },
-});
+        if (
+            Number.isNaN(
+                date.getTime(),
+            )
+        ) {
+            return '';
+        }
 
-const formattedDatetime = computed(() => {
-    if (
-        typeof model.value !== 'string' ||
-        !model.value
-    ) {
-        return '';
-    }
+        const formattedDateValue =
+            new Intl.DateTimeFormat(
+                undefined,
+                {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                },
+            ).format(date);
 
-    const dateValue = getDatePart(
-        model.value,
-    );
+        if (!timeValue) {
+            return formattedDateValue;
+        }
 
-    const timeValue = getTimePart(
-        model.value,
-    );
+        const [
+            hour = '00',
+            minute = '00',
+        ] = timeValue.split(':');
 
-    if (!dateValue) {
-        return '';
-    }
+        const time = new Date(
+            2000,
+            0,
+            1,
+            Number(hour),
+            Number(minute),
+        );
 
-    const [
-        year,
-        month,
-        day,
-    ] = dateValue.split('-').map(Number);
+        const formattedTimeValue =
+            new Intl.DateTimeFormat(
+                undefined,
+                {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                },
+            ).format(time);
 
-    if (!year || !month || !day) {
-        return '';
-    }
-
-    const date = new Date(
-        year,
-        month - 1,
-        day,
-    );
-
-    if (Number.isNaN(date.getTime())) {
-        return '';
-    }
-
-    const formattedDateValue =
-        new Intl.DateTimeFormat(
-            undefined,
-            {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-            },
-        ).format(date);
-
-    if (!timeValue) {
-        return formattedDateValue;
-    }
-
-    const [
-        hour = '00',
-        minute = '00',
-    ] = timeValue.split(':');
-
-    const time = new Date(
-        2000,
-        0,
-        1,
-        Number(hour),
-        Number(minute),
-    );
-
-    const formattedTimeValue =
-        new Intl.DateTimeFormat(
-            undefined,
-            {
-                hour: 'numeric',
-                minute: '2-digit',
-            },
-        ).format(time);
-
-    return `${formattedDateValue}, ${formattedTimeValue}`;
-});
+        return `${formattedDateValue}, ${formattedTimeValue}`;
+    });
 
 const selectDatetimeDate = (
     value: DateValue | undefined,
-) => {
+): void => {
     if (!value) {
         model.value = null;
 
@@ -468,19 +625,29 @@ const selectDatetimeDate = (
 
     const currentTime =
         typeof model.value === 'string'
-            ? getTimePart(model.value)
+            ? getTimePart(
+                model.value,
+            )
             : '';
 
-    model.value = `${value.toString()}T${
-        currentTime || '00:00'
-    }`;
+    model.value =
+        `${value.toString()}T${
+            currentTime || '00:00'
+        }`;
 };
 
-// Time Picker
+/*
+|--------------------------------------------------------------------------
+| Time Picker
+|--------------------------------------------------------------------------
+*/
+
 const timeParts = computed(() => {
     const value =
         typeof model.value === 'string'
-            ? getTimePart(model.value)
+            ? getTimePart(
+                model.value,
+            )
             : '';
 
     const [
@@ -488,11 +655,14 @@ const timeParts = computed(() => {
         minute = '',
     ] = value.split(':');
 
-    const hourNumber = Number(hour);
+    const hourNumber =
+        Number(hour);
 
     if (
-        !hour ||
-        Number.isNaN(hourNumber)
+        !hour
+        || Number.isNaN(
+            hourNumber,
+        )
     ) {
         return {
             hour: '12',
@@ -541,19 +711,20 @@ const updateTime = (
     hour: string,
     minute: string,
     period: 'AM' | 'PM',
-) => {
-    let hourNumber = Number(hour);
+): void => {
+    let hourNumber =
+        Number(hour);
 
     if (
-        period === 'AM' &&
-        hourNumber === 12
+        period === 'AM'
+        && hourNumber === 12
     ) {
         hourNumber = 0;
     }
 
     if (
-        period === 'PM' &&
-        hourNumber !== 12
+        period === 'PM'
+        && hourNumber !== 12
     ) {
         hourNumber += 12;
     }
@@ -566,39 +737,45 @@ const updateDatetimeTime = (
     hour: string,
     minute: string,
     period: 'AM' | 'PM',
-) => {
-    let hourNumber = Number(hour);
+): void => {
+    let hourNumber =
+        Number(hour);
 
     if (
-        period === 'AM' &&
-        hourNumber === 12
+        period === 'AM'
+        && hourNumber === 12
     ) {
         hourNumber = 0;
     }
 
     if (
-        period === 'PM' &&
-        hourNumber !== 12
+        period === 'PM'
+        && hourNumber !== 12
     ) {
         hourNumber += 12;
     }
 
     const dateValue =
         typeof model.value === 'string'
-            ? getDatePart(model.value)
+            ? getDatePart(
+                model.value,
+            )
             : '';
 
-    model.value = `${
-        dateValue ||
+    const fallbackDate =
         new Date()
             .toISOString()
-            .slice(0, 10)
-    }T${String(hourNumber).padStart(2, '0')}:${minute}`;
+            .slice(0, 10);
+
+    model.value =
+        `${
+            dateValue || fallbackDate
+        }T${String(hourNumber).padStart(2, '0')}:${minute}`;
 };
 
 const selectHour = (
     hour: string,
-) => {
+): void => {
     updateTime(
         hour,
         selectedMinute.value,
@@ -608,7 +785,7 @@ const selectHour = (
 
 const selectMinute = (
     minute: string,
-) => {
+): void => {
     updateTime(
         selectedHour.value,
         minute,
@@ -618,7 +795,7 @@ const selectMinute = (
 
 const selectPeriod = (
     period: 'AM' | 'PM',
-) => {
+): void => {
     updateTime(
         selectedHour.value,
         selectedMinute.value,
@@ -628,7 +805,7 @@ const selectPeriod = (
 
 const selectDatetimeHour = (
     hour: string,
-) => {
+): void => {
     updateDatetimeTime(
         hour,
         selectedMinute.value,
@@ -638,7 +815,7 @@ const selectDatetimeHour = (
 
 const selectDatetimeMinute = (
     minute: string,
-) => {
+): void => {
     updateDatetimeTime(
         selectedHour.value,
         minute,
@@ -648,7 +825,7 @@ const selectDatetimeMinute = (
 
 const selectDatetimePeriod = (
     period: 'AM' | 'PM',
-) => {
+): void => {
     updateDatetimeTime(
         selectedHour.value,
         selectedMinute.value,
@@ -656,8 +833,13 @@ const selectDatetimePeriod = (
     );
 };
 
-// Actions
-const clear = () => {
+/*
+|--------------------------------------------------------------------------
+| Actions
+|--------------------------------------------------------------------------
+*/
+
+const clear = (): void => {
     model.value = null;
 
     nextTick(() => {
@@ -665,7 +847,7 @@ const clear = () => {
     });
 };
 
-const togglePassword = () => {
+const togglePassword = (): void => {
     showPassword.value =
         !showPassword.value;
 
@@ -674,7 +856,7 @@ const togglePassword = () => {
     });
 };
 
-const focus = () => {
+const focus = (): void => {
     if (props.textarea) {
         textareaRef.value?.focus();
 
@@ -692,7 +874,12 @@ defineExpose({
 
 <template>
     <div class="w-full min-w-0">
-        <!-- Date -->
+        <!--
+        |--------------------------------------------------------------------------
+        | Date Picker
+        |--------------------------------------------------------------------------
+        -->
+
         <Popover
             v-if="isDateInput"
             v-model:open="datePickerOpen"
@@ -703,36 +890,26 @@ defineExpose({
                     :disabled="
                         disabled || readonly
                     "
-                    :aria-invalid="hasError"
+                    :aria-invalid="
+                        hasError
+                    "
                     :class="[
                         inputClasses,
-                        'relative cursor-pointer items-center text-left',
+                        'relative flex cursor-pointer items-center text-left',
                         !formattedDate &&
                             'text-muted-foreground',
                     ]"
                     v-bind="attrs"
                 >
                     <component
-                        v-if="icon"
-                        :is="icon"
+                        :is="pickerIcon"
                         class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
                         aria-hidden="true"
                     />
 
                     <span
-                        v-else-if="prefix"
-                        class="pointer-events-none absolute top-1/2 left-3 max-w-[35%] -translate-y-1/2 truncate text-sm text-muted-foreground"
+                        class="block min-w-0 truncate"
                     >
-                        {{ prefix }}
-                    </span>
-
-                    <CalendarDays
-                        v-else
-                        class="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2"
-                        aria-hidden="true"
-                    />
-
-                    <span class="block truncate">
                         {{
                             formattedDate ||
                             placeholder ||
@@ -756,12 +933,19 @@ defineExpose({
                 <Calendar
                     v-model="selectedDate"
                     initial-focus
-                    @update:model-value="selectDate"
+                    @update:model-value="
+                        selectDate
+                    "
                 />
             </PopoverContent>
         </Popover>
 
-        <!-- Time -->
+        <!--
+        |--------------------------------------------------------------------------
+        | Time Picker
+        |--------------------------------------------------------------------------
+        -->
+
         <Popover
             v-else-if="isTimeInput"
             v-model:open="timePickerOpen"
@@ -772,36 +956,26 @@ defineExpose({
                     :disabled="
                         disabled || readonly
                     "
-                    :aria-invalid="hasError"
+                    :aria-invalid="
+                        hasError
+                    "
                     :class="[
                         inputClasses,
-                        'relative cursor-pointer text-left',
+                        'relative flex cursor-pointer items-center text-left',
                         !formattedTime &&
                             'text-muted-foreground',
                     ]"
                     v-bind="attrs"
                 >
                     <component
-                        v-if="icon"
-                        :is="icon"
+                        :is="pickerIcon"
                         class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
                         aria-hidden="true"
                     />
 
                     <span
-                        v-else-if="prefix"
-                        class="pointer-events-none absolute top-1/2 left-3 max-w-[35%] -translate-y-1/2 truncate text-sm text-muted-foreground"
+                        class="block min-w-0 truncate"
                     >
-                        {{ prefix }}
-                    </span>
-
-                    <Clock3
-                        v-else
-                        class="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2"
-                        aria-hidden="true"
-                    />
-
-                    <span class="block truncate">
                         {{
                             formattedTime ||
                             placeholder ||
@@ -822,9 +996,14 @@ defineExpose({
                 align="start"
                 class="w-auto min-w-64 p-3"
             >
-                <div class="grid grid-cols-3 gap-2">
+                <div
+                    class="grid grid-cols-3 gap-2"
+                >
                     <!-- Hours -->
-                    <div class="min-w-0 space-y-1">
+
+                    <div
+                        class="min-w-0 space-y-1"
+                    >
                         <p
                             class="px-2 text-xs font-medium text-muted-foreground"
                         >
@@ -847,7 +1026,9 @@ defineExpose({
                                         'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
                                 ]"
                                 @click="
-                                    selectHour(hour)
+                                    selectHour(
+                                        hour,
+                                    )
                                 "
                             >
                                 {{ hour }}
@@ -856,7 +1037,10 @@ defineExpose({
                     </div>
 
                     <!-- Minutes -->
-                    <div class="min-w-0 space-y-1">
+
+                    <div
+                        class="min-w-0 space-y-1"
+                    >
                         <p
                             class="px-2 text-xs font-medium text-muted-foreground"
                         >
@@ -890,14 +1074,19 @@ defineExpose({
                     </div>
 
                     <!-- Period -->
-                    <div class="min-w-0 space-y-1">
+
+                    <div
+                        class="min-w-0 space-y-1"
+                    >
                         <p
                             class="px-2 text-xs font-medium text-muted-foreground"
                         >
                             Period
                         </p>
 
-                        <div class="rounded-md border">
+                        <div
+                            class="rounded-md border"
+                        >
                             <button
                                 v-for="period in periods"
                                 :key="period"
@@ -931,7 +1120,9 @@ defineExpose({
                         Selected time
                     </span>
 
-                    <span class="text-sm font-medium">
+                    <span
+                        class="text-sm font-medium"
+                    >
                         {{
                             formattedTime ||
                             '—'
@@ -941,10 +1132,17 @@ defineExpose({
             </PopoverContent>
         </Popover>
 
-        <!-- Date & Time -->
+        <!--
+        |--------------------------------------------------------------------------
+        | Date & Time Picker
+        |--------------------------------------------------------------------------
+        -->
+
         <Popover
             v-else-if="isDatetimeInput"
-            v-model:open="datetimePickerOpen"
+            v-model:open="
+                datetimePickerOpen
+            "
         >
             <PopoverTrigger as-child>
                 <button
@@ -952,36 +1150,26 @@ defineExpose({
                     :disabled="
                         disabled || readonly
                     "
-                    :aria-invalid="hasError"
+                    :aria-invalid="
+                        hasError
+                    "
                     :class="[
                         inputClasses,
-                        'relative cursor-pointer items-center text-left',
+                        'relative flex cursor-pointer items-center text-left',
                         !formattedDatetime &&
                             'text-muted-foreground',
                     ]"
                     v-bind="attrs"
                 >
                     <component
-                        v-if="icon"
-                        :is="icon"
+                        :is="pickerIcon"
                         class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
                         aria-hidden="true"
                     />
 
                     <span
-                        v-else-if="prefix"
-                        class="pointer-events-none absolute top-1/2 left-3 max-w-[35%] -translate-y-1/2 truncate text-sm text-muted-foreground"
+                        class="block min-w-0 truncate"
                     >
-                        {{ prefix }}
-                    </span>
-
-                    <CalendarDays
-                        v-else
-                        class="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2"
-                        aria-hidden="true"
-                    />
-
-                    <span class="block truncate">
                         {{
                             formattedDatetime ||
                             placeholder ||
@@ -1004,6 +1192,7 @@ defineExpose({
             >
                 <div class="space-y-4">
                     <!-- Date -->
+
                     <div>
                         <div
                             class="mb-2 flex items-center gap-2"
@@ -1020,7 +1209,9 @@ defineExpose({
                         </div>
 
                         <Calendar
-                            v-model="selectedDatetimeDate"
+                            v-model="
+                                selectedDatetimeDate
+                            "
                             initial-focus
                             @update:model-value="
                                 selectDatetimeDate
@@ -1029,7 +1220,10 @@ defineExpose({
                     </div>
 
                     <!-- Time -->
-                    <div class="border-t pt-4">
+
+                    <div
+                        class="border-t pt-4"
+                    >
                         <div
                             class="mb-2 flex items-center gap-2"
                         >
@@ -1048,6 +1242,7 @@ defineExpose({
                             class="grid grid-cols-3 gap-2"
                         >
                             <!-- Hours -->
+
                             <div
                                 class="min-w-0 space-y-1"
                             >
@@ -1084,6 +1279,7 @@ defineExpose({
                             </div>
 
                             <!-- Minutes -->
+
                             <div
                                 class="min-w-0 space-y-1"
                             >
@@ -1120,6 +1316,7 @@ defineExpose({
                             </div>
 
                             <!-- Period -->
+
                             <div
                                 class="min-w-0 space-y-1"
                             >
@@ -1129,7 +1326,9 @@ defineExpose({
                                     Period
                                 </p>
 
-                                <div class="rounded-md border">
+                                <div
+                                    class="rounded-md border"
+                                >
                                     <button
                                         v-for="period in periods"
                                         :key="period"
@@ -1156,6 +1355,7 @@ defineExpose({
                     </div>
 
                     <!-- Selected Value -->
+
                     <div
                         class="flex items-center justify-between gap-3 border-t pt-3"
                     >
@@ -1176,6 +1376,7 @@ defineExpose({
                     </div>
 
                     <!-- Done -->
+
                     <Button
                         type="button"
                         class="w-full"
@@ -1190,20 +1391,31 @@ defineExpose({
             </PopoverContent>
         </Popover>
 
-        <!-- Native Inputs -->
+        <!--
+        |--------------------------------------------------------------------------
+        | Native Input
+        |--------------------------------------------------------------------------
+        -->
+
         <div
             v-else
             class="relative w-full min-w-0"
         >
-            <!-- Leading Icon -->
+            <!-- Leading Icon / Prefix -->
+
             <component
-                v-if="icon"
-                :is="icon"
+                v-if="
+                    pickerIcon
+                    || props.icon
+                "
+                :is="
+                    pickerIcon ||
+                    props.icon
+                "
                 class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
                 aria-hidden="true"
             />
 
-            <!-- Prefix -->
             <span
                 v-else-if="prefix"
                 class="pointer-events-none absolute top-1/2 left-3 max-w-[35%] -translate-y-1/2 truncate text-sm text-muted-foreground"
@@ -1212,6 +1424,7 @@ defineExpose({
             </span>
 
             <!-- Loading -->
+
             <LoaderCircle
                 v-if="loading"
                 class="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 animate-spin text-muted-foreground"
@@ -1219,12 +1432,13 @@ defineExpose({
             />
 
             <!-- Clear -->
+
             <button
                 v-else-if="
-                    clearable &&
-                    hasValue &&
-                    !disabled &&
-                    !readonly
+                    clearable
+                    && hasValue
+                    && !disabled
+                    && !readonly
                 "
                 type="button"
                 tabindex="-1"
@@ -1239,6 +1453,7 @@ defineExpose({
             </button>
 
             <!-- Password -->
+
             <button
                 v-else-if="isPasswordInput"
                 type="button"
@@ -1252,7 +1467,9 @@ defineExpose({
                         : 'Show password'
                 "
                 class="absolute top-1/2 right-2 flex size-7 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none"
-                @click="togglePassword"
+                @click="
+                    togglePassword
+                "
             >
                 <EyeOff
                     v-if="showPassword"
@@ -1268,6 +1485,7 @@ defineExpose({
             </button>
 
             <!-- Suffix -->
+
             <span
                 v-else-if="suffix"
                 class="pointer-events-none absolute top-1/2 right-3 max-w-[30%] -translate-y-1/2 truncate text-sm text-muted-foreground"
@@ -1276,6 +1494,7 @@ defineExpose({
             </span>
 
             <!-- Textarea -->
+
             <Textarea
                 v-if="textarea"
                 ref="textareaRef"
@@ -1290,12 +1509,20 @@ defineExpose({
             />
 
             <!-- Input -->
+
             <Input
                 v-else
                 ref="inputRef"
                 v-model="nativeModel"
                 :type="resolvedInputType"
-                :placeholder="placeholder"
+                :placeholder="
+                    props.type === 'search'
+                        ? (
+                            placeholder
+                            || searchPlaceholder
+                        )
+                        : placeholder
+                "
                 :disabled="disabled"
                 :readonly="readonly"
                 :required="required"
@@ -1305,6 +1532,7 @@ defineExpose({
         </div>
 
         <!-- Helper -->
+
         <p
             v-if="helper && !error"
             class="mt-1 text-xs text-muted-foreground"
@@ -1313,6 +1541,7 @@ defineExpose({
         </p>
 
         <!-- Error -->
+
         <p
             v-if="error"
             class="mt-1 text-xs text-destructive"
@@ -1321,6 +1550,7 @@ defineExpose({
         </p>
 
         <!-- Description Slot -->
+
         <slot name="description" />
     </div>
 </template>

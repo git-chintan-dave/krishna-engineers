@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, reactive } from 'vue';
 import type { InertiaForm } from '@inertiajs/vue3';
 import {
     CalendarDays,
@@ -37,12 +38,6 @@ const props = defineProps<{
     submitLabel: string;
 }>();
 
-/*
-|--------------------------------------------------------------------------
-| Emits
-|--------------------------------------------------------------------------
-*/
-
 const emit = defineEmits<{
     submit: [];
     cancel: [];
@@ -50,97 +45,902 @@ const emit = defineEmits<{
 
 /*
 |--------------------------------------------------------------------------
-| Date / Time
+| Local Break Time State
+|--------------------------------------------------------------------------
+|
+| The time inputs intentionally use their own local HH:mm values.
+|
+| We do NOT bind the native time picker directly to the full datetime
+| stored in the Inertia form.
+|
+| This is especially important for overnight attendance:
+|
+| Attendance:
+| 5 Oct 22:00 -> 6 Oct 08:00
+|
+| Break:
+| 6 Oct 01:00 -> 6 Oct 02:00
+|
+*/
+
+type BreakTimeState = {
+    start_at: string;
+    end_at: string;
+};
+
+const breakTimes = reactive<
+    Record<string, BreakTimeState>
+>({});
+
+/*
+|--------------------------------------------------------------------------
+| Date / Time Helpers
 |--------------------------------------------------------------------------
 */
 
-const formatDateTimeLocal = (
+const getDatePart = (
     value: string | null | undefined,
 ): string => {
     if (!value) {
         return '';
     }
 
-    /*
-     * Backend and application timezone are both configured
-     * for India. Do not pass this value through JavaScript's
-     * Date parser because that would introduce timezone
-     * conversion.
-     *
-     * Example:
-     * 2026-10-06 13:00:00
-     * -> 2026-10-06T13:00
-     */
     return value
         .replace(' ', 'T')
-        .slice(0, 16);
+        .slice(0, 10);
 };
 
-const startAt = {
-    get value() {
-        return formatDateTimeLocal(props.form.start_at);
-    },
-    set value(value: string) {
-        props.form.start_at = value;
-    },
-};
-
-const endAt = {
-    get value() {
-        return formatDateTimeLocal(props.form.end_at);
-    },
-    set value(value: string) {
-        props.form.end_at = value;
-    },
-};
-
-/*
-|--------------------------------------------------------------------------
-| Breaks
-|--------------------------------------------------------------------------
-*/
-
-const addBreak = (): void => {
-    props.form.breaks.push({
-        start_at: '',
-        end_at: '',
-    });
-};
-
-const removeBreak = (index: number): void => {
-    props.form.breaks.splice(index, 1);
-};
-
-/*
-|--------------------------------------------------------------------------
-| Break Helpers
-|--------------------------------------------------------------------------
-*/
-
-const formatBreakValue = (
-    attendanceBreak: AttendanceFormBreak,
-    field: 'start_at' | 'end_at',
+const getTimePart = (
+    value: string | null | undefined,
 ): string => {
-    return formatDateTimeLocal(
-        attendanceBreak[field],
+    if (!value) {
+        return '';
+    }
+
+    return value
+        .replace(' ', 'T')
+        .slice(11, 16);
+};
+
+const timeToMinutes = (
+    value: string,
+): number => {
+    if (!value) {
+        return -1;
+    }
+
+    const [hours, minutes] =
+        value.split(':').map(Number);
+
+    if (
+        Number.isNaN(hours)
+        || Number.isNaN(minutes)
+    ) {
+        return -1;
+    }
+
+    return (hours * 60) + minutes;
+};
+
+const addOneDay = (
+    date: string,
+): string => {
+    const [year, month, day] =
+        date.split('-').map(Number);
+
+    const value = new Date(
+        Date.UTC(
+            year,
+            month - 1,
+            day,
+        ),
+    );
+
+    value.setUTCDate(
+        value.getUTCDate() + 1,
+    );
+
+    return [
+        value.getUTCFullYear(),
+        String(
+            value.getUTCMonth() + 1,
+        ).padStart(2, '0'),
+        String(
+            value.getUTCDate(),
+        ).padStart(2, '0'),
+    ].join('-');
+};
+
+const combineDateTime = (
+    date: string,
+    time: string,
+): string => {
+    if (!date || !time) {
+        return '';
+    }
+
+    return `${date}T${time}:00`;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Attendance Date
+|--------------------------------------------------------------------------
+*/
+
+const attendanceDate = computed({
+    get: (): string => {
+        return props.form.attendance_date;
+    },
+
+    set: (value: string): void => {
+        setAttendanceDate(value);
+    },
+});
+
+/*
+|--------------------------------------------------------------------------
+| Attendance Overnight
+|--------------------------------------------------------------------------
+*/
+
+const isOvernightAttendance =
+    computed((): boolean => {
+        if (
+            !props.form.start_at
+            || !props.form.end_at
+        ) {
+            return false;
+        }
+
+        return (
+            getDatePart(
+                props.form.start_at,
+            )
+            !== getDatePart(
+                props.form.end_at,
+            )
+        );
+    });
+
+/*
+|--------------------------------------------------------------------------
+| Resolve Attendance End Date
+|--------------------------------------------------------------------------
+*/
+
+const resolveAttendanceEndDate = (
+    startDate: string,
+    startTime: string,
+    endTime: string,
+): string => {
+    const startMinutes =
+        timeToMinutes(startTime);
+
+    const endMinutes =
+        timeToMinutes(endTime);
+
+    if (
+        startMinutes < 0
+        || endMinutes < 0
+    ) {
+        return startDate;
+    }
+
+    return endMinutes < startMinutes
+        ? addOneDay(startDate)
+        : startDate;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Clock In
+|--------------------------------------------------------------------------
+*/
+
+const startTime = computed({
+    get: (): string => {
+        return getTimePart(
+            props.form.start_at,
+        );
+    },
+
+    set: (value: string): void => {
+        if (!value) {
+            props.form.start_at = '';
+            props.form.end_at = null;
+
+            clearBreakTimes();
+
+            return;
+        }
+
+        if (!attendanceDate.value) {
+            return;
+        }
+
+        const existingEndTime =
+            getTimePart(
+                props.form.end_at,
+            );
+
+        props.form.start_at =
+            combineDateTime(
+                attendanceDate.value,
+                value,
+            );
+
+        if (existingEndTime) {
+            const endDate =
+                resolveAttendanceEndDate(
+                    attendanceDate.value,
+                    value,
+                    existingEndTime,
+                );
+
+            props.form.end_at =
+                combineDateTime(
+                    endDate,
+                    existingEndTime,
+                );
+        }
+
+        rebuildAllBreaks();
+    },
+});
+
+/*
+|--------------------------------------------------------------------------
+| Clock Out
+|--------------------------------------------------------------------------
+*/
+
+const endTime = computed({
+    get: (): string => {
+        return getTimePart(
+            props.form.end_at,
+        );
+    },
+
+    set: (value: string): void => {
+        if (!value) {
+            props.form.end_at = null;
+
+            clearBreakDateTimes();
+
+            return;
+        }
+
+        if (!props.form.start_at) {
+            return;
+        }
+
+        const startDate =
+            getDatePart(
+                props.form.start_at,
+            );
+
+        const startTimeValue =
+            getTimePart(
+                props.form.start_at,
+            );
+
+        if (
+            !startDate
+            || !startTimeValue
+        ) {
+            return;
+        }
+
+        const endDate =
+            resolveAttendanceEndDate(
+                startDate,
+                startTimeValue,
+                value,
+            );
+
+        props.form.end_at =
+            combineDateTime(
+                endDate,
+                value,
+            );
+
+        rebuildAllBreaks();
+    },
+});
+
+/*
+|--------------------------------------------------------------------------
+| Attendance Date Change
+|--------------------------------------------------------------------------
+*/
+
+const setAttendanceDate = (
+    value: string,
+): void => {
+    if (!value) {
+        props.form.attendance_date = '';
+        props.form.start_at = '';
+        props.form.end_at = null;
+
+        clearBreakTimes();
+
+        return;
+    }
+
+    const oldStartTime =
+        getTimePart(
+            props.form.start_at,
+        );
+
+    const oldEndTime =
+        getTimePart(
+            props.form.end_at,
+        );
+
+    const wasOvernight =
+        isOvernightAttendance.value;
+
+    props.form.attendance_date =
+        value;
+
+    /*
+     * Clock In
+     */
+
+    props.form.start_at =
+        oldStartTime
+            ? combineDateTime(
+                value,
+                oldStartTime,
+            )
+            : '';
+
+    /*
+     * Clock Out
+     */
+
+    props.form.end_at =
+        oldEndTime
+            ? combineDateTime(
+                wasOvernight
+                    ? addOneDay(value)
+                    : value,
+                oldEndTime,
+            )
+            : null;
+
+    /*
+     * Rebuild all break datetimes using the
+     * preserved HH:mm UI values.
+     */
+
+    rebuildAllBreaks();
+};
+
+/*
+|--------------------------------------------------------------------------
+| Break State Key
+|--------------------------------------------------------------------------
+*/
+
+const getBreakKey = (
+    attendanceBreak: AttendanceFormBreak,
+    index: number,
+): string => {
+    return attendanceBreak.uuid
+        ?? `new-${index}`;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Initialize Break UI State
+|--------------------------------------------------------------------------
+*/
+
+const ensureBreakTimeState = (
+    attendanceBreak: AttendanceFormBreak,
+    index: number,
+): BreakTimeState => {
+    const key =
+        getBreakKey(
+            attendanceBreak,
+            index,
+        );
+
+    if (!breakTimes[key]) {
+        breakTimes[key] = {
+            start_at:
+                getTimePart(
+                    attendanceBreak.start_at,
+                ),
+            end_at:
+                getTimePart(
+                    attendanceBreak.end_at,
+                ),
+        };
+    }
+
+    return breakTimes[key];
+};
+
+/*
+|--------------------------------------------------------------------------
+| Break Date Resolution
+|--------------------------------------------------------------------------
+*/
+
+const resolveBreakStartDate = (
+    time: string,
+): string => {
+    if (
+        !time
+        || !props.form.start_at
+        || !props.form.end_at
+    ) {
+        return '';
+    }
+
+    const attendanceStartDate =
+        getDatePart(
+            props.form.start_at,
+        );
+
+    const attendanceEndDate =
+        getDatePart(
+            props.form.end_at,
+        );
+
+    const attendanceStartTime =
+        getTimePart(
+            props.form.start_at,
+        );
+
+    if (
+        !attendanceStartDate
+        || !attendanceEndDate
+        || !attendanceStartTime
+    ) {
+        return '';
+    }
+
+    const selectedMinutes =
+        timeToMinutes(time);
+
+    const startMinutes =
+        timeToMinutes(
+            attendanceStartTime,
+        );
+
+    if (
+        selectedMinutes < 0
+        || startMinutes < 0
+    ) {
+        return '';
+    }
+
+    /*
+     * Overnight attendance:
+     *
+     * 22:00 -> 08:00
+     *
+     * 01:00 belongs to the end date.
+     */
+
+    if (
+        attendanceStartDate
+        !== attendanceEndDate
+        && selectedMinutes < startMinutes
+    ) {
+        return attendanceEndDate;
+    }
+
+    return attendanceStartDate;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Break End Date Resolution
+|--------------------------------------------------------------------------
+*/
+
+const resolveBreakEndDate = (
+    breakStartDate: string,
+    breakStartTime: string,
+    breakEndTime: string,
+): string => {
+    const startMinutes =
+        timeToMinutes(
+            breakStartTime,
+        );
+
+    const endMinutes =
+        timeToMinutes(
+            breakEndTime,
+        );
+
+    if (
+        startMinutes < 0
+        || endMinutes < 0
+    ) {
+        return breakStartDate;
+    }
+
+    return endMinutes < startMinutes
+        ? addOneDay(breakStartDate)
+        : breakStartDate;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Rebuild One Break
+|--------------------------------------------------------------------------
+*/
+
+const rebuildBreak = (
+    attendanceBreak: AttendanceFormBreak,
+    index: number,
+): void => {
+    const state =
+        ensureBreakTimeState(
+            attendanceBreak,
+            index,
+        );
+
+    /*
+     * No break start.
+     */
+
+    if (!state.start_at) {
+        attendanceBreak.start_at = '';
+        attendanceBreak.end_at = '';
+
+        return;
+    }
+
+    /*
+     * Resolve break start date.
+     */
+
+    const breakStartDate =
+        resolveBreakStartDate(
+            state.start_at,
+        );
+
+    if (!breakStartDate) {
+        attendanceBreak.start_at = '';
+        attendanceBreak.end_at = '';
+
+        return;
+    }
+
+    attendanceBreak.start_at =
+        combineDateTime(
+            breakStartDate,
+            state.start_at,
+        );
+
+    /*
+     * No break end yet.
+     */
+
+    if (!state.end_at) {
+        attendanceBreak.end_at = '';
+
+        return;
+    }
+
+    /*
+     * Resolve break end date relative to
+     * the break start.
+     */
+
+    const breakEndDate =
+        resolveBreakEndDate(
+            breakStartDate,
+            state.start_at,
+            state.end_at,
+        );
+
+    attendanceBreak.end_at =
+        combineDateTime(
+            breakEndDate,
+            state.end_at,
+        );
+};
+
+/*
+|--------------------------------------------------------------------------
+| Rebuild All Breaks
+|--------------------------------------------------------------------------
+*/
+
+const rebuildAllBreaks = (): void => {
+    props.form.breaks.forEach(
+        (
+            attendanceBreak,
+            index,
+        ) => {
+            rebuildBreak(
+                attendanceBreak,
+                index,
+            );
+        },
     );
 };
 
-const setBreakValue = (
-    attendanceBreak: AttendanceFormBreak,
-    field: 'start_at' | 'end_at',
-    value: string | number | null,
-): void => {
-    attendanceBreak[field] =
-        typeof value === 'string' ? value : '';
+/*
+|--------------------------------------------------------------------------
+| Clear Break UI State
+|--------------------------------------------------------------------------
+*/
+
+const clearBreakTimes = (): void => {
+    props.form.breaks.forEach(
+        (
+            attendanceBreak,
+            index,
+        ) => {
+            const key =
+                getBreakKey(
+                    attendanceBreak,
+                    index,
+                );
+
+            breakTimes[key] = {
+                start_at: '',
+                end_at: '',
+            };
+
+            attendanceBreak.start_at = '';
+            attendanceBreak.end_at = '';
+        },
+    );
 };
+
+const clearBreakDateTimes = (): void => {
+    props.form.breaks.forEach(
+        (
+            attendanceBreak,
+            index,
+        ) => {
+            const state =
+                ensureBreakTimeState(
+                    attendanceBreak,
+                    index,
+                );
+
+            if (!state.start_at) {
+                attendanceBreak.start_at = '';
+                attendanceBreak.end_at = '';
+
+                return;
+            }
+
+            rebuildBreak(
+                attendanceBreak,
+                index,
+            );
+        },
+    );
+};
+
+/*
+|--------------------------------------------------------------------------
+| Break Input Values
+|--------------------------------------------------------------------------
+*/
+
+const getBreakStartTime = (
+    attendanceBreak: AttendanceFormBreak,
+    index: number,
+): string => {
+    return ensureBreakTimeState(
+        attendanceBreak,
+        index,
+    ).start_at;
+};
+
+const getBreakEndTime = (
+    attendanceBreak: AttendanceFormBreak,
+    index: number,
+): string => {
+    return ensureBreakTimeState(
+        attendanceBreak,
+        index,
+    ).end_at;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Break Start Input
+|--------------------------------------------------------------------------
+*/
+
+const setBreakStartTime = (
+    attendanceBreak: AttendanceFormBreak,
+    index: number,
+    value: string,
+): void => {
+    const state =
+        ensureBreakTimeState(
+            attendanceBreak,
+            index,
+        );
+
+    state.start_at = value;
+
+    /*
+     * If start is cleared, clear end too.
+     */
+
+    if (!value) {
+        state.end_at = '';
+
+        attendanceBreak.start_at = '';
+        attendanceBreak.end_at = '';
+
+        return;
+    }
+
+    /*
+     * Keep the selected HH:mm in local state.
+     *
+     * This is the important part:
+     * the native time picker is no longer fighting
+     * with a full datetime value.
+     */
+
+    rebuildBreak(
+        attendanceBreak,
+        index,
+    );
+};
+
+/*
+|--------------------------------------------------------------------------
+| Break End Input
+|--------------------------------------------------------------------------
+*/
+
+const setBreakEndTime = (
+    attendanceBreak: AttendanceFormBreak,
+    index: number,
+    value: string,
+): void => {
+    const state =
+        ensureBreakTimeState(
+            attendanceBreak,
+            index,
+        );
+
+    state.end_at = value;
+
+    if (!value) {
+        attendanceBreak.end_at = '';
+
+        return;
+    }
+
+    /*
+     * The break start must exist first.
+     */
+
+    if (!state.start_at) {
+        state.end_at = '';
+
+        attendanceBreak.end_at = '';
+
+        return;
+    }
+
+    /*
+     * Store the selected time immediately.
+     * Then resolve its actual calendar date.
+     */
+
+    rebuildBreak(
+        attendanceBreak,
+        index,
+    );
+};
+
+/*
+|--------------------------------------------------------------------------
+| Break Value Helpers
+|--------------------------------------------------------------------------
+*/
 
 const breakError = (
     index: number,
     field: 'start_at' | 'end_at',
 ): string | undefined => {
-    return props.errors[`breaks.${index}.${field}`];
+    return props.errors[
+        `breaks.${index}.${field}`
+        ];
 };
+
+/*
+|--------------------------------------------------------------------------
+| Break UI
+|--------------------------------------------------------------------------
+*/
+
+const canAddBreak =
+    computed((): boolean => {
+        return Boolean(
+            props.form.attendance_date
+            && props.form.start_at
+            && props.form.end_at,
+        );
+    });
+
+const addBreak = (): void => {
+    if (!canAddBreak.value) {
+        return;
+    }
+
+    const attendanceBreak: AttendanceFormBreak = {
+        start_at: '',
+        end_at: '',
+    };
+
+    props.form.breaks.push(
+        attendanceBreak,
+    );
+
+    const index =
+        props.form.breaks.length - 1;
+
+    ensureBreakTimeState(
+        attendanceBreak,
+        index,
+    );
+};
+
+const removeBreak = (
+    index: number,
+): void => {
+    const attendanceBreak =
+        props.form.breaks[index];
+
+    if (attendanceBreak) {
+        const key =
+            getBreakKey(
+                attendanceBreak,
+                index,
+            );
+
+        delete breakTimes[key];
+    }
+
+    props.form.breaks.splice(
+        index,
+        1,
+    );
+};
+
+/*
+|--------------------------------------------------------------------------
+| Form Initialization
+|--------------------------------------------------------------------------
+|
+| Existing edit records need their local HH:mm values
+| initialized from the backend datetime values.
+|
+*/
+
+props.form.breaks.forEach(
+    (
+        attendanceBreak,
+        index,
+    ) => {
+        ensureBreakTimeState(
+            attendanceBreak,
+            index,
+        );
+    },
+);
 </script>
 
 <template>
@@ -148,21 +948,23 @@ const breakError = (
         class="min-w-0 space-y-6"
         @submit.prevent="emit('submit')"
     >
-        <!--
-        |--------------------------------------------------------------------------
-        | Attendance Information
-        |--------------------------------------------------------------------------
-        -->
+        <!-- Attendance Information -->
 
         <FormSection
             :title="attendancePage.form.sectionTitle"
-            :description="attendancePage.form.sectionDescription"
+            :description="
+                attendancePage.form.sectionDescription
+            "
         >
-            <div class="grid min-w-0 gap-5 md:grid-cols-2">
+            <div
+                class="grid min-w-0 gap-5 md:grid-cols-2"
+            >
                 <!-- Employee -->
 
                 <AppField
-                    :label="attendancePage.form.employeeLabel"
+                    :label="
+                        attendancePage.form.employeeLabel
+                    "
                     input-id="attendance-employee"
                     required
                 >
@@ -182,14 +984,17 @@ const breakError = (
 
                 <AppField
                     :label="
-                        attendancePage.form.attendanceDateLabel
+                        attendancePage.form
+                            .attendanceDateLabel
                     "
                     input-id="attendance-date"
                     required
                 >
                     <AppInput
                         id="attendance-date"
-                        v-model="props.form.attendance_date"
+                        :model-value="
+                            props.form.attendance_date
+                        "
                         type="date"
                         :disabled="processing"
                         :error="
@@ -197,60 +1002,98 @@ const breakError = (
                         "
                         :icon="CalendarDays"
                         required
+                        @update:model-value="
+                            setAttendanceDate(
+                                String(
+                                    $event ?? '',
+                                ),
+                            )
+                        "
+                        :placeholder="attendancePage.form.attendanceDatePlaceholder"
                     />
                 </AppField>
 
                 <!-- Clock In -->
 
                 <AppField
-                    :label="attendancePage.form.startAtLabel"
+                    :label="
+                        attendancePage.form.startAtLabel
+                    "
                     input-id="attendance-start-at"
                     required
                 >
                     <AppInput
                         id="attendance-start-at"
-                        v-model="startAt.value"
-                        type="datetime-local"
+                        v-model="startTime"
+                        type="time"
                         :disabled="processing"
-                        :error="props.errors.start_at"
-                        :icon="Clock3"
-                        required
+                        :error="
+                            props.errors.start_at
+                        "
+                        :placeholder="attendancePage.form.startAtPlaceholder"
                     />
+
+                    <p
+                        v-if="attendanceDate"
+                        class="mt-1.5 text-xs text-muted-foreground"
+                    >
+                        Date:
+                        {{ attendanceDate }}
+                    </p>
                 </AppField>
 
                 <!-- Clock Out -->
 
                 <AppField
-                    :label="attendancePage.form.endAtLabel"
+                    :label="
+                        attendancePage.form.endAtLabel
+                    "
                     input-id="attendance-end-at"
                 >
                     <AppInput
                         id="attendance-end-at"
-                        v-model="endAt.value"
-                        type="datetime-local"
-                        :disabled="processing"
-                        :error="props.errors.end_at"
-                        :icon="Clock3"
+                        v-model="endTime"
+                        type="time"
+                        :disabled="
+                            processing
+                            || !startTime
+                        "
+                        :error="
+                            props.errors.end_at
+                        "
+                        :placeholder="attendancePage.form.endAtPlaceholder"
                     />
+
+                    <p
+                        v-if="
+                            attendanceDate
+                            && endTime
+                        "
+                        class="mt-1.5 text-xs text-muted-foreground"
+                    >
+                        {{
+                            isOvernightAttendance
+                                ? `Next day • ${addOneDay(attendanceDate)}`
+                                : `Same day • ${attendanceDate}`
+                        }}
+                    </p>
                 </AppField>
             </div>
         </FormSection>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Attendance Breaks
-        |--------------------------------------------------------------------------
-        -->
+        <!-- Attendance Breaks -->
 
         <FormSection
             title="Attendance Breaks"
-            description="Manage the breaks taken during the attendance period."
+            description="Break times must stay completely within the clock-in and clock-out period."
         >
             <div class="space-y-4">
                 <!-- Empty State -->
 
                 <div
-                    v-if="!form.breaks.length"
+                    v-if="
+                        !props.form.breaks.length
+                    "
                     class="flex flex-col items-center justify-center rounded-xl border border-dashed px-6 py-8 text-center"
                 >
                     <div
@@ -269,8 +1112,11 @@ const breakError = (
                     <p
                         class="mt-1 max-w-md text-xs text-muted-foreground"
                     >
-                        Add a break if the employee left work
-                        during this attendance period.
+                        {{
+                            canAddBreak
+                                ? 'Add a break if the employee left work during this attendance period.'
+                                : 'Set clock-in and clock-out time before adding breaks.'
+                        }}
                     </p>
                 </div>
 
@@ -278,15 +1124,21 @@ const breakError = (
 
                 <div
                     v-for="(
-                        attendanceBreak, index
-                    ) in form.breaks"
-                    :key="index"
+                        attendanceBreak,
+                        index
+                    ) in props.form.breaks"
+                    :key="
+                        attendanceBreak.uuid
+                            ?? index
+                    "
                     class="rounded-xl border bg-card p-4"
                 >
                     <div
                         class="mb-4 flex items-center justify-between gap-4"
                     >
-                        <div class="flex items-center gap-2">
+                        <div
+                            class="flex items-center gap-2"
+                        >
                             <div
                                 class="rounded-md bg-muted p-2"
                             >
@@ -300,13 +1152,14 @@ const breakError = (
                                 <h3
                                     class="text-sm font-medium"
                                 >
-                                    Break {{ index + 1 }}
+                                    Break
+                                    {{ index + 1 }}
                                 </h3>
 
                                 <p
                                     class="text-xs text-muted-foreground"
                                 >
-                                    Break start and end time
+                                    Select the break time only.
                                 </p>
                             </div>
                         </div>
@@ -320,7 +1173,9 @@ const breakError = (
                             :aria-label="
                                 `Remove break ${index + 1}`
                             "
-                            @click="removeBreak(index)"
+                            @click="
+                                removeBreak(index)
+                            "
                         >
                             <Trash2
                                 class="size-4"
@@ -345,12 +1200,12 @@ const breakError = (
                                     `break-${index}-start`
                                 "
                                 :model-value="
-                                    formatBreakValue(
+                                    getBreakStartTime(
                                         attendanceBreak,
-                                        'start_at',
+                                        index,
                                     )
                                 "
-                                type="datetime-local"
+                                type="time"
                                 :disabled="processing"
                                 :error="
                                     breakError(
@@ -358,14 +1213,16 @@ const breakError = (
                                         'start_at',
                                     )
                                 "
-                                :icon="Clock3"
                                 @update:model-value="
-                                    setBreakValue(
+                                    setBreakStartTime(
                                         attendanceBreak,
-                                        'start_at',
-                                        $event,
+                                        index,
+                                        String(
+                                            $event ?? '',
+                                        ),
                                     )
                                 "
+                                :placeholder="attendancePage.form.breakStartPlaceholder"
                             />
                         </AppField>
 
@@ -382,30 +1239,60 @@ const breakError = (
                                     `break-${index}-end`
                                 "
                                 :model-value="
-                                    formatBreakValue(
+                                    getBreakEndTime(
                                         attendanceBreak,
-                                        'end_at',
+                                        index,
                                     )
                                 "
-                                type="datetime-local"
-                                :disabled="processing"
+                                type="time"
+                                :disabled="
+                                    processing
+                                    || !getBreakStartTime(
+                                        attendanceBreak,
+                                        index,
+                                    )
+                                "
                                 :error="
                                     breakError(
                                         index,
                                         'end_at',
                                     )
                                 "
-                                :icon="Clock3"
                                 @update:model-value="
-                                    setBreakValue(
+                                    setBreakEndTime(
                                         attendanceBreak,
-                                        'end_at',
-                                        $event,
+                                        index,
+                                        String(
+                                            $event ?? '',
+                                        ),
                                     )
                                 "
+                                :placeholder="attendancePage.form.breakEndPlaceholder"
                             />
                         </AppField>
                     </div>
+
+                    <!-- Break Dates -->
+
+                    <p
+                        v-if="
+                            attendanceBreak.start_at
+                            && attendanceBreak.end_at
+                        "
+                        class="mt-3 text-xs text-muted-foreground"
+                    >
+                        {{
+                            getDatePart(
+                                attendanceBreak.start_at,
+                            )
+                        }}
+                        →
+                        {{
+                            getDatePart(
+                                attendanceBreak.end_at,
+                            )
+                        }}
+                    </p>
                 </div>
 
                 <!-- Add Break -->
@@ -414,7 +1301,10 @@ const breakError = (
                     type="button"
                     variant="outline"
                     class="w-full cursor-pointer sm:w-auto"
-                    :disabled="processing"
+                    :disabled="
+                        processing
+                        || !canAddBreak
+                    "
                     @click="addBreak"
                 >
                     <Plus
@@ -427,15 +1317,13 @@ const breakError = (
             </div>
         </FormSection>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Form Actions
-        |--------------------------------------------------------------------------
-        -->
+        <!-- Form Actions -->
 
         <FormActions
             :submit-label="submitLabel"
-            :cancel-label="attendancePage.form.cancelLabel"
+            :cancel-label="
+                attendancePage.form.cancelLabel
+            "
             :processing="processing"
             @cancel="emit('cancel')"
         />
