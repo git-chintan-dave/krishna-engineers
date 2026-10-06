@@ -4,7 +4,6 @@ export const attendancePage = {
 
     createLabel: 'Add Attendance',
 
-    searchPlaceholder: 'Search employees...',
     searchButtonLabel: 'Search',
     clearButtonLabel: 'Clear',
 

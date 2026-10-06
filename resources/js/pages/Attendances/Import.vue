@@ -1,12 +1,6 @@
 <script setup lang="ts">
 import {Head, useForm} from '@inertiajs/vue3';
-import {
-    CheckCircle2,
-    FileSpreadsheet,
-    Loader2,
-    UploadCloud,
-    X,
-} from '@lucide/vue';
+import {CheckCircle2, FileSpreadsheet, Loader2, UploadCloud, X,} from '@lucide/vue';
 import {computed, ref} from 'vue';
 
 import AppPageHeader from '@/components/common/AppPageHeader.vue';
@@ -342,8 +336,18 @@ const submit = () => {
                             </li>
 
                             <li>
-                                Existing attendance for the same employee
-                                and date will be updated.
+                                Each employee and attendance date can be
+                                imported only once.
+                            </li>
+
+                            <li>
+                                Importing an attendance that already exists
+                                will show an error.
+                            </li>
+
+                            <li>
+                                Attendance belonging to a paid salary period
+                                cannot be changed.
                             </li>
                         </ul>
                     </div>

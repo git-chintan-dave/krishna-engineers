@@ -14,17 +14,24 @@ export type Attendance = {
     uuid: string;
     user_id: number;
     user: AttendanceEmployee;
+
     attendance_date: string;
     attendance_date_formatted: string;
+
     start_at: string;
     end_at: string | null;
     start_at_formatted: string;
     end_at_formatted: string | null;
+
     is_open: boolean;
+    is_locked: boolean;
+
     total_working_seconds: number;
     break_seconds: number;
     effective_working_seconds: number;
+
     breaks: AttendanceBreak[];
+
     created_at: string;
 };
 
@@ -57,7 +64,6 @@ export type AttendanceBreak = {
 };
 
 export type AttendanceFormBreak = {
-    id?: number;
     start_at: string;
     end_at: string;
 };
@@ -89,7 +95,6 @@ export type AttendanceSort =
     | 'created_at';
 
 export type AttendanceFilters = {
-    search: string;
     userId: number | string | 'all';
     startDate: string;
     endDate: string;
@@ -104,8 +109,13 @@ export type AttendanceFilters = {
 |--------------------------------------------------------------------------
 */
 
-export type AttendanceResponse =
-    PaginatedResponse<Attendance>;
+export type AttendanceResponse = PaginatedResponse<Attendance>;
+
+/*
+|--------------------------------------------------------------------------
+| Select Options
+|--------------------------------------------------------------------------
+*/
 
 export type AttendanceEmployeeOption = {
     value: string;

@@ -7,7 +7,6 @@ import {
     Trash2,
     User,
 } from '@lucide/vue';
-import { computed } from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -21,36 +20,86 @@ import type {
     AttendanceFormData,
 } from '@/types/attendance';
 
-// Props
+/*
+|--------------------------------------------------------------------------
+| Props
+|--------------------------------------------------------------------------
+*/
+
 const props = defineProps<{
     form: InertiaForm<AttendanceFormData>;
+    employees: {
+        value: string;
+        label: string;
+    }[];
     errors: Record<string, string>;
     processing: boolean;
     submitLabel: string;
 }>();
 
-// Emits
+/*
+|--------------------------------------------------------------------------
+| Emits
+|--------------------------------------------------------------------------
+*/
+
 const emit = defineEmits<{
     submit: [];
     cancel: [];
 }>();
 
-// Computed
-const startAt = computed({
-    get: () => formatDateTimeLocal(props.form.start_at),
-    set: (value: string) => {
+/*
+|--------------------------------------------------------------------------
+| Date / Time
+|--------------------------------------------------------------------------
+*/
+
+const formatDateTimeLocal = (
+    value: string | null | undefined,
+): string => {
+    if (!value) {
+        return '';
+    }
+
+    /*
+     * Backend and application timezone are both configured
+     * for India. Do not pass this value through JavaScript's
+     * Date parser because that would introduce timezone
+     * conversion.
+     *
+     * Example:
+     * 2026-10-06 13:00:00
+     * -> 2026-10-06T13:00
+     */
+    return value
+        .replace(' ', 'T')
+        .slice(0, 16);
+};
+
+const startAt = {
+    get value() {
+        return formatDateTimeLocal(props.form.start_at);
+    },
+    set value(value: string) {
         props.form.start_at = value;
     },
-});
+};
 
-const endAt = computed({
-    get: () => formatDateTimeLocal(props.form.end_at),
-    set: (value: string) => {
-        props.form.end_at = value || null;
+const endAt = {
+    get value() {
+        return formatDateTimeLocal(props.form.end_at);
     },
-});
+    set value(value: string) {
+        props.form.end_at = value;
+    },
+};
 
-// Breaks
+/*
+|--------------------------------------------------------------------------
+| Breaks
+|--------------------------------------------------------------------------
+*/
+
 const addBreak = (): void => {
     props.form.breaks.push({
         start_at: '',
@@ -62,28 +111,11 @@ const removeBreak = (index: number): void => {
     props.form.breaks.splice(index, 1);
 };
 
-// Helpers
-const formatDateTimeLocal = (
-    value: string | null | undefined,
-): string => {
-    if (!value) {
-        return '';
-    }
-
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-        return value.slice(0, 16);
-    }
-
-    const pad = (number: number): string =>
-        String(number).padStart(2, '0');
-
-    return [
-        `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`,
-        `${pad(date.getHours())}:${pad(date.getMinutes())}`,
-    ].join('T');
-};
+/*
+|--------------------------------------------------------------------------
+| Break Helpers
+|--------------------------------------------------------------------------
+*/
 
 const formatBreakValue = (
     attendanceBreak: AttendanceFormBreak,
@@ -100,18 +132,14 @@ const setBreakValue = (
     value: string | number | null,
 ): void => {
     attendanceBreak[field] =
-        typeof value === 'string'
-            ? value
-            : '';
+        typeof value === 'string' ? value : '';
 };
 
 const breakError = (
     index: number,
     field: 'start_at' | 'end_at',
 ): string | undefined => {
-    return props.errors[
-        `breaks.${index}.${field}`
-        ];
+    return props.errors[`breaks.${index}.${field}`];
 };
 </script>
 
@@ -120,19 +148,21 @@ const breakError = (
         class="min-w-0 space-y-6"
         @submit.prevent="emit('submit')"
     >
-        <!-- Attendance Information -->
+        <!--
+        |--------------------------------------------------------------------------
+        | Attendance Information
+        |--------------------------------------------------------------------------
+        -->
+
         <FormSection
             :title="attendancePage.form.sectionTitle"
-            :description="
-                attendancePage.form.sectionDescription
-            "
+            :description="attendancePage.form.sectionDescription"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Employee -->
+
                 <AppField
-                    :label="
-                        attendancePage.form.employeeLabel
-                    "
+                    :label="attendancePage.form.employeeLabel"
                     input-id="attendance-employee"
                     required
                 >
@@ -149,6 +179,7 @@ const breakError = (
                 </AppField>
 
                 <!-- Attendance Date -->
+
                 <AppField
                     :label="
                         attendancePage.form.attendanceDateLabel
@@ -169,7 +200,8 @@ const breakError = (
                     />
                 </AppField>
 
-                <!-- Start At -->
+                <!-- Clock In -->
+
                 <AppField
                     :label="attendancePage.form.startAtLabel"
                     input-id="attendance-start-at"
@@ -177,7 +209,7 @@ const breakError = (
                 >
                     <AppInput
                         id="attendance-start-at"
-                        v-model="startAt"
+                        v-model="startAt.value"
                         type="datetime-local"
                         :disabled="processing"
                         :error="props.errors.start_at"
@@ -186,14 +218,15 @@ const breakError = (
                     />
                 </AppField>
 
-                <!-- End At -->
+                <!-- Clock Out -->
+
                 <AppField
                     :label="attendancePage.form.endAtLabel"
                     input-id="attendance-end-at"
                 >
                     <AppInput
                         id="attendance-end-at"
-                        v-model="endAt"
+                        v-model="endAt.value"
                         type="datetime-local"
                         :disabled="processing"
                         :error="props.errors.end_at"
@@ -203,13 +236,19 @@ const breakError = (
             </div>
         </FormSection>
 
-        <!-- Attendance Breaks -->
+        <!--
+        |--------------------------------------------------------------------------
+        | Attendance Breaks
+        |--------------------------------------------------------------------------
+        -->
+
         <FormSection
             title="Attendance Breaks"
             description="Manage the breaks taken during the attendance period."
         >
             <div class="space-y-4">
                 <!-- Empty State -->
+
                 <div
                     v-if="!form.breaks.length"
                     class="flex flex-col items-center justify-center rounded-xl border border-dashed px-6 py-8 text-center"
@@ -236,11 +275,12 @@ const breakError = (
                 </div>
 
                 <!-- Break List -->
+
                 <div
                     v-for="(
                         attendanceBreak, index
                     ) in form.breaks"
-                    :key="attendanceBreak.id ?? index"
+                    :key="index"
                     class="rounded-xl border bg-card p-4"
                 >
                     <div
@@ -293,6 +333,7 @@ const breakError = (
                         class="grid min-w-0 gap-5 md:grid-cols-2"
                     >
                         <!-- Break Start -->
+
                         <AppField
                             label="Start Time"
                             :input-id="
@@ -329,6 +370,7 @@ const breakError = (
                         </AppField>
 
                         <!-- Break End -->
+
                         <AppField
                             label="End Time"
                             :input-id="
@@ -367,6 +409,7 @@ const breakError = (
                 </div>
 
                 <!-- Add Break -->
+
                 <Button
                     type="button"
                     variant="outline"
@@ -384,12 +427,15 @@ const breakError = (
             </div>
         </FormSection>
 
-        <!-- Form Actions -->
+        <!--
+        |--------------------------------------------------------------------------
+        | Form Actions
+        |--------------------------------------------------------------------------
+        -->
+
         <FormActions
             :submit-label="submitLabel"
-            :cancel-label="
-                attendancePage.form.cancelLabel
-            "
+            :cancel-label="attendancePage.form.cancelLabel"
             :processing="processing"
             @cancel="emit('cancel')"
         />

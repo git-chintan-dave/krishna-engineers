@@ -2,61 +2,92 @@
 
 namespace App\Imports;
 
-use App\Models\Attendance;
+use App\Exceptions\AttendanceImportException;
 use App\Models\User;
+use App\Services\AttendanceService;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
 
 class AttendanceImport implements ToCollection, WithCalculatedFormulas
 {
-    // Import
-    public function collection(Collection $rows): void
-    {
-        $employeeCode = $this->extractEmployeeCode($rows);
+    public function __construct(
+        private readonly AttendanceService $attendanceService,
+    ) {}
+
+    public function collection(
+        Collection $rows,
+    ): void {
+        $employeeCode = $this->extractEmployeeCode(
+            $rows,
+        );
 
         if (blank($employeeCode)) {
-            throw ValidationException::withMessages([
-                'file' => 'The attendance report does not contain a valid employee code.',
-            ]);
+            throw new AttendanceImportException(
+                'The attendance report does not contain a valid employee code.',
+            );
         }
 
-        $user = $this->findEmployee($employeeCode);
+        $user = $this->findEmployee(
+            $employeeCode,
+        );
 
         foreach ($rows as $row) {
-            $this->importAttendanceRow($user, $row);
+            $this->importAttendanceRow(
+                $user,
+                $row,
+            );
         }
     }
 
-    // Helpers
-    private function extractEmployeeCode(Collection $rows): ?string
-    {
-        // Employee code is stored in B3.
-        $employeeCode = $rows->get(2)?->get(1);
+    /*
+    |--------------------------------------------------------------------------
+    | Employee
+    |--------------------------------------------------------------------------
+    */
+
+    private function extractEmployeeCode(
+        Collection $rows,
+    ): ?string {
+        /*
+         * Employee code is stored in B3.
+         */
+        $employeeCode = $rows
+            ->get(2)
+            ?->get(1);
 
         return blank($employeeCode)
             ? null
             : trim((string) $employeeCode);
     }
 
-    private function findEmployee(string $employeeCode): User
-    {
+    private function findEmployee(
+        string $employeeCode,
+    ): User {
         $user = User::query()
-            ->where('employee_code', $employeeCode)
+            ->where(
+                'employee_code',
+                $employeeCode,
+            )
             ->first();
 
         if (! $user) {
-            throw ValidationException::withMessages([
-                'file' => "Employee code {$employeeCode} was not found.",
-            ]);
+            throw new AttendanceImportException(
+                "Employee code {$employeeCode} was not found.",
+            );
         }
 
         return $user;
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Attendance Row
+    |--------------------------------------------------------------------------
+    */
 
     private function importAttendanceRow(
         User $user,
@@ -66,22 +97,31 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
             ? $row
             : collect($row);
 
-        $attendanceDate = $this->parseDate($row->get(0));
+        $attendanceDate = $this->parseDate(
+            $row->get(0),
+        );
 
         if ($attendanceDate === null) {
             return;
         }
 
-        // Column C contains the first IN time.
-        $startTime = $this->parseTime($row->get(2));
+        /*
+         * Column C contains first IN.
+         */
+        $startTime = $this->parseTime(
+            $row->get(2),
+        );
 
-        // No IN punch means there is no attendance record to import.
         if ($startTime === null) {
             return;
         }
 
-        // Column R contains the final OUT time.
-        $endTime = $this->parseTime($row->get(17));
+        /*
+         * Column R contains final OUT.
+         */
+        $endTime = $this->parseTime(
+            $row->get(17),
+        );
 
         $startAt = $this->combineDateAndTime(
             $attendanceDate,
@@ -89,11 +129,20 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
         );
 
         $endAt = $endTime !== null
-            ? $this->combineDateAndTime($attendanceDate, $endTime)
+            ? $this->combineDateAndTime(
+                $attendanceDate,
+                $endTime,
+            )
             : null;
 
-        // Night-shift attendance can end on the following day.
-        if ($endAt?->lt($startAt)) {
+        /*
+         * Night shift:
+         * If final OUT is earlier than first IN,
+         * it belongs to the following day.
+         */
+        if (
+            $endAt?->lt($startAt)
+        ) {
             $endAt->addDay();
         }
 
@@ -102,14 +151,20 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
             $attendanceDate,
         );
 
-        $this->saveAttendance(
-            $user,
-            $attendanceDate,
-            $startAt,
-            $endAt,
-            $breaks,
+        $this->attendanceService->import(
+            user: $user,
+            attendanceDate: $attendanceDate,
+            startAt: $startAt,
+            endAt: $endAt,
+            breaks: $breaks,
         );
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Breaks
+    |--------------------------------------------------------------------------
+    */
 
     private function extractBreaks(
         Collection $row,
@@ -117,12 +172,34 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
     ): array {
         $breaks = [];
 
-        // D:Q contains OUT/IN break pairs.
-        for ($column = 3; $column <= 16; $column += 2) {
-            $outTime = $this->parseTime($row->get($column));
-            $inTime = $this->parseTime($row->get($column + 1));
+        /*
+         * D:Q contain OUT/IN pairs:
+         *
+         * D/E = Out1/In2
+         * F/G = Out2/In3
+         * H/I = Out3/In4
+         * J/K = Out4/In5
+         * L/M = Out5/In6
+         * N/O = Out6/In7
+         * P/Q = Out7/In8
+         */
+        for (
+            $column = 3;
+            $column <= 16;
+            $column += 2
+        ) {
+            $outTime = $this->parseTime(
+                $row->get($column),
+            );
 
-            if ($outTime === null || $inTime === null) {
+            $inTime = $this->parseTime(
+                $row->get($column + 1),
+            );
+
+            if (
+                $outTime === null
+                || $inTime === null
+            ) {
                 continue;
             }
 
@@ -145,7 +222,9 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
                 'end_at' => $breakEnd,
                 'duration_seconds' => max(
                     0,
-                    (int) $breakStart->diffInSeconds($breakEnd),
+                    (int) $breakStart->diffInSeconds(
+                        $breakEnd,
+                    ),
                 ),
             ];
         }
@@ -153,172 +232,146 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
         return $breaks;
     }
 
-    private function saveAttendance(
-        User $user,
-        string $attendanceDate,
-        Carbon $startAt,
-        ?Carbon $endAt,
-        array $breaks,
-    ): void {
-        DB::transaction(function () use (
-            $user,
-            $attendanceDate,
-            $startAt,
-            $endAt,
-            $breaks,
-        ): void {
-            $attendance = Attendance::query()
-                ->firstOrNew([
-                    'user_id' => $user->id,
-                    'attendance_date' => $attendanceDate,
-                ]);
+    /*
+    |--------------------------------------------------------------------------
+    | Excel Parsing
+    |--------------------------------------------------------------------------
+    */
 
-            $attendance->fill([
-                'start_at' => $startAt,
-                'end_at' => $endAt,
-            ]);
-
-            $attendance->save();
-
-            // Replace imported breaks so re-importing stays consistent.
-            $attendance->breaks()->delete();
-
-            foreach ($breaks as $break) {
-                $attendance->breaks()->create($break);
-            }
-
-            $this->recalculateTotals($attendance);
-        });
-    }
-
-    private function parseDate(mixed $value): ?string
-    {
-        if ($value === null || blank(trim((string) $value))) {
+    private function parseDate(
+        mixed $value,
+    ): ?string {
+        if (
+            $value === null
+            || trim((string) $value) === ''
+        ) {
             return null;
         }
 
-        if ($value instanceof \DateTimeInterface) {
-            return Carbon::instance(
-                \DateTime::createFromInterface($value),
-            )->toDateString();
+        if ($value instanceof CarbonInterface) {
+            return $value->toDateString();
+        }
+
+        if (is_numeric($value)) {
+            try {
+                return Carbon::createFromTimestamp(
+                    ((float) $value - 25569) * 86400,
+                )->toDateString();
+            } catch (\Throwable) {
+                return null;
+            }
         }
 
         $value = trim((string) $value);
 
-        foreach (['d/m/Y', 'Y-m-d'] as $format) {
+        foreach ([
+                     'd-m-Y',
+                     'd/m/Y',
+                     'Y-m-d',
+                     'm/d/Y',
+                     'd.m.Y',
+                 ] as $format) {
             try {
                 return Carbon::createFromFormat(
                     $format,
                     $value,
                 )->toDateString();
             } catch (\Throwable) {
-                continue;
+                // Try next format.
             }
         }
 
         try {
-            return Carbon::parse($value)->toDateString();
+            return Carbon::parse(
+                $value,
+            )->toDateString();
         } catch (\Throwable) {
             return null;
         }
     }
 
-    private function parseTime(mixed $value): ?string
-    {
-        if ($value === null || blank(trim((string) $value))) {
+    private function parseTime(
+        mixed $value,
+    ): ?string {
+        if (
+            $value === null
+            || trim((string) $value) === ''
+        ) {
             return null;
         }
 
-        if ($value instanceof \DateTimeInterface) {
-            return Carbon::instance(
-                \DateTime::createFromInterface($value),
-            )->format('H:i:s');
+        if ($value instanceof CarbonInterface) {
+            return $value->format('H:i:s');
+        }
+
+        if (is_numeric($value)) {
+            $fraction = (float) $value;
+
+            /*
+             * Excel time values are represented as a
+             * fraction of a 24-hour day.
+             */
+            if (
+                $fraction >= 0
+                && $fraction < 1
+            ) {
+                $seconds = (int) round(
+                    $fraction * 86400,
+                );
+
+                $seconds %= 86400;
+
+                return gmdate(
+                    'H:i:s',
+                    $seconds,
+                );
+            }
         }
 
         $value = trim((string) $value);
 
-        if (in_array($value, ['--:--', '00:00', '00:00:00'], true)) {
+        /*
+         * Values such as "--:--" represent no punch.
+         */
+        if (
+            $value === '--:--'
+            || $value === '--:--:--'
+            || $value === '-'
+        ) {
             return null;
         }
 
-        // Excel stores time-only values as a fraction of a day.
-        if (
-            is_numeric($value)
-            && (float) $value >= 0
-            && (float) $value < 1
-        ) {
-            return Carbon::createFromTimestampUTC(
-                (int) round((float) $value * 86400),
-            )->format('H:i:s');
-        }
-
-        foreach (['H:i:s', 'H:i', 'G:i:s', 'G:i'] as $format) {
+        foreach ([
+                     'H:i:s',
+                     'H:i',
+                     'g:i A',
+                     'g:i:s A',
+                 ] as $format) {
             try {
                 return Carbon::createFromFormat(
                     $format,
                     $value,
                 )->format('H:i:s');
             } catch (\Throwable) {
-                continue;
+                // Try next format.
             }
         }
 
-        return null;
+        try {
+            return Carbon::parse(
+                $value,
+            )->format('H:i:s');
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     private function combineDateAndTime(
         string $date,
         string $time,
     ): Carbon {
-        return Carbon::createFromFormat(
-            'Y-m-d H:i:s',
+        return Carbon::parse(
             "{$date} {$time}",
-        );
-    }
-
-    private function recalculateTotals(
-        Attendance $attendance,
-    ): Attendance {
-        $totalWorkingSeconds = $this->calculateTotalWorkingSeconds(
-            $attendance->start_at,
-            $attendance->end_at,
-        );
-
-        $breakSeconds = (int) $attendance
-            ->breaks()
-            ->sum('duration_seconds');
-
-        $attendance->update([
-            'total_working_seconds' => $totalWorkingSeconds,
-            'break_seconds' => $breakSeconds,
-            'effective_working_seconds' => max(
-                0,
-                $totalWorkingSeconds - $breakSeconds,
-            ),
-        ]);
-
-        return $attendance->fresh();
-    }
-
-    private function calculateTotalWorkingSeconds(
-        mixed $startAt,
-        mixed $endAt,
-    ): int {
-        if ($startAt === null || $endAt === null) {
-            return 0;
-        }
-
-        $startAt = $startAt instanceof CarbonInterface
-            ? $startAt
-            : Carbon::parse($startAt);
-
-        $endAt = $endAt instanceof CarbonInterface
-            ? $endAt
-            : Carbon::parse($endAt);
-
-        return max(
-            0,
-            (int) $startAt->diffInSeconds($endAt),
         );
     }
 }

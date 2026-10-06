@@ -71,18 +71,14 @@ const handleCancel = () => {
 <template>
     <FormLayout
         :title="attendancePage.form.createTitle"
-        :description="
-            attendancePage.form.createDescription
-        "
+        :description="attendancePage.form.createDescription"
     >
         <AttendanceForm
             :form="form"
             :employees="employees"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                attendancePage.form.createSubmitLabel
-            "
+            :submit-label="attendancePage.form.createSubmitLabel"
             @submit="handleSubmit"
             @cancel="handleCancel"
         />

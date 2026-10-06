@@ -1,13 +1,13 @@
-import {Link} from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import {
     CheckCircle2,
     Eye,
     Pencil,
     Trash2,
 } from '@lucide/vue';
-import {h, withDirectives} from 'vue';
+import { h, withDirectives } from 'vue';
 
-import {Button} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import vConfirm from '@/directives/confirm';
 
 /*
@@ -46,6 +46,7 @@ export const createActionsColumn = ({
                                         showMarkAsPaid,
                                     }: ActionsColumnOptions) => {
     const hasDetails = Boolean(detailsUrl);
+
     const hasMarkAsPaid = Boolean(
         markAsPaidUrl && handleMarkAsPaid,
     );
@@ -69,7 +70,7 @@ export const createActionsColumn = ({
         |--------------------------------------------------------------------------
         */
 
-        cell: ({row}: any) => {
+        cell: ({ row }: any) => {
             const uuid = row.original.uuid;
 
             const name =
@@ -269,7 +270,6 @@ export const createActionsColumn = ({
                                     'hover:bg-red-100 hover:text-red-700',
                                     'dark:bg-red-950/40 dark:text-red-400',
                                     'dark:hover:bg-red-950/60',
-                                    'dark:hover:text-red-300',
                                 ],
                             },
                             () => [

@@ -2,8 +2,12 @@
 
 namespace App\Services;
 
+use App\Enums\SalaryStatus;
+use App\Exceptions\AttendanceActionException;
+use App\Exceptions\AttendanceImportException;
 use App\Models\Attendance;
 use App\Models\AttendanceBreak;
+use App\Models\Salary;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -14,13 +18,10 @@ class AttendanceService
 {
     /*
     |--------------------------------------------------------------------------
-    | Attendance
+    | Live Attendance
     |--------------------------------------------------------------------------
     */
 
-    /**
-     * Start attendance for a user.
-     */
     public function start(
         User $user,
         ?CarbonInterface $at = null,
@@ -29,59 +30,82 @@ class AttendanceService
 
         return DB::transaction(
             function () use ($user, $at): Attendance {
+                $attendanceDate = $at->toDateString();
+
+                $this->ensureDateEditable(
+                    $user->id,
+                    $attendanceDate,
+                );
+
                 $attendance = $user->attendances()
                     ->whereDate(
                         'attendance_date',
-                        $at->toDateString(),
+                        $attendanceDate,
                     )
                     ->first();
 
-                if ($attendance?->isStarted()) {
+                if ($attendance?->start_at !== null) {
                     throw new RuntimeException(
                         'Attendance has already been started for today.',
                     );
                 }
 
                 if ($attendance) {
+                    $this->ensureEditable(
+                        $attendance,
+                    );
+
                     $attendance->update([
                         'start_at' => $at,
+                        'end_at' => null,
                     ]);
 
                     return $attendance->fresh();
                 }
 
                 return $user->attendances()->create([
-                    'attendance_date' => $at->toDateString(),
+                    'attendance_date' => $attendanceDate,
                     'start_at' => $at,
                 ]);
             },
         );
     }
 
-    /**
-     * Start a break for the current attendance.
-     */
     public function startBreak(
         Attendance $attendance,
         ?CarbonInterface $at = null,
     ): AttendanceBreak {
         $at ??= now();
 
-        if (! $attendance->isStarted()) {
+        if ($attendance->start_at === null) {
             throw new RuntimeException(
                 'Attendance has not been started.',
             );
         }
 
-        if ($attendance->isCompleted()) {
+        if ($attendance->end_at !== null) {
             throw new RuntimeException(
                 'Attendance has already been completed.',
             );
         }
 
-        if ($attendance->isOnBreak()) {
+        if (
+            $attendance->breaks()
+                ->whereNull('end_at')
+                ->exists()
+        ) {
             throw new RuntimeException(
                 'A break is already active.',
+            );
+        }
+
+        $this->ensureEditable(
+            $attendance,
+        );
+
+        if ($at->lt($attendance->start_at)) {
+            throw new RuntimeException(
+                'Break start time cannot be before attendance start time.',
             );
         }
 
@@ -90,14 +114,15 @@ class AttendanceService
         ]);
     }
 
-    /**
-     * End the current break.
-     */
     public function endBreak(
         Attendance $attendance,
         ?CarbonInterface $at = null,
     ): AttendanceBreak {
         $at ??= now();
+
+        $this->ensureEditable(
+            $attendance,
+        );
 
         $break = $attendance->breaks()
             ->whereNull('end_at')
@@ -107,6 +132,12 @@ class AttendanceService
         if (! $break) {
             throw new RuntimeException(
                 'There is no active break.',
+            );
+        }
+
+        if ($at->lt($break->start_at)) {
+            throw new RuntimeException(
+                'Break end time cannot be before break start time.',
             );
         }
 
@@ -125,30 +156,41 @@ class AttendanceService
         return $break->fresh();
     }
 
-    /**
-     * Complete attendance for the day.
-     */
     public function complete(
         Attendance $attendance,
         ?CarbonInterface $at = null,
     ): Attendance {
         $at ??= now();
 
-        if (! $attendance->isStarted()) {
+        if ($attendance->start_at === null) {
             throw new RuntimeException(
                 'Attendance has not been started.',
             );
         }
 
-        if ($attendance->isCompleted()) {
+        if ($attendance->end_at !== null) {
             throw new RuntimeException(
                 'Attendance has already been completed.',
             );
         }
 
-        if ($attendance->isOnBreak()) {
+        if (
+            $attendance->breaks()
+                ->whereNull('end_at')
+                ->exists()
+        ) {
             throw new RuntimeException(
                 'Please end the active break before completing attendance.',
+            );
+        }
+
+        $this->ensureEditable(
+            $attendance,
+        );
+
+        if ($at->lt($attendance->start_at)) {
+            throw new RuntimeException(
+                'Attendance end time cannot be before start time.',
             );
         }
 
@@ -165,9 +207,6 @@ class AttendanceService
         ]);
     }
 
-    /**
-     * Get today's attendance for a user.
-     */
     public function today(
         User $user,
     ): ?Attendance {
@@ -182,58 +221,178 @@ class AttendanceService
 
     /*
     |--------------------------------------------------------------------------
-    | Excel Import
+    | CRUD
     |--------------------------------------------------------------------------
     */
 
-    private function importRow(
+    public function create(
+        array $data,
+        array $breaks = [],
+    ): Attendance {
+        return DB::transaction(
+            function () use ($data, $breaks): Attendance {
+                $userId = (int) $data['user_id'];
+
+                $attendanceDate = $this->normalizeDate(
+                    $data['attendance_date'],
+                );
+
+                $this->ensureDateEditable(
+                    $userId,
+                    $attendanceDate,
+                );
+
+                $this->ensureAttendanceDoesNotExist(
+                    $userId,
+                    $attendanceDate,
+                );
+
+                $attendance = Attendance::create([
+                    ...$data,
+                    'attendance_date' => $attendanceDate,
+                    'total_working_seconds' => 0,
+                    'break_seconds' => 0,
+                    'effective_working_seconds' => 0,
+                ]);
+
+                $this->syncBreaks(
+                    $attendance,
+                    $breaks,
+                );
+
+                return $this->recalculateTotals(
+                    $attendance,
+                );
+            },
+        );
+    }
+
+    public function update(
+        Attendance $attendance,
+        array $data,
+        array $breaks = [],
+    ): Attendance {
+        $this->ensureEditable(
+            $attendance,
+        );
+
+        return DB::transaction(
+            function () use (
+                $attendance,
+                $data,
+                $breaks,
+            ): Attendance {
+                $userId = isset($data['user_id'])
+                    ? (int) $data['user_id']
+                    : $attendance->user_id;
+
+                $attendanceDate = isset(
+                    $data['attendance_date'],
+                )
+                    ? $this->normalizeDate(
+                        $data['attendance_date'],
+                    )
+                    : $attendance->attendance_date->toDateString();
+
+                /*
+                 * Check the target employee/date.
+                 *
+                 * This is important when editing an attendance
+                 * and changing either employee or date.
+                 */
+                $this->ensureDateEditable(
+                    $userId,
+                    $attendanceDate,
+                );
+
+                $this->ensureAttendanceDoesNotExist(
+                    $userId,
+                    $attendanceDate,
+                    $attendance,
+                );
+
+                $attendance->update([
+                    ...$data,
+                    'attendance_date' => $attendanceDate,
+                ]);
+
+                $attendance = $attendance->fresh();
+
+                $this->syncBreaks(
+                    $attendance,
+                    $breaks,
+                );
+
+                return $this->recalculateTotals(
+                    $attendance->fresh(),
+                );
+            },
+        );
+    }
+
+    public function delete(
+        Attendance $attendance,
+    ): void {
+        $this->ensureEditable(
+            $attendance,
+        );
+
+        DB::transaction(
+            fn () => $attendance->delete(),
+        );
+    }
+
+    public function deleteMany(
+        array $ids,
+    ): int {
+        return DB::transaction(
+            function () use ($ids): int {
+                $attendances = Attendance::query()
+                    ->whereIn('id', $ids)
+                    ->get();
+
+                /*
+                 * Check every record before deleting anything.
+                 *
+                 * If even one record is locked, nothing is deleted.
+                 */
+                foreach ($attendances as $attendance) {
+                    $this->ensureEditable(
+                        $attendance,
+                    );
+                }
+
+                $deleted = 0;
+
+                foreach ($attendances as $attendance) {
+                    if ($attendance->delete()) {
+                        $deleted++;
+                    }
+                }
+
+                return $deleted;
+            },
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Import
+    |--------------------------------------------------------------------------
+    |
+    | Import never updates existing attendance.
+    |
+    | Duplicate employee/date records are rejected.
+    |
+    */
+
+    public function import(
         User $user,
-        array $row,
-    ): ?array {
-        $attendanceDate = $this->parseDate(
-            $row[0] ?? null,
-        );
-
-        if (! $attendanceDate) {
-            return null;
-        }
-
-        $startTime = $this->parseTime(
-            $row[2] ?? null,
-        );
-
-        if ($startTime === null) {
-            return null;
-        }
-
-        $endTime = $this->parseTime(
-            $row[17] ?? null,
-        );
-
-        $startAt = $this->combineDateAndTime(
-            $attendanceDate,
-            $startTime,
-        );
-
-        $endAt = $endTime !== null
-            ? $this->combineDateAndTime(
-                $attendanceDate,
-                $endTime,
-            )
-            : null;
-
-        if (
-            $endAt !== null &&
-            $endAt->lt($startAt)
-        ) {
-            $endAt->addDay();
-        }
-
-        $breaks = $this->extractBreaks(
-            $row,
-            $attendanceDate,
-        );
-
+        string $attendanceDate,
+        CarbonInterface $startAt,
+        ?CarbonInterface $endAt = null,
+        array $breaks = [],
+    ): Attendance {
         return DB::transaction(
             function () use (
                 $user,
@@ -241,286 +400,72 @@ class AttendanceService
                 $startAt,
                 $endAt,
                 $breaks,
-            ): array {
-                $attendance = Attendance::query()
-                    ->where('user_id', $user->id)
-                    ->whereDate(
-                        'attendance_date',
+            ): Attendance {
+                $attendanceDate = $this->normalizeDate(
+                    $attendanceDate,
+                );
+
+                /*
+                 * Import-specific salary lock message.
+                 */
+                try {
+                    $this->ensureDateEditable(
+                        $user->id,
                         $attendanceDate,
-                    )
-                    ->first();
+                    );
+                } catch (RuntimeException $exception) {
+                    throw new AttendanceImportException(
+                        "Attendance for {$user->name} "
+                        . "({$user->employee_code}) on "
+                        . Carbon::parse($attendanceDate)->format('d M Y')
+                        . ' cannot be imported because the salary '
+                        . 'for this period has already been paid.',
+                        previous: $exception,
+                    );
+                }
 
-                $created = $attendance === null;
+                /*
+                 * Import-specific duplicate message.
+                 */
+                try {
+                    $this->ensureAttendanceDoesNotExist(
+                        $user->id,
+                        $attendanceDate,
+                    );
+                } catch (RuntimeException $exception) {
+                    throw new AttendanceImportException(
+                        $exception->getMessage(),
+                        previous: $exception,
+                    );
+                }
 
-                $attendance ??= new Attendance;
+                if (
+                    $endAt !== null
+                    && $endAt->lt($startAt)
+                ) {
+                    throw new AttendanceImportException(
+                        "Attendance for {$user->name} "
+                        . "({$user->employee_code}) on "
+                        . Carbon::parse($attendanceDate)->format('d M Y')
+                        . ' has an invalid clock-out time.',
+                    );
+                }
 
-                $attendance->fill([
-                    'user_id' => $user->id,
+                $attendance = $user->attendances()->create([
                     'attendance_date' => $attendanceDate,
                     'start_at' => $startAt,
                     'end_at' => $endAt,
                 ]);
 
-                $attendance->save();
-
-                $attendance->breaks()->delete();
-
-                foreach ($breaks as $break) {
-                    $attendance->breaks()->create(
-                        $break,
-                    );
-                }
-
-                $attendance =
-                    $this->recalculateTotals(
-                        $attendance->fresh(),
-                    );
-
-                return [
-                    'created' => $created,
-                    'attendance' => $attendance,
-                ];
-            },
-        );
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Excel Parsing
-    |--------------------------------------------------------------------------
-    */
-
-    /**
-     * Extract employee code from the report header.
-     */
-    private function extractEmployeeCode(
-        array $rows,
-    ): ?string {
-        foreach ($rows as $row) {
-            foreach ($row as $index => $value) {
-                if (
-                    mb_strtolower(
-                        trim((string) $value),
-                    ) !== 'empcode'
-                ) {
-                    continue;
-                }
-
-                $employeeCode = $row[$index + 1] ?? null;
-
-                if (
-                    $employeeCode === null ||
-                    trim((string) $employeeCode) === ''
-                ) {
-                    return null;
-                }
-
-                return trim(
-                    (string) $employeeCode,
+                $this->syncBreaks(
+                    $attendance,
+                    $breaks,
                 );
-            }
-        }
 
-        return null;
-    }
-
-    /**
-     * Determine whether a row contains an attendance date.
-     */
-    private function isAttendanceRow(
-        array $row,
-    ): bool {
-        return $this->parseDate(
-            $row[0] ?? null,
-        ) !== null;
-    }
-
-    /**
-     * Extract breaks from IN/OUT columns.
-     *
-     * Excel layout:
-     *
-     * C  = IN
-     * D  = Out1
-     * E  = In2
-     * F  = Out2
-     * G  = In3
-     * H  = Out3
-     * ...
-     * Q  = In8
-     * R  = Out
-     */
-    private function extractBreaks(
-        array $row,
-        string $attendanceDate,
-    ): array {
-        $breaks = [];
-
-        /*
-        |--------------------------------------------------------------------------
-        | Intermediate OUT / IN pairs
-        |--------------------------------------------------------------------------
-        */
-
-        for ($column = 3; $column <= 16; $column += 2) {
-            $outTime = $this->parseTime(
-                $row[$column] ?? null,
-            );
-
-            $inTime = $this->parseTime(
-                $row[$column + 1] ?? null,
-            );
-
-            if (
-                $outTime === null ||
-                $inTime === null
-            ) {
-                continue;
-            }
-
-            $breakStart = $this->combineDateAndTime(
-                $attendanceDate,
-                $outTime,
-            );
-
-            $breakEnd = $this->combineDateAndTime(
-                $attendanceDate,
-                $inTime,
-            );
-
-            if ($breakEnd->lt($breakStart)) {
-                $breakEnd->addDay();
-            }
-
-            $durationSeconds = max(
-                0,
-                (int) $breakStart->diffInSeconds(
-                    $breakEnd,
-                ),
-            );
-
-            $breaks[] = [
-                'start_at' => $breakStart,
-                'end_at' => $breakEnd,
-                'duration_seconds' => $durationSeconds,
-            ];
-        }
-
-        return $breaks;
-    }
-
-    /**
-     * Parse an Excel date value.
-     */
-    private function parseDate(
-        mixed $value,
-    ): ?string {
-        if (
-            $value === null ||
-            trim((string) $value) === ''
-        ) {
-            return null;
-        }
-
-        if ($value instanceof \DateTimeInterface) {
-            return Carbon::instance(
-                \DateTime::createFromInterface($value),
-            )->toDateString();
-        }
-
-        $value = trim((string) $value);
-
-        try {
-            return Carbon::createFromFormat(
-                'd/m/Y',
-                $value,
-            )->toDateString();
-        } catch (\Throwable) {
-            try {
-                return Carbon::parse(
-                    $value,
-                )->toDateString();
-            } catch (\Throwable) {
-                return null;
-            }
-        }
-    }
-
-    /**
-     * Parse an Excel time value.
-     */
-    private function parseTime(
-        mixed $value,
-    ): ?string {
-        if (
-            $value === null ||
-            trim((string) $value) === ''
-        ) {
-            return null;
-        }
-
-        if ($value instanceof \DateTimeInterface) {
-            return Carbon::instance(
-                \DateTime::createFromInterface($value),
-            )->format('H:i:s');
-        }
-
-        $value = trim((string) $value);
-
-        if (
-            $value === '--:--' ||
-            $value === '00:00'
-        ) {
-            return null;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Excel time fraction
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            is_numeric($value) &&
-            (float) $value >= 0 &&
-            (float) $value < 1
-        ) {
-            return Carbon::createFromTimestampUTC(
-                (int) round(
-                    (float) $value * 86400,
-                ),
-            )->format('H:i:s');
-        }
-
-        foreach ([
-            'H:i:s',
-            'H:i',
-            'G:i:s',
-            'G:i',
-        ] as $format) {
-            try {
-                return Carbon::createFromFormat(
-                    $format,
-                    $value,
-                )->format('H:i:s');
-            } catch (\Throwable) {
-                continue;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Combine attendance date and time.
-     */
-    private function combineDateAndTime(
-        string $date,
-        string $time,
-    ): Carbon {
-        return Carbon::createFromFormat(
-            'Y-m-d H:i:s',
-            "{$date} {$time}",
+                return $this->recalculateTotals(
+                    $attendance->fresh(),
+                );
+            },
         );
     }
 
@@ -530,9 +475,6 @@ class AttendanceService
     |--------------------------------------------------------------------------
     */
 
-    /**
-     * Recalculate attendance totals.
-     */
     public function recalculateTotals(
         Attendance $attendance,
     ): Attendance {
@@ -551,24 +493,243 @@ class AttendanceService
             'break_seconds' => $breakSeconds,
             'effective_working_seconds' => max(
                 0,
-                $totalWorkingSeconds -
-                $breakSeconds,
+                $totalWorkingSeconds - $breakSeconds,
             ),
         ]);
 
         return $attendance->fresh();
     }
 
-    /**
-     * Calculate total elapsed working seconds.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Salary Lock
+    |--------------------------------------------------------------------------
+    */
+
+    public function isLocked(
+        Attendance $attendance,
+    ): bool {
+        return $this->isDateLocked(
+            $attendance->user_id,
+            $attendance->attendance_date,
+        );
+    }
+
+    public function ensureEditable(
+        Attendance $attendance,
+    ): void {
+        if (! $this->isLocked($attendance)) {
+            return;
+        }
+
+        $employeeLabel = $attendance->user?->employee_code
+            ? "{$attendance->user->name} "
+            . "({$attendance->user->employee_code})"
+            : 'This employee';
+
+        $date = $attendance->attendance_date
+            ->format('d M Y');
+
+        throw new AttendanceActionException(
+            "Attendance for {$employeeLabel} on "
+            . Carbon::parse($date)->format('d M Y')
+            . ' cannot be changed because the salary for this '
+            . 'period has already been paid.',
+        );
+    }
+
+    private function ensureDateEditable(
+        int $userId,
+        string|CarbonInterface $attendanceDate,
+    ): void {
+        if (
+            ! $this->isDateLocked(
+                $userId,
+                $attendanceDate,
+            )
+        ) {
+            return;
+        }
+
+        $employee = User::query()
+            ->select([
+                'id',
+                'name',
+                'employee_code',
+            ])
+            ->find($userId);
+
+        $employeeLabel = $employee?->employee_code
+            ? "{$employee->name} ({$employee->employee_code})"
+            : ($employee?->name ?? 'Employee');
+
+        $date = $attendanceDate instanceof CarbonInterface
+            ? $attendanceDate->toDateString()
+            : $this->normalizeDate($attendanceDate);
+
+        throw new RuntimeException(
+            "Attendance for {$employeeLabel} on "
+            . Carbon::parse($date)->format('d M Y')
+            . ' cannot be changed because the salary for this '
+            . 'period has already been paid.',
+        );
+    }
+
+    private function isDateLocked(
+        int $userId,
+        string|CarbonInterface $attendanceDate,
+    ): bool {
+        $date = $attendanceDate instanceof CarbonInterface
+            ? $attendanceDate->toDateString()
+            : $this->normalizeDate($attendanceDate);
+
+        return Salary::query()
+            ->where(
+                'user_id',
+                $userId,
+            )
+            ->where(
+                'status',
+                SalaryStatus::PAID,
+            )
+            ->whereDate(
+                'salary_period_start',
+                '<=',
+                $date,
+            )
+            ->whereDate(
+                'salary_period_end',
+                '>=',
+                $date,
+            )
+            ->exists();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Duplicate Attendance
+    |--------------------------------------------------------------------------
+    */
+
+    private function ensureAttendanceDoesNotExist(
+        int $userId,
+        string|CarbonInterface $attendanceDate,
+        ?Attendance $ignore = null,
+    ): void {
+        $date = $attendanceDate instanceof CarbonInterface
+            ? $attendanceDate->toDateString()
+            : $this->normalizeDate($attendanceDate);
+
+        $exists = Attendance::query()
+            ->where(
+                'user_id',
+                $userId,
+            )
+            ->whereDate(
+                'attendance_date',
+                $date,
+            )
+            ->when(
+                $ignore,
+                fn ($query) => $query->where(
+                    $ignore->getKeyName(),
+                    '!=',
+                    $ignore->getKey(),
+                ),
+            )
+            ->exists();
+
+        if (! $exists) {
+            return;
+        }
+
+        $employee = User::query()
+            ->select([
+                'id',
+                'name',
+                'employee_code',
+            ])
+            ->find($userId);
+
+        $employeeLabel = $employee?->employee_code
+            ? "{$employee->name} ({$employee->employee_code})"
+            : ($employee?->name ?? 'Employee');
+
+        throw new AttendanceActionException(
+            "Attendance already exists for {$employeeLabel} on "
+            . Carbon::parse($date)->format('d M Y')
+            . '.',
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Breaks
+    |--------------------------------------------------------------------------
+    */
+
+    private function syncBreaks(
+        Attendance $attendance,
+        array $breaks,
+    ): void {
+        $attendance->breaks()->delete();
+
+        foreach ($breaks as $break) {
+            $startAt = $break['start_at'] instanceof CarbonInterface
+                ? $break['start_at']
+                : Carbon::parse(
+                    $break['start_at'],
+                );
+
+            $endAt = empty($break['end_at'])
+                ? null
+                : (
+                $break['end_at'] instanceof CarbonInterface
+                    ? $break['end_at']
+                    : Carbon::parse(
+                    $break['end_at'],
+                )
+                );
+
+            if (
+                $endAt !== null
+                && $endAt->lt($startAt)
+            ) {
+                throw new RuntimeException(
+                    'Break end time cannot be before break start time.',
+                );
+            }
+
+            $durationSeconds = $endAt !== null
+                ? max(
+                    0,
+                    (int) $startAt->diffInSeconds(
+                        $endAt,
+                    ),
+                )
+                : 0;
+
+            $attendance->breaks()->create([
+                'start_at' => $startAt,
+                'end_at' => $endAt,
+                'duration_seconds' => $durationSeconds,
+            ]);
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Helpers
+    |--------------------------------------------------------------------------
+    */
+
     private function calculateTotalWorkingSeconds(
         mixed $startAt,
         mixed $endAt,
     ): int {
         if (
-            $startAt === null ||
-            $endAt === null
+            $startAt === null
+            || $endAt === null
         ) {
             return 0;
         }
@@ -583,7 +744,17 @@ class AttendanceService
 
         return max(
             0,
-            (int) $startAt->diffInSeconds($endAt),
+            (int) $startAt->diffInSeconds(
+                $endAt,
+            ),
         );
+    }
+
+    private function normalizeDate(
+        string|CarbonInterface $date,
+    ): string {
+        return $date instanceof CarbonInterface
+            ? $date->toDateString()
+            : Carbon::parse($date)->toDateString();
     }
 }

@@ -64,11 +64,12 @@ const form = useForm<AttendanceFormData>({
     attendance_date: props.attendance.attendance_date,
     start_at: props.attendance.start_at,
     end_at: props.attendance.end_at,
-    breaks: props.attendance.breaks.map((attendanceBreak) => ({
-        id: attendanceBreak.id,
-        start_at: attendanceBreak.start_at,
-        end_at: attendanceBreak.end_at ?? '',
-    })),
+    breaks: props.attendance.breaks.map(
+        (attendanceBreak) => ({
+            start_at: attendanceBreak.start_at,
+            end_at: attendanceBreak.end_at ?? '',
+        }),
+    ),
 });
 
 /*
@@ -78,7 +79,9 @@ const form = useForm<AttendanceFormData>({
 */
 
 const handleSubmit = () => {
-    form.put(updateAttendance(props.attendance.id).url);
+    form.put(
+        updateAttendance(props.attendance.uuid).url,
+    );
 };
 
 const handleCancel = () => {
@@ -89,18 +92,14 @@ const handleCancel = () => {
 <template>
     <FormLayout
         :title="attendancePage.form.editTitle"
-        :description="
-            attendancePage.form.editDescription
-        "
+        :description="attendancePage.form.editDescription"
     >
         <AttendanceForm
             :form="form"
             :employees="employees"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                attendancePage.form.editSubmitLabel
-            "
+            :submit-label="attendancePage.form.editSubmitLabel"
             @submit="handleSubmit"
             @cancel="handleCancel"
         />

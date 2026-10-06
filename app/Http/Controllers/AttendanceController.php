@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\AttendanceImportException;
 use App\Http\Controllers\Concerns\HasCrudResponses;
 use App\Http\Queries\Concerns\AppliesIndexFilters;
 use App\Http\Requests\Attendances\AttendanceImportRequest;
@@ -12,14 +13,13 @@ use App\Http\Resources\AttendanceResource;
 use App\Imports\AttendanceImport;
 use App\Models\Attendance;
 use App\Services\AttendanceService;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Maatwebsite\Excel\Facades\Excel;
+use RuntimeException;
 
 class AttendanceController extends Controller
 {
@@ -33,7 +33,12 @@ class AttendanceController extends Controller
         private readonly AttendanceService $attendanceService,
     ) {}
 
-    // Index
+    /*
+    |--------------------------------------------------------------------------
+    | Listing
+    |--------------------------------------------------------------------------
+    */
+
     public function index(
         IndexAttendanceRequest $request,
     ): Response {
@@ -92,27 +97,42 @@ class AttendanceController extends Controller
             'attendances' => AttendanceResource::collection(
                 $attendances,
             ),
+
             'filters' => [
-                'search' => $filters['search'] ?? '',
                 'user_id' => $filters['user_id'] ?? 'all',
                 'start_date' => $filters['start_date'] ?? '',
                 'end_date' => $filters['end_date'] ?? '',
                 'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort']
-                    ?? 'attendance_date',
-                'direction' => $filters['direction']
-                    ?? 'desc',
+                'sort' => $filters['sort'] ?? 'attendance_date',
+                'direction' => $filters['direction'] ?? 'desc',
             ],
-        ],
-        );
+        ]);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Create
+    |--------------------------------------------------------------------------
+    */
 
     public function create(): Response
     {
-        Gate::authorize('create', Attendance::class);
+        Gate::authorize(
+            'create',
+            Attendance::class,
+        );
 
-        return Inertia::render('Attendances/Create', []);
+        return Inertia::render(
+            'Attendances/Create',
+            [],
+        );
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Edit
+    |--------------------------------------------------------------------------
+    */
 
     public function edit(
         Attendance $attendance,
@@ -130,10 +150,15 @@ class AttendanceController extends Controller
         return Inertia::render('Attendances/Edit', [
             'attendance' => new AttendanceResource(
                 $attendance,
-            )
-        ],
-        );
+            ),
+        ]);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Store
+    |--------------------------------------------------------------------------
+    */
 
     public function store(
         AttendanceRequest $request,
@@ -149,26 +174,23 @@ class AttendanceController extends Controller
 
         unset($data['breaks']);
 
-        $attendance = Attendance::create([
-            ...$data,
-            'total_working_seconds' => 0,
-            'break_seconds' => 0,
-            'effective_working_seconds' => 0,
-        ]);
+        try {
+            $this->attendanceService->create($data, $breaks);
+        } catch (RuntimeException $e) {
+            return $this->errorResponse(
+                'created',
+                $e->getMessage(),
+            );
+        }
 
-        $this->syncBreaks(
-            $attendance,
-            $breaks,
-        );
-
-        $this->attendanceService->recalculateTotals(
-            $attendance->fresh(),
-        );
-
-        return $this->successResponse(
-            'created',
-        );
+        return $this->successResponse('created');
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update
+    |--------------------------------------------------------------------------
+    */
 
     public function update(
         AttendanceRequest $request,
@@ -185,21 +207,27 @@ class AttendanceController extends Controller
 
         unset($data['breaks']);
 
-        $attendance->update($data);
+        try {
+            $this->attendanceService->update(
+                $attendance,
+                $data,
+                $breaks,
+            );
+        } catch (RuntimeException $e) {
+            return $this->errorResponse(
+                'updated',
+                $e->getMessage(),
+            );
+        }
 
-        $this->syncBreaks(
-            $attendance,
-            $breaks,
-        );
-
-        $this->attendanceService->recalculateTotals(
-            $attendance->fresh(),
-        );
-
-        return $this->successResponse(
-            'updated',
-        );
+        return $this->successResponse('updated');
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Delete
+    |--------------------------------------------------------------------------
+    */
 
     public function destroy(
         Attendance $attendance,
@@ -209,12 +237,23 @@ class AttendanceController extends Controller
             $attendance,
         );
 
-        $attendance->delete();
+        try {
+            $this->attendanceService->delete($attendance);
+        } catch (RuntimeException $e) {
+            return $this->errorResponse(
+                'deleted',
+                $e->getMessage(),
+            );
+        }
 
-        return $this->successResponse(
-            'deleted',
-        );
+        return $this->successResponse('deleted');
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Bulk Delete
+    |--------------------------------------------------------------------------
+    */
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
@@ -224,83 +263,66 @@ class AttendanceController extends Controller
             Attendance::class,
         );
 
-        Attendance::query()
-            ->whereIn(
-                'id',
+        try {
+            $this->attendanceService->deleteMany(
                 $request->validated('ids'),
-            )
-            ->delete();
+            );
+        } catch (RuntimeException $e) {
+            return $this->errorResponse(
+                'bulk_deleted',
+                $e->getMessage(),
+            );
+        }
 
-        return $this->successResponse(
-            'bulk_deleted',
-        );
+        return $this->successResponse('bulk_deleted');
     }
 
-    // Import
+    /*
+    |--------------------------------------------------------------------------
+    | Import
+    |--------------------------------------------------------------------------
+    */
+
     public function importView(): Response
     {
-        return Inertia::render('Attendances/Import', []);
+        Gate::authorize(
+            'import',
+            Attendance::class,
+        );
+
+        return Inertia::render(
+            'Attendances/Import',
+            [],
+        );
     }
 
     public function import(
         AttendanceImportRequest $request,
     ): RedirectResponse {
+        Gate::authorize(
+            'import',
+            Attendance::class,
+        );
+
         try {
             Excel::import(
-                new AttendanceImport(),
+                new AttendanceImport($this->attendanceService),
                 $request->file('file'),
             );
-        } catch (ValidationException $exception) {
-            throw $exception;
-        } catch (\Throwable $exception) {
-            report($exception);
-
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'file' =>
-                        'Unable to import the attendance report. '.
-                        'Please check the file and try again.',
-                ]);
-        }
-
-        return $this->successResponse(
-            'imported',
-        );
-    }
-
-    // Helpers
-    private function syncBreaks(
-        Attendance $attendance,
-        array $breaks,
-    ): void {
-        $attendance->breaks()->delete();
-
-        foreach ($breaks as $break) {
-            $startAt = Carbon::parse(
-                $break['start_at'],
+        } catch (AttendanceImportException $e) {
+            return $this->errorResponse(
+                'imported',
+                $e->getMessage(),
             );
+        } catch (\Throwable $e) {
+            report($e);
 
-            $endAt = ! empty($break['end_at'])
-                ? Carbon::parse(
-                    $break['end_at'],
-                )
-                : null;
-
-            $durationSeconds = $endAt !== null
-                ? max(
-                    0,
-                    (int) $startAt->diffInSeconds(
-                        $endAt,
-                    ),
-                )
-                : 0;
-
-            $attendance->breaks()->create([
-                'start_at' => $startAt,
-                'end_at' => $endAt,
-                'duration_seconds' => $durationSeconds,
-            ]);
+            return $this->errorResponse(
+                'imported',
+                'Unable to import the attendance report. Please check the file and try again.',
+            );
         }
+
+        return $this->successResponse('imported');
     }
 }

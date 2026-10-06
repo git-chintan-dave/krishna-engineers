@@ -66,12 +66,6 @@ class AttendanceRequest extends FormRequest
                 'array',
             ],
 
-            'breaks.*.id' => [
-                'nullable',
-                'integer',
-                'exists:attendance_breaks,id',
-            ],
-
             'breaks.*.start_at' => [
                 'required',
                 'date',

@@ -59,6 +59,15 @@ class AttendancePolicy
         return $this->isSuperAdmin($user);
     }
 
+    /**
+     * Determine whether the user can import attendance records.
+     */
+    public function import(User $user): bool
+    {
+        return $this->isSuperAdmin($user)
+            || $this->isSupervisor($user);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Private Helpers

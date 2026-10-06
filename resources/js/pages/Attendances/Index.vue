@@ -58,7 +58,7 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const filterEmployee = ref<number | 'all'>(
+const filterEmployee = ref<number | string | 'all'>(
     props.filters.userId,
 );
 
@@ -109,6 +109,10 @@ const {
 | Filter Actions
 |--------------------------------------------------------------------------
 */
+
+const handleSearch = () => {
+    search();
+};
 
 const handleClearFilters = () => {
     filterEmployee.value = 'all';
@@ -161,13 +165,14 @@ const handleDeleteSelected = () => {
         <template #filters>
             <ListingFilters
                 :searchable="false"
+                :search-button-label="attendancePage.searchButtonLabel"
                 :clear-button-label="attendancePage.clearButtonLabel"
                 :clear-disabled="
                     filterEmployee === 'all' &&
                     !filterStartDate &&
                     !filterEndDate
                 "
-                @search="search"
+                @search="handleSearch"
                 @clear="handleClearFilters"
             >
                 <template #filters>
@@ -219,9 +224,7 @@ const handleDeleteSelected = () => {
                 :table="table"
                 :columns-count="columns.length"
                 :total="attendances.meta.total"
-                :page-index="
-                    attendances.meta.current_page - 1
-                "
+                :page-index="attendances.meta.current_page - 1"
                 :page-size="attendances.meta.per_page"
                 :selected-count="selectedCount"
                 :page-size-options="[10, 25, 50, 100]"
