@@ -62,7 +62,7 @@ const {
 |--------------------------------------------------------------------------
 */
 
-const loadOptions = async () => {
+const loadOptions = async (): Promise<void> => {
     options.value = [];
 
     if (!props.sectionId) {
@@ -90,10 +90,14 @@ onMounted(loadOptions);
 
 watch(
     () => props.sectionId,
-    async () => {
-        emit('update:modelValue', null);
-
-        await loadOptions();
+    () => {
+        /*
+         * Do not clear modelValue here.
+         *
+         * The parent may already have a section_size_id
+         * when loading an existing record or applying defaults.
+         */
+        loadOptions();
     },
 );
 </script>
@@ -105,7 +109,11 @@ watch(
         :placeholder="placeholder"
         :searchable="searchable"
         :clearable="clearable"
-        :disabled="disabled"
+        :disabled="
+            disabled ||
+            loading ||
+            !sectionId
+        "
         :loading="loading"
         :error="error"
         @update:model-value="

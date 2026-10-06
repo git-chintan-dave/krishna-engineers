@@ -4,6 +4,7 @@ namespace App\Http\Requests\OperatorWorkLogs;
 
 use App\Enums\UserRole;
 use App\Enums\UserShift;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,7 +21,13 @@ class OperatorWorkLogRequest extends FormRequest
             'user_id' => [
                 'nullable',
                 'integer',
-                'exists:users,id',
+                Rule::exists(
+                    User::class,
+                    'id',
+                )->where(
+                    'role',
+                    UserRole::OPERATOR->value,
+                ),
                 Rule::requiredIf(
                     fn () => $this->user()->role !== UserRole::OPERATOR
                 ),

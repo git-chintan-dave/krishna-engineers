@@ -20,10 +20,18 @@ class BandsawWorkLogRequest extends FormRequest
     {
         return [
             'user_id' => [
-                'required',
+                'nullable',
                 'integer',
-                Rule::exists(User::class, 'id')
-                    ->where('role', UserRole::BANDSAW->value),
+                Rule::exists(
+                    User::class,
+                    'id',
+                )->where(
+                    'role',
+                    UserRole::BANDSAW->value,
+                ),
+                Rule::requiredIf(
+                    fn () => $this->user()->role !== UserRole::BANDSAW,
+                ),
             ],
 
             'work_date' => [
@@ -40,7 +48,10 @@ class BandsawWorkLogRequest extends FormRequest
             'section_size_id' => [
                 'required',
                 'integer',
-                Rule::exists(SectionSize::class, 'id'),
+                Rule::exists(
+                    SectionSize::class,
+                    'id',
+                ),
             ],
 
             'quantity' => [

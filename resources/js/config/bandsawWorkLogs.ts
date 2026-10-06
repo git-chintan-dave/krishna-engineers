@@ -1,6 +1,7 @@
 export const bandsawWorkLogPage = {
     title: 'Bandsaw Work Logs',
-    description: 'Manage and review work logs recorded by Bandsaw operators.',
+    description:
+        'Manage and review work logs recorded by Bandsaw operators.',
 
     createLabel: 'Add Work Log',
 
@@ -11,6 +12,7 @@ export const bandsawWorkLogPage = {
     workDatePlaceholder: 'All Work Dates',
     bandsawPlaceholder: 'All Bandsaw Operators',
     partPlaceholder: 'All Parts',
+    sectionPlaceholder: 'All Sections',
     sectionSizePlaceholder: 'All Section Sizes',
 
     emptyText: 'No Bandsaw work logs found.',
@@ -30,6 +32,9 @@ export const bandsawWorkLogPage = {
 
         partLabel: 'Part',
         partPlaceholder: 'Select part',
+
+        sectionLabel: 'Section',
+        sectionPlaceholder: 'Select section',
 
         sectionSizeLabel: 'Section Size',
         sectionSizePlaceholder: 'Select section size',

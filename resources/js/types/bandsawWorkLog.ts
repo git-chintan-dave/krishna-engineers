@@ -13,21 +13,29 @@ export type BandsawWorkLog = {
     id: number;
     uuid: string;
     work_date: string;
+
     user: {
         id: number;
         name: string;
         employee_code: string;
     };
+
     part: {
         id: number;
         name: string;
         reference_name: string;
     };
+
+    section: {
+        id: number | null;
+        name: string | null;
+    };
+
     section_size: {
         id: number;
         size: string;
-        section: string | null;
     };
+
     quantity: number;
     remarks: string | null;
     created_at: string;
@@ -45,10 +53,10 @@ export type BandsawWorkLogFormData = {
     work_date: string;
 
     part_id: number | null;
+    section_id: number | null;
     section_size_id: number | null;
 
     quantity: number;
-
     remarks: string;
 };
 
@@ -60,9 +68,6 @@ export type BandsawWorkLogFormData = {
 
 export type BandsawWorkLogSort =
     | 'work_date'
-    | 'user_id'
-    | 'part_id'
-    | 'section_size_id'
     | 'quantity'
     | 'created_at';
 
@@ -77,6 +82,7 @@ export type BandsawWorkLogFilters = {
     workDate: string;
     userId: number | string;
     partId: number | string;
+    sectionId: number | string;
     sectionSizeId: number | string;
     perPage: number;
     sort: BandsawWorkLogSort;
@@ -94,23 +100,13 @@ export type BandsawWorkLogsResponse =
 
 /*
 |--------------------------------------------------------------------------
-| Options
-|--------------------------------------------------------------------------
-*/
-
-export type BandsawWorkLogSelectOption<T = number | string> = {
-    value: T;
-    label: string;
-};
-
-/*
-|--------------------------------------------------------------------------
 | Last Report
 |--------------------------------------------------------------------------
 */
 
 export type BandsawWorkLogLastReport = {
     part_id: number;
+    section_id: number;
     section_size_id: number;
 };
 
@@ -121,15 +117,10 @@ export type BandsawWorkLogLastReport = {
 */
 
 export type BandsawWorkLogFormOptions = {
-    bandsaws: BandsawWorkLogSelectOption<number>[];
-
-    parts: BandsawWorkLogSelectOption<number>[];
-
-    sectionSizes: BandsawWorkLogSelectOption<number>[];
-
     currentUserId: number;
-
     canSelectBandsaw: boolean;
-
-    lastReports: Record<string, BandsawWorkLogLastReport>;
+    lastReports: Record<
+        string,
+        BandsawWorkLogLastReport
+    >;
 };

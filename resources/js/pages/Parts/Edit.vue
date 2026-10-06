@@ -46,7 +46,7 @@ const handleSubmit = () => {
                 : 'inactive',
             _method: 'PUT',
         }))
-        .post(update(props.part.id).url);
+        .post(update(props.part.uuid).url);
 };
 
 const handleCancel = () => {

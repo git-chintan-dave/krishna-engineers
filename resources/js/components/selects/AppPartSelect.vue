@@ -1,9 +1,20 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
 import { useLookup } from '@/composables/useLookup';
 import type { SelectOption } from '@/types/common';
+
+/*
+|--------------------------------------------------------------------------
+| Types
+|--------------------------------------------------------------------------
+*/
+
+type PartSelectOption = SelectOption<number> & {
+    cutting_size: string | null;
+    section_id: number | null;
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -37,8 +48,17 @@ const props = withDefaults(
 */
 
 const emit = defineEmits<{
-    'update:modelValue': [value: number | null];
-    change: [value: number | null];
+    'update:modelValue': [
+        value: number | null,
+    ];
+
+    change: [
+        value: number | null,
+    ];
+
+    part: [
+        part: PartSelectOption | null,
+    ];
 }>();
 
 /*
@@ -47,7 +67,8 @@ const emit = defineEmits<{
 |--------------------------------------------------------------------------
 */
 
-const options = ref<SelectOption<number>[]>([]);
+const options =
+    ref<PartSelectOption[]>([]);
 
 const {
     loading,
@@ -56,15 +77,145 @@ const {
 
 /*
 |--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
+
+const getPart = (
+    value: number | null,
+): PartSelectOption | null => {
+    if (value === null) {
+        return null;
+    }
+
+    return (
+        options.value.find(
+            (option) =>
+                option.value === value,
+        ) ?? null
+    );
+};
+
+const emitSelectedPart = (
+    value: number | null,
+): void => {
+    emit(
+        'part',
+        getPart(value),
+    );
+};
+
+/*
+|--------------------------------------------------------------------------
+| Value Changes
+|--------------------------------------------------------------------------
+*/
+
+const normalizeValue = (
+    value: unknown,
+): number | null => {
+    if (typeof value === 'number') {
+        return value;
+    }
+
+    if (
+        typeof value === 'string' &&
+        value !== ''
+    ) {
+        const numberValue = Number(value);
+
+        return Number.isNaN(numberValue)
+            ? null
+            : numberValue;
+    }
+
+    return null;
+};
+
+const handleModelValue = (
+    value: unknown,
+): void => {
+    const partId =
+        normalizeValue(value);
+
+    emit(
+        'update:modelValue',
+        partId,
+    );
+
+    emitSelectedPart(partId);
+};
+
+const handleChange = (
+    value: unknown,
+): void => {
+    const partId =
+        normalizeValue(value);
+
+    emit(
+        'change',
+        partId,
+    );
+
+    emitSelectedPart(partId);
+};
+
+/*
+|--------------------------------------------------------------------------
 | Load Options
 |--------------------------------------------------------------------------
 */
 
-const loadOptions = async () => {
-    options.value = await parts();
+const loadOptions = async (): Promise<void> => {
+    options.value =
+        await parts() as PartSelectOption[];
+
+    /*
+     * Important for:
+     * - Edit
+     * - Last report autofill
+     *
+     * modelValue may already contain a Part ID
+     * before lookup options finish loading.
+     */
+    emitSelectedPart(
+        props.modelValue,
+    );
 };
 
 onMounted(loadOptions);
+
+watch(
+    () => props.modelValue,
+    (value) => {
+        if (options.value.length > 0) {
+            emitSelectedPart(value);
+        }
+    },
+);
+
+onMounted(loadOptions);
+
+/*
+|--------------------------------------------------------------------------
+| Programmatic Model Value Changes
+|--------------------------------------------------------------------------
+*/
+
+watch(
+    () => props.modelValue,
+    (value) => {
+        /*
+         * If the lookup has already loaded, immediately
+         * resolve the selected Part.
+         *
+         * This handles last-report autofill.
+         */
+        if (options.value.length > 0) {
+            emitSelectedPart(value);
+        }
+    },
+);
 </script>
 
 <template>
@@ -78,16 +229,10 @@ onMounted(loadOptions);
         :loading="loading"
         :error="error"
         @update:model-value="
-            emit(
-                'update:modelValue',
-                $event as number | null,
-            )
+            handleModelValue
         "
         @change="
-            emit(
-                'change',
-                $event as number | null,
-            )
+            handleChange
         "
     />
 </template>

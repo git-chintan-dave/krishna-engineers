@@ -93,12 +93,22 @@ class LookupService
     public function parts(): array
     {
         return Part::query()
-            ->where('status', Status::ACTIVE->value)
+            ->where(
+                'status',
+                Status::ACTIVE->value,
+            )
             ->orderBy('name')
-            ->get(['id', 'name', 'reference_name'])
+            ->get([
+                'id',
+                'name',
+                'cutting_size',
+                'section_id',
+            ])
             ->map(fn (Part $part): array => [
                 'value' => $part->id,
                 'label' => $part->name,
+                'cutting_size' => $part->cutting_size,
+                'section_id' => $part->section_id,
             ])
             ->all();
     }

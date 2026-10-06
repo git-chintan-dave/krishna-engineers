@@ -20,6 +20,12 @@ class BandsawWorkLog extends Model
 {
     use HasUuids;
 
+    /*
+    |--------------------------------------------------------------------------
+    | UUID
+    |--------------------------------------------------------------------------
+    */
+
     public function uniqueIds(): array
     {
         return ['uuid'];
@@ -30,7 +36,12 @@ class BandsawWorkLog extends Model
         return 'uuid';
     }
 
-    // Casts
+    /*
+    |--------------------------------------------------------------------------
+    | Casts
+    |--------------------------------------------------------------------------
+    */
+
     protected function casts(): array
     {
         return [
@@ -39,7 +50,12 @@ class BandsawWorkLog extends Model
         ];
     }
 
-    // Relationships
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -55,63 +71,82 @@ class BandsawWorkLog extends Model
         return $this->belongsTo(SectionSize::class);
     }
 
-    // Scopes
+    /*
+    |--------------------------------------------------------------------------
+    | Scopes
+    |--------------------------------------------------------------------------
+    */
+
     public function scopeForUser(
         Builder $query,
-        int $userId
+        int $userId,
     ): Builder {
         return $query->where('user_id', $userId);
     }
 
     public function scopeForDate(
         Builder $query,
-                $date
+                $date,
     ): Builder {
-        return $query->whereDate('work_date', $date);
+        return $query->whereDate(
+            'work_date',
+            $date,
+        );
     }
 
     public function scopeFromDate(
         Builder $query,
-                $date
+                $date,
     ): Builder {
-        return $query->whereDate('work_date', '>=', $date);
+        return $query->whereDate(
+            'work_date',
+            '>=',
+            $date,
+        );
     }
 
     public function scopeToDate(
         Builder $query,
-                $date
+                $date,
     ): Builder {
-        return $query->whereDate('work_date', '<=', $date);
+        return $query->whereDate(
+            'work_date',
+            '<=',
+            $date,
+        );
     }
 
     public function scopeBetweenDates(
         Builder $query,
                 $fromDate,
-                $toDate
+                $toDate,
     ): Builder {
-        return $query->whereBetween('work_date', [
-            $fromDate,
-            $toDate,
-        ]);
+        return $query->whereBetween(
+            'work_date',
+            [
+                $fromDate,
+                $toDate,
+            ],
+        );
     }
 
     public function scopeForPart(
         Builder $query,
-        int $partId
+        int $partId,
     ): Builder {
-        return $query->where('part_id', $partId);
+        return $query->where(
+            'part_id',
+            $partId,
+        );
     }
 
     public function scopeForSectionSize(
         Builder $query,
-        int $sectionSizeId
+        int $sectionSizeId,
     ): Builder {
-        return $query->where('section_size_id', $sectionSizeId);
-    }
-
-    // Accessors
-    public function getTotalQuantityAttribute(): int
-    {
-        return $this->quantity;
+        return $query->where(
+            'section_size_id',
+            $sectionSizeId,
+        );
     }
 }

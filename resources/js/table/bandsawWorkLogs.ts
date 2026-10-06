@@ -1,44 +1,66 @@
-import {createColumnHelper} from "@tanstack/vue-table";
-import {BandsawWorkLog} from "@/types/bandsawWorkLog";
-import {createPrimaryColumn} from "@/table/helpers/primaryColumn";
-import {createSortableColumn} from "@/table/helpers/sortableColumn";
-import {createActionsColumn} from "@/table/columns/actionsColumn";
-import {edit} from "@/routes/bandsaw";
-import {createSelectColumn} from "@/table/columns/selectColumn";
+import { createColumnHelper } from '@tanstack/vue-table';
 
-const columnHelper = createColumnHelper<any, BandsawWorkLog>();
+import { edit } from '@/routes/bandsaw';
+
+import { createActionsColumn } from '@/table/columns/actionsColumn';
+import { createDateColumn } from '@/table/columns/dateColumn';
+import { createSelectColumn } from '@/table/columns/selectColumn';
+
+import { createPrimaryColumn } from '@/table/helpers/primaryColumn';
+import { createSortableColumn } from '@/table/helpers/sortableColumn';
+
+import type { BandsawWorkLog } from '@/types/bandsawWorkLog';
+
+const columnHelper =
+    createColumnHelper<any, BandsawWorkLog>();
 
 export const createBandsawWorkLogColumns = (
     handleDelete: (uuid: string) => void,
+    canManage: boolean,
 ) =>
     columnHelper.columns([
-        createSelectColumn({
-            resourceName: 'bandsaw',
+        ...(canManage
+            ? [
+                createSelectColumn({
+                    resourceName:
+                        'bandsaw-work-logs',
+                }),
+            ]
+            : []),
+
+        createDateColumn({
+            accessorKey: 'work_date',
+            header: 'Work Date',
         }),
 
+        ...(canManage ? [
+            createPrimaryColumn({
+                accessorKey: 'user.name',
+                header: 'Bandsaw',
+                size: 180,
+                sortable: false,
+            }),
+        ] : []),
+
         createPrimaryColumn({
-            accessorKey: 'user.name',
-            header: 'Bandsaw',
-            size: 180,
+            accessorKey: 'part.name',
+            header: 'Part',
+            size: 160,
             sortable: false,
         }),
 
-        createSortableColumn({
-            accessorKey: 'work_date',
-            header: 'Work Date',
-            size: 130,
+        createPrimaryColumn({
+            accessorKey: 'section.name',
+            header: 'Section',
+            size: 140,
+            sortable: false,
         }),
 
-        createSortableColumn({
-            accessorKey: 'part.reference_name',
-            header: 'Part',
-            size: 160,
-        }),
-
-        createSortableColumn({
+        createPrimaryColumn({
             accessorKey: 'section_size.size',
             header: 'Section Size',
             size: 140,
+            sortable: false,
         }),
 
         createSortableColumn({
@@ -47,16 +69,15 @@ export const createBandsawWorkLogColumns = (
             size: 100,
         }),
 
-        createPrimaryColumn({
-            accessorKey: 'remarks',
-            header: 'Remarks',
-            size: 220,
-            sortable: false,
-        }),
-
-        createActionsColumn({
-            editUrl: (uuid) => edit(uuid).url,
-            resourceName: 'bandsaw log',
-            handleDelete,
-        }),
-    ])
+        ...(canManage
+            ? [
+                createActionsColumn({
+                    editUrl: (uuid) =>
+                        edit(uuid).url,
+                    resourceName:
+                        'bandsaw work log',
+                    handleDelete,
+                }),
+            ]
+            : []),
+    ]);

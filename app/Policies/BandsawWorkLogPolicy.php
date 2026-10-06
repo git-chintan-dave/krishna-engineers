@@ -20,7 +20,7 @@ class BandsawWorkLogPolicy
                 UserRole::SUPERVISOR,
                 UserRole::BANDSAW,
             ],
-            true
+            true,
         );
     }
 
@@ -29,7 +29,7 @@ class BandsawWorkLogPolicy
      */
     public function view(
         User $user,
-        BandsawWorkLog $bandsawWorkLog
+        BandsawWorkLog $bandsawWorkLog,
     ): bool {
         return in_array(
             $user->role,
@@ -38,7 +38,7 @@ class BandsawWorkLogPolicy
                 UserRole::SUPERVISOR,
                 UserRole::BANDSAW,
             ],
-            true
+            true,
         );
     }
 
@@ -54,7 +54,7 @@ class BandsawWorkLogPolicy
                 UserRole::SUPERVISOR,
                 UserRole::BANDSAW,
             ],
-            true
+            true,
         );
     }
 
@@ -63,16 +63,15 @@ class BandsawWorkLogPolicy
      */
     public function update(
         User $user,
-        BandsawWorkLog $bandsawWorkLog
+        BandsawWorkLog $bandsawWorkLog,
     ): bool {
         return in_array(
             $user->role,
             [
                 UserRole::SUPER_ADMIN,
                 UserRole::SUPERVISOR,
-                UserRole::BANDSAW,
             ],
-            true
+            true,
         );
     }
 
@@ -81,21 +80,21 @@ class BandsawWorkLogPolicy
      */
     public function delete(
         User $user,
-        BandsawWorkLog $bandsawWorkLog
+        BandsawWorkLog $bandsawWorkLog,
     ): bool {
         return in_array(
             $user->role,
             [
                 UserRole::SUPER_ADMIN,
                 UserRole::SUPERVISOR,
-                UserRole::BANDSAW,
             ],
-            true
+            true,
         );
     }
 
     /**
-     * Determine whether the user can delete multiple Bandsaw work logs.
+     * Determine whether the user can delete multiple
+     * Bandsaw work logs.
      */
     public function deleteAny(User $user): bool
     {
@@ -105,7 +104,7 @@ class BandsawWorkLogPolicy
                 UserRole::SUPER_ADMIN,
                 UserRole::SUPERVISOR,
             ],
-            true
+            true,
         );
     }
 }

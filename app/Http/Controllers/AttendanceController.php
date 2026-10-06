@@ -56,37 +56,14 @@ class AttendanceController extends Controller
             ]),
             $filters,
         )
-            ->when(
-                $filters['user_id'] ?? null,
-                fn (
-                    Builder $query,
-                    int $userId,
-                ): Builder => $query->where(
-                    'user_id',
-                    $userId,
-                ),
+            ->when($filters['user_id'] ?? null,
+                fn (Builder $query, int $userId): Builder => $query->where('user_id', $userId),
             )
-            ->when(
-                $filters['start_date'] ?? null,
-                fn (
-                    Builder $query,
-                    string $date,
-                ): Builder => $query->whereDate(
-                    'attendance_date',
-                    '>=',
-                    $date,
-                ),
+            ->when($filters['start_date'] ?? null,
+                fn (Builder $query, string $date): Builder => $query->whereDate('attendance_date', '>=', $date),
             )
-            ->when(
-                $filters['end_date'] ?? null,
-                fn (
-                    Builder $query,
-                    string $date,
-                ): Builder => $query->whereDate(
-                    'attendance_date',
-                    '<=',
-                    $date,
-                ),
+            ->when($filters['end_date'] ?? null,
+                fn (Builder $query, string $date): Builder => $query->whereDate('attendance_date', '<=', $date),
             )
             ->paginate(
                 $filters['per_page'] ?? 10,

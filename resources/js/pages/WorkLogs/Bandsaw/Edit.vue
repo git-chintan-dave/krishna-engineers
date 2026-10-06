@@ -13,7 +13,6 @@ import type {
     BandsawWorkLog,
     BandsawWorkLogFormData,
     BandsawWorkLogLastReport,
-    BandsawWorkLogSelectOption,
 } from '@/types/bandsawWorkLog';
 
 /*
@@ -25,13 +24,12 @@ import type {
 const props = defineProps<{
     bandsawWorkLog: BandsawWorkLog;
 
-    bandsaws: BandsawWorkLogSelectOption<number>[];
-    parts: BandsawWorkLogSelectOption<number>[];
-    sectionSizes: BandsawWorkLogSelectOption<number>[];
-
     currentUserId: number;
     canSelectBandsaw: boolean;
-    lastReports: Record<string, BandsawWorkLogLastReport>;
+    lastReports: Record<
+        string,
+        BandsawWorkLogLastReport
+    >;
 }>();
 
 /*
@@ -55,20 +53,29 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const form = useForm<BandsawWorkLogFormData>({
-    user_id: props.bandsawWorkLog.user.id,
+const form =
+    useForm<BandsawWorkLogFormData>({
+        user_id:
+        props.bandsawWorkLog.user.id,
 
-    work_date: props.bandsawWorkLog.work_date,
+        work_date:
+        props.bandsawWorkLog.work_date,
 
-    part_id: props.bandsawWorkLog.part.id,
+        part_id:
+        props.bandsawWorkLog.part.id,
 
-    section_size_id:
-    props.bandsawWorkLog.section_size.id,
+        section_id:
+        props.bandsawWorkLog.section.id,
 
-    quantity: props.bandsawWorkLog.quantity,
+        section_size_id:
+        props.bandsawWorkLog.section_size.id,
 
-    remarks: props.bandsawWorkLog.remarks ?? '',
-});
+        quantity:
+        props.bandsawWorkLog.quantity,
+
+        remarks:
+            props.bandsawWorkLog.remarks ?? '',
+    });
 
 /*
 |--------------------------------------------------------------------------
@@ -76,31 +83,43 @@ const form = useForm<BandsawWorkLogFormData>({
 |--------------------------------------------------------------------------
 */
 
-const handleSubmit = () => {
-    form.put(update(props.bandsawWorkLog.id).url);
+const handleSubmit = (): void => {
+    form.put(
+        update(
+            props.bandsawWorkLog.id,
+        ).url,
+    );
 };
 
-const handleCancel = () => {
-    router.visit(bandsawWorkLogs().url);
+const handleCancel = (): void => {
+    router.visit(
+        bandsawWorkLogs().url,
+    );
 };
 </script>
 
 <template>
     <FormLayout
-        :title="bandsawWorkLogPage.form.editTitle"
-        :description="bandsawWorkLogPage.form.editDescription"
+        :title="
+            bandsawWorkLogPage.form.editTitle
+        "
+        :description="
+            bandsawWorkLogPage.form.editDescription
+        "
     >
         <BandsawWorkLogForm
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="bandsawWorkLogPage.form.editSubmitLabel"
-            :bandsaws="props.bandsaws"
-            :parts="props.parts"
-            :section-sizes="props.sectionSizes"
-            :current-user-id="props.currentUserId"
-            :can-select-bandsaw="props.canSelectBandsaw"
-            :last-reports="props.lastReports"
+            :submit-label="
+                bandsawWorkLogPage.form.editSubmitLabel
+            "
+            :can-select-bandsaw="
+                props.canSelectBandsaw
+            "
+            :last-reports="
+                props.lastReports
+            "
             :is-create="false"
             @submit="handleSubmit"
             @cancel="handleCancel"
