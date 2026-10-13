@@ -29,6 +29,7 @@ export type Attendance = {
     total_working_seconds: number;
     break_seconds: number;
     effective_working_seconds: number;
+    effective_working_seconds_formatted: string;
 
     breaks: AttendanceBreak[];
 

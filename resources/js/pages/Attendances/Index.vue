@@ -1,6 +1,6 @@
 ﻿<script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import {router, usePage} from '@inertiajs/vue3';
+import {computed, ref} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import ListingActions from '@/components/common/ListingActions.vue';
@@ -8,23 +8,13 @@ import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { attendancePage } from '@/config/attendances';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as attendancesRoute,
-} from '@/routes/attendances';
-import { view as attendancesImportRoute } from '@/routes/attendances/import';
-import { createAttendanceColumns } from '@/table/attendances';
-import type {
-    Attendance,
-    AttendanceFilters,
-    AttendanceResponse,
-    AttendanceSort,
-} from '@/types/attendance';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {attendancePage} from '@/config/attendances';
+import {bulkDestroy, create, destroy, index as attendancesRoute,} from '@/routes/attendances';
+import {view as attendancesImportRoute} from '@/routes/attendances/import';
+import {createAttendanceColumns} from '@/table/attendances';
+import type {Attendance, AttendanceFilters, AttendanceResponse, AttendanceSort,} from '@/types/attendance';
 
 /*
 |--------------------------------------------------------------------------
@@ -52,6 +42,10 @@ defineOptions({
     },
 });
 
+const page = usePage();
+
+const auth = computed(() => page.props.auth);
+
 /*
 |--------------------------------------------------------------------------
 | Filters
@@ -76,8 +70,12 @@ const handleEmployeeChange = (value: number | null) => {
 */
 
 const columns = createAttendanceColumns((uuid) => {
-    router.delete(destroy(uuid).url);
-});
+        router.delete(destroy(uuid).url);
+    },
+    ['super_admin', 'supervisor'].includes(auth.value.user?.role),
+    ['super_admin', 'supervisor'].includes(auth.value.user?.role),
+    ['super_admin', 'supervisor'].includes(auth.value.user?.role)
+);
 
 const {
     table,
@@ -146,9 +144,17 @@ const handleDeleteSelected = () => {
 
         <template #actions>
             <ListingActions
-                :create-url="create()"
+                :create-url="
+                    ['super_admin', 'supervisor'].includes(auth.user?.role)
+                        ? create().url
+                        : undefined
+                "
                 :create-label="attendancePage.createLabel"
-                :import-url="attendancesImportRoute().url"
+                :import-url="
+                    auth.user?.role === 'super_admin'
+                        ? attendancesImportRoute().url
+                        : undefined
+                "
                 import-label="Import"
                 :selected-count="selectedCount"
                 :resource-label="attendancePage.resourceLabel"
@@ -176,7 +182,9 @@ const handleDeleteSelected = () => {
                 @clear="handleClearFilters"
             >
                 <template #filters>
-                    <div class="w-full shrink-0 sm:w-48">
+                    <div
+                        v-if="['super_admin', 'supervisor'].includes(auth.user?.role)"
+                        class="w-full shrink-0 sm:w-48">
                         <AppEmployeeSelect
                             :model-value="
                                 filterEmployee === 'all'

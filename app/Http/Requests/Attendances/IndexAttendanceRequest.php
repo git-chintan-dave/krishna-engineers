@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Attendances;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class IndexAttendanceRequest extends FormRequest
 {
@@ -18,6 +19,13 @@ class IndexAttendanceRequest extends FormRequest
                 'nullable',
                 'integer',
                 'exists:users,id',
+                Rule::excludeIf(
+                    ! in_array(
+                        $this->user()?->role?->value ?? $this->user()?->role,
+                        ['super_admin', 'supervisor'],
+                        true,
+                    ),
+                ),
             ],
 
             'start_date' => [

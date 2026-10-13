@@ -66,16 +66,15 @@ import { getInitials } from '@/composables/useInitials';
 import { toUrl } from '@/lib/utils';
 
 import {
-    mainNavItems,
+    getMainNavItems,
     rightNavItems,
 } from '@/config/navigation';
-
-import { dashboard } from '@/routes';
 
 import type {
     BreadcrumbItem,
     NavItem,
 } from '@/types';
+import {dashboard} from "@/routes";
 
 /*
 |--------------------------------------------------------------------------
@@ -96,7 +95,7 @@ const props = withDefaults(
 
 /*
 |--------------------------------------------------------------------------
-| Page
+| Page & Authentication
 |--------------------------------------------------------------------------
 */
 
@@ -104,15 +103,19 @@ const page = usePage();
 
 const auth = computed(() => page.props.auth);
 
-const {
-    isCurrentOrParentUrl,
-} = useCurrentUrl();
-
 /*
 |--------------------------------------------------------------------------
 | Navigation
 |--------------------------------------------------------------------------
 */
+
+const mainNavItems = computed(() =>
+    getMainNavItems(page.props.auth?.user?.role),
+);
+
+const {
+    isCurrentOrParentUrl,
+} = useCurrentUrl();
 
 const activeItemStyles =
     'bg-accent text-accent-foreground';
@@ -138,10 +141,10 @@ const isItemActive = (item: NavItem): boolean => {
 
 /*
 |--------------------------------------------------------------------------
-| Mobile Navigation State
+| Mobile Navigation Groups
 |--------------------------------------------------------------------------
 |
-| Each mobile group has its own open state.
+| Each mobile navigation group has its own open state.
 |
 | Active groups are automatically opened when the
 | current Inertia URL changes.
@@ -166,7 +169,7 @@ const setMobileGroupOpen = (
 };
 
 const syncMobileGroups = (): void => {
-    mainNavItems.forEach((item) => {
+    mainNavItems.value.forEach((item) => {
         if (!hasChildren(item)) {
             return;
         }
@@ -177,41 +180,34 @@ const syncMobileGroups = (): void => {
     });
 };
 
-watch(
-    () => page.url,
-    () => {
-        syncMobileGroups();
-    },
-    {
-        immediate: true,
-    },
-);
-
 /*
 |--------------------------------------------------------------------------
-| Mobile Menu State
+| Mobile Menu
 |--------------------------------------------------------------------------
 */
 
 const mobileMenuState = ref(false);
 
-const mobileMenuOpen = computed({
-    get: () => mobileMenuState.value,
-    set: (value: boolean) => {
-        mobileMenuState.value = value;
-    },
-});
-
 /*
 |--------------------------------------------------------------------------
-| Close Mobile Menu After Navigation
+| Navigation Watchers
 |--------------------------------------------------------------------------
+|
+| When the URL changes:
+|
+| 1. Open the active mobile navigation groups.
+| 2. Close the mobile menu after navigation.
+|
 */
 
 watch(
     () => page.url,
     () => {
+        syncMobileGroups();
         mobileMenuState.value = false;
+    },
+    {
+        immediate: true,
     },
 );
 </script>
@@ -239,7 +235,7 @@ watch(
                 -->
 
                 <div class="shrink-0 lg:hidden">
-                    <Sheet v-model:open="mobileMenuOpen">
+                    <Sheet v-model:open="mobileMenuState">
                         <SheetTrigger as-child>
                             <Button
                                 variant="ghost"

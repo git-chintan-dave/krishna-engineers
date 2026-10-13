@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Models\Attendance;
 use App\Services\AttendanceService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -66,6 +67,8 @@ class AttendanceResource extends JsonResource
             'break_seconds' => $this->break_seconds,
 
             'effective_working_seconds' => $this->effective_working_seconds,
+
+            'effective_working_seconds_formatted' => Carbon::createFromTimestampUTC($this->effective_working_seconds)->format('H:i:s'),
 
             /*
             |--------------------------------------------------------------------------

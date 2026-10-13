@@ -49,11 +49,19 @@ class AttendanceController extends Controller
 
         $filters = $request->validated();
 
+        $query = Attendance::query()->with([
+            'user:id,name,employee_code',
+            'breaks',
+        ]);
+
+        $user = auth()->user();
+
+        if (in_array($user->role?->value ?? $user->role, ['operator', 'bandsaw'], true)) {
+            $query->where('user_id', $user->id);
+        }
+
         $attendances = $this->applyIndexFilters(
-            Attendance::query()->with([
-                'user:id,name,employee_code',
-                'breaks',
-            ]),
+            $query,
             $filters,
         )
             ->when($filters['user_id'] ?? null,

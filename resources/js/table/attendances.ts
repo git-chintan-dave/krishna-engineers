@@ -1,29 +1,35 @@
-import { createColumnHelper } from '@tanstack/vue-table';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit } from '@/routes/attendances';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createDateColumn } from '@/table/columns/dateColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import { createPrimaryColumn } from '@/table/helpers/primaryColumn';
-import { createSortableColumn } from '@/table/helpers/sortableColumn';
-import type { Attendance } from '@/types/attendance';
+import {edit} from '@/routes/attendances';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
+import {createSortableColumn} from '@/table/helpers/sortableColumn';
+import type {Attendance} from '@/types/attendance';
 
 const columnHelper = createColumnHelper<any, Attendance>();
 
 export const createAttendanceColumns = (
     handleDelete: (uuid: string) => void,
+    canShowUserColumn: boolean,
+    canEdit: boolean,
+    canDelete: boolean,
 ) =>
     columnHelper.columns([
-        createSelectColumn({
-            resourceName: 'attendances',
-        }),
+        ...(canDelete ? [
+            createSelectColumn({
+                resourceName: 'attendances',
+            })
+        ] : []),
 
-        createPrimaryColumn({
-            accessorKey: 'user.name',
-            header: 'Employee',
-            size: 240,
-            sortable: false,
-        }),
+        ...(canShowUserColumn ? [
+            createPrimaryColumn({
+                accessorKey: 'user.name',
+                header: 'Employee',
+                size: 240,
+                sortable: false,
+            }),
+        ] : []),
 
         createSortableColumn({
             accessorKey: 'attendance_date',
@@ -50,44 +56,32 @@ export const createAttendanceColumns = (
         }),
 
         createSortableColumn({
-            accessorKey: 'effective_working_seconds',
+            accessorKey: 'effective_working_seconds_formatted',
             header: 'Effective Hours',
             size: 160,
-            cell: ({ row }) => {
-                const seconds =
-                    row.original.effective_working_seconds;
-
-                const hours = Math.floor(seconds / 3600);
-                const minutes = Math.floor(
-                    (seconds % 3600) / 60,
-                );
-
-                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-            },
+            cell: ({ row }) =>
+                row.original.effective_working_seconds_formatted || '—',
         }),
 
-        createDateColumn({
-            accessorKey: 'created_at',
-            header: 'Created',
-        }),
+        ...(canEdit || canDelete ? [
+            createActionsColumn({
+                editUrl: (uuid) => edit(uuid).url,
+                resourceName: 'attendance',
+                handleDelete,
 
-        createActionsColumn({
-            editUrl: (uuid) => edit(uuid).url,
-            resourceName: 'attendance',
-            handleDelete,
+                /*
+                |--------------------------------------------------------------------------
+                | Salary Lock
+                |--------------------------------------------------------------------------
+                |
+                | Attendance belonging to a paid salary period is read-only.
+                | The backend service still enforces this rule.
+                |
+                */
 
-            /*
-            |--------------------------------------------------------------------------
-            | Salary Lock
-            |--------------------------------------------------------------------------
-            |
-            | Attendance belonging to a paid salary period is read-only.
-            | The backend service still enforces this rule.
-            |
-            */
+                showEdit: (row) => canEdit && !row.is_locked,
 
-            showEdit: (row) => !row.is_locked,
-
-            showDelete: (row) => !row.is_locked,
-        }),
+                showDelete: (row) => canDelete && !row.is_locked,
+            }),
+        ] : []),
     ]);

@@ -12,8 +12,8 @@ class AttendancePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $this->isSuperAdmin($user)
-            || $this->isSupervisor($user);
+        return $this->isAdminOrSupervisor($user)
+            || $this->isOperatorOrBandsaw($user);
     }
 
     /**
@@ -21,8 +21,11 @@ class AttendancePolicy
      */
     public function view(User $user, Attendance $attendance): bool
     {
-        return $this->isSuperAdmin($user)
-            || $this->isSupervisor($user);
+        return $this->isAdminOrSupervisor($user)
+            || (
+                $this->isOperatorOrBandsaw($user)
+                && $attendance->user_id === $user->id
+            );
     }
 
     /**
@@ -30,8 +33,7 @@ class AttendancePolicy
      */
     public function create(User $user): bool
     {
-        return $this->isSuperAdmin($user)
-            || $this->isSupervisor($user);
+        return $this->isAdminOrSupervisor($user);
     }
 
     /**
@@ -39,8 +41,7 @@ class AttendancePolicy
      */
     public function update(User $user, Attendance $attendance): bool
     {
-        return $this->isSuperAdmin($user)
-            || $this->isSupervisor($user);
+        return $this->isAdminOrSupervisor($user);
     }
 
     /**
@@ -48,7 +49,7 @@ class AttendancePolicy
      */
     public function delete(User $user, Attendance $attendance): bool
     {
-        return $this->isSuperAdmin($user);
+        return $this->isAdminOrSupervisor($user);
     }
 
     /**
@@ -56,7 +57,7 @@ class AttendancePolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $this->isSuperAdmin($user);
+        return $this->isAdminOrSupervisor($user);
     }
 
     /**
@@ -64,8 +65,7 @@ class AttendancePolicy
      */
     public function import(User $user): bool
     {
-        return $this->isSuperAdmin($user)
-            || $this->isSupervisor($user);
+        return $this->hasRole($user, 'super_admin');
     }
 
     /*
@@ -74,15 +74,21 @@ class AttendancePolicy
     |--------------------------------------------------------------------------
     */
 
-    private function isSuperAdmin(User $user): bool
+    private function isAdminOrSupervisor(User $user): bool
     {
-        return $user->role?->value === 'super_admin'
-            || $user->role === 'super_admin';
+        return $this->hasRole($user, 'super_admin')
+            || $this->hasRole($user, 'supervisor');
     }
 
-    private function isSupervisor(User $user): bool
+    private function isOperatorOrBandsaw(User $user): bool
     {
-        return $user->role?->value === 'supervisor'
-            || $user->role === 'supervisor';
+        return $this->hasRole($user, 'operator')
+            || $this->hasRole($user, 'bandsaw');
+    }
+
+    private function hasRole(User $user, string $role): bool
+    {
+        return $user->role?->value === $role
+            || $user->role === $role;
     }
 }
