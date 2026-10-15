@@ -22,16 +22,6 @@ import type {
 
 const props = defineProps<{
     transaction: RawMaterialTransaction;
-
-    sectionSizes: Array<{
-        value: number;
-        label: string;
-    }>;
-
-    transactionTypes: Array<{
-        value: string;
-        label: string;
-    }>;
 }>();
 
 /*
@@ -60,7 +50,7 @@ const form = useForm<RawMaterialTransactionFormData>({
     type: props.transaction.type.value,
     quantity: props.transaction.quantity,
     reference_type: props.transaction.reference_type ?? '',
-    reference_id: props.transaction.reference_id,
+    reference_id: props.transaction.reference_id ?? null,
     remarks: props.transaction.remarks ?? '',
 });
 
@@ -73,38 +63,29 @@ const form = useForm<RawMaterialTransactionFormData>({
 const handleSubmit = () => {
     form.put(
         updateRawMaterialTransaction(
-            props.transaction.id,
+            props.transaction.uuid,
         ).url,
     );
 };
 
 const handleCancel = () => {
-    router.visit(
-        rawMaterialTransactions().url,
-    );
+    router.visit(rawMaterialTransactions().url);
 };
 </script>
 
 <template>
     <FormLayout
-        :title="
-            rawMaterialTransactionPage.form
-                .editTitle
-        "
+        :title="rawMaterialTransactionPage.form.editTitle"
         :description="
-            rawMaterialTransactionPage.form
-                .editDescription
+            rawMaterialTransactionPage.form.editDescription
         "
     >
         <RawMaterialTransactionForm
             :form="form"
-            :section-sizes="props.sectionSizes"
+            :transaction="props.transaction"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                rawMaterialTransactionPage.form
-                    .editSubmitLabel
-            "
+            :submit-label="rawMaterialTransactionPage.form.editSubmitLabel"
             @submit="handleSubmit"
             @cancel="handleCancel"
         />

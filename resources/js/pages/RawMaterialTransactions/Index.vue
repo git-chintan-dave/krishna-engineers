@@ -1,14 +1,13 @@
 ﻿<script setup lang="ts">
-import {router} from '@inertiajs/vue3';
-import {ref} from 'vue';
+import {router, usePage} from '@inertiajs/vue3';
+import {computed, ref} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
-import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
+import ListingActions from '@/components/common/ListingActions.vue';
+import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppRawMaterialTransactionTypeSelect from '@/components/selects/AppRawMaterialTransactionTypeSelect.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppSectionSizeSelect from '@/components/selects/AppSectionSizeSelect.vue';
-import ListingActions from '@/components/common/ListingActions.vue';
-import ListingFilters from '@/components/common/ListingFilters.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
 import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
@@ -44,11 +43,16 @@ defineOptions({
     layout: {
         breadcrumbs: useCrudBreadcrumbs('listing', {
             resource: rawMaterialTransactionPage.title,
-            resourceUrl:
-            rawMaterialTransactionsRoute().url,
+            resourceUrl: rawMaterialTransactionsRoute().url,
         }),
     },
 });
+
+const page = usePage();
+
+const canManage = computed(
+    () => page.props.auth.user?.role === 'super_admin',
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -65,7 +69,7 @@ const filterSectionSizeId = ref<number | 'all'>(
 );
 
 const filterType = ref(
-    props.filters.type ?? 'all',
+    props.filters.type || 'all',
 );
 
 const filterUserId = ref<number | 'all'>(
@@ -87,9 +91,13 @@ const filterToDate = ref(
 */
 
 const columns = createRawMaterialTransactionColumns(
-    (id) => {
-        router.delete(destroy(id).url);
+    (uuid) => {
+        if (canManage.value) {
+            router.delete(destroy(uuid).url);
+        }
     },
+    canManage.value,
+    canManage.value,
 );
 
 const {
@@ -105,41 +113,32 @@ const {
 >({
     data: () => props.transactions,
     columns,
-
     filters: {
         search: props.filters.search,
         sort: props.filters.sort,
         direction: props.filters.direction,
     },
-
     route: rawMaterialTransactionsRoute.url(),
-
+    searchable: false,
     additionalFilters: () => ({
         section_id:
             filterSectionId.value !== 'all'
                 ? filterSectionId.value
                 : undefined,
-
         section_size_id:
             filterSectionSizeId.value !== 'all'
                 ? filterSectionSizeId.value
                 : undefined,
-
         type:
             filterType.value !== 'all'
                 ? filterType.value
                 : undefined,
-
         user_id:
             filterUserId.value !== 'all'
                 ? filterUserId.value
                 : undefined,
-
-        from_date:
-            filterFromDate.value || undefined,
-
-        to_date:
-            filterToDate.value || undefined,
+        from_date: filterFromDate.value || undefined,
+        to_date: filterToDate.value || undefined,
     }),
 });
 
@@ -151,8 +150,6 @@ const {
 
 const handleSectionChange = (value: number | null) => {
     filterSectionId.value = value ?? 'all';
-
-    // Section Size depends on Section.
     filterSectionSizeId.value = 'all';
 };
 
@@ -186,7 +183,9 @@ const handleClearFilters = () => {
 */
 
 const handleDeleteSelected = () => {
-    deleteSelected(bulkDestroy().url);
+    if (canManage.value && selectedCount.value > 0) {
+        deleteSelected(bulkDestroy().url);
+    }
 };
 </script>
 
@@ -195,19 +194,17 @@ const handleDeleteSelected = () => {
         :title="rawMaterialTransactionPage.title"
         :description="rawMaterialTransactionPage.description"
     >
-        <!--
-        |--------------------------------------------------------------------------
-        | Actions
-        |--------------------------------------------------------------------------
-        -->
-
         <template #actions>
             <ListingActions
-                :create-url="create()"
+                :create-url="
+                    canManage ? create().url : undefined
+                "
                 :create-label="
                     rawMaterialTransactionPage.createLabel
                 "
-                :selected-count="selectedCount"
+                :selected-count="
+                    canManage ? selectedCount : 0
+                "
                 :resource-label="
                     rawMaterialTransactionPage.resourceLabel
                 "
@@ -215,14 +212,9 @@ const handleDeleteSelected = () => {
             />
         </template>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Filters
-        |--------------------------------------------------------------------------
-        -->
-
         <template #filters>
             <ListingFilters
+                :searchable="false"
                 v-model:search="searchQuery"
                 :search-placeholder="
                     rawMaterialTransactionPage.searchPlaceholder
@@ -246,50 +238,35 @@ const handleDeleteSelected = () => {
                 @clear="handleClearFilters"
             >
                 <template #filters>
-                    <!-- Section -->
                     <div class="w-full shrink-0 sm:w-48">
                         <AppSectionSelect
                             :model-value="
-                                filterSectionId === 'all'
-                                    ? null
-                                    : filterSectionId
-                            "
-                            :placeholder="
-                                rawMaterialTransactionPage.sectionPlaceholder
-                            "
+            filterSectionId === 'all' ? null : filterSectionId
+        "
+                            placeholder="All Sections"
                             searchable
                             clearable
-                            @update:model-value="
-                                handleSectionChange
-                            "
+                            @update:model-value="handleSectionChange"
                         />
                     </div>
 
-                    <!-- Section Size -->
                     <div class="w-full shrink-0 sm:w-48">
                         <AppSectionSizeSelect
                             :model-value="
-                                filterSectionSizeId === 'all'
-                                    ? null
-                                    : filterSectionSizeId
-                            "
+            filterSectionSizeId === 'all'
+                ? null
+                : filterSectionSizeId
+        "
                             :section-id="
-                                filterSectionId === 'all'
-                                    ? null
-                                    : filterSectionId
-                            "
-                            :placeholder="
-                                rawMaterialTransactionPage.sectionSizePlaceholder
-                            "
+            filterSectionId === 'all' ? null : filterSectionId
+        "
+                            placeholder="All Section Sizes"
                             searchable
                             clearable
-                            @update:model-value="
-                                handleSectionSizeChange
-                            "
+                            @update:model-value="handleSectionSizeChange"
                         />
                     </div>
 
-                    <!-- Transaction Type -->
                     <div class="w-full shrink-0 sm:w-48">
                         <AppRawMaterialTransactionTypeSelect
                             :model-value="
@@ -302,73 +279,42 @@ const handleDeleteSelected = () => {
                             "
                             searchable
                             clearable
-                            @update:model-value="
-                                handleTypeChange
-                            "
+                            @update:model-value="handleTypeChange"
                         />
                     </div>
 
-                    <!-- Employee -->
-                    <div class="w-full shrink-0 sm:w-48">
-                        <AppEmployeeSelect
-                            :model-value="
-                                filterUserId === 'all'
-                                    ? null
-                                    : filterUserId
-                            "
-                            placeholder="Select Employee"
-                            searchable
-                            clearable
-                            @update:model-value="
-                                handleUserChange
-                            "
-                        />
-                    </div>
-
-                    <!-- From Date -->
                     <div class="w-full shrink-0 sm:w-36">
                         <AppInput
                             v-model="filterFromDate"
                             type="date"
+                            aria-label="From date"
                         />
                     </div>
 
-                    <!-- To Date -->
                     <div class="w-full shrink-0 sm:w-36">
                         <AppInput
                             v-model="filterToDate"
                             type="date"
+                            aria-label="To date"
                         />
                     </div>
                 </template>
             </ListingFilters>
         </template>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Table
-        |--------------------------------------------------------------------------
-        -->
-
         <template #table>
             <DataTable
                 :table="table"
                 :columns-count="columns.length"
                 :total="transactions.meta.total"
-                :page-index="
-                    transactions.meta.current_page - 1
+                :page-index="transactions.meta.current_page - 1"
+                :page-size="transactions.meta.per_page"
+                :selected-count="
+                    canManage ? selectedCount : 0
                 "
-                :page-size="
-                    transactions.meta.per_page
-                "
-                :selected-count="selectedCount"
                 :page-size-options="[10, 25, 50, 100]"
-                :empty-text="
-                    rawMaterialTransactionPage.emptyText
-                "
-                :item-label="
-                    rawMaterialTransactionPage.itemLabel
-                "
+                :empty-text="rawMaterialTransactionPage.emptyText"
+                :item-label="rawMaterialTransactionPage.itemLabel"
             />
         </template>
     </ListingLayout>

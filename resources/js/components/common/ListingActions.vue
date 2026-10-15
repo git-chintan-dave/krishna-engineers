@@ -161,7 +161,7 @@ const emit = defineEmits<{
             as-child
             variant="outline"
             size="sm"
-            class="h-9 w-full shrink-0 sm:w-auto"
+            class="h-9 w-full shrink-0 sm:w-auto cursor-pointer"
             :disabled="generateDisabled"
         >
             <Link

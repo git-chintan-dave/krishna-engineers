@@ -5,34 +5,50 @@ import type {
 
 /*
 |--------------------------------------------------------------------------
-| Raw Material Transaction
+| Reference
 |--------------------------------------------------------------------------
 */
 
 export type RawMaterialTransactionReference = {
-    type: string;
+    type?: string;
+    uuid?: string;
     label: string;
 };
+
+/*
+|--------------------------------------------------------------------------
+| Raw Material Transaction
+|--------------------------------------------------------------------------
+*/
 
 export type RawMaterialTransaction = {
     id: number;
     uuid: string;
+
     section_size: {
         id: number;
-        size: string;
+        section_id: number | null;
+        size: string | null;
         section: string | null;
     };
+
     type: {
         value: string;
         label: string;
     };
+
     quantity: number;
+
     user: {
         id: number;
         name: string | null;
         employee_code: string | null;
-    };
+    } | null;
+
     reference: RawMaterialTransactionReference | null;
+    reference_type: string | null;
+    reference_id: number | null;
+
     remarks: string | null;
     created_at: string;
     updated_at: string;
@@ -72,6 +88,7 @@ export type RawMaterialTransactionSort =
 
 export type RawMaterialTransactionFilters = {
     search: string;
+    sectionId: number | string;
     sectionSizeId: number | string;
     type: string;
     userId: number | string;
@@ -90,14 +107,3 @@ export type RawMaterialTransactionFilters = {
 
 export type RawMaterialTransactionsResponse =
     PaginatedResponse<RawMaterialTransaction>;
-
-/*
-|--------------------------------------------------------------------------
-| Select Option
-|--------------------------------------------------------------------------
-*/
-
-export type RawMaterialTransactionSelectOption = {
-    value: number | string;
-    label: string;
-};

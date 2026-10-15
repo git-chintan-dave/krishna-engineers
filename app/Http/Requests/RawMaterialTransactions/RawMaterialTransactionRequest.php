@@ -3,6 +3,7 @@
 namespace App\Http\Requests\RawMaterialTransactions;
 
 use App\Enums\RawMaterialTransactionType;
+use App\Models\BandsawWorkLog;
 use App\Models\SectionSize;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -30,14 +31,20 @@ class RawMaterialTransactionRequest extends FormRequest
                 'required',
                 'integer',
                 'min:1',
+                'max:4294967295',
             ],
             'reference_type' => [
                 'nullable',
+                'required_with:reference_id',
                 'string',
-                'max:255',
+                Rule::in([
+                    BandsawWorkLog::class,
+                    'bandsaw_work_log',
+                ]),
             ],
             'reference_id' => [
                 'nullable',
+                'required_with:reference_type',
                 'integer',
                 'min:1',
             ],

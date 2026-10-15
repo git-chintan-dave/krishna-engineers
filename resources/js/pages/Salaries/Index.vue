@@ -1,6 +1,6 @@
 ﻿<script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import {router} from '@inertiajs/vue3';
+import {computed, ref} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import ListingActions from '@/components/common/ListingActions.vue';
@@ -9,23 +9,12 @@ import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppSalaryStatusSelect from '@/components/selects/AppSalaryStatusSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { salaryPage } from '@/config/salaries';
-import {
-    bulkDestroy,
-    create,
-    generateLastMonth,
-    destroy,
-    index as salariesRoute,
-} from '@/routes/salaries';
-import { createSalaryColumns } from '@/table/salaries';
-import type {
-    Salary,
-    SalaryFilters,
-    SalaryResponse,
-    SalarySort,
-} from '@/types/salary';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {salaryPage} from '@/config/salaries';
+import {bulkDestroy, create, destroy, generateLastMonth, index as salariesRoute,} from '@/routes/salaries';
+import {createSalaryColumns} from '@/table/salaries';
+import type {Salary, SalaryFilters, SalaryResponse, SalarySort,} from '@/types/salary';
 
 /*
 |--------------------------------------------------------------------------
@@ -170,6 +159,16 @@ const handleClearFilters = (): void => {
 const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);
 };
+
+const generateButtonLabel = computed(() => {
+    const date = new Date();
+
+    date.setMonth(date.getMonth() - 1);
+
+    const lastMonthName = date.toLocaleString('default', { month: 'long' });
+
+    return `Generate ${lastMonthName}'s Salary`;
+});
 </script>
 
 <template>
@@ -183,7 +182,7 @@ const handleDeleteSelected = (): void => {
                 :create-label="salaryPage.createLabel"
                 :generate-disabled="!can_generate_last_month"
                 :generate-url="generateLastMonth()"
-                generate-label="Generate Last Month's Salary"
+                :generate-label="generateButtonLabel"
                 :selected-count="selectedCount"
                 :resource-label="salaryPage.resourceLabel"
                 @delete-selected="handleDeleteSelected"
@@ -218,20 +217,6 @@ const handleDeleteSelected = (): void => {
                         />
                     </div>
 
-                    <div class="w-full shrink-0 sm:w-36">
-                        <AppSalaryStatusSelect
-                            :model-value="
-                    filterStatus === 'all'
-                        ? null
-                        : filterStatus
-                "
-                            :placeholder="salaryPage.statusPlaceholder"
-                            clearable
-                            searchable
-                            @update:model-value="handleStatusChange"
-                        />
-                    </div>
-
                     <div class="w-full shrink-0 sm:w-40">
                         <AppInput
                             v-model="filterStartDate"
@@ -246,6 +231,20 @@ const handleDeleteSelected = (): void => {
                             type="date"
                             placeholder="End date"
                             readonly
+                        />
+                    </div>
+
+                    <div class="w-full shrink-0 sm:w-36">
+                        <AppSalaryStatusSelect
+                            :model-value="
+                    filterStatus === 'all'
+                        ? null
+                        : filterStatus
+                "
+                            :placeholder="salaryPage.statusPlaceholder"
+                            clearable
+                            searchable
+                            @update:model-value="handleStatusChange"
                         />
                     </div>
                 </template>

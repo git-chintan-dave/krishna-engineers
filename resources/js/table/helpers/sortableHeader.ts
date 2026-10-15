@@ -1,25 +1,58 @@
-import { h } from 'vue';
+import {h} from 'vue';
 
-import { ArrowDown, ArrowUp, ChevronsUpDown } from '@lucide/vue';
+import {ArrowDown, ArrowUp, ChevronsUpDown} from '@lucide/vue';
+
+import type {ColumnAlign} from '@/table/types';
+
+/*
+|--------------------------------------------------------------------------
+| Types
+|--------------------------------------------------------------------------
+*/
 
 type SortableHeaderOptions = {
     label: string;
+    align?: ColumnAlign;
 };
 
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
+
+const getAlignmentClass = (align: ColumnAlign): string => {
+    switch (align) {
+        case 'center':
+            return 'justify-center text-center';
+        case 'right':
+            return 'justify-end text-right';
+        default:
+            return 'justify-start text-left';
+    }
+};
+
+/*
+|--------------------------------------------------------------------------
+| Header
+|--------------------------------------------------------------------------
+*/
+
 export const createSortableHeader = ({
-    label,
-}: SortableHeaderOptions) => {
-    return ({ column }: any) =>
+                                         label,
+                                         align = 'left',
+                                     }: SortableHeaderOptions) =>
+    ({ column }: any) =>
         h(
             'button',
             {
                 type: 'button',
                 class: [
-                    'flex w-full min-w-0 items-center gap-1.5 cursor-pointer',
-                    'text-left text-sm font-medium',
+                    'flex w-full min-w-0 cursor-pointer items-center gap-1.5',
+                    'text-sm font-medium leading-5',
                     'whitespace-normal break-words',
-                    'leading-5',
                     'hover:text-foreground',
+                    getAlignmentClass(align),
                 ],
                 onClick: () =>
                     column.toggleSorting(
@@ -47,4 +80,3 @@ export const createSortableHeader = ({
                 ),
             ],
         );
-};

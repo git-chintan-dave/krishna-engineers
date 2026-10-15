@@ -1,6 +1,7 @@
 import { h } from 'vue';
 
 import { createSortableHeader } from '@/table/helpers/sortableHeader';
+import type { ColumnAlign } from '@/table/types';
 
 /*
 |--------------------------------------------------------------------------
@@ -12,25 +13,49 @@ type BasePrimaryColumnOptions = {
     header: string;
     size?: number;
     sortable?: boolean;
+    align?: ColumnAlign;
 };
 
-type AccessorKeyPrimaryColumnOptions =
-    BasePrimaryColumnOptions & {
+type AccessorKeyPrimaryColumnOptions = BasePrimaryColumnOptions & {
     accessorKey: string;
     accessorFn?: never;
     id?: never;
 };
 
-type AccessorFnPrimaryColumnOptions<TData> =
-    BasePrimaryColumnOptions & {
+type AccessorFnPrimaryColumnOptions<TData> = BasePrimaryColumnOptions & {
     accessorFn: (row: TData) => unknown;
     accessorKey?: never;
     id: string;
 };
 
-type PrimaryColumnOptions<TData = any> =
+type PrimaryColumnOptions<TData = unknown> =
     | AccessorKeyPrimaryColumnOptions
     | AccessorFnPrimaryColumnOptions<TData>;
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
+
+const getAlignmentClass = (align: ColumnAlign): string => {
+    switch (align) {
+        case 'center':
+            return 'text-center';
+        case 'right':
+            return 'text-right';
+        default:
+            return 'text-left';
+    }
+};
+
+const formatCellValue = (value: unknown): string => {
+    if (value === null || value === undefined || value === '') {
+        return '—';
+    }
+
+    return String(value);
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -38,13 +63,24 @@ type PrimaryColumnOptions<TData = any> =
 |--------------------------------------------------------------------------
 */
 
-export const createPrimaryColumn = <TData = any>({
-                                                     header,
-                                                     size,
-                                                     sortable = false,
-                                                     ...accessor
-                                                 }: PrimaryColumnOptions<TData>) => ({
+export const createPrimaryColumn = <TData = unknown>({
+    header,
+    size,
+    sortable = false,
+    align = 'left',
+    ...accessor
+}: PrimaryColumnOptions<TData>) => ({
     ...accessor,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Metadata
+    |--------------------------------------------------------------------------
+    */
+
+    meta: {
+        align,
+    },
 
     /*
     |--------------------------------------------------------------------------
@@ -54,8 +90,9 @@ export const createPrimaryColumn = <TData = any>({
 
     header: sortable
         ? createSortableHeader({
-            label: header,
-        })
+              label: header,
+              align,
+          })
         : header,
 
     /*
@@ -64,13 +101,16 @@ export const createPrimaryColumn = <TData = any>({
     |--------------------------------------------------------------------------
     */
 
-    cell: ({ getValue }: any) =>
+    cell: ({ getValue }: { getValue: () => unknown }) =>
         h(
             'span',
             {
-                class: 'block min-w-0 whitespace-normal break-words font-semibold',
+                class: [
+                    'block min-w-0 whitespace-normal break-words font-semibold',
+                    getAlignmentClass(align),
+                ],
             },
-            getValue(),
+            formatCellValue(getValue()),
         ),
 
     /*
@@ -81,9 +121,9 @@ export const createPrimaryColumn = <TData = any>({
 
     ...(size !== undefined
         ? {
-            size,
-            minSize: size,
-            maxSize: size,
-        }
+              size,
+              minSize: size,
+              maxSize: size,
+          }
         : {}),
 });

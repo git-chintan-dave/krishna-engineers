@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\BandsawWorkLog;
 use App\Models\RawMaterialTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -18,31 +19,40 @@ class RawMaterialTransactionResource extends JsonResource
             'uuid' => $this->uuid,
             'section_size' => [
                 'id' => $this->section_size_id,
+                'section_id' => $this->when(
+                    $this->relationLoaded('sectionSize'),
+                    fn () => $this->sectionSize?->section_id,
+                ),
                 'size' => $this->whenLoaded(
                     'sectionSize',
-                    fn () => $this->sectionSize->size
+                    fn () => $this->sectionSize?->size,
                 ),
-                'section' => $this->whenLoaded(
-                    'sectionSize',
-                    fn () => $this->sectionSize->section?->name
+                'section' => $this->when(
+                    $this->relationLoaded('sectionSize')
+                    && $this->sectionSize?->relationLoaded('section'),
+                    fn () => $this->sectionSize->section?->name,
                 ),
             ],
+
             'type' => [
                 'value' => $this->type?->value,
                 'label' => $this->type?->label(),
             ],
+
             'quantity' => $this->quantity,
+
             'user' => [
                 'id' => $this->user_id,
                 'name' => $this->whenLoaded(
                     'user',
-                    fn () => $this->user?->name
+                    fn () => $this->user?->name,
                 ),
                 'employee_code' => $this->whenLoaded(
                     'user',
-                    fn () => $this->user?->employee_code
+                    fn () => $this->user?->employee_code,
                 ),
             ],
+
             'reference' => $this->when(
                 $this->relationLoaded('reference'),
                 fn () => $this->reference
@@ -52,6 +62,7 @@ class RawMaterialTransactionResource extends JsonResource
                     ]
                     : null,
             ),
+
             'remarks' => $this->remarks,
             'created_at' => $this->created_at?->format('d M Y'),
             'updated_at' => $this->updated_at?->format('d M Y'),
@@ -60,11 +71,11 @@ class RawMaterialTransactionResource extends JsonResource
 
     private function referenceLabel(): string
     {
-        return match ($this->reference_type) {
-            'bandsaw_work_log',
-            'App\\Models\\BandsawWorkLog' => "Bandsaw Work Log #{$this->reference_id}",
+        return match (true) {
+            $this->reference instanceof BandsawWorkLog =>
+            "Bandsaw Work Log #{$this->reference->getKey()}",
 
-            default => "Reference #{$this->reference_id}",
+            default => "Reference #{$this->reference->getKey()}",
         };
     }
 }

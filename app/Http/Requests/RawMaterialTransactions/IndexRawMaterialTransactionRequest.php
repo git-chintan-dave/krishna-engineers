@@ -3,6 +3,7 @@
 namespace App\Http\Requests\RawMaterialTransactions;
 
 use App\Enums\RawMaterialTransactionType;
+use App\Models\RawMaterialTransaction;
 use App\Models\SectionSize;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -32,62 +33,48 @@ class IndexRawMaterialTransactionRequest extends FormRequest
                 'string',
                 'max:255',
             ],
-
             'section_size_id' => [
                 'nullable',
                 'integer',
                 Rule::exists(SectionSize::class, 'id'),
             ],
-
             'type' => [
                 'nullable',
                 Rule::enum(RawMaterialTransactionType::class),
             ],
-
             'user_id' => [
                 'nullable',
                 'integer',
-                'exists:users,id',
+                Rule::exists('users', 'id'),
             ],
-
             'from_date' => [
                 'nullable',
                 'date',
             ],
-
             'to_date' => [
                 'nullable',
                 'date',
                 'after_or_equal:from_date',
             ],
-
             'sort' => [
-                'nullable',
-                'string',
+                'required',
                 Rule::in([
                     'created_at',
                     'quantity',
                     'type',
                 ]),
             ],
-
             'direction' => [
-                'nullable',
+                'required',
                 Rule::in([
                     'asc',
                     'desc',
                 ]),
             ],
-
             'per_page' => [
-                'nullable',
+                'required',
                 'integer',
-                Rule::in([
-                    10,
-                    25,
-                    50,
-                    100,
-                ]),
+                Rule::in([10, 25, 50, 100]),
             ],
         ];
     }

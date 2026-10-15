@@ -11,19 +11,18 @@ export const rawMaterialTransactionPage = {
     searchButtonLabel: 'Search',
     clearButtonLabel: 'Clear',
 
-    sectionPlaceholder: 'All Sections',
     sectionSizePlaceholder: 'All Section Sizes',
     typePlaceholder: 'All Transaction Types',
     userPlaceholder: 'All Users',
 
     emptyText: 'No raw material transactions found.',
     itemLabel: 'transactions',
-    resourceLabel: 'raw material transaction',
+    resourceLabel: 'raw material transactions',
 
     form: {
-        sectionTitle: 'Transaction Information',
+        sectionTitle: 'Material Information',
         sectionDescription:
-            'Enter the details of the raw material transaction.',
+            'Select the raw material section size for this transaction.',
 
         sectionSizeLabel: 'Section Size',
         sectionSizePlaceholder: 'Select section size',
@@ -33,12 +32,6 @@ export const rawMaterialTransactionPage = {
 
         quantityLabel: 'Quantity',
         quantityPlaceholder: 'Enter quantity',
-
-        referenceTypeLabel: 'Reference Type',
-        referenceTypePlaceholder: 'Enter reference type',
-
-        referenceIdLabel: 'Reference ID',
-        referenceIdPlaceholder: 'Enter reference ID',
 
         remarksLabel: 'Remarks',
         remarksPlaceholder: 'Enter remarks',
@@ -56,6 +49,5 @@ export const rawMaterialTransactionPage = {
         cancelLabel: 'Cancel',
     },
 
-    transactionTypeOptions:
-    rawMaterialTransactionTypeOptions,
+    transactionTypeOptions: rawMaterialTransactionTypeOptions,
 } as const;

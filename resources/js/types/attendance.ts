@@ -65,6 +65,7 @@ export type AttendanceBreak = {
 };
 
 export type AttendanceFormBreak = {
+    uuid?: string;
     start_at: string;
     end_at: string;
 };

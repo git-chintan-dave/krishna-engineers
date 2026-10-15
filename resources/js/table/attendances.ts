@@ -16,72 +16,80 @@ export const createAttendanceColumns = (
     canDelete: boolean,
 ) =>
     columnHelper.columns([
-        ...(canDelete ? [
-            createSelectColumn({
-                resourceName: 'attendances',
-            })
-        ] : []),
+        ...(canDelete
+            ? [
+                createSelectColumn({
+                    resourceName: 'attendances',
+                }),
+            ]
+            : []),
 
-        ...(canShowUserColumn ? [
-            createPrimaryColumn({
-                accessorKey: 'user.name',
-                header: 'Employee',
-                size: 240,
-                sortable: false,
-            }),
-        ] : []),
+        ...(canShowUserColumn
+            ? [
+                createPrimaryColumn<Attendance>({
+                    accessorKey: 'user.name',
+                    header: 'Employee',
+                    size: 240,
+                }),
+            ]
+            : []),
 
         createSortableColumn({
             accessorKey: 'attendance_date',
             header: 'Attendance Date',
             size: 160,
+            align: 'center',
             cell: ({ row }) =>
-                row.original.attendance_date_formatted || '—',
+                row.original.attendance_date_formatted ?? '—',
         }),
 
         createSortableColumn({
             accessorKey: 'start_at',
             header: 'Clock In',
             size: 150,
+            align: 'center',
             cell: ({ row }) =>
-                row.original.start_at_formatted || '—',
+                row.original.start_at_formatted ?? '—',
         }),
 
         createSortableColumn({
             accessorKey: 'end_at',
             header: 'Clock Out',
             size: 150,
+            align: 'center',
             cell: ({ row }) =>
-                row.original.end_at_formatted || '—',
+                row.original.end_at_formatted ?? '—',
         }),
 
         createSortableColumn({
             accessorKey: 'effective_working_seconds_formatted',
             header: 'Effective Hours',
             size: 160,
+            align: 'center',
             cell: ({ row }) =>
-                row.original.effective_working_seconds_formatted || '—',
+                row.original.effective_working_seconds_formatted ?? '—',
         }),
 
-        ...(canEdit || canDelete ? [
-            createActionsColumn({
-                editUrl: (uuid) => edit(uuid).url,
-                resourceName: 'attendance',
-                handleDelete,
+        ...(canEdit || canDelete
+            ? [
+                createActionsColumn({
+                    editUrl: (uuid) => edit(uuid).url,
+                    resourceName: 'attendance',
+                    handleDelete,
 
-                /*
-                |--------------------------------------------------------------------------
-                | Salary Lock
-                |--------------------------------------------------------------------------
-                |
-                | Attendance belonging to a paid salary period is read-only.
-                | The backend service still enforces this rule.
-                |
-                */
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Salary Lock
+                    |--------------------------------------------------------------------------
+                    |
+                    | Attendance belonging to a paid salary period is read-only.
+                    | The backend service still enforces this rule.
+                    |
+                    */
 
-                showEdit: (row) => canEdit && !row.is_locked,
-
-                showDelete: (row) => canDelete && !row.is_locked,
-            }),
-        ] : []),
+                    showEdit: (row) => canEdit && !row.is_locked,
+                    showDelete: (row) => canDelete && !row.is_locked,
+                }),
+            ]
+            : []),
     ]);

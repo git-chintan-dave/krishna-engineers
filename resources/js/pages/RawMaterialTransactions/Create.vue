@@ -13,24 +13,6 @@ import type { RawMaterialTransactionFormData } from '@/types/rawMaterialTransact
 
 /*
 |--------------------------------------------------------------------------
-| Props
-|--------------------------------------------------------------------------
-*/
-
-const props = defineProps<{
-    sectionSizes: Array<{
-        value: number;
-        label: string;
-    }>;
-
-    transactionTypes: Array<{
-        value: string;
-        label: string;
-    }>;
-}>();
-
-/*
-|--------------------------------------------------------------------------
 | Layout
 |--------------------------------------------------------------------------
 */
@@ -76,24 +58,16 @@ const handleCancel = () => {
 
 <template>
     <FormLayout
-        :title="
-            rawMaterialTransactionPage.form
-                .createTitle
-        "
+        :title="rawMaterialTransactionPage.form.createTitle"
         :description="
-            rawMaterialTransactionPage.form
-                .createDescription
+            rawMaterialTransactionPage.form.createDescription
         "
     >
         <RawMaterialTransactionForm
             :form="form"
-            :section-sizes="props.sectionSizes"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                rawMaterialTransactionPage.form
-                    .createSubmitLabel
-            "
+            :submit-label="rawMaterialTransactionPage.form.createSubmitLabel"
             @submit="handleSubmit"
             @cancel="handleCancel"
         />

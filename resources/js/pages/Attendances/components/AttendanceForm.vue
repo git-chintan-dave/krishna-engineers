@@ -1,25 +1,16 @@
 <script setup lang="ts">
-import { computed, reactive } from 'vue';
-import type { InertiaForm } from '@inertiajs/vue3';
-import {
-    CalendarDays,
-    Clock3,
-    Plus,
-    Trash2,
-    User,
-} from '@lucide/vue';
+import {computed, reactive} from 'vue';
+import type {InertiaForm} from '@inertiajs/vue3';
+import {CalendarDays, Clock3, Plus, Trash2, User,} from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
 import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
-import { Button } from '@/components/ui/button';
-import { attendancePage } from '@/config/attendances';
-import type {
-    AttendanceFormBreak,
-    AttendanceFormData,
-} from '@/types/attendance';
+import {Button} from '@/components/ui/button';
+import {attendancePage} from '@/config/attendances';
+import type {Attendance, AttendanceFormBreak, AttendanceFormData,} from '@/types/attendance';
 
 /*
 |--------------------------------------------------------------------------
@@ -27,21 +18,32 @@ import type {
 |--------------------------------------------------------------------------
 */
 
-const props = defineProps<{
-    form: InertiaForm<AttendanceFormData>;
-    employees: {
-        value: string;
-        label: string;
-    }[];
-    errors: Record<string, string>;
-    processing: boolean;
-    submitLabel: string;
-}>();
+const props = withDefaults(
+    defineProps<{
+        form: InertiaForm<AttendanceFormData>;
+        attendance?: Attendance;
+        employees: {
+            value: string;
+            label: string;
+        }[];
+        errors: Record<string, string>;
+        processing: boolean;
+        submitLabel: string;
+    }>(),
+    {
+        attendance: undefined,
+        errors: () => ({}),
+        processing: false,
+        submitLabel: 'Save Attendance',
+    },
+);
 
 const emit = defineEmits<{
     submit: [];
     cancel: [];
 }>();
+
+const isEdit = computed(() => Boolean(props.attendance));
 
 /*
 |--------------------------------------------------------------------------
@@ -427,10 +429,7 @@ const setAttendanceDate = (
 const getBreakKey = (
     attendanceBreak: AttendanceFormBreak,
     index: number,
-): string => {
-    return attendanceBreak.uuid
-        ?? `new-${index}`;
-};
+): string => attendanceBreak.uuid ?? `new-${index}`;
 
 /*
 |--------------------------------------------------------------------------
@@ -973,7 +972,9 @@ props.form.breaks.forEach(
                         :placeholder="
                             attendancePage.form.employeePlaceholder
                         "
-                        :disabled="processing"
+                        :disabled="
+                            processing || isEdit
+                        "
                         :error="props.errors.user_id"
                         :icon="User"
                         searchable
@@ -996,7 +997,9 @@ props.form.breaks.forEach(
                             props.form.attendance_date
                         "
                         type="date"
-                        :disabled="processing"
+                        :disabled="
+                            processing || isEdit
+                        "
                         :error="
                             props.errors.attendance_date
                         "

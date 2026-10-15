@@ -38,6 +38,7 @@ export const createOperatorWorkLogColumns = (
                 accessorKey: 'user.name',
                 header: 'Operator',
                 size: 180,
+                align: 'center',
                 sortable: false,
             }),
         ] : []),
@@ -46,6 +47,7 @@ export const createOperatorWorkLogColumns = (
             accessorKey: 'machine.name',
             header: 'Machine',
             size: 160,
+            align: 'center',
             sortable: false,
         }),
 
@@ -53,6 +55,7 @@ export const createOperatorWorkLogColumns = (
             accessorKey: 'part.name',
             header: 'Part',
             size: 160,
+            align: 'center',
             sortable: false,
         }),
 
@@ -60,6 +63,7 @@ export const createOperatorWorkLogColumns = (
             accessorKey: 'setup.name',
             header: 'Setup',
             size: 100,
+            align: 'center',
             sortable: false,
         }),
 
@@ -67,18 +71,21 @@ export const createOperatorWorkLogColumns = (
             accessorKey: 'quantity',
             header: 'Quantity',
             size: 100,
+            align: 'center',
         }),
 
         createSortableColumn({
             accessorKey: 'rejection_quantity',
             header: 'Rejected',
             size: 100,
+            align: 'center',
         }),
 
         createSortableColumn({
             accessorKey: 'production_seconds',
             header: 'Production Time',
             size: 140,
+            align: 'center',
             cell: ({ row }) =>
                 row.original.production_seconds_formatted ??
                 '—',

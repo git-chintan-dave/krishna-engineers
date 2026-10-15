@@ -96,6 +96,7 @@ const handleCancel = () => {
     >
         <AttendanceForm
             :form="form"
+            :attendance="attendance"
             :employees="employees"
             :errors="form.errors"
             :processing="form.processing"

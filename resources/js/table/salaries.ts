@@ -19,12 +19,10 @@ export const createSalaryColumns = (
             resourceName: 'salaries',
         }),
 
-        createPrimaryColumn<Salary>({
-            accessorFn: (salary) =>
-                `${salary.user.employee_code} - ${salary.user.name}`,
-            id: 'employee',
+        createPrimaryColumn({
+            accessorKey: 'user.name',
             header: 'Employee',
-            size: 220,
+            size: 240,
             sortable: false,
         }),
 

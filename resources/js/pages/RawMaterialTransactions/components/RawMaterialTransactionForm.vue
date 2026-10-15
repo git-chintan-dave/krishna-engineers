@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import type { InertiaForm } from '@inertiajs/vue3';
-import {
-    ArrowLeftRight,
-    Hash,
-    Layers3,
-    MessageSquare,
-    Ruler,
-} from '@lucide/vue';
+import {computed, ref, watch} from 'vue';
+import type {InertiaForm} from '@inertiajs/vue3';
+import {ArrowLeftRight, Hash, MessageSquare,} from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -15,34 +10,69 @@ import FormSection from '@/components/form/FormSection.vue';
 import AppRawMaterialTransactionTypeSelect from '@/components/selects/AppRawMaterialTransactionTypeSelect.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppSectionSizeSelect from '@/components/selects/AppSectionSizeSelect.vue';
-import { rawMaterialTransactionPage } from '@/config/rawMaterialTransactions';
-import type { RawMaterialTransactionFormData } from '@/types/rawMaterialTransaction';
+import {rawMaterialTransactionPage} from '@/config/rawMaterialTransactions';
+import type {RawMaterialTransaction, RawMaterialTransactionFormData,} from '@/types/rawMaterialTransaction';
 
-// Props
+/*
+|--------------------------------------------------------------------------
+| Props
+|--------------------------------------------------------------------------
+*/
+
 const props = withDefaults(
     defineProps<{
         form: InertiaForm<RawMaterialTransactionFormData>;
+        transaction?: RawMaterialTransaction;
         errors?: Partial<
-            Record<
-                keyof RawMaterialTransactionFormData,
-                string
-            >
+            Record<keyof RawMaterialTransactionFormData, string>
         >;
         processing?: boolean;
         submitLabel?: string;
     }>(),
     {
+        transaction: undefined,
         errors: () => ({}),
         processing: false,
         submitLabel: 'Save Transaction',
     },
 );
 
-// Emits
+/*
+|--------------------------------------------------------------------------
+| Emits
+|--------------------------------------------------------------------------
+*/
+
 const emit = defineEmits<{
     submit: [];
     cancel: [];
 }>();
+
+/*
+|--------------------------------------------------------------------------
+| Mode
+|--------------------------------------------------------------------------
+*/
+
+const isEdit = computed(() => !!props.transaction);
+
+/*
+|--------------------------------------------------------------------------
+| Section
+|--------------------------------------------------------------------------
+*/
+
+const selectedSectionId = ref<number | null>(
+    props.transaction?.section_size.section_id ?? null,
+);
+
+watch(selectedSectionId, (newSectionId, oldSectionId) => {
+    if (isEdit.value || newSectionId === oldSectionId) {
+        return;
+    }
+
+    props.form.section_size_id = null;
+});
 </script>
 
 <template>
@@ -50,71 +80,61 @@ const emit = defineEmits<{
         class="min-w-0 space-y-6"
         @submit.prevent="emit('submit')"
     >
-        <!-- Material -->
         <FormSection
-            title="Material Information"
-            description="Select the raw material section and size for this transaction."
+            :title="rawMaterialTransactionPage.form.sectionTitle"
+            :description="
+                rawMaterialTransactionPage.form.sectionDescription
+            "
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Section -->
+
                 <AppField
                     label="Section"
                     input-id="raw-material-section"
-                    :error="props.errors.section_id"
                     required
                 >
                     <AppSectionSelect
                         id="raw-material-section"
-                        v-model="props.form.section_id"
-                        placeholder="Select Section"
-                        :disabled="props.processing"
-                        :icon="Layers3"
+                        v-model="selectedSectionId"
+                        placeholder="Select section"
+                        :disabled="props.processing || isEdit"
                         searchable
                         clearable
                     />
                 </AppField>
 
                 <!-- Section Size -->
+
                 <AppField
-                    :label="
-                        rawMaterialTransactionPage.form.sectionSizeLabel
-                    "
+                    :label="rawMaterialTransactionPage.form.sectionSizeLabel"
                     input-id="raw-material-section-size"
-                    :error="props.errors.section_size_id"
                     required
                 >
                     <AppSectionSizeSelect
                         id="raw-material-section-size"
                         v-model="props.form.section_size_id"
-                        :section-id="props.form.section_id"
+                        :section-id="selectedSectionId"
                         :placeholder="
-                            rawMaterialTransactionPage.form.sectionSizePlaceholder
+                            rawMaterialTransactionPage.form
+                                .sectionSizePlaceholder
                         "
                         :disabled="
                             props.processing ||
-                            !props.form.section_id
+                            isEdit ||
+                            !selectedSectionId
                         "
-                        :icon="Ruler"
+                        :error="props.errors.section_size_id"
                         searchable
                         clearable
                     />
                 </AppField>
-            </div>
-        </FormSection>
 
-        <!-- Transaction -->
-        <FormSection
-            title="Transaction Details"
-            description="Configure the raw material transaction type and quantity."
-        >
-            <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Transaction Type -->
+
                 <AppField
-                    :label="
-                        rawMaterialTransactionPage.form.typeLabel
-                    "
+                    :label="rawMaterialTransactionPage.form.typeLabel"
                     input-id="raw-material-transaction-type"
-                    :error="props.errors.type"
                     required
                 >
                     <AppRawMaterialTransactionTypeSelect
@@ -123,20 +143,19 @@ const emit = defineEmits<{
                         :placeholder="
                             rawMaterialTransactionPage.form.typePlaceholder
                         "
-                        :disabled="props.processing"
+                        :disabled="props.processing || isEdit"
                         :icon="ArrowLeftRight"
                         searchable
                         clearable
+                        :error="props.errors.type"
                     />
                 </AppField>
 
                 <!-- Quantity -->
+
                 <AppField
-                    :label="
-                        rawMaterialTransactionPage.form.quantityLabel
-                    "
+                    :label="rawMaterialTransactionPage.form.quantityLabel"
                     input-id="raw-material-quantity"
-                    :error="props.errors.quantity"
                     required
                 >
                     <AppInput
@@ -144,11 +163,14 @@ const emit = defineEmits<{
                         v-model.number="props.form.quantity"
                         type="number"
                         min="1"
+                        max="4294967295"
+                        step="1"
                         :placeholder="
                             rawMaterialTransactionPage.form.quantityPlaceholder
                         "
                         :disabled="props.processing"
                         :icon="Hash"
+                        :error="props.errors.quantity"
                         required
                     />
                 </AppField>
@@ -156,18 +178,15 @@ const emit = defineEmits<{
         </FormSection>
 
         <!-- Additional Information -->
+
         <FormSection
             title="Additional Information"
             description="Add an optional note for this material transaction."
         >
             <div class="grid min-w-0 gap-5">
-                <!-- Remarks -->
                 <AppField
-                    :label="
-                        rawMaterialTransactionPage.form.remarksLabel
-                    "
+                    :label="rawMaterialTransactionPage.form.remarksLabel"
                     input-id="raw-material-remarks"
-                    :error="props.errors.remarks"
                 >
                     <AppInput
                         id="raw-material-remarks"
@@ -177,18 +196,18 @@ const emit = defineEmits<{
                         "
                         :disabled="props.processing"
                         :icon="MessageSquare"
+                        :error="props.errors.remarks"
                     />
                 </AppField>
             </div>
         </FormSection>
 
-        <!-- Actions -->
+        <!-- Form Actions -->
+
         <FormActions
-            :submit-label="submitLabel"
-            :processing="processing"
-            :cancel-label="
-                rawMaterialTransactionPage.form.cancelLabel
-            "
+            :submit-label="props.submitLabel"
+            :processing="props.processing"
+            :cancel-label="rawMaterialTransactionPage.form.cancelLabel"
             @cancel="emit('cancel')"
         />
     </form>

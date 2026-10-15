@@ -1,6 +1,7 @@
-import { h } from 'vue';
+import {h} from 'vue';
 
-import { createSortableHeader } from '@/table/helpers/sortableHeader';
+import {createSortableHeader} from '@/table/helpers/sortableHeader';
+import type {ColumnAlign} from '@/table/types';
 
 /*
 |--------------------------------------------------------------------------
@@ -13,7 +14,33 @@ type SortableColumnOptions = {
     sortKey?: string;
     header: string;
     size?: number;
+    align?: ColumnAlign;
     cell?: (context: any) => unknown;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
+
+const getAlignmentClass = (align: ColumnAlign): string => {
+    switch (align) {
+        case 'center':
+            return 'text-center';
+        case 'right':
+            return 'text-right';
+        default:
+            return 'text-left';
+    }
+};
+
+const formatCellValue = (value: unknown): string => {
+    if (value === null || value === undefined || value === '') {
+        return '—';
+    }
+
+    return String(value);
 };
 
 /*
@@ -27,32 +54,58 @@ export const createSortableColumn = ({
                                          sortKey,
                                          header,
                                          size,
+                                         align = 'left',
                                          cell,
                                      }: SortableColumnOptions) => ({
     accessorKey,
 
-    ...(sortKey !== undefined
-        ? {
-            meta: {
-                sortKey,
-            },
-        }
-        : {}),
+    /*
+    |--------------------------------------------------------------------------
+    | Metadata
+    |--------------------------------------------------------------------------
+    */
+
+    meta: {
+        ...(sortKey !== undefined ? { sortKey } : {}),
+        align,
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Header
+    |--------------------------------------------------------------------------
+    */
 
     header: createSortableHeader({
         label: header,
+        align,
     }),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cell
+    |--------------------------------------------------------------------------
+    */
 
     cell:
         cell ??
-        (({ getValue }: any) =>
+        (({ getValue }: { getValue: () => unknown }) =>
             h(
                 'span',
                 {
-                    class: 'block min-w-0 whitespace-normal break-words',
+                    class: [
+                        'block min-w-0 whitespace-normal break-words',
+                        getAlignmentClass(align),
+                    ],
                 },
-                getValue() ?? '—',
+                formatCellValue(getValue()),
             )),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Width
+    |--------------------------------------------------------------------------
+    */
 
     ...(size !== undefined
         ? {

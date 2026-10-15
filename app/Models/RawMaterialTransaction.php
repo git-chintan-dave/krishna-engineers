@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Support\Str;
 
 #[Fillable([
     'section_size_id',
@@ -24,6 +23,12 @@ class RawMaterialTransaction extends Model
 {
     use HasUuids;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Configuration
+    |--------------------------------------------------------------------------
+    */
+
     public function uniqueIds(): array
     {
         return ['uuid'];
@@ -34,7 +39,12 @@ class RawMaterialTransaction extends Model
         return 'uuid';
     }
 
-    // Casts
+    /*
+    |--------------------------------------------------------------------------
+    | Casts
+    |--------------------------------------------------------------------------
+    */
+
     protected function casts(): array
     {
         return [
@@ -44,7 +54,12 @@ class RawMaterialTransaction extends Model
         ];
     }
 
-    // Relationships
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
     public function sectionSize(): BelongsTo
     {
         return $this->belongsTo(SectionSize::class);
@@ -60,47 +75,55 @@ class RawMaterialTransaction extends Model
         return $this->morphTo();
     }
 
-    // Scopes
+    /*
+    |--------------------------------------------------------------------------
+    | Scopes
+    |--------------------------------------------------------------------------
+    */
+
     public function scopeForSectionSize(
         Builder $query,
-        int $sectionSizeId
+        int $sectionSizeId,
     ): Builder {
         return $query->where('section_size_id', $sectionSizeId);
     }
 
     public function scopeOfType(
         Builder $query,
-        RawMaterialTransactionType $type
+        RawMaterialTransactionType $type,
     ): Builder {
-        return $query->where('type', $type->value);
+        return $query->where('type', $type);
     }
 
     public function scopeForUser(
         Builder $query,
-        int $userId
+        int $userId,
     ): Builder {
         return $query->where('user_id', $userId);
     }
 
     public function scopeFromDate(
         Builder $query,
-                $date
+        string $date,
     ): Builder {
         return $query->whereDate('created_at', '>=', $date);
     }
 
     public function scopeToDate(
         Builder $query,
-                $date
+        string $date,
     ): Builder {
         return $query->whereDate('created_at', '<=', $date);
     }
 
     public function scopeBetweenDates(
         Builder $query,
-                $fromDate,
-                $toDate
+        string $fromDate,
+        string $toDate,
     ): Builder {
-        return $query->whereBetween('created_at', [$fromDate, $toDate]);
+        return $query->whereBetween('created_at', [
+            "{$fromDate} 00:00:00",
+            "{$toDate} 23:59:59.999999",
+        ]);
     }
 }
