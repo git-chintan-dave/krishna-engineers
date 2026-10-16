@@ -20,6 +20,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Maatwebsite\Excel\Facades\Excel;
 use RuntimeException;
+use Throwable;
 
 class AttendanceController extends Controller
 {
@@ -31,7 +32,9 @@ class AttendanceController extends Controller
 
     public function __construct(
         private readonly AttendanceService $attendanceService,
-    ) {}
+    )
+    {
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -41,7 +44,8 @@ class AttendanceController extends Controller
 
     public function index(
         IndexAttendanceRequest $request,
-    ): Response {
+    ): Response
+    {
         Gate::authorize(
             'viewAny',
             Attendance::class,
@@ -65,13 +69,13 @@ class AttendanceController extends Controller
             $filters,
         )
             ->when($filters['user_id'] ?? null,
-                fn (Builder $query, int $userId): Builder => $query->where('user_id', $userId),
+                fn(Builder $query, int $userId): Builder => $query->where('user_id', $userId),
             )
             ->when($filters['start_date'] ?? null,
-                fn (Builder $query, string $date): Builder => $query->whereDate('attendance_date', '>=', $date),
+                fn(Builder $query, string $date): Builder => $query->whereDate('attendance_date', '>=', $date),
             )
             ->when($filters['end_date'] ?? null,
-                fn (Builder $query, string $date): Builder => $query->whereDate('attendance_date', '<=', $date),
+                fn(Builder $query, string $date): Builder => $query->whereDate('attendance_date', '<=', $date),
             )
             ->paginate(
                 $filters['per_page'] ?? 10,
@@ -100,28 +104,10 @@ class AttendanceController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function create(): Response
-    {
-        Gate::authorize(
-            'create',
-            Attendance::class,
-        );
-
-        return Inertia::render(
-            'Attendances/Create',
-            [],
-        );
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Edit
-    |--------------------------------------------------------------------------
-    */
-
     public function edit(
         Attendance $attendance,
-    ): Response {
+    ): Response
+    {
         Gate::authorize(
             'view',
             $attendance,
@@ -141,13 +127,14 @@ class AttendanceController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | Store
+    | Edit
     |--------------------------------------------------------------------------
     */
 
     public function store(
         AttendanceRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize(
             'create',
             Attendance::class,
@@ -173,14 +160,34 @@ class AttendanceController extends Controller
 
     /*
     |--------------------------------------------------------------------------
+    | Store
+    |--------------------------------------------------------------------------
+    */
+
+    public function create(): Response
+    {
+        Gate::authorize(
+            'create',
+            Attendance::class,
+        );
+
+        return Inertia::render(
+            'Attendances/Create',
+            [],
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | Update
     |--------------------------------------------------------------------------
     */
 
     public function update(
         AttendanceRequest $request,
-        Attendance $attendance,
-    ): RedirectResponse {
+        Attendance        $attendance,
+    ): RedirectResponse
+    {
         Gate::authorize(
             'update',
             $attendance,
@@ -216,7 +223,8 @@ class AttendanceController extends Controller
 
     public function destroy(
         Attendance $attendance,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize(
             'delete',
             $attendance,
@@ -242,7 +250,8 @@ class AttendanceController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize(
             'deleteAny',
             Attendance::class,
@@ -283,7 +292,8 @@ class AttendanceController extends Controller
 
     public function import(
         AttendanceImportRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize(
             'import',
             Attendance::class,
@@ -299,7 +309,7 @@ class AttendanceController extends Controller
                 'imported',
                 $e->getMessage(),
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             report($e);
 
             return $this->errorResponse(

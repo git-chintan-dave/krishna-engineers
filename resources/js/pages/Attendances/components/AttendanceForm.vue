@@ -1,20 +1,16 @@
-<script setup lang="ts">
-import { computed, reactive } from 'vue';
-import type { InertiaForm } from '@inertiajs/vue3';
-import { CalendarDays, Clock3, Plus, Trash2, User } from '@lucide/vue';
+<script lang="ts" setup>
+import {computed, reactive} from 'vue';
+import type {InertiaForm} from '@inertiajs/vue3';
+import {CalendarDays, Clock3, Plus, Trash2, User} from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
 import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
-import { Button } from '@/components/ui/button';
-import { attendancePage } from '@/config/attendances';
-import type {
-    Attendance,
-    AttendanceFormBreak,
-    AttendanceFormData,
-} from '@/types/attendance';
+import {Button} from '@/components/ui/button';
+import {attendancePage} from '@/config/attendances';
+import type {Attendance, AttendanceFormBreak, AttendanceFormData,} from '@/types/attendance';
 
 /*
 |--------------------------------------------------------------------------
@@ -709,8 +705,8 @@ props.form.breaks.forEach((attendanceBreak, index) => {
         <!-- Attendance Information -->
 
         <FormSection
-            :title="attendancePage.form.sectionTitle"
             :description="attendancePage.form.sectionDescription"
+            :title="attendancePage.form.sectionTitle"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Employee -->
@@ -722,10 +718,10 @@ props.form.breaks.forEach((attendanceBreak, index) => {
                 >
                     <AppEmployeeSelect
                         v-model="props.form.user_id"
-                        :placeholder="attendancePage.form.employeePlaceholder"
                         :disabled="processing || isEdit"
                         :error="props.errors.user_id"
                         :icon="User"
+                        :placeholder="attendancePage.form.employeePlaceholder"
                         searchable
                     />
                 </AppField>
@@ -739,17 +735,17 @@ props.form.breaks.forEach((attendanceBreak, index) => {
                 >
                     <AppInput
                         id="attendance-date"
-                        :model-value="props.form.attendance_date"
-                        type="date"
                         :disabled="processing || isEdit"
                         :error="props.errors.attendance_date"
                         :icon="CalendarDays"
-                        required
-                        @update:model-value="
-                            setAttendanceDate(String($event ?? ''))
-                        "
+                        :model-value="props.form.attendance_date"
                         :placeholder="
                             attendancePage.form.attendanceDatePlaceholder
+                        "
+                        required
+                        type="date"
+                        @update:model-value="
+                            setAttendanceDate(String($event ?? ''))
                         "
                     />
                 </AppField>
@@ -764,10 +760,10 @@ props.form.breaks.forEach((attendanceBreak, index) => {
                     <AppInput
                         id="attendance-start-at"
                         v-model="startTime"
-                        type="time"
                         :disabled="processing"
                         :error="props.errors.start_at"
                         :placeholder="attendancePage.form.startAtPlaceholder"
+                        type="time"
                     />
 
                     <p
@@ -788,10 +784,10 @@ props.form.breaks.forEach((attendanceBreak, index) => {
                     <AppInput
                         id="attendance-end-at"
                         v-model="endTime"
-                        type="time"
                         :disabled="processing || !startTime"
                         :error="props.errors.end_at"
                         :placeholder="attendancePage.form.endAtPlaceholder"
+                        type="time"
                     />
 
                     <p
@@ -811,8 +807,8 @@ props.form.breaks.forEach((attendanceBreak, index) => {
         <!-- Attendance Breaks -->
 
         <FormSection
-            title="Attendance Breaks"
             description="Break times must stay completely within the clock-in and clock-out period."
+            title="Attendance Breaks"
         >
             <div class="space-y-4">
                 <!-- Empty State -->
@@ -823,8 +819,8 @@ props.form.breaks.forEach((attendanceBreak, index) => {
                 >
                     <div class="mb-3 rounded-lg border bg-muted/30 p-3">
                         <Clock3
-                            class="size-5 text-muted-foreground"
                             aria-hidden="true"
+                            class="size-5 text-muted-foreground"
                         />
                     </div>
 
@@ -850,8 +846,8 @@ props.form.breaks.forEach((attendanceBreak, index) => {
                         <div class="flex items-center gap-2">
                             <div class="rounded-md bg-muted p-2">
                                 <Clock3
-                                    class="size-4 text-muted-foreground"
                                     aria-hidden="true"
+                                    class="size-4 text-muted-foreground"
                                 />
                             </div>
 
@@ -868,15 +864,15 @@ props.form.breaks.forEach((attendanceBreak, index) => {
                         </div>
 
                         <Button
+                            :aria-label="`Remove break ${index + 1}`"
+                            :disabled="processing"
+                            class="size-8 cursor-pointer text-muted-foreground hover:text-destructive"
+                            size="icon"
                             type="button"
                             variant="ghost"
-                            size="icon"
-                            class="size-8 cursor-pointer text-muted-foreground hover:text-destructive"
-                            :disabled="processing"
-                            :aria-label="`Remove break ${index + 1}`"
                             @click="removeBreak(index)"
                         >
-                            <Trash2 class="size-4" aria-hidden="true" />
+                            <Trash2 aria-hidden="true" class="size-4"/>
                         </Button>
                     </div>
 
@@ -884,17 +880,20 @@ props.form.breaks.forEach((attendanceBreak, index) => {
                         <!-- Break Start -->
 
                         <AppField
-                            label="Start Time"
                             :input-id="`break-${index}-start`"
+                            label="Start Time"
                         >
                             <AppInput
                                 :id="`break-${index}-start`"
+                                :disabled="processing"
+                                :error="breakError(index, 'start_at')"
                                 :model-value="
                                     getBreakStartTime(attendanceBreak, index)
                                 "
+                                :placeholder="
+                                    attendancePage.form.breakStartPlaceholder
+                                "
                                 type="time"
-                                :disabled="processing"
-                                :error="breakError(index, 'start_at')"
                                 @update:model-value="
                                     setBreakStartTime(
                                         attendanceBreak,
@@ -902,38 +901,35 @@ props.form.breaks.forEach((attendanceBreak, index) => {
                                         String($event ?? ''),
                                     )
                                 "
-                                :placeholder="
-                                    attendancePage.form.breakStartPlaceholder
-                                "
                             />
                         </AppField>
 
                         <!-- Break End -->
 
                         <AppField
-                            label="End Time"
                             :input-id="`break-${index}-end`"
+                            label="End Time"
                         >
                             <AppInput
                                 :id="`break-${index}-end`"
-                                :model-value="
-                                    getBreakEndTime(attendanceBreak, index)
-                                "
-                                type="time"
                                 :disabled="
                                     processing ||
                                     !getBreakStartTime(attendanceBreak, index)
                                 "
                                 :error="breakError(index, 'end_at')"
+                                :model-value="
+                                    getBreakEndTime(attendanceBreak, index)
+                                "
+                                :placeholder="
+                                    attendancePage.form.breakEndPlaceholder
+                                "
+                                type="time"
                                 @update:model-value="
                                     setBreakEndTime(
                                         attendanceBreak,
                                         index,
                                         String($event ?? ''),
                                     )
-                                "
-                                :placeholder="
-                                    attendancePage.form.breakEndPlaceholder
                                 "
                             />
                         </AppField>
@@ -956,13 +952,13 @@ props.form.breaks.forEach((attendanceBreak, index) => {
                 <!-- Add Break -->
 
                 <Button
+                    :disabled="processing || !canAddBreak"
+                    class="w-full cursor-pointer sm:w-auto"
                     type="button"
                     variant="outline"
-                    class="w-full cursor-pointer sm:w-auto"
-                    :disabled="processing || !canAddBreak"
                     @click="addBreak"
                 >
-                    <Plus class="size-4" aria-hidden="true" />
+                    <Plus aria-hidden="true" class="size-4"/>
 
                     <span>Add Break</span>
                 </Button>
@@ -972,9 +968,9 @@ props.form.breaks.forEach((attendanceBreak, index) => {
         <!-- Form Actions -->
 
         <FormActions
-            :submit-label="submitLabel"
             :cancel-label="attendancePage.form.cancelLabel"
             :processing="processing"
+            :submit-label="submitLabel"
             @cancel="emit('cancel')"
         />
     </form>

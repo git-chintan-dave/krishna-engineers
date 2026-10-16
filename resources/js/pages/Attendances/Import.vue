@@ -1,21 +1,15 @@
-<script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
-import {
-    CheckCircle2,
-    FileSpreadsheet,
-    Loader2,
-    UploadCloud,
-    X,
-} from '@lucide/vue';
-import { computed, ref } from 'vue';
+<script lang="ts" setup>
+import {Head, useForm} from '@inertiajs/vue3';
+import {CheckCircle2, FileSpreadsheet, Loader2, UploadCloud, X,} from '@lucide/vue';
+import {computed, ref} from 'vue';
 
 import AppPageHeader from '@/components/common/AppPageHeader.vue';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { attendancePage } from '@/config/attendances';
-import { index as attendances } from '@/routes/attendances';
-import { store as submitImport } from '@/routes/attendances/import';
+import {Card, CardContent} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {attendancePage} from '@/config/attendances';
+import {index as attendances} from '@/routes/attendances';
+import {store as submitImport} from '@/routes/attendances/import';
 
 /*
 |--------------------------------------------------------------------------
@@ -158,7 +152,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head :title="props.title" />
+    <Head :title="props.title"/>
 
     <div class="space-y-6 p-6">
         <!--
@@ -167,7 +161,7 @@ const submit = () => {
         |--------------------------------------------------------------------------
         -->
 
-        <AppPageHeader :title="props.title" :description="props.description" />
+        <AppPageHeader :description="props.description" :title="props.title"/>
 
         <!--
         |--------------------------------------------------------------------------
@@ -217,8 +211,8 @@ const submit = () => {
                                 class="mb-5 rounded-xl border bg-background p-4 shadow-sm"
                             >
                                 <UploadCloud
-                                    class="size-10 text-primary"
                                     aria-hidden="true"
+                                    class="size-10 text-primary"
                                 />
                             </div>
 
@@ -248,15 +242,15 @@ const submit = () => {
                                     class="mb-4 rounded-full bg-emerald-100 p-3 dark:bg-emerald-950"
                                 >
                                     <CheckCircle2
-                                        class="size-8 text-emerald-600"
                                         aria-hidden="true"
+                                        class="size-8 text-emerald-600"
                                     />
                                 </div>
 
                                 <div class="flex max-w-full items-center gap-2">
                                     <FileSpreadsheet
-                                        class="size-4 shrink-0 text-muted-foreground"
                                         aria-hidden="true"
+                                        class="size-4 shrink-0 text-muted-foreground"
                                     />
 
                                     <span
@@ -267,14 +261,14 @@ const submit = () => {
                                 </div>
 
                                 <Button
+                                    :disabled="form.processing"
                                     class="mt-4"
                                     size="sm"
                                     type="button"
                                     variant="ghost"
-                                    :disabled="form.processing"
                                     @click.stop="removeFile"
                                 >
-                                    <X class="size-4" aria-hidden="true" />
+                                    <X aria-hidden="true" class="size-4"/>
 
                                     <span>Remove file</span>
                                 </Button>
@@ -350,8 +344,8 @@ const submit = () => {
                     >
                         <Loader2
                             v-if="form.processing"
-                            class="size-4 animate-spin"
                             aria-hidden="true"
+                            class="size-4 animate-spin"
                         />
 
                         <span>

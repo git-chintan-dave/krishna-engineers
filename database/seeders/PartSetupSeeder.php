@@ -47,49 +47,49 @@ class PartSetupSeeder extends Seeder
             ->keyBy('name');
 
         foreach ([
-            [
-                'part_id' => $parts['2H-2000M']->id,
-                'setup_id' => $setups['S1']->id,
-                'image' => null,
-                'machine_cycle_time_seconds' => 3600,
-                'actual_cycle_time_seconds' => 3900,
-            ],
-            [
-                'part_id' => $parts['2H-2000M']->id,
-                'setup_id' => $setups['S2']->id,
-                'image' => null,
-                'machine_cycle_time_seconds' => 4200,
-                'actual_cycle_time_seconds' => 4500,
-            ],
-            [
-                'part_id' => $parts['2I-2003']->id,
-                'setup_id' => $setups['S1']->id,
-                'image' => null,
-                'machine_cycle_time_seconds' => 3000,
-                'actual_cycle_time_seconds' => 3300,
-            ],
-            [
-                'part_id' => $parts['2X-2013']->id,
-                'setup_id' => $setups['S1']->id,
-                'image' => null,
-                'machine_cycle_time_seconds' => 2700,
-                'actual_cycle_time_seconds' => 3000,
-            ],
-            [
-                'part_id' => $parts['1P-4000']->id,
-                'setup_id' => $setups['S2']->id,
-                'image' => null,
-                'machine_cycle_time_seconds' => 4800,
-                'actual_cycle_time_seconds' => 5100,
-            ],
-            [
-                'part_id' => $parts['RM-197']->id,
-                'setup_id' => $setups['S1']->id,
-                'image' => null,
-                'machine_cycle_time_seconds' => 2400,
-                'actual_cycle_time_seconds' => 2700,
-            ],
-        ] as $partSetup) {
+                     [
+                         'part_id' => $parts['2H-2000M']->id,
+                         'setup_id' => $setups['S1']->id,
+                         'image' => null,
+                         'machine_cycle_time_seconds' => 3600,
+                         'actual_cycle_time_seconds' => 3900,
+                     ],
+                     [
+                         'part_id' => $parts['2H-2000M']->id,
+                         'setup_id' => $setups['S2']->id,
+                         'image' => null,
+                         'machine_cycle_time_seconds' => 4200,
+                         'actual_cycle_time_seconds' => 4500,
+                     ],
+                     [
+                         'part_id' => $parts['2I-2003']->id,
+                         'setup_id' => $setups['S1']->id,
+                         'image' => null,
+                         'machine_cycle_time_seconds' => 3000,
+                         'actual_cycle_time_seconds' => 3300,
+                     ],
+                     [
+                         'part_id' => $parts['2X-2013']->id,
+                         'setup_id' => $setups['S1']->id,
+                         'image' => null,
+                         'machine_cycle_time_seconds' => 2700,
+                         'actual_cycle_time_seconds' => 3000,
+                     ],
+                     [
+                         'part_id' => $parts['1P-4000']->id,
+                         'setup_id' => $setups['S2']->id,
+                         'image' => null,
+                         'machine_cycle_time_seconds' => 4800,
+                         'actual_cycle_time_seconds' => 5100,
+                     ],
+                     [
+                         'part_id' => $parts['RM-197']->id,
+                         'setup_id' => $setups['S1']->id,
+                         'image' => null,
+                         'machine_cycle_time_seconds' => 2400,
+                         'actual_cycle_time_seconds' => 2700,
+                     ],
+                 ] as $partSetup) {
             PartSetup::create($partSetup);
         }
     }

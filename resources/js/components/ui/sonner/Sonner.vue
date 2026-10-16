@@ -12,7 +12,6 @@ const props = defineProps<ToasterProps>();
 
 <template>
     <Sonner
-        v-bind="props"
         :class="cn('toaster group', props.class)"
         :close-button="true"
         :rich-colors="true"
@@ -23,29 +22,30 @@ const props = defineProps<ToasterProps>();
             '--border-radius': 'var(--radius)',
         }"
         position="bottom-right"
+        v-bind="props"
     >
         <template #success-icon>
-            <CircleCheckIcon class="size-4" />
+            <CircleCheckIcon class="size-4"/>
         </template>
 
         <template #info-icon>
-            <InfoIcon class="size-4" />
+            <InfoIcon class="size-4"/>
         </template>
 
         <template #warning-icon>
-            <TriangleAlertIcon class="size-4" />
+            <TriangleAlertIcon class="size-4"/>
         </template>
 
         <template #error-icon>
-            <OctagonXIcon class="size-4" />
+            <OctagonXIcon class="size-4"/>
         </template>
 
         <template #loading-icon>
-            <Loader2Icon class="size-4 animate-spin" />
+            <Loader2Icon class="size-4 animate-spin"/>
         </template>
 
         <template #close-icon>
-            <XIcon class="size-4" />
+            <XIcon class="size-4"/>
         </template>
     </Sonner>
 </template>

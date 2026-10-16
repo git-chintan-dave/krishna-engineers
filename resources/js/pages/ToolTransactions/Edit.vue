@@ -1,27 +1,24 @@
-﻿<script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+﻿<script lang="ts" setup>
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
 import ToolTransactionForm from '@/pages/ToolTransactions/components/ToolTransactionForm.vue';
 
-import { toolTransactionPage } from '@/config/toolTransactions';
-import { dashboard } from '@/routes';
-import { index as toolTransactions, update } from '@/routes/tool-transactions';
+import {toolTransactionPage} from '@/config/toolTransactions';
+import {dashboard} from '@/routes';
+import {index as toolTransactions, update} from '@/routes/tool-transactions';
 
-import type {
-    ToolTransaction,
-    ToolTransactionType,
-} from '@/types/toolTransaction';
+import type {ToolTransaction, ToolTransactionType,} from '@/types/toolTransaction';
 
 defineOptions({
     layout: {
         breadcrumbs: [
-            { title: 'Dashboard', href: dashboard() },
+            {title: 'Dashboard', href: dashboard()},
             {
                 title: toolTransactionPage.title,
                 href: toolTransactions(),
             },
-            { title: 'Edit' },
+            {title: 'Edit'},
         ],
     },
 });
@@ -63,17 +60,17 @@ const handleCancel = () => {
 
 <template>
     <FormLayout
-        :title="toolTransactionPage.form.editTitle"
         :description="toolTransactionPage.form.editDescription"
+        :title="toolTransactionPage.form.editTitle"
     >
         <ToolTransactionForm
-            :form="form"
             :errors="form.errors"
+            :form="form"
             :processing="form.processing"
             :submit-label="toolTransactionPage.form.editSubmitLabel"
             is-editing
-            @submit="handleSubmit"
             @cancel="handleCancel"
+            @submit="handleSubmit"
         />
     </FormLayout>
 </template>

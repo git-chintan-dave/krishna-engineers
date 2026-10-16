@@ -1,15 +1,12 @@
-﻿<script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+﻿<script lang="ts" setup>
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { sectionSizePage } from '@/config/sectionSizes';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {sectionSizePage} from '@/config/sectionSizes';
 import SectionSizeForm from '@/pages/SectionSizes/components/SectionSizeForm.vue';
-import {
-    index as sectionSizes,
-    update as updateSectionSize,
-} from '@/routes/section-sizes';
-import type { SectionSize, SectionSizeFormData } from '@/types/sectionSize';
+import {index as sectionSizes, update as updateSectionSize,} from '@/routes/section-sizes';
+import type {SectionSize, SectionSizeFormData} from '@/types/sectionSize';
 
 /*
 |--------------------------------------------------------------------------
@@ -71,16 +68,16 @@ const handleCancel = () => {
 
 <template>
     <FormLayout
-        :title="sectionSizePage.form.editTitle"
         :description="sectionSizePage.form.editDescription"
+        :title="sectionSizePage.form.editTitle"
     >
         <SectionSizeForm
-            :form="form"
             :errors="form.errors"
+            :form="form"
             :processing="form.processing"
             :submit-label="sectionSizePage.form.editSubmitLabel"
-            @submit="handleSubmit"
             @cancel="handleCancel"
+            @submit="handleSubmit"
         />
     </FormLayout>
 </template>

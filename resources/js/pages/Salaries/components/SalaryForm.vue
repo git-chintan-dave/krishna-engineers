@@ -1,17 +1,17 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import axios from 'axios';
-import type { InertiaForm } from '@inertiajs/vue3';
-import { CalendarDays, IndianRupee, User } from '@lucide/vue';
-import { computed, ref, watch } from 'vue';
+import type {InertiaForm} from '@inertiajs/vue3';
+import {CalendarDays, IndianRupee, User} from '@lucide/vue';
+import {computed, ref, watch} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
 import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
-import { salaryPage } from '@/config/salaries';
-import { preview as previewSalary } from '@/routes/salaries';
-import type { Salary, SalaryFormData } from '@/types/salary';
+import {salaryPage} from '@/config/salaries';
+import {preview as previewSalary} from '@/routes/salaries';
+import type {Salary, SalaryFormData} from '@/types/salary';
 
 type SalaryPreview = {
     base_salary: string;
@@ -174,8 +174,8 @@ const formatAmount = (amount: number): string => {
 <template>
     <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
         <FormSection
-            :title="salaryPage.form.sectionTitle"
             :description="salaryPage.form.sectionDescription"
+            :title="salaryPage.form.sectionTitle"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <AppField
@@ -185,10 +185,10 @@ const formatAmount = (amount: number): string => {
                 >
                     <AppEmployeeSelect
                         v-model="props.form.user_id"
-                        :placeholder="salaryPage.form.employeePlaceholder"
                         :disabled="processing || isEdit"
                         :error="props.errors.user_id"
                         :icon="User"
+                        :placeholder="salaryPage.form.employeePlaceholder"
                         searchable
                     />
                 </AppField>
@@ -201,14 +201,14 @@ const formatAmount = (amount: number): string => {
                     <AppInput
                         id="salary-period-start"
                         v-model="props.form.salary_period_start"
-                        type="date"
-                        :placeholder="
-                            salaryPage.form.salaryPeriodStartPlaceholder
-                        "
                         :disabled="processing || isEdit"
                         :error="props.errors.salary_period_start"
                         :icon="CalendarDays"
+                        :placeholder="
+                            salaryPage.form.salaryPeriodStartPlaceholder
+                        "
                         required
+                        type="date"
                     />
                 </AppField>
 
@@ -220,14 +220,14 @@ const formatAmount = (amount: number): string => {
                     <AppInput
                         id="salary-period-end"
                         v-model="props.form.salary_period_end"
-                        type="date"
-                        :placeholder="
-                            salaryPage.form.salaryPeriodEndPlaceholder
-                        "
                         :disabled="processing || isEdit"
                         :error="props.errors.salary_period_end"
                         :icon="CalendarDays"
+                        :placeholder="
+                            salaryPage.form.salaryPeriodEndPlaceholder
+                        "
                         required
+                        type="date"
                     />
                 </AppField>
 
@@ -237,8 +237,8 @@ const formatAmount = (amount: number): string => {
                 >
                     <AppInput
                         id="salary-base-salary"
-                        :model-value="formatAmount(baseSalary)"
                         :icon="IndianRupee"
+                        :model-value="formatAmount(baseSalary)"
                         disabled
                     />
                 </AppField>
@@ -260,8 +260,8 @@ const formatAmount = (amount: number): string => {
                 >
                     <AppInput
                         id="salary-incentive"
-                        :model-value="formatAmount(incentive)"
                         :icon="IndianRupee"
+                        :model-value="formatAmount(incentive)"
                         disabled
                     />
                 </AppField>
@@ -272,8 +272,8 @@ const formatAmount = (amount: number): string => {
                 >
                     <AppInput
                         id="salary-deduction"
-                        :model-value="formatAmount(deduction)"
                         :icon="IndianRupee"
+                        :model-value="formatAmount(deduction)"
                         disabled
                     />
                 </AppField>
@@ -283,8 +283,8 @@ const formatAmount = (amount: number): string => {
                     class="flex items-center gap-2 text-sm text-muted-foreground md:col-span-2"
                 >
                     <IndianRupee
-                        class="size-4 animate-pulse"
                         aria-hidden="true"
+                        class="size-4 animate-pulse"
                     />
 
                     <span> Loading salary details... </span>
@@ -293,8 +293,8 @@ const formatAmount = (amount: number): string => {
         </FormSection>
 
         <FormSection
-            title="Payment Adjustments"
             description="Enter any advance, loan payment, or manual salary adjustment."
+            title="Payment Adjustments"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <AppField
@@ -305,14 +305,14 @@ const formatAmount = (amount: number): string => {
                     <AppInput
                         id="salary-upad"
                         v-model="props.form.upad"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        :placeholder="salaryPage.form.upadPlaceholder"
                         :disabled="processing"
                         :error="props.errors.upad"
                         :icon="IndianRupee"
+                        :placeholder="salaryPage.form.upadPlaceholder"
+                        min="0"
                         required
+                        step="0.01"
+                        type="number"
                     />
                 </AppField>
 
@@ -324,14 +324,14 @@ const formatAmount = (amount: number): string => {
                     <AppInput
                         id="salary-paid-loan"
                         v-model="props.form.paid_loan"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        :placeholder="salaryPage.form.paidLoanPlaceholder"
                         :disabled="processing"
                         :error="props.errors.paid_loan"
                         :icon="IndianRupee"
+                        :placeholder="salaryPage.form.paidLoanPlaceholder"
+                        min="0"
                         required
+                        step="0.01"
+                        type="number"
                     />
                 </AppField>
 
@@ -343,37 +343,37 @@ const formatAmount = (amount: number): string => {
                     <AppInput
                         id="salary-adjustment"
                         v-model="props.form.adjustment"
-                        type="number"
-                        step="0.01"
-                        :placeholder="salaryPage.form.adjustmentPlaceholder"
                         :disabled="processing"
                         :error="props.errors.adjustment"
                         :icon="IndianRupee"
+                        :placeholder="salaryPage.form.adjustmentPlaceholder"
                         required
+                        step="0.01"
+                        type="number"
                     />
                 </AppField>
 
                 <AppField
                     :label="salaryPage.form.adjustmentReasonLabel"
-                    input-id="salary-adjustment-reason"
                     :required="hasAdjustment"
+                    input-id="salary-adjustment-reason"
                 >
                     <AppInput
                         id="salary-adjustment-reason"
                         v-model="props.form.adjustment_reason"
+                        :disabled="processing"
+                        :error="props.errors.adjustment_reason"
                         :placeholder="
                             salaryPage.form.adjustmentReasonPlaceholder
                         "
-                        :disabled="processing"
-                        :error="props.errors.adjustment_reason"
                     />
                 </AppField>
             </div>
         </FormSection>
 
         <FormSection
-            title="Salary Summary"
             description="Review the final payable amount before saving."
+            title="Salary Summary"
         >
             <div class="rounded-xl border bg-muted/30 p-5">
                 <div
@@ -392,8 +392,8 @@ const formatAmount = (amount: number): string => {
 
                     <div class="flex shrink-0 items-center gap-2">
                         <IndianRupee
-                            class="size-5 text-muted-foreground"
                             aria-hidden="true"
+                            class="size-5 text-muted-foreground"
                         />
 
                         <p class="text-2xl font-semibold tabular-nums">
@@ -405,9 +405,9 @@ const formatAmount = (amount: number): string => {
         </FormSection>
 
         <FormActions
-            :submit-label="submitLabel"
-            :processing="processing || previewLoading"
             :cancel-label="salaryPage.form.cancelLabel"
+            :processing="processing || previewLoading"
+            :submit-label="submitLabel"
             @cancel="emit('cancel')"
         />
     </form>

@@ -1,10 +1,10 @@
-import { router } from '@inertiajs/vue3';
-import type { RequestPayload } from '@inertiajs/core';
-import type { RowData, SortingState } from '@tanstack/vue-table';
-import { ref } from 'vue';
+import {router} from '@inertiajs/vue3';
+import type {RequestPayload} from '@inertiajs/core';
+import type {RowData, SortingState} from '@tanstack/vue-table';
+import {ref} from 'vue';
 
-import { useDataTable } from '@/composables/useDataTable';
-import type { PaginatedResponse, SortDirection } from '@/types/listing';
+import {useDataTable} from '@/composables/useDataTable';
+import type {PaginatedResponse, SortDirection} from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------
@@ -95,23 +95,23 @@ export function useListingTable<
     */
 
     const visit = ({
-        page = 1,
-        perPage = options.data().meta.per_page,
-        sort,
-        direction,
-        clearSorting = false,
-    }: VisitOptions<TSort> = {}) => {
+                       page = 1,
+                       perPage = options.data().meta.per_page,
+                       sort,
+                       direction,
+                       clearSorting = false,
+                   }: VisitOptions<TSort> = {}) => {
         const currentSorting = getCurrentSorting();
 
         const sortingParams = clearSorting
             ? {
-                  sort: undefined,
-                  direction: undefined,
-              }
+                sort: undefined,
+                direction: undefined,
+            }
             : {
-                  sort: sort ?? currentSorting.sort,
-                  direction: direction ?? currentSorting.direction,
-              };
+                sort: sort ?? currentSorting.sort,
+                direction: direction ?? currentSorting.direction,
+            };
 
         const params: RequestPayload = {
             per_page: perPage,
@@ -161,7 +161,7 @@ export function useListingTable<
     |--------------------------------------------------------------------------
     */
 
-    const { table, sorting, selectedRows, selectedCount, clearSelection } =
+    const {table, sorting, selectedRows, selectedCount, clearSelection} =
         useDataTable<TData>(() => options.data().data, options.columns, {
             manualPagination: true,
             manualSorting: true,
@@ -172,7 +172,7 @@ export function useListingTable<
 
             enableRowSelection: options.enableRowSelection,
 
-            onPaginationChange: ({ pageIndex, pageSize }) => {
+            onPaginationChange: ({pageIndex, pageSize}) => {
                 const meta = options.data().meta;
                 const nextPage = pageIndex + 1;
 

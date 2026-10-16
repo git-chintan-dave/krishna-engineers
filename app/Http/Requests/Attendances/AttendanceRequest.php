@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
+use Throwable;
 
 class AttendanceRequest extends FormRequest
 {
@@ -44,7 +45,7 @@ class AttendanceRequest extends FormRequest
                 'date',
                 Rule::unique('attendances', 'attendance_date')
                     ->where(
-                        fn ($query) => $query->where(
+                        fn($query) => $query->where(
                             'user_id',
                             $this->input('user_id'),
                         ),
@@ -118,7 +119,7 @@ class AttendanceRequest extends FormRequest
                 $endAt = filled($endAtInput)
                     ? Carbon::parse($endAtInput)
                     : null;
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 return;
             }
 
@@ -128,7 +129,7 @@ class AttendanceRequest extends FormRequest
             |--------------------------------------------------------------------------
             */
 
-            if (! $startAt->isSameDay($attendanceDate)) {
+            if (!$startAt->isSameDay($attendanceDate)) {
                 $validator->errors()->add(
                     'start_at',
                     'Clock-in date must match the attendance date.',
@@ -162,7 +163,7 @@ class AttendanceRequest extends FormRequest
                     $attendanceDate->copy()->addDay(),
                 );
 
-                if (! $sameDay && ! $nextDay) {
+                if (!$sameDay && !$nextDay) {
                     $validator->errors()->add(
                         'end_at',
                         'Clock-out date must be the same as or the next day after the attendance date.',
@@ -205,7 +206,7 @@ class AttendanceRequest extends FormRequest
                 try {
                     $breakStart = Carbon::parse($breakStartInput);
                     $breakEnd = Carbon::parse($breakEndInput);
-                } catch (\Throwable) {
+                } catch (Throwable) {
                     continue;
                 }
 
@@ -302,14 +303,14 @@ class AttendanceRequest extends FormRequest
                         $attendanceDate->copy()->addDay(),
                     );
 
-                if (! $breakStartAllowedDate) {
+                if (!$breakStartAllowedDate) {
                     $validator->errors()->add(
                         "breaks.{$index}.start_at",
                         'Break start date must be the attendance date or the next day.',
                     );
                 }
 
-                if (! $breakEndAllowedDate) {
+                if (!$breakEndAllowedDate) {
                     $validator->errors()->add(
                         "breaks.{$index}.end_at",
                         'Break end date must be the attendance date or the next day.',
@@ -348,7 +349,7 @@ class AttendanceRequest extends FormRequest
 
             usort(
                 $parsedBreaks,
-                fn (array $a, array $b): int => $a['start_at']->getTimestamp()
+                fn(array $a, array $b): int => $a['start_at']->getTimestamp()
                     <=> $b['start_at']->getTimestamp(),
             );
 

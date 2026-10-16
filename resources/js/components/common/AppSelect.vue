@@ -1,23 +1,12 @@
-<script setup lang="ts">
-import { computed, useAttrs } from 'vue';
-import { Check, ChevronsUpDown, X } from '@lucide/vue';
+<script lang="ts" setup>
+import {computed, useAttrs} from 'vue';
+import {Check, ChevronsUpDown, X} from '@lucide/vue';
 
-import { Button } from '@/components/ui/button';
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from '@/components/ui/command';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover';
+import {Button} from '@/components/ui/button';
+import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,} from '@/components/ui/command';
+import {Popover, PopoverContent, PopoverTrigger,} from '@/components/ui/popover';
 
-import type { SelectOption as CommonSelectOption } from '@/types/common';
+import type {SelectOption as CommonSelectOption} from '@/types/common';
 
 defineOptions({
     inheritAttrs: false,
@@ -34,8 +23,8 @@ type Primitive = string | number;
 type Option =
     | Primitive
     | (CommonSelectOption<Primitive> & {
-          [key: string]: unknown;
-      });
+    [key: string]: unknown;
+});
 
 type ModelValue = Primitive | Primitive[] | null;
 
@@ -250,14 +239,14 @@ const clearSelection = () => {
     -->
         <select
             v-if="required"
-            :name="inputName"
-            :required="required"
             :disabled="disabled || loading"
             :multiple="multiple"
+            :name="inputName"
+            :required="required"
             :value="nativeSelectValue"
-            tabindex="-1"
             aria-hidden="true"
             class="sr-only"
+            tabindex="-1"
         >
             <option v-if="!multiple" value="">
                 {{ placeholder }}
@@ -275,25 +264,25 @@ const clearSelection = () => {
         <Popover v-model:open="open">
             <PopoverTrigger as-child>
                 <Button
-                    type="button"
-                    variant="outline"
-                    role="combobox"
                     :aria-expanded="open"
                     :aria-invalid="!!error"
                     :aria-required="required"
-                    :disabled="disabled || loading"
-                    class="h-9 w-full min-w-0 justify-between font-normal"
                     :class="
                         error &&
                         'border-destructive focus-visible:ring-destructive'
                     "
-                    v-bind="attrs"
+                    :disabled="disabled || loading"
                     :name="undefined"
+                    class="h-9 w-full min-w-0 justify-between font-normal"
+                    role="combobox"
+                    type="button"
+                    v-bind="attrs"
+                    variant="outline"
                 >
                     <!-- Selected Value -->
                     <span
-                        class="min-w-0 flex-1 truncate text-left"
                         :class="[!hasSelection && 'text-muted-foreground']"
+                        class="min-w-0 flex-1 truncate text-left"
                     >
                         <!-- Loading -->
                         <template v-if="loading"> Loading... </template>
@@ -325,21 +314,21 @@ const clearSelection = () => {
                         <!-- Clear -->
                         <span
                             v-if="clearable && hasSelection && !loading"
-                            role="button"
-                            tabindex="0"
                             aria-label="Clear selection"
                             class="flex size-7 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                            role="button"
+                            tabindex="0"
                             @click.stop="clearSelection"
                             @keydown.enter.stop="clearSelection"
                             @keydown.space.prevent.stop="clearSelection"
                         >
-                            <X class="size-3.5" aria-hidden="true" />
+                            <X aria-hidden="true" class="size-3.5"/>
                         </span>
 
                         <!-- Dropdown Indicator -->
                         <ChevronsUpDown
-                            class="size-4 shrink-0 text-muted-foreground opacity-70"
                             aria-hidden="true"
+                            class="size-4 shrink-0 text-muted-foreground opacity-70"
                         />
                     </span>
                 </Button>

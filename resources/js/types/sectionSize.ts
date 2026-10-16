@@ -1,4 +1,4 @@
-﻿import type { PaginatedResponse, SortDirection } from '@/types/listing';
+﻿import type {PaginatedResponse, SortDirection} from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------

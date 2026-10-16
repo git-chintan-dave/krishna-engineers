@@ -30,7 +30,7 @@ class BandsawWorkLogRequest extends FormRequest
                     UserRole::BANDSAW->value,
                 ),
                 Rule::requiredIf(
-                    fn () => $this->user()->role !== UserRole::BANDSAW,
+                    fn() => $this->user()->role !== UserRole::BANDSAW,
                 ),
             ],
 

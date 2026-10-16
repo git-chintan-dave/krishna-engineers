@@ -29,7 +29,7 @@ class OperatorWorkLogRequest extends FormRequest
                     UserRole::OPERATOR->value,
                 ),
                 Rule::requiredIf(
-                    fn () => $this->user()->role !== UserRole::OPERATOR
+                    fn() => $this->user()->role !== UserRole::OPERATOR
                 ),
             ],
 

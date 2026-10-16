@@ -1,24 +1,19 @@
-﻿<script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+﻿<script lang="ts" setup>
+import {router} from '@inertiajs/vue3';
+import {ref} from 'vue';
 
 import ListingActions from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { partPage } from '@/config/parts';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as partsRoute,
-} from '@/routes/parts';
-import { createPartColumns } from '@/table/parts';
-import type { Part, PartFilters, PartSort, PartsResponse } from '@/types/part';
-import type { StatusFilter } from '@/types/listing';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {partPage} from '@/config/parts';
+import {bulkDestroy, create, destroy, index as partsRoute,} from '@/routes/parts';
+import {createPartColumns} from '@/table/parts';
+import type {Part, PartFilters, PartSort, PartsResponse} from '@/types/part';
+import type {StatusFilter} from '@/types/listing';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 
 /*
@@ -122,14 +117,14 @@ const handleDeleteSelected = () => {
 </script>
 
 <template>
-    <ListingLayout :title="partPage.title" :description="partPage.description">
+    <ListingLayout :description="partPage.description" :title="partPage.title">
         <!-- Actions -->
         <template #actions>
             <ListingActions
-                :create-url="create()"
                 :create-label="partPage.createLabel"
-                :selected-count="selectedCount"
+                :create-url="create()"
                 :resource-label="partPage.resourceLabel"
+                :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
             />
         </template>
@@ -138,16 +133,16 @@ const handleDeleteSelected = () => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
-                :search-placeholder="partPage.searchPlaceholder"
-                :search-button-label="partPage.searchButtonLabel"
                 :clear-button-label="partPage.clearButtonLabel"
                 :clear-disabled="
                     !searchQuery.trim() &&
                     filterSectionId === 'all' &&
                     filterStatus === 'all'
                 "
-                @search="search"
+                :search-button-label="partPage.searchButtonLabel"
+                :search-placeholder="partPage.searchPlaceholder"
                 @clear="handleClearFilters"
+                @search="search"
             >
                 <template #filters>
                     <div class="w-full shrink-0 sm:w-48">
@@ -167,8 +162,8 @@ const handleDeleteSelected = () => {
                             :model-value="
                                 filterStatus === 'all' ? null : filterStatus
                             "
-                            placeholder="All statuses"
                             clearable
+                            placeholder="All statuses"
                             @update:model-value="handleStatusChange"
                         />
                     </div>
@@ -179,15 +174,15 @@ const handleDeleteSelected = () => {
         <!-- Table -->
         <template #table>
             <DataTable
-                :table="table"
                 :columns-count="columns.length"
-                :total="parts.meta.total"
-                :page-index="parts.meta.current_page - 1"
-                :page-size="parts.meta.per_page"
-                :selected-count="selectedCount"
-                :page-size-options="[10, 25, 50, 100]"
                 :empty-text="partPage.emptyText"
                 :item-label="partPage.itemLabel"
+                :page-index="parts.meta.current_page - 1"
+                :page-size="parts.meta.per_page"
+                :page-size-options="[10, 25, 50, 100]"
+                :selected-count="selectedCount"
+                :table="table"
+                :total="parts.meta.total"
             />
         </template>
     </ListingLayout>

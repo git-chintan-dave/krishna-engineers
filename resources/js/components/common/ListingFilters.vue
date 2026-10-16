@@ -1,8 +1,8 @@
-<script setup lang="ts">
-import { computed } from 'vue';
+<script lang="ts" setup>
+import {computed} from 'vue';
 
 import AppSearch from '@/components/common/AppSearch.vue';
-import { Button } from '@/components/ui/button';
+import {Button} from '@/components/ui/button';
 
 /*
 |--------------------------------------------------------------------------
@@ -86,8 +86,8 @@ const isClearDisabled = computed(
         <div v-if="searchable" class="w-full min-w-0 sm:min-w-56 sm:flex-1">
             <AppSearch
                 v-model="searchValue"
-                :placeholder="searchPlaceholder"
                 :disabled="searchDisabled"
+                :placeholder="searchPlaceholder"
                 @search="emit('search')"
             />
         </div>
@@ -102,7 +102,7 @@ const isClearDisabled = computed(
             v-if="$slots.filters"
             class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center"
         >
-            <slot name="filters" />
+            <slot name="filters"/>
         </div>
 
         <!--
@@ -115,21 +115,21 @@ const isClearDisabled = computed(
             class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center"
         >
             <Button
-                type="button"
-                size="sm"
-                class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
                 :disabled="searchDisabled"
+                class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
+                size="sm"
+                type="button"
                 @click="emit('search')"
             >
                 {{ searchButtonLabel }}
             </Button>
 
             <Button
+                :disabled="isClearDisabled"
+                class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
+                size="sm"
                 type="button"
                 variant="outline"
-                size="sm"
-                class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
-                :disabled="isClearDisabled"
                 @click="emit('clear')"
             >
                 {{ clearButtonLabel }}

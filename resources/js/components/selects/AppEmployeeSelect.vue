@@ -1,8 +1,8 @@
-<script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+<script lang="ts" setup>
+import {onMounted, ref, watch} from 'vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import type { SelectOption } from '@/types/common';
+import type {SelectOption} from '@/types/common';
 
 /*
 |--------------------------------------------------------------------------
@@ -97,8 +97,8 @@ const fetchEmployees = async () => {
         options.value = Array.isArray(data)
             ? data
             : Array.isArray(data.data)
-              ? data.data
-              : [];
+                ? data.data
+                : [];
     } catch (error) {
         console.error('Failed to load employees:', error);
 
@@ -134,13 +134,13 @@ watch(() => props.role, fetchEmployees);
 
 <template>
     <AppSelect
+        :clearable="clearable"
+        :disabled="disabled || loading"
+        :error="error"
         :model-value="modelValue"
         :options="options"
         :placeholder="placeholder"
         :searchable="searchable"
-        :clearable="clearable"
-        :disabled="disabled || loading"
-        :error="error"
         @update:model-value="handleUpdate"
     />
 </template>

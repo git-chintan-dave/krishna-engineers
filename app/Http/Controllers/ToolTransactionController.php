@@ -29,7 +29,9 @@ class ToolTransactionController extends Controller
 
     public function __construct(
         private readonly ToolTransactionService $toolTransactionService,
-    ) {}
+    )
+    {
+    }
 
     public function index(IndexToolTransactionRequest $request): Response
     {
@@ -51,7 +53,7 @@ class ToolTransactionController extends Controller
                 $query
                     ->whereHas(
                         'tool',
-                        fn ($query) => $query->where('name', 'like', "%{$search}%"),
+                        fn($query) => $query->where('name', 'like', "%{$search}%"),
                     )
                     ->orWhereHas('fromUser', function ($query) use ($search) {
                         $query->where('name', 'like', "%{$search}%")
@@ -72,35 +74,35 @@ class ToolTransactionController extends Controller
         $query
             ->when(
                 $validated['tool_id'] ?? null,
-                fn ($query, $id) => $query->where('tool_id', $id),
+                fn($query, $id) => $query->where('tool_id', $id),
             )
             ->when(
                 $validated['type'] ?? null,
-                fn ($query, $type) => $query->where('type', $type),
+                fn($query, $type) => $query->where('type', $type),
             )
             ->when(
                 $validated['from_user_id'] ?? null,
-                fn ($query, $id) => $query->where('from_user_id', $id),
+                fn($query, $id) => $query->where('from_user_id', $id),
             )
             ->when(
                 $validated['to_user_id'] ?? null,
-                fn ($query, $id) => $query->where('to_user_id', $id),
+                fn($query, $id) => $query->where('to_user_id', $id),
             )
             ->when(
                 $validated['part_id'] ?? null,
-                fn ($query, $id) => $query->where('part_id', $id),
+                fn($query, $id) => $query->where('part_id', $id),
             )
             ->when(
                 $validated['setup_id'] ?? null,
-                fn ($query, $id) => $query->where('setup_id', $id),
+                fn($query, $id) => $query->where('setup_id', $id),
             )
             ->when(
                 $validated['from_date'] ?? null,
-                fn ($query, $date) => $query->whereDate('created_at', '>=', $date),
+                fn($query, $date) => $query->whereDate('created_at', '>=', $date),
             )
             ->when(
                 $validated['to_date'] ?? null,
-                fn ($query, $date) => $query->whereDate('created_at', '<=', $date),
+                fn($query, $date) => $query->whereDate('created_at', '<=', $date),
             );
 
         $transactions = $query
@@ -146,7 +148,7 @@ class ToolTransactionController extends Controller
         $data = $request->validated();
         $tool = Tool::query()->findOrFail($data['tool_id']);
         $type = ToolTransactionType::from($data['type']);
-        $quantity = (int) $data['quantity'];
+        $quantity = (int)$data['quantity'];
 
         match ($type) {
             ToolTransactionType::OPENING => $this->toolTransactionService->opening(
@@ -208,8 +210,9 @@ class ToolTransactionController extends Controller
 
     public function update(
         ToolTransactionRequest $request,
-        ToolTransaction $toolTransaction,
-    ): RedirectResponse {
+        ToolTransaction        $toolTransaction,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $toolTransaction);
 
         /** @var User $user */

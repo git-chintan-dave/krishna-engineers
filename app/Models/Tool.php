@@ -31,6 +31,26 @@ class Tool extends Model
     }
 
     // Casts
+
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(ToolTransaction::class);
+    }
+
+    // Relationships
+
+    public function isActive(): bool
+    {
+        return $this->status === Status::ACTIVE;
+    }
+
+    // Helpers
+
+    public function isInactive(): bool
+    {
+        return $this->status === Status::INACTIVE;
+    }
+
     protected function casts(): array
     {
         return [
@@ -38,22 +58,5 @@ class Tool extends Model
             'status' => Status::class,
             'quantity' => 'integer',
         ];
-    }
-
-    // Relationships
-    public function transactions(): HasMany
-    {
-        return $this->hasMany(ToolTransaction::class);
-    }
-
-    // Helpers
-    public function isActive(): bool
-    {
-        return $this->status === Status::ACTIVE;
-    }
-
-    public function isInactive(): bool
-    {
-        return $this->status === Status::INACTIVE;
     }
 }

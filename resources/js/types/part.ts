@@ -1,10 +1,5 @@
-﻿import type {
-    PaginatedResponse,
-    SortDirection,
-    Status,
-    StatusFilter,
-} from '@/types/listing';
-import { Section } from '@/types/section';
+﻿import type {PaginatedResponse, SortDirection, Status, StatusFilter,} from '@/types/listing';
+import {Section} from '@/types/section';
 
 export type Part = {
     id: number;

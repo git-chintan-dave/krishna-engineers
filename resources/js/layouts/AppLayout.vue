@@ -1,16 +1,16 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import AppLayout from '@/layouts/app/AppHeaderLayout.vue';
-import type { BreadcrumbItem } from '@/types';
+import type {BreadcrumbItem} from '@/types';
 import GlobalConfirmDialog from '@/components/GlobalConfirmDialog.vue';
 
-const { breadcrumbs = [] } = defineProps<{
+const {breadcrumbs = []} = defineProps<{
     breadcrumbs?: BreadcrumbItem[];
 }>();
 </script>
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <slot />
-        <GlobalConfirmDialog />
+        <slot/>
+        <GlobalConfirmDialog/>
     </AppLayout>
 </template>

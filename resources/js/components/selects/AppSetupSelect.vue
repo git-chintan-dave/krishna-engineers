@@ -1,8 +1,8 @@
-<script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+<script lang="ts" setup>
+import {onMounted, ref, watch} from 'vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import type { SelectOption } from '@/types/common';
+import type {SelectOption} from '@/types/common';
 
 /*
 |--------------------------------------------------------------------------
@@ -81,8 +81,8 @@ const fetchSetups = async (): Promise<void> => {
         options.value = Array.isArray(data)
             ? data
             : Array.isArray(data.data)
-              ? data.data
-              : [];
+                ? data.data
+                : [];
     } catch (error) {
         console.error('Failed to load setups:', error);
 
@@ -138,14 +138,14 @@ watch(
 
 <template>
     <AppSelect
+        :clearable="clearable"
+        :disabled="disabled || loading || !partId"
+        :error="error"
+        :loading="loading"
         :model-value="modelValue"
         :options="options"
         :placeholder="placeholder"
         :searchable="searchable"
-        :clearable="clearable"
-        :disabled="disabled || loading || !partId"
-        :loading="loading"
-        :error="error"
         @update:model-value="handleUpdate"
     />
 </template>

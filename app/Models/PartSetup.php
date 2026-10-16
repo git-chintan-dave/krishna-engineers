@@ -30,58 +30,39 @@ class PartSetup extends Model
     }
 
     // Casts
-    protected function casts(): array
-    {
-        return [
-            'machine_cycle_time_seconds' => 'integer',
-            'actual_cycle_time_seconds' => 'integer',
-        ];
-    }
 
-    // Relationships
     public function part(): BelongsTo
     {
         return $this->belongsTo(Part::class);
     }
+
+    // Relationships
 
     public function setup(): BelongsTo
     {
         return $this->belongsTo(Setup::class);
     }
 
-    // Helpers
     public function hasImage(): bool
     {
         return filled($this->image);
     }
+
+    // Helpers
 
     public function hasActualCycleTime(): bool
     {
         return $this->actual_cycle_time_seconds > 0;
     }
 
-    protected function machineCycleTime(): Attribute
+    public function cycleTimeDifference(): string
     {
-        return Attribute::get(
-            fn () => gmdate('H:i:s', $this->machine_cycle_time_seconds)
-        );
-    }
-
-    protected function actualCycleTime(): Attribute
-    {
-        return Attribute::get(
-            fn () => gmdate('H:i:s', $this->actual_cycle_time_seconds)
-        );
+        return gmdate('H:i:s', abs($this->cycleTimeDifferenceSeconds()));
     }
 
     public function cycleTimeDifferenceSeconds(): int
     {
         return $this->actual_cycle_time_seconds - $this->machine_cycle_time_seconds;
-    }
-
-    public function cycleTimeDifference(): string
-    {
-        return gmdate('H:i:s', abs($this->cycleTimeDifferenceSeconds()));
     }
 
     public function isFasterThanMachineCycle(): bool
@@ -93,5 +74,27 @@ class PartSetup extends Model
     public function isSlowerThanMachineCycle(): bool
     {
         return $this->actual_cycle_time_seconds > $this->machine_cycle_time_seconds;
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'machine_cycle_time_seconds' => 'integer',
+            'actual_cycle_time_seconds' => 'integer',
+        ];
+    }
+
+    protected function machineCycleTime(): Attribute
+    {
+        return Attribute::get(
+            fn() => gmdate('H:i:s', $this->machine_cycle_time_seconds)
+        );
+    }
+
+    protected function actualCycleTime(): Attribute
+    {
+        return Attribute::get(
+            fn() => gmdate('H:i:s', $this->actual_cycle_time_seconds)
+        );
     }
 }

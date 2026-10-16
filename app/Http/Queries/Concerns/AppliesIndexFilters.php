@@ -8,10 +8,11 @@ trait AppliesIndexFilters
 {
     protected function applyIndexFilters(
         Builder $query,
-        array $filters,
-        array $searchColumns = [],
-        array $sortColumns = [],
-    ): Builder {
+        array   $filters,
+        array   $searchColumns = [],
+        array   $sortColumns = [],
+    ): Builder
+    {
         $search = $filters['search'] ?? null;
 
         if ($search && $searchColumns) {
@@ -33,7 +34,7 @@ trait AppliesIndexFilters
             });
         }
 
-        if (! empty($filters['sort'])) {
+        if (!empty($filters['sort'])) {
             $sort = $sortColumns[$filters['sort']]
                 ?? $filters['sort'];
 

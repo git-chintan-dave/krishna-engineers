@@ -1,4 +1,4 @@
-import { statusOptions } from '@/config/status';
+import {statusOptions} from '@/config/status';
 
 /*
 |--------------------------------------------------------------------------

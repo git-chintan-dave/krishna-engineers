@@ -1,5 +1,5 @@
-<script setup lang="ts">
-import { Search } from '@lucide/vue';
+<script lang="ts" setup>
+import {Search} from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 
@@ -47,17 +47,17 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 <template>
     <AppInput
-        v-model="model"
-        type="search"
-        :placeholder="placeholder"
-        :disabled="disabled"
-        :readonly="readonly"
-        :autofocus="autofocus"
-        :autocomplete="autocomplete"
-        :name="name"
         :id="id"
+        v-model="model"
+        :autocomplete="autocomplete"
+        :autofocus="autofocus"
+        :disabled="disabled"
         :icon="Search"
+        :name="name"
+        :placeholder="placeholder"
+        :readonly="readonly"
         aria-label="Search"
+        type="search"
         @keydown="handleKeydown"
     />
 </template>

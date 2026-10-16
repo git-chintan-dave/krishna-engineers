@@ -1,7 +1,7 @@
-<script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import type { AppVariant } from '@/types';
+<script lang="ts" setup>
+import {usePage} from '@inertiajs/vue3';
+import {SidebarProvider} from '@/components/ui/sidebar';
+import type {AppVariant} from '@/types';
 
 type Props = {
     variant?: AppVariant;
@@ -16,9 +16,9 @@ const isOpen = usePage().props.sidebarOpen;
 
 <template>
     <div v-if="variant === 'header'" class="flex min-h-screen w-full flex-col">
-        <slot />
+        <slot/>
     </div>
     <SidebarProvider v-else :default-open="isOpen">
-        <slot />
+        <slot/>
     </SidebarProvider>
 </template>

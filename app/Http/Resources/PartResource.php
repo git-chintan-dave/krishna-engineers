@@ -29,7 +29,7 @@ class PartResource extends JsonResource
             'raw_material_weight' => $this->raw_material_weight,
             'image' => $this->image
                 ? Storage::disk('public')->url(
-                    'parts/'.$this->image,
+                    'parts/' . $this->image,
                 )
                 : null,
             'status' => $this->status->value,

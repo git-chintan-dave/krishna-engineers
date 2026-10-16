@@ -1,12 +1,12 @@
-﻿<script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+﻿<script lang="ts" setup>
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { partPage } from '@/config/parts';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {partPage} from '@/config/parts';
 import PartForm from '@/pages/Parts/components/PartForm.vue';
-import { index as parts, update } from '@/routes/parts';
-import type { Part, PartFormData } from '@/types/part';
+import {index as parts, update} from '@/routes/parts';
+import type {Part, PartFormData} from '@/types/part';
 
 const props = defineProps<{
     part: Part;
@@ -48,17 +48,17 @@ const handleCancel = () => {
 
 <template>
     <FormLayout
-        :title="partPage.form.editTitle"
         :description="partPage.form.editDescription"
+        :title="partPage.form.editTitle"
     >
         <PartForm
-            :form="form"
+            :current-image="props.part.image"
             :errors="form.errors"
+            :form="form"
             :processing="form.processing"
             :submit-label="partPage.form.editSubmitLabel"
-            :current-image="props.part.image"
-            @submit="handleSubmit"
             @cancel="handleCancel"
+            @submit="handleSubmit"
         />
     </FormLayout>
 </template>

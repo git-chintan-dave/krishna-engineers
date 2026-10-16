@@ -21,11 +21,11 @@ class ToolTransactionResource extends JsonResource
                 'id' => $this->tool_id,
                 'name' => $this->whenLoaded(
                     'tool',
-                    fn () => $this->tool?->name,
+                    fn() => $this->tool?->name,
                 ),
                 'type' => $this->whenLoaded(
                     'tool',
-                    fn () => $this->tool?->type?->value,
+                    fn() => $this->tool?->type?->value,
                 ),
             ],
 
@@ -40,11 +40,11 @@ class ToolTransactionResource extends JsonResource
                 'id' => $this->from_user_id,
                 'name' => $this->whenLoaded(
                     'fromUser',
-                    fn () => $this->fromUser?->name,
+                    fn() => $this->fromUser?->name,
                 ),
                 'employee_code' => $this->whenLoaded(
                     'fromUser',
-                    fn () => $this->fromUser?->employee_code,
+                    fn() => $this->fromUser?->employee_code,
                 ),
             ],
 
@@ -52,11 +52,11 @@ class ToolTransactionResource extends JsonResource
                 'id' => $this->to_user_id,
                 'name' => $this->whenLoaded(
                     'toUser',
-                    fn () => $this->toUser?->name,
+                    fn() => $this->toUser?->name,
                 ),
                 'employee_code' => $this->whenLoaded(
                     'toUser',
-                    fn () => $this->toUser?->employee_code,
+                    fn() => $this->toUser?->employee_code,
                 ),
             ],
 
@@ -64,11 +64,11 @@ class ToolTransactionResource extends JsonResource
                 'id' => $this->part_id,
                 'name' => $this->whenLoaded(
                     'part',
-                    fn () => $this->part?->name,
+                    fn() => $this->part?->name,
                 ),
                 'new_part_name' => $this->whenLoaded(
                     'part',
-                    fn () => $this->part?->new_part_name,
+                    fn() => $this->part?->new_part_name,
                 ),
             ],
 
@@ -76,7 +76,7 @@ class ToolTransactionResource extends JsonResource
                 'id' => $this->setup_id,
                 'name' => $this->whenLoaded(
                     'setup',
-                    fn () => $this->setup?->name,
+                    fn() => $this->setup?->name,
                 ),
             ],
 
@@ -86,11 +86,11 @@ class ToolTransactionResource extends JsonResource
                 'id' => $this->created_by_user_id,
                 'name' => $this->whenLoaded(
                     'createdBy',
-                    fn () => $this->createdBy?->name,
+                    fn() => $this->createdBy?->name,
                 ),
                 'employee_code' => $this->whenLoaded(
                     'createdBy',
-                    fn () => $this->createdBy?->employee_code,
+                    fn() => $this->createdBy?->employee_code,
                 ),
             ],
 

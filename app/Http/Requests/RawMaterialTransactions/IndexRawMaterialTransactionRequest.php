@@ -14,16 +14,6 @@ class IndexRawMaterialTransactionRequest extends FormRequest
         return true;
     }
 
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'search' => $this->input('search', ''),
-            'sort' => $this->input('sort', 'created_at'),
-            'direction' => $this->input('direction', 'desc'),
-            'per_page' => $this->input('per_page', 10),
-        ]);
-    }
-
     public function rules(): array
     {
         return [
@@ -76,5 +66,15 @@ class IndexRawMaterialTransactionRequest extends FormRequest
                 Rule::in([10, 25, 50, 100]),
             ],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'search' => $this->input('search', ''),
+            'sort' => $this->input('sort', 'created_at'),
+            'direction' => $this->input('direction', 'desc'),
+            'per_page' => $this->input('per_page', 10),
+        ]);
     }
 }

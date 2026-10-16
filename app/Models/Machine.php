@@ -28,32 +28,35 @@ class Machine extends Model
     }
 
     // Casts
-    protected function casts(): array
-    {
-        return [
-            'status' => Status::class,
-        ];
-    }
 
-    // Scopes
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', Status::ACTIVE);
     }
+
+    // Scopes
 
     public function scopeInactive(Builder $query): Builder
     {
         return $query->where('status', Status::INACTIVE);
     }
 
-    // Helpers
     public function isActive(): bool
     {
         return $this->status === Status::ACTIVE;
     }
 
+    // Helpers
+
     public function isInactive(): bool
     {
         return $this->status === Status::INACTIVE;
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'status' => Status::class,
+        ];
     }
 }

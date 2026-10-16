@@ -27,32 +27,35 @@ class Section extends Model
     }
 
     // Casts
-    protected function casts(): array
-    {
-        return [
-            'status' => Status::class,
-        ];
-    }
 
-    // Relationships
     public function sectionSizes(): HasMany
     {
         return $this->hasMany(SectionSize::class);
     }
+
+    // Relationships
 
     public function parts(): HasMany
     {
         return $this->hasMany(Part::class);
     }
 
-    // Status Helpers
     public function isActive(): bool
     {
         return $this->status === Status::ACTIVE;
     }
 
+    // Status Helpers
+
     public function isInactive(): bool
     {
         return $this->status === Status::INACTIVE;
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'status' => Status::class,
+        ];
     }
 }

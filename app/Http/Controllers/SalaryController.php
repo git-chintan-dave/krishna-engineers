@@ -20,6 +20,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use RuntimeException;
+use Throwable;
 
 class SalaryController extends Controller
 {
@@ -31,7 +33,9 @@ class SalaryController extends Controller
 
     public function __construct(
         private readonly SalaryService $salaryService,
-    ) {}
+    )
+    {
+    }
 
     public function index(IndexSalaryRequest $request): Response
     {
@@ -47,21 +51,21 @@ class SalaryController extends Controller
         )
             ->when(
                 $filters['user_id'] ?? null,
-                fn (Builder $query, int $userId): Builder => $query->where(
+                fn(Builder $query, int $userId): Builder => $query->where(
                     'user_id',
                     $userId,
                 ),
             )
             ->when(
                 $filters['status'] ?? null,
-                fn (Builder $query, string $status): Builder => $query->where(
+                fn(Builder $query, string $status): Builder => $query->where(
                     'status',
                     $status,
                 ),
             )
             ->when(
                 $filters['start_date'] ?? null,
-                fn (Builder $query, string $date): Builder => $query->whereDate(
+                fn(Builder $query, string $date): Builder => $query->whereDate(
                     'salary_period_start',
                     '>=',
                     $date,
@@ -69,7 +73,7 @@ class SalaryController extends Controller
             )
             ->when(
                 $filters['end_date'] ?? null,
-                fn (Builder $query, string $date): Builder => $query->whereDate(
+                fn(Builder $query, string $date): Builder => $query->whereDate(
                     'salary_period_end',
                     '<=',
                     $date,
@@ -82,7 +86,7 @@ class SalaryController extends Controller
         $periodStart = $now->clone()->startOfMonth()->toDateString();
         $periodEnd = $now->clone()->endOfMonth()->toDateString();
 
-        $canGenerateLastMonth = ! Salary::query()
+        $canGenerateLastMonth = !Salary::query()
             ->whereDate('salary_period_start', $periodStart)
             ->whereDate('salary_period_end', $periodEnd)
             ->exists();
@@ -121,9 +125,9 @@ class SalaryController extends Controller
             user: $user,
             periodStart: Carbon::parse($data['salary_period_start']),
             periodEnd: Carbon::parse($data['salary_period_end']),
-            upad: (float) $data['upad'],
-            paidLoan: (float) $data['paid_loan'],
-            adjustment: (float) $data['adjustment'],
+            upad: (float)$data['upad'],
+            paidLoan: (float)$data['paid_loan'],
+            adjustment: (float)$data['adjustment'],
             adjustmentReason: $data['adjustment_reason'] ?? null,
         );
 
@@ -158,17 +162,18 @@ class SalaryController extends Controller
 
     public function update(
         SalaryRequest $request,
-        Salary $salary,
-    ): RedirectResponse {
+        Salary        $salary,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $salary);
 
         $data = $request->validated();
 
         $this->salaryService->recalculate(
             salary: $salary,
-            upad: (float) $data['upad'],
-            paidLoan: (float) $data['paid_loan'],
-            adjustment: (float) $data['adjustment'],
+            upad: (float)$data['upad'],
+            paidLoan: (float)$data['paid_loan'],
+            adjustment: (float)$data['adjustment'],
             adjustmentReason: $data['adjustment_reason'] ?? null,
         );
 
@@ -195,7 +200,8 @@ class SalaryController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('deleteAny', Salary::class);
 
         $ids = $request->input('ids', []);
@@ -210,7 +216,8 @@ class SalaryController extends Controller
 
     public function preview(
         SalaryPreviewRequest $request,
-    ): JsonResponse {
+    ): JsonResponse
+    {
         Gate::authorize('create', Salary::class);
 
         $data = $request->validated();
@@ -234,7 +241,8 @@ class SalaryController extends Controller
 
     public function generateLastMonth(
         SalaryService $salaryService,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         try {
             $result = $salaryService->generateForAllEmployees();
 
@@ -246,12 +254,12 @@ class SalaryController extends Controller
                     $result['skipped'],
                 ),
             );
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             return $this->errorResponse(
                 'generated',
                 $e->getMessage(),
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             report($e);
 
             return $this->errorResponse('generated');

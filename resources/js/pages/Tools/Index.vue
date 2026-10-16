@@ -1,6 +1,6 @@
-﻿<script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+﻿<script lang="ts" setup>
+import {router} from '@inertiajs/vue3';
+import {ref} from 'vue';
 
 import ListingActions from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
@@ -8,18 +8,13 @@ import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import AppToolTypeSelect from '@/components/selects/AppToolTypeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { toolPage } from '@/config/tools';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as toolsRoute,
-} from '@/routes/tools';
-import { createToolColumns } from '@/table/tools';
-import type { Tool, ToolFilters, ToolSort, ToolsResponse } from '@/types/tool';
-import type { StatusFilter } from '@/types/listing';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {toolPage} from '@/config/tools';
+import {bulkDestroy, create, destroy, index as toolsRoute,} from '@/routes/tools';
+import {createToolColumns} from '@/table/tools';
+import type {Tool, ToolFilters, ToolSort, ToolsResponse} from '@/types/tool';
+import type {StatusFilter} from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------
@@ -120,14 +115,14 @@ const handleDeleteSelected = () => {
 </script>
 
 <template>
-    <ListingLayout :title="toolPage.title" :description="toolPage.description">
+    <ListingLayout :description="toolPage.description" :title="toolPage.title">
         <!-- Actions -->
         <template #actions>
             <ListingActions
-                :create-url="create()"
                 :create-label="toolPage.createLabel"
-                :selected-count="selectedCount"
+                :create-url="create()"
                 :resource-label="toolPage.resourceLabel"
+                :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
             />
         </template>
@@ -136,16 +131,16 @@ const handleDeleteSelected = () => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
-                :search-placeholder="toolPage.searchPlaceholder"
-                :search-button-label="toolPage.searchButtonLabel"
                 :clear-button-label="toolPage.clearButtonLabel"
                 :clear-disabled="
                     !searchQuery.trim() &&
                     filterType === 'all' &&
                     filterStatus === 'all'
                 "
-                @search="search"
+                :search-button-label="toolPage.searchButtonLabel"
+                :search-placeholder="toolPage.searchPlaceholder"
                 @clear="handleClearFilters"
+                @search="search"
             >
                 <template #filters>
                     <!-- Tool Type -->
@@ -154,8 +149,8 @@ const handleDeleteSelected = () => {
                             :model-value="
                                 filterType === 'all' ? null : filterType
                             "
-                            placeholder="All types"
                             clearable
+                            placeholder="All types"
                             @update:model-value="handleTypeChange"
                         />
                     </div>
@@ -166,8 +161,8 @@ const handleDeleteSelected = () => {
                             :model-value="
                                 filterStatus === 'all' ? null : filterStatus
                             "
-                            placeholder="All statuses"
                             clearable
+                            placeholder="All statuses"
                             @update:model-value="handleStatusChange"
                         />
                     </div>
@@ -178,15 +173,15 @@ const handleDeleteSelected = () => {
         <!-- Table -->
         <template #table>
             <DataTable
-                :table="table"
                 :columns-count="columns.length"
-                :total="tools.meta.total"
-                :page-index="tools.meta.current_page - 1"
-                :page-size="tools.meta.per_page"
-                :selected-count="selectedCount"
-                :page-size-options="[10, 25, 50, 100]"
                 :empty-text="toolPage.emptyText"
                 :item-label="toolPage.itemLabel"
+                :page-index="tools.meta.current_page - 1"
+                :page-size="tools.meta.per_page"
+                :page-size-options="[10, 25, 50, 100]"
+                :selected-count="selectedCount"
+                :table="table"
+                :total="tools.meta.total"
             />
         </template>
     </ListingLayout>

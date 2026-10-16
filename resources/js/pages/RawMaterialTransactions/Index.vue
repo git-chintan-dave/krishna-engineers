@@ -1,6 +1,6 @@
-﻿<script setup lang="ts">
-import { router, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+﻿<script lang="ts" setup>
+import {router, usePage} from '@inertiajs/vue3';
+import {computed, ref} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import ListingActions from '@/components/common/ListingActions.vue';
@@ -10,16 +10,11 @@ import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppSectionSizeSelect from '@/components/selects/AppSectionSizeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { rawMaterialTransactionPage } from '@/config/rawMaterialTransactions';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as rawMaterialTransactionsRoute,
-} from '@/routes/raw-material-transactions';
-import { createRawMaterialTransactionColumns } from '@/table/rawMaterialTransactions';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {rawMaterialTransactionPage} from '@/config/rawMaterialTransactions';
+import {bulkDestroy, create, destroy, index as rawMaterialTransactionsRoute,} from '@/routes/raw-material-transactions';
+import {createRawMaterialTransactionColumns} from '@/table/rawMaterialTransactions';
 import type {
     RawMaterialTransaction,
     RawMaterialTransactionFilters,
@@ -173,29 +168,22 @@ const handleDeleteSelected = () => {
 
 <template>
     <ListingLayout
-        :title="rawMaterialTransactionPage.title"
         :description="rawMaterialTransactionPage.description"
+        :title="rawMaterialTransactionPage.title"
     >
         <template #actions>
             <ListingActions
-                :create-url="canManage ? create().url : undefined"
                 :create-label="rawMaterialTransactionPage.createLabel"
-                :selected-count="canManage ? selectedCount : 0"
+                :create-url="canManage ? create().url : undefined"
                 :resource-label="rawMaterialTransactionPage.resourceLabel"
+                :selected-count="canManage ? selectedCount : 0"
                 @delete-selected="handleDeleteSelected"
             />
         </template>
 
         <template #filters>
             <ListingFilters
-                :searchable="false"
                 v-model:search="searchQuery"
-                :search-placeholder="
-                    rawMaterialTransactionPage.searchPlaceholder
-                "
-                :search-button-label="
-                    rawMaterialTransactionPage.searchButtonLabel
-                "
                 :clear-button-label="
                     rawMaterialTransactionPage.clearButtonLabel
                 "
@@ -208,8 +196,15 @@ const handleDeleteSelected = () => {
                     !filterFromDate &&
                     !filterToDate
                 "
-                @search="search"
+                :search-button-label="
+                    rawMaterialTransactionPage.searchButtonLabel
+                "
+                :search-placeholder="
+                    rawMaterialTransactionPage.searchPlaceholder
+                "
+                :searchable="false"
                 @clear="handleClearFilters"
+                @search="search"
             >
                 <template #filters>
                     <div class="w-full shrink-0 sm:w-48">
@@ -219,9 +214,9 @@ const handleDeleteSelected = () => {
                                     ? null
                                     : filterSectionId
                             "
+                            clearable
                             placeholder="All Sections"
                             searchable
-                            clearable
                             @update:model-value="handleSectionChange"
                         />
                     </div>
@@ -238,9 +233,9 @@ const handleDeleteSelected = () => {
                                     ? null
                                     : filterSectionId
                             "
+                            clearable
                             placeholder="All Section Sizes"
                             searchable
-                            clearable
                             @update:model-value="handleSectionSizeChange"
                         />
                     </div>
@@ -253,8 +248,8 @@ const handleDeleteSelected = () => {
                             :placeholder="
                                 rawMaterialTransactionPage.typePlaceholder
                             "
-                            searchable
                             clearable
+                            searchable
                             @update:model-value="handleTypeChange"
                         />
                     </div>
@@ -262,16 +257,16 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-36">
                         <AppInput
                             v-model="filterFromDate"
-                            type="date"
                             aria-label="From date"
+                            type="date"
                         />
                     </div>
 
                     <div class="w-full shrink-0 sm:w-36">
                         <AppInput
                             v-model="filterToDate"
-                            type="date"
                             aria-label="To date"
+                            type="date"
                         />
                     </div>
                 </template>
@@ -280,15 +275,15 @@ const handleDeleteSelected = () => {
 
         <template #table>
             <DataTable
-                :table="table"
                 :columns-count="columns.length"
-                :total="transactions.meta.total"
-                :page-index="transactions.meta.current_page - 1"
-                :page-size="transactions.meta.per_page"
-                :selected-count="canManage ? selectedCount : 0"
-                :page-size-options="[10, 25, 50, 100]"
                 :empty-text="rawMaterialTransactionPage.emptyText"
                 :item-label="rawMaterialTransactionPage.itemLabel"
+                :page-index="transactions.meta.current_page - 1"
+                :page-size="transactions.meta.per_page"
+                :page-size-options="[10, 25, 50, 100]"
+                :selected-count="canManage ? selectedCount : 0"
+                :table="table"
+                :total="transactions.meta.total"
             />
         </template>
     </ListingLayout>

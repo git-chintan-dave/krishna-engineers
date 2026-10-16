@@ -1,4 +1,4 @@
-import { h } from 'vue';
+import {h} from 'vue';
 
 /*
 |--------------------------------------------------------------------------
@@ -20,11 +20,11 @@ type ImageColumnOptions<TData> = {
 */
 
 export const createImageColumn = <TData>({
-    getImage,
-    getAlt = () => 'Image',
-    title = 'Image',
-    size = 100,
-}: ImageColumnOptions<TData>) => ({
+                                             getImage,
+                                             getAlt = () => 'Image',
+                                             title = 'Image',
+                                             size = 100,
+                                         }: ImageColumnOptions<TData>) => ({
     id: 'image',
 
     /*
@@ -41,7 +41,7 @@ export const createImageColumn = <TData>({
     |--------------------------------------------------------------------------
     */
 
-    cell: ({ row }: any) => {
+    cell: ({row}: any) => {
         const data = row.original as TData;
         const image = getImage(data);
 

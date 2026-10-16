@@ -1,7 +1,7 @@
-<script setup lang="ts">
-import { computed, useId } from 'vue';
+<script lang="ts" setup>
+import {computed, useId} from 'vue';
 
-import { Switch } from '@/components/ui/switch';
+import {Switch} from '@/components/ui/switch';
 
 /*
 |--------------------------------------------------------------------------
@@ -93,8 +93,8 @@ const handleUpdate = (value: boolean | 'indeterminate') => {
 
 <template>
     <section
-        class="w-full min-w-0 rounded-md border border-input bg-background p-4"
         :aria-disabled="disabled"
+        class="w-full min-w-0 rounded-md border border-input bg-background p-4"
     >
         <div class="min-w-0 space-y-4">
             <!--
@@ -144,11 +144,11 @@ const handleUpdate = (value: boolean | 'indeterminate') => {
                 <div class="flex size-10 shrink-0 items-center justify-center">
                     <Switch
                         :id="id"
-                        :model-value="modelValue"
-                        :disabled="disabled"
-                        :aria-label="label"
                         :aria-describedby="describedBy"
                         :aria-invalid="error ? true : undefined"
+                        :aria-label="label"
+                        :disabled="disabled"
+                        :model-value="modelValue"
                         class="cursor-pointer"
                         @update:model-value="handleUpdate"
                     />
@@ -164,8 +164,8 @@ const handleUpdate = (value: boolean | 'indeterminate') => {
             <p
                 v-if="error"
                 :id="errorId"
-                role="alert"
                 class="text-xs leading-4 text-destructive"
+                role="alert"
             >
                 {{ error }}
             </p>

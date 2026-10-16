@@ -31,7 +31,8 @@ class RawMaterialTransactionController extends Controller
 
     public function index(
         IndexRawMaterialTransactionRequest $request,
-    ): Response {
+    ): Response
+    {
         Gate::authorize('viewAny', RawMaterialTransaction::class);
 
         $filters = $request->validated();
@@ -49,17 +50,17 @@ class RawMaterialTransactionController extends Controller
                         $query
                             ->whereHas(
                                 'sectionSize',
-                                fn (Builder $query) => $query
+                                fn(Builder $query) => $query
                                     ->where('size', 'like', "%{$search}%")
                                     ->orWhereHas(
                                         'section',
-                                        fn (Builder $query) => $query
+                                        fn(Builder $query) => $query
                                             ->where('name', 'like', "%{$search}%"),
                                     ),
                             )
                             ->orWhereHas(
                                 'user',
-                                fn (Builder $query) => $query
+                                fn(Builder $query) => $query
                                     ->where('name', 'like', "%{$search}%")
                                     ->orWhere(
                                         'employee_code',
@@ -87,25 +88,25 @@ class RawMaterialTransactionController extends Controller
             )
             ->when(
                 $filters['section_size_id'] ?? null,
-                fn (Builder $query, int $id) => $query->where(
+                fn(Builder $query, int $id) => $query->where(
                     'section_size_id',
                     $id,
                 ),
             )
             ->when(
                 $filters['type'] ?? null,
-                fn (Builder $query, string $type) => $query->where(
+                fn(Builder $query, string $type) => $query->where(
                     'type',
                     $type,
                 ),
             )
             ->when(
                 $filters['user_id'] ?? null,
-                fn (Builder $query, int $id) => $query->where('user_id', $id),
+                fn(Builder $query, int $id) => $query->where('user_id', $id),
             )
             ->when(
                 $filters['from_date'] ?? null,
-                fn (Builder $query, string $date) => $query->whereDate(
+                fn(Builder $query, string $date) => $query->whereDate(
                     'created_at',
                     '>=',
                     $date,
@@ -113,7 +114,7 @@ class RawMaterialTransactionController extends Controller
             )
             ->when(
                 $filters['to_date'] ?? null,
-                fn (Builder $query, string $date) => $query->whereDate(
+                fn(Builder $query, string $date) => $query->whereDate(
                     'created_at',
                     '<=',
                     $date,
@@ -152,23 +153,11 @@ class RawMaterialTransactionController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function create(): Response
-    {
-        Gate::authorize('create', RawMaterialTransaction::class);
-
-        return Inertia::render('RawMaterialTransactions/Create', []);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Store
-    |--------------------------------------------------------------------------
-    */
-
     public function store(
         RawMaterialTransactionRequest $request,
         RawMaterialTransactionService $service,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         $service->create(
             $request->validated(),
             $request->user(),
@@ -179,13 +168,27 @@ class RawMaterialTransactionController extends Controller
 
     /*
     |--------------------------------------------------------------------------
+    | Store
+    |--------------------------------------------------------------------------
+    */
+
+    public function create(): Response
+    {
+        Gate::authorize('create', RawMaterialTransaction::class);
+
+        return Inertia::render('RawMaterialTransactions/Create', []);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | Edit
     |--------------------------------------------------------------------------
     */
 
     public function edit(
         RawMaterialTransaction $rawMaterialTransaction,
-    ): Response {
+    ): Response
+    {
         Gate::authorize('view', $rawMaterialTransaction);
 
         $rawMaterialTransaction->load([
@@ -209,9 +212,10 @@ class RawMaterialTransactionController extends Controller
 
     public function update(
         RawMaterialTransactionRequest $request,
-        RawMaterialTransaction $rawMaterialTransaction,
+        RawMaterialTransaction        $rawMaterialTransaction,
         RawMaterialTransactionService $service,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('update', $rawMaterialTransaction);
 
         $service->update(
@@ -229,9 +233,10 @@ class RawMaterialTransactionController extends Controller
     */
 
     public function destroy(
-        RawMaterialTransaction $rawMaterialTransaction,
+        RawMaterialTransaction        $rawMaterialTransaction,
         RawMaterialTransactionService $service,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('delete', $rawMaterialTransaction);
 
         $service->delete($rawMaterialTransaction);
@@ -246,9 +251,10 @@ class RawMaterialTransactionController extends Controller
     */
 
     public function bulkDestroy(
-        BulkDestroyRequest $request,
+        BulkDestroyRequest            $request,
         RawMaterialTransactionService $service,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('deleteAny', RawMaterialTransaction::class);
 
         $service->bulkDelete($request->validated('ids'));

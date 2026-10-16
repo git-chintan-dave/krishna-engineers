@@ -1,6 +1,6 @@
-﻿<script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+﻿<script lang="ts" setup>
+import {router} from '@inertiajs/vue3';
+import {ref} from 'vue';
 
 import ListingActions from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
@@ -8,16 +8,11 @@ import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import AppUserRoleSelect from '@/components/selects/AppUserRoleSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { employeePage } from '@/config/employees';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as employeesRoute,
-} from '@/routes/employees';
-import { createEmployeeColumns } from '@/table/employees';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {employeePage} from '@/config/employees';
+import {bulkDestroy, create, destroy, index as employeesRoute,} from '@/routes/employees';
+import {createEmployeeColumns} from '@/table/employees';
 import type {
     Employee,
     EmployeeFilters,
@@ -26,7 +21,7 @@ import type {
     EmployeeSort,
     EmployeesResponse,
 } from '@/types/employee';
-import type { StatusFilter } from '@/types/listing';
+import type {StatusFilter} from '@/types/listing';
 import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
 
 // Props
@@ -113,15 +108,15 @@ const handleDeleteSelected = () => {
 
 <template>
     <ListingLayout
-        :title="employeePage.title"
         :description="employeePage.description"
+        :title="employeePage.title"
     >
         <template #actions>
             <ListingActions
-                :create-url="create()"
                 :create-label="employeePage.createLabel"
-                :selected-count="selectedCount"
+                :create-url="create()"
                 :resource-label="employeePage.resourceLabel"
+                :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
             />
         </template>
@@ -129,8 +124,6 @@ const handleDeleteSelected = () => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
-                :search-placeholder="employeePage.searchPlaceholder"
-                :search-button-label="employeePage.searchButtonLabel"
                 :clear-button-label="employeePage.clearButtonLabel"
                 :clear-disabled="
                     !searchQuery.trim() &&
@@ -138,8 +131,10 @@ const handleDeleteSelected = () => {
                     filterShift === 'all' &&
                     filterStatus === 'all'
                 "
-                @search="search"
+                :search-button-label="employeePage.searchButtonLabel"
+                :search-placeholder="employeePage.searchPlaceholder"
                 @clear="handleClearFilters"
+                @search="search"
             >
                 <template #filters>
                     <div class="w-full shrink-0 sm:w-40">
@@ -180,15 +175,15 @@ const handleDeleteSelected = () => {
 
         <template #table>
             <DataTable
-                :table="table"
                 :columns-count="columns.length"
-                :total="employees.meta.total"
-                :page-index="employees.meta.current_page - 1"
-                :page-size="employees.meta.per_page"
-                :selected-count="selectedCount"
-                :page-size-options="[10, 25, 50, 100]"
                 :empty-text="employeePage.emptyText"
                 :item-label="employeePage.itemLabel"
+                :page-index="employees.meta.current_page - 1"
+                :page-size="employees.meta.per_page"
+                :page-size-options="[10, 25, 50, 100]"
+                :selected-count="selectedCount"
+                :table="table"
+                :total="employees.meta.total"
             />
         </template>
     </ListingLayout>

@@ -1,18 +1,11 @@
-<script setup lang="ts">
-import { computed } from 'vue';
-import { FlexRender } from '@tanstack/vue-table';
-import { ChevronLeft, ChevronRight } from '@lucide/vue';
+<script lang="ts" setup>
+import {computed} from 'vue';
+import {FlexRender} from '@tanstack/vue-table';
+import {ChevronLeft, ChevronRight} from '@lucide/vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import { Button } from '@/components/ui/button';
-import {
-    Table as UiTable,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import {Button} from '@/components/ui/button';
+import {Table as UiTable, TableBody, TableCell, TableHead, TableHeader, TableRow,} from '@/components/ui/table';
 
 /*
 |--------------------------------------------------------------------------
@@ -108,15 +101,15 @@ const paginationItems = computed<PaginationItem[]>(() => {
     const currentPage = props.pageIndex + 1;
 
     if (pageCount <= 7) {
-        return Array.from({ length: pageCount }, (_, index) => ({
+        return Array.from({length: pageCount}, (_, index) => ({
             type: 'page' as const,
             page: index + 1,
         }));
     }
 
     const items: PaginationItem[] = [];
-    const addPage = (page: number) => items.push({ type: 'page', page });
-    const addEllipsis = (key: string) => items.push({ type: 'ellipsis', key });
+    const addPage = (page: number) => items.push({type: 'page', page});
+    const addEllipsis = (key: string) => items.push({type: 'ellipsis', key});
 
     addPage(1);
 
@@ -151,7 +144,7 @@ const loadingColumnIds = computed(() => {
     const headers = props.table.getHeaderGroups()[0]?.headers ?? [];
 
     return Array.from(
-        { length: props.columnsCount },
+        {length: props.columnsCount},
         (_, index) => headers[index]?.column?.id ?? '',
     );
 });
@@ -239,7 +232,6 @@ const handlePageSizeChange = (
                         <TableHead
                             v-for="header in headerGroup.headers"
                             :key="header.id"
-                            class="h-11 px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground"
                             :class="[
                                 getColumnClass(header.column.id),
                                 getAlignmentClass(
@@ -247,6 +239,7 @@ const handlePageSizeChange = (
                                 ),
                             ]"
                             :style="getColumnStyle(header.column)"
+                            class="h-11 px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground"
                         >
                             <FlexRender
                                 v-if="!header.isPlaceholder"
@@ -263,11 +256,10 @@ const handlePageSizeChange = (
                             <TableCell
                                 v-for="(columnId, index) in loadingColumnIds"
                                 :key="index"
-                                class="px-4 py-3"
                                 :class="getColumnClass(columnId)"
+                                class="px-4 py-3"
                             >
                                 <div
-                                    class="flex"
                                     :class="
                                         getPlaceholderAlignmentClass(
                                             getColumnAlign(
@@ -276,6 +268,7 @@ const handlePageSizeChange = (
                                             ),
                                         )
                                     "
+                                    class="flex"
                                 >
                                     <div
                                         class="h-4 w-3/4 max-w-32 animate-pulse rounded bg-muted"
@@ -290,15 +283,14 @@ const handlePageSizeChange = (
                         <TableRow
                             v-for="row in table.getRowModel().rows"
                             :key="row.id"
-                            class="group transition-colors hover:bg-muted/30 data-[state=selected]:bg-muted/50"
                             :data-state="
                                 row.getIsSelected() ? 'selected' : undefined
                             "
+                            class="group transition-colors hover:bg-muted/30 data-[state=selected]:bg-muted/50"
                         >
                             <TableCell
                                 v-for="cell in row.getAllCells()"
                                 :key="cell.id"
-                                class="px-4 py-3 align-middle"
                                 :class="[
                                     getColumnClass(cell.column.id),
                                     getAlignmentClass(
@@ -306,8 +298,9 @@ const handlePageSizeChange = (
                                     ),
                                 ]"
                                 :style="getColumnStyle(cell.column)"
+                                class="px-4 py-3 align-middle"
                             >
-                                <FlexRender :cell="cell" />
+                                <FlexRender :cell="cell"/>
                             </TableCell>
                         </TableRow>
                     </template>
@@ -367,10 +360,10 @@ const handlePageSizeChange = (
 
                         <div class="w-24 shrink-0">
                             <AppSelect
+                                :disabled="loading"
                                 :model-value="pageSize"
                                 :options="pageSizeOptions"
                                 placeholder="10"
-                                :disabled="loading"
                                 @update:model-value="handlePageSizeChange"
                             />
                         </div>
@@ -379,22 +372,22 @@ const handlePageSizeChange = (
                     <!-- Pages -->
                     <div class="max-w-full min-w-0 overflow-x-auto pb-0.5">
                         <div
-                            class="flex w-max items-center gap-1"
                             aria-label="Pagination"
+                            class="flex w-max items-center gap-1"
                         >
                             <Button
-                                variant="outline"
-                                size="icon"
-                                class="size-8 shrink-0 cursor-pointer"
                                 :disabled="
                                     loading || !table.getCanPreviousPage()
                                 "
                                 aria-label="Previous page"
+                                class="size-8 shrink-0 cursor-pointer"
+                                size="icon"
+                                variant="outline"
                                 @click="table.previousPage()"
                             >
                                 <ChevronLeft
-                                    class="size-4"
                                     aria-hidden="true"
+                                    class="size-4"
                                 />
                             </Button>
 
@@ -406,20 +399,20 @@ const handlePageSizeChange = (
                             >
                                 <Button
                                     v-if="item.type === 'page'"
-                                    :variant="
-                                        pageIndex === item.page - 1
-                                            ? 'default'
-                                            : 'ghost'
-                                    "
-                                    size="icon"
-                                    class="size-8 shrink-0 cursor-pointer"
-                                    :disabled="loading"
-                                    :aria-label="`Page ${item.page}`"
                                     :aria-current="
                                         pageIndex === item.page - 1
                                             ? 'page'
                                             : undefined
                                     "
+                                    :aria-label="`Page ${item.page}`"
+                                    :disabled="loading"
+                                    :variant="
+                                        pageIndex === item.page - 1
+                                            ? 'default'
+                                            : 'ghost'
+                                    "
+                                    class="size-8 shrink-0 cursor-pointer"
+                                    size="icon"
                                     @click="table.setPageIndex(item.page - 1)"
                                 >
                                     {{ item.page }}
@@ -427,24 +420,24 @@ const handlePageSizeChange = (
 
                                 <span
                                     v-else
-                                    class="flex size-8 shrink-0 items-center justify-center text-sm text-muted-foreground"
                                     aria-hidden="true"
+                                    class="flex size-8 shrink-0 items-center justify-center text-sm text-muted-foreground"
                                 >
                                     …
                                 </span>
                             </template>
 
                             <Button
-                                variant="outline"
-                                size="icon"
-                                class="size-8 shrink-0 cursor-pointer"
                                 :disabled="loading || !table.getCanNextPage()"
                                 aria-label="Next page"
+                                class="size-8 shrink-0 cursor-pointer"
+                                size="icon"
+                                variant="outline"
                                 @click="table.nextPage()"
                             >
                                 <ChevronRight
-                                    class="size-4"
                                     aria-hidden="true"
+                                    class="size-4"
                                 />
                             </Button>
                         </div>

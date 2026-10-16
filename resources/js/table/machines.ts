@@ -1,13 +1,13 @@
-import { createColumnHelper } from '@tanstack/vue-table';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit } from '@/routes/machines';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createDateColumn } from '@/table/columns/dateColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import { createStatusColumn } from '@/table/columns/statusColumn';
-import { createPrimaryColumn } from '@/table/helpers/primaryColumn';
-import { createSortableColumn } from '@/table/helpers/sortableColumn';
-import type { Machine } from '@/types/machine';
+import {edit} from '@/routes/machines';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createDateColumn} from '@/table/columns/dateColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createStatusColumn} from '@/table/columns/statusColumn';
+import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
+import {createSortableColumn} from '@/table/helpers/sortableColumn';
+import type {Machine} from '@/types/machine';
 
 const columnHelper = createColumnHelper<any, Machine>();
 

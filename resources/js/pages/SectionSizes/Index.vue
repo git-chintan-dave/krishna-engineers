@@ -1,28 +1,18 @@
-﻿<script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+﻿<script lang="ts" setup>
+import {router} from '@inertiajs/vue3';
+import {ref} from 'vue';
 
 import ListingActions from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { sectionSizePage } from '@/config/sectionSizes';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as sectionSizesRoute,
-} from '@/routes/section-sizes';
-import { createSectionSizeColumns } from '@/table/sectionSizes';
-import type {
-    SectionSize,
-    SectionSizeFilters,
-    SectionSizeSort,
-    SectionSizesResponse,
-} from '@/types/sectionSize';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {sectionSizePage} from '@/config/sectionSizes';
+import {bulkDestroy, create, destroy, index as sectionSizesRoute,} from '@/routes/section-sizes';
+import {createSectionSizeColumns} from '@/table/sectionSizes';
+import type {SectionSize, SectionSizeFilters, SectionSizeSort, SectionSizesResponse,} from '@/types/sectionSize';
 
 /*
 |--------------------------------------------------------------------------
@@ -116,16 +106,16 @@ const handleDeleteSelected = () => {
 
 <template>
     <ListingLayout
-        :title="sectionSizePage.title"
         :description="sectionSizePage.description"
+        :title="sectionSizePage.title"
     >
         <!-- Actions -->
         <template #actions>
             <ListingActions
-                :create-url="create()"
                 :create-label="sectionSizePage.createLabel"
-                :selected-count="selectedCount"
+                :create-url="create()"
                 :resource-label="sectionSizePage.resourceLabel"
+                :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
             />
         </template>
@@ -134,14 +124,14 @@ const handleDeleteSelected = () => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
-                :search-placeholder="sectionSizePage.searchPlaceholder"
-                :search-button-label="sectionSizePage.searchButtonLabel"
                 :clear-button-label="sectionSizePage.clearButtonLabel"
                 :clear-disabled="
                     !searchQuery.trim() && filterSectionId === 'all'
                 "
-                @search="search"
+                :search-button-label="sectionSizePage.searchButtonLabel"
+                :search-placeholder="sectionSizePage.searchPlaceholder"
                 @clear="handleClearFilters"
+                @search="search"
             >
                 <template #filters>
                     <div class="w-full shrink-0 sm:w-48">
@@ -163,15 +153,15 @@ const handleDeleteSelected = () => {
         <!-- Table -->
         <template #table>
             <DataTable
-                :table="table"
                 :columns-count="columns.length"
-                :total="sectionSizes.meta.total"
-                :page-index="sectionSizes.meta.current_page - 1"
-                :page-size="sectionSizes.meta.per_page"
-                :selected-count="selectedCount"
-                :page-size-options="[10, 25, 50, 100]"
                 :empty-text="sectionSizePage.emptyText"
                 :item-label="sectionSizePage.itemLabel"
+                :page-index="sectionSizes.meta.current_page - 1"
+                :page-size="sectionSizes.meta.per_page"
+                :page-size-options="[10, 25, 50, 100]"
+                :selected-count="selectedCount"
+                :table="table"
+                :total="sectionSizes.meta.total"
             />
         </template>
     </ListingLayout>

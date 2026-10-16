@@ -1,12 +1,12 @@
-import { createColumnHelper } from '@tanstack/vue-table';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit } from '@/routes/employees';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import { createStatusColumn } from '@/table/columns/statusColumn';
-import { createPrimaryColumn } from '@/table/helpers/primaryColumn';
-import { createSortableColumn } from '@/table/helpers/sortableColumn';
-import type { Employee } from '@/types/employee';
+import {edit} from '@/routes/employees';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createStatusColumn} from '@/table/columns/statusColumn';
+import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
+import {createSortableColumn} from '@/table/helpers/sortableColumn';
+import type {Employee} from '@/types/employee';
 
 const columnHelper = createColumnHelper<any, Employee>();
 
@@ -40,14 +40,14 @@ export const createEmployeeColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'role',
             header: 'Role',
             size: 170,
-            cell: ({ row }: any) => row.original.role_label ?? '—',
+            cell: ({row}: any) => row.original.role_label ?? '—',
         }),
 
         createSortableColumn({
             accessorKey: 'shift',
             header: 'Shift',
             size: 120,
-            cell: ({ row }: any) => row.original.shift_label ?? '—',
+            cell: ({row}: any) => row.original.shift_label ?? '—',
         }),
 
         createStatusColumn({

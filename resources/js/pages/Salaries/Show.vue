@@ -1,12 +1,12 @@
-<script setup lang="ts">
-import { ArrowLeft, Printer } from '@lucide/vue';
-import { router } from '@inertiajs/vue3';
+<script lang="ts" setup>
+import {ArrowLeft, Printer} from '@lucide/vue';
+import {router} from '@inertiajs/vue3';
 
-import { Button } from '@/components/ui/button';
-import { index as salaries } from '@/routes/salaries';
-import type { Salary } from '@/types/salary';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { salaryPage } from '@/config/salaries';
+import {Button} from '@/components/ui/button';
+import {index as salaries} from '@/routes/salaries';
+import type {Salary} from '@/types/salary';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {salaryPage} from '@/config/salaries';
 
 const props = defineProps<{
     salary: Salary;
@@ -50,16 +50,16 @@ const goBack = () => {
                 class="mb-4 flex items-center justify-between gap-3 print:hidden"
             >
                 <Button
-                    variant="outline"
                     class="cursor-pointer"
+                    variant="outline"
                     @click="goBack"
                 >
-                    <ArrowLeft class="mr-2 size-4" />
+                    <ArrowLeft class="mr-2 size-4"/>
                     Back
                 </Button>
 
                 <Button class="cursor-pointer" @click="printSalarySlip">
-                    <Printer class="mr-2 size-4" />
+                    <Printer class="mr-2 size-4"/>
                     Print Salary Slip
                 </Button>
             </div>

@@ -24,11 +24,11 @@ class OperatorWorkLogResource extends JsonResource
                 'id' => $this->user_id,
                 'name' => $this->whenLoaded(
                     'user',
-                    fn () => $this->user->name
+                    fn() => $this->user->name
                 ),
                 'employee_code' => $this->whenLoaded(
                     'user',
-                    fn () => $this->user->employee_code
+                    fn() => $this->user->employee_code
                 ),
             ],
 
@@ -36,11 +36,11 @@ class OperatorWorkLogResource extends JsonResource
                 'id' => $this->machine_id,
                 'name' => $this->whenLoaded(
                     'machine',
-                    fn () => $this->machine->name
+                    fn() => $this->machine->name
                 ),
                 'reference_name' => $this->whenLoaded(
                     'machine',
-                    fn () => $this->machine->reference_name
+                    fn() => $this->machine->reference_name
                 ),
             ],
 
@@ -48,11 +48,11 @@ class OperatorWorkLogResource extends JsonResource
                 'id' => $this->part_id,
                 'name' => $this->whenLoaded(
                     'part',
-                    fn () => $this->part->name
+                    fn() => $this->part->name
                 ),
                 'reference_name' => $this->whenLoaded(
                     'part',
-                    fn () => $this->part->reference_name
+                    fn() => $this->part->reference_name
                 ),
             ],
 
@@ -60,7 +60,7 @@ class OperatorWorkLogResource extends JsonResource
                 'id' => $this->setup_id,
                 'name' => $this->whenLoaded(
                     'setup',
-                    fn () => $this->setup->name
+                    fn() => $this->setup->name
                 ),
             ],
 

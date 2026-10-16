@@ -1,5 +1,5 @@
-import type { PaginatedResponse, SortDirection } from '@/types/listing';
-import { Setup } from '@/types/setup';
+import type {PaginatedResponse, SortDirection} from '@/types/listing';
+import {Setup} from '@/types/setup';
 
 export type PartSetupPart = {
     id: number;

@@ -28,7 +28,7 @@ class ToolResource extends JsonResource
             'type_label' => $this->type->label(),
             'image' => $this->image
                 ? Storage::disk('public')->url(
-                    'tools/'.$this->image,
+                    'tools/' . $this->image,
                 )
                 : null,
             'quantity' => $this->quantity,

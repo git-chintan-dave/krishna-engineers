@@ -1,6 +1,6 @@
-<script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+<script lang="ts" setup>
+import {router} from '@inertiajs/vue3';
+import {ref} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
@@ -14,19 +14,14 @@ import ListingFilters from '@/components/common/ListingFilters.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
 
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
 
-import { operatorWorkLogPage } from '@/config/operatorWorkLogs';
+import {operatorWorkLogPage} from '@/config/operatorWorkLogs';
 
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as operatorWorkLogsRoute,
-} from '@/routes/operator';
+import {bulkDestroy, create, destroy, index as operatorWorkLogsRoute,} from '@/routes/operator';
 
-import { createOperatorWorkLogColumns } from '@/table/operatorWorkLogs';
+import {createOperatorWorkLogColumns} from '@/table/operatorWorkLogs';
 
 import type {
     OperatorWorkLog,
@@ -121,7 +116,7 @@ const columns = createOperatorWorkLogColumns((uuid) => {
     router.delete(destroy(uuid).url);
 }, props.canSelectOperator);
 
-const { table, selectedCount, search, clearFilters, deleteSelected } =
+const {table, selectedCount, search, clearFilters, deleteSelected} =
     useListingTable<OperatorWorkLog, OperatorWorkLogSort>({
         data: () => props.operatorWorkLogs,
 
@@ -231,17 +226,17 @@ const hasFilters = (): boolean =>
 
 <template>
     <ListingLayout
-        :title="operatorWorkLogPage.title"
         :description="operatorWorkLogPage.description"
+        :title="operatorWorkLogPage.title"
     >
         <!-- Actions -->
 
         <template #actions>
             <ListingActions
-                :create-url="create()"
                 :create-label="operatorWorkLogPage.createLabel"
-                :selected-count="selectedCount"
+                :create-url="create()"
                 :resource-label="operatorWorkLogPage.resourceLabel"
+                :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
             />
         </template>
@@ -250,11 +245,11 @@ const hasFilters = (): boolean =>
 
         <template #filters>
             <ListingFilters
-                :searchable="false"
                 :clear-button-label="operatorWorkLogPage.clearButtonLabel"
                 :clear-disabled="!hasFilters()"
-                @search="search"
+                :searchable="false"
                 @clear="handleClearFilters"
+                @search="search"
             >
                 <template #filters>
                     <!-- Work Date -->
@@ -262,10 +257,10 @@ const hasFilters = (): boolean =>
                     <div class="w-full shrink-0 sm:w-40">
                         <AppInput
                             :model-value="filterWorkDate"
-                            type="date"
                             :placeholder="
                                 operatorWorkLogPage.workDatePlaceholder
                             "
+                            type="date"
                             @update:model-value="handleWorkDateChange"
                         />
                     </div>
@@ -283,9 +278,9 @@ const hasFilters = (): boolean =>
                             :placeholder="
                                 operatorWorkLogPage.operatorPlaceholder
                             "
-                            searchable
                             clearable
                             role="operator"
+                            searchable
                             @update:model-value="handleUserChange"
                         />
                     </div>
@@ -315,8 +310,8 @@ const hasFilters = (): boolean =>
                             :placeholder="
                                 operatorWorkLogPage.machinePlaceholder
                             "
-                            searchable
                             clearable
+                            searchable
                             @update:model-value="handleMachineChange"
                         />
                     </div>
@@ -329,8 +324,8 @@ const hasFilters = (): boolean =>
                                 filterPartId === 'all' ? null : filterPartId
                             "
                             :placeholder="operatorWorkLogPage.partPlaceholder"
-                            searchable
                             clearable
+                            searchable
                             @update:model-value="handlePartChange"
                         />
                     </div>
@@ -346,8 +341,8 @@ const hasFilters = (): boolean =>
                                 filterPartId === 'all' ? null : filterPartId
                             "
                             :placeholder="operatorWorkLogPage.setupPlaceholder"
-                            searchable
                             clearable
+                            searchable
                             @update:model-value="handleSetupChange"
                         />
                     </div>
@@ -359,15 +354,15 @@ const hasFilters = (): boolean =>
 
         <template #table>
             <DataTable
-                :table="table"
                 :columns-count="columns.length"
-                :total="operatorWorkLogs.meta.total"
-                :page-index="operatorWorkLogs.meta.current_page - 1"
-                :page-size="operatorWorkLogs.meta.per_page"
-                :selected-count="selectedCount"
-                :page-size-options="[10, 25, 50, 100]"
                 :empty-text="operatorWorkLogPage.emptyText"
                 :item-label="operatorWorkLogPage.itemLabel"
+                :page-index="operatorWorkLogs.meta.current_page - 1"
+                :page-size="operatorWorkLogs.meta.per_page"
+                :page-size-options="[10, 25, 50, 100]"
+                :selected-count="selectedCount"
+                :table="table"
+                :total="operatorWorkLogs.meta.total"
             />
         </template>
     </ListingLayout>

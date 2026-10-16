@@ -20,7 +20,7 @@ class IndexAttendanceRequest extends FormRequest
                 'integer',
                 'exists:users,id',
                 Rule::excludeIf(
-                    ! in_array(
+                    !in_array(
                         $this->user()?->role?->value ?? $this->user()?->role,
                         ['super_admin', 'supervisor'],
                         true,

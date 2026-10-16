@@ -1,15 +1,12 @@
-﻿<script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+﻿<script lang="ts" setup>
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { employeePage } from '@/config/employees';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {employeePage} from '@/config/employees';
 import EmployeeForm from '@/pages/Employees/components/EmployeeForm.vue';
-import {
-    index as employees,
-    update as updateEmployee,
-} from '@/routes/employees';
-import type { Employee, EmployeeFormData } from '@/types/employee';
+import {index as employees, update as updateEmployee,} from '@/routes/employees';
+import type {Employee, EmployeeFormData} from '@/types/employee';
 
 // Props
 const props = defineProps<{
@@ -60,17 +57,17 @@ const handleCancel = () => {
 
 <template>
     <FormLayout
-        :title="employeePage.form.editTitle"
         :description="employeePage.form.editDescription"
+        :title="employeePage.form.editTitle"
     >
         <EmployeeForm
-            :form="form"
             :errors="form.errors"
+            :form="form"
+            :is-edit="true"
             :processing="form.processing"
             :submit-label="employeePage.form.editSubmitLabel"
-            :is-edit="true"
-            @submit="handleSubmit"
             @cancel="handleCancel"
+            @submit="handleSubmit"
         />
     </FormLayout>
 </template>

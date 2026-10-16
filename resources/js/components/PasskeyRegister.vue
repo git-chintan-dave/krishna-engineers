@@ -1,10 +1,10 @@
-<script setup lang="ts">
-import { usePasskeyRegister } from '@laravel/passkeys/vue';
-import { ref } from 'vue';
+<script lang="ts" setup>
+import {usePasskeyRegister} from '@laravel/passkeys/vue';
+import {ref} from 'vue';
 import InputError from '@/components/InputError.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
 
 const emit = defineEmits<{
     success: [];
@@ -14,20 +14,20 @@ const getDefaultPasskeyName = () => {
     const ua = navigator.userAgent;
 
     const browser = [
-        { pattern: /Edg|Edge/, name: 'Edge' },
-        { pattern: /OPR|Opera|OPiOS/, name: 'Opera' },
-        { pattern: /Firefox|FxiOS/, name: 'Firefox' },
-        { pattern: /Chrome|CriOS/, name: 'Chrome' },
-        { pattern: /Safari/, name: 'Safari' },
-    ].find(({ pattern }) => pattern.test(ua))?.name;
+        {pattern: /Edg|Edge/, name: 'Edge'},
+        {pattern: /OPR|Opera|OPiOS/, name: 'Opera'},
+        {pattern: /Firefox|FxiOS/, name: 'Firefox'},
+        {pattern: /Chrome|CriOS/, name: 'Chrome'},
+        {pattern: /Safari/, name: 'Safari'},
+    ].find(({pattern}) => pattern.test(ua))?.name;
 
     const os = [
-        { pattern: /iPhone/, name: 'iPhone' },
-        { pattern: /iPad|Macintosh(?=.*Mobile)/, name: 'iPad' },
-        { pattern: /Android/, name: 'Android' },
-        { pattern: /Mac/, name: 'Mac' },
-        { pattern: /Windows/, name: 'Windows' },
-    ].find(({ pattern }) => pattern.test(ua))?.name;
+        {pattern: /iPhone/, name: 'iPhone'},
+        {pattern: /iPad|Macintosh(?=.*Mobile)/, name: 'iPad'},
+        {pattern: /Android/, name: 'Android'},
+        {pattern: /Mac/, name: 'Mac'},
+        {pattern: /Windows/, name: 'Windows'},
+    ].find(({pattern}) => pattern.test(ua))?.name;
 
     return [browser, os].filter(Boolean).join(' on ') || '';
 };
@@ -35,7 +35,7 @@ const getDefaultPasskeyName = () => {
 const name = ref(getDefaultPasskeyName());
 const showForm = ref(false);
 
-const { register, isLoading, error, isSupported } = usePasskeyRegister({
+const {register, isLoading, error, isSupported} = usePasskeyRegister({
     onSuccess: () => {
         name.value = '';
         showForm.value = false;
@@ -70,28 +70,28 @@ const handleCancel = () => {
 
     <form
         v-else
-        @submit="handleSubmit"
         class="space-y-4 rounded-lg border border-border bg-muted/50 p-4"
+        @submit="handleSubmit"
     >
         <div class="grid gap-2">
             <Label for="passkey-name">Passkey name</Label>
             <Input
                 id="passkey-name"
-                type="text"
                 v-model="name"
-                placeholder="e.g., MacBook Pro, iPhone"
-                class="mt-1 block w-full border-foreground/20"
                 v-focus
+                class="mt-1 block w-full border-foreground/20"
+                placeholder="e.g., MacBook Pro, iPhone"
+                type="text"
             />
             <p class="text-xs text-muted-foreground">
                 A name helps you identify this passkey later.
             </p>
         </div>
 
-        <InputError v-if="error" :message="error" />
+        <InputError v-if="error" :message="error"/>
 
         <div class="flex gap-2">
-            <Button type="submit" :disabled="isLoading || !name.trim()">
+            <Button :disabled="isLoading || !name.trim()" type="submit">
                 {{ isLoading ? 'Registering...' : 'Register passkey' }}
             </Button>
             <Button type="button" variant="ghost" @click="handleCancel">

@@ -1,11 +1,11 @@
-<script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-import { KeyRound } from '@lucide/vue';
-import type { Passkey } from '@/types/auth';
+<script lang="ts" setup>
+import {router} from '@inertiajs/vue3';
+import {KeyRound} from '@lucide/vue';
+import type {Passkey} from '@/types/auth';
 import Heading from '@/components/Heading.vue';
 import PasskeyItem from '@/components/PasskeyItem.vue';
 import PasskeyRegister from '@/components/PasskeyRegister.vue';
-import { destroy } from '@/actions/Laravel/Passkeys/Http/Controllers/PasskeyRegistrationController';
+import {destroy} from '@/actions/Laravel/Passkeys/Http/Controllers/PasskeyRegistrationController';
 
 export type Props = {
     canManagePasskeys?: boolean;
@@ -32,9 +32,9 @@ const handleRegisterSuccess = () => {
 <template>
     <div v-if="canManagePasskeys" class="space-y-6">
         <Heading
-            variant="small"
-            title="Passkeys"
             description="Manage your passkeys for passwordless sign-in"
+            title="Passkeys"
+            variant="small"
         />
 
         <div class="overflow-hidden rounded-lg border border-border">
@@ -51,7 +51,7 @@ const handleRegisterSuccess = () => {
                 <div
                     class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted"
                 >
-                    <KeyRound class="h-7 w-7 text-muted-foreground" />
+                    <KeyRound class="h-7 w-7 text-muted-foreground"/>
                 </div>
                 <p class="font-medium">No passkeys yet</p>
                 <p class="mt-1 text-sm text-muted-foreground">
@@ -60,6 +60,6 @@ const handleRegisterSuccess = () => {
             </div>
         </div>
 
-        <PasskeyRegister @success="handleRegisterSuccess" />
+        <PasskeyRegister @success="handleRegisterSuccess"/>
     </div>
 </template>

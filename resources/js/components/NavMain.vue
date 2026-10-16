@@ -1,12 +1,8 @@
-<script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { ChevronRight } from '@lucide/vue';
+<script lang="ts" setup>
+import {Link} from '@inertiajs/vue3';
+import {ChevronRight} from '@lucide/vue';
 
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import {Collapsible, CollapsibleContent, CollapsibleTrigger,} from '@/components/ui/collapsible';
 import {
     SidebarGroup,
     SidebarGroupLabel,
@@ -17,14 +13,14 @@ import {
     SidebarMenuSubButton,
     SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
-import { useCurrentUrl } from '@/composables/useCurrentUrl';
-import type { NavItem } from '@/types';
+import {useCurrentUrl} from '@/composables/useCurrentUrl';
+import type {NavItem} from '@/types';
 
 defineProps<{
     items: NavItem[];
 }>();
 
-const { isCurrentUrl } = useCurrentUrl();
+const {isCurrentUrl} = useCurrentUrl();
 
 const isItemActive = (item: NavItem): boolean => {
     if (item.href && isCurrentUrl(item.href)) {
@@ -41,21 +37,21 @@ const hasChildren = (item: NavItem): boolean => {
 
 <template>
     <SidebarGroup>
-        <SidebarGroupLabel> Navigation </SidebarGroupLabel>
+        <SidebarGroupLabel> Navigation</SidebarGroupLabel>
 
         <SidebarMenu>
             <template v-for="item in items" :key="item.title">
                 <!-- Direct navigation item -->
                 <SidebarMenuItem v-if="!hasChildren(item)">
                     <SidebarMenuButton
-                        as-child
                         :is-active="isItemActive(item)"
                         :tooltip="item.title"
+                        as-child
                     >
                         <Link :href="item.href!">
                             <component
-                                v-if="item.icon"
                                 :is="item.icon"
+                                v-if="item.icon"
                                 aria-hidden="true"
                             />
 
@@ -69,8 +65,8 @@ const hasChildren = (item: NavItem): boolean => {
                 <!-- Navigation group -->
                 <Collapsible
                     v-else
-                    as-child
                     :default-open="isItemActive(item)"
+                    as-child
                     class="group/collapsible"
                 >
                     <SidebarMenuItem>
@@ -80,8 +76,8 @@ const hasChildren = (item: NavItem): boolean => {
                                 :tooltip="item.title"
                             >
                                 <component
-                                    v-if="item.icon"
                                     :is="item.icon"
+                                    v-if="item.icon"
                                     aria-hidden="true"
                                 />
 
@@ -90,8 +86,8 @@ const hasChildren = (item: NavItem): boolean => {
                                 </span>
 
                                 <ChevronRight
-                                    class="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
                                     aria-hidden="true"
+                                    class="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
                                 />
                             </SidebarMenuButton>
                         </CollapsibleTrigger>
@@ -103,13 +99,13 @@ const hasChildren = (item: NavItem): boolean => {
                                     :key="subItem.title"
                                 >
                                     <SidebarMenuSubButton
-                                        as-child
                                         :is-active="isItemActive(subItem)"
+                                        as-child
                                     >
                                         <Link :href="subItem.href!">
                                             <component
-                                                v-if="subItem.icon"
                                                 :is="subItem.icon"
+                                                v-if="subItem.icon"
                                                 aria-hidden="true"
                                             />
 

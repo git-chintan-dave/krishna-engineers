@@ -1,9 +1,9 @@
-<script setup lang="ts">
-import { onMounted, ref } from 'vue';
+<script lang="ts" setup>
+import {onMounted, ref} from 'vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import { useLookup } from '@/composables/useLookup';
-import type { SelectOption } from '@/types/common';
+import {useLookup} from '@/composables/useLookup';
+import type {SelectOption} from '@/types/common';
 
 /*
 |--------------------------------------------------------------------------
@@ -49,7 +49,7 @@ const emit = defineEmits<{
 
 const options = ref<SelectOption<string>[]>([]);
 
-const { loading, enumOptions } = useLookup();
+const {loading, enumOptions} = useLookup();
 
 /*
 |--------------------------------------------------------------------------
@@ -66,15 +66,15 @@ onMounted(loadOptions);
 
 <template>
     <AppSelect
+        :clearable="clearable"
+        :disabled="disabled"
+        :error="error"
+        :loading="loading"
         :model-value="modelValue"
         :options="options"
         :placeholder="placeholder"
         :searchable="searchable"
-        :clearable="clearable"
-        :disabled="disabled"
-        :loading="loading"
-        :error="error"
-        @update:model-value="emit('update:modelValue', $event as string | null)"
         @change="emit('change', $event as string | null)"
+        @update:model-value="emit('update:modelValue', $event as string | null)"
     />
 </template>

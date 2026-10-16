@@ -32,7 +32,9 @@ class ToolController extends Controller
 
     private const string IMAGE_DIRECTORY = 'tools';
 
-    public function __construct(private readonly FileUploadService $fileUploadService) {}
+    public function __construct(private readonly FileUploadService $fileUploadService)
+    {
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -53,14 +55,14 @@ class ToolController extends Controller
         )
             ->when(
                 $filters['type'] ?? null,
-                fn (Builder $query, string $type): Builder => $query->where(
+                fn(Builder $query, string $type): Builder => $query->where(
                     'type',
                     $type,
                 ),
             )
             ->when(
                 $filters['status'] ?? null,
-                fn (Builder $query, string $status): Builder => $query->where(
+                fn(Builder $query, string $status): Builder => $query->where(
                     'status',
                     $status,
                 ),
@@ -87,19 +89,6 @@ class ToolController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function create(): Response
-    {
-        Gate::authorize('create', Tool::class);
-
-        return Inertia::render('Tools/Create', []);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Store
-    |--------------------------------------------------------------------------
-    */
-
     public function store(ToolRequest $request): RedirectResponse
     {
         Gate::authorize('create', Tool::class);
@@ -114,6 +103,19 @@ class ToolController extends Controller
         Tool::create($data);
 
         return $this->successResponse('created');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Store
+    |--------------------------------------------------------------------------
+    */
+
+    public function create(): Response
+    {
+        Gate::authorize('create', Tool::class);
+
+        return Inertia::render('Tools/Create', []);
     }
 
     /*
@@ -139,8 +141,9 @@ class ToolController extends Controller
 
     public function update(
         ToolRequest $request,
-        Tool $tool,
-    ): RedirectResponse {
+        Tool        $tool,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $tool);
 
         $data = $request->validated();
@@ -182,7 +185,8 @@ class ToolController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('deleteAny', Tool::class);
 
         Tool::query()

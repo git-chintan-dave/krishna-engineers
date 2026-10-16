@@ -1,7 +1,7 @@
-import { ArrowDown, ArrowUp, ArrowUpDown } from '@lucide/vue';
-import { h } from 'vue';
+import {ArrowDown, ArrowUp, ArrowUpDown} from '@lucide/vue';
+import {h} from 'vue';
 
-import { Button } from '@/components/ui/button';
+import {Button} from '@/components/ui/button';
 
 /*
 |--------------------------------------------------------------------------
@@ -22,10 +22,10 @@ type DateColumnOptions = {
 */
 
 export const createDateColumn = ({
-    accessorKey,
-    header = 'Date',
-    size = 140,
-}: DateColumnOptions) => ({
+                                     accessorKey,
+                                     header = 'Date',
+                                     size = 140,
+                                 }: DateColumnOptions) => ({
     accessorKey,
 
     /*
@@ -34,15 +34,15 @@ export const createDateColumn = ({
     |--------------------------------------------------------------------------
     */
 
-    header: ({ column }: any) => {
+    header: ({column}: any) => {
         const sorted = column.getIsSorted();
 
         const Icon =
             sorted === 'asc'
                 ? ArrowUp
                 : sorted === 'desc'
-                  ? ArrowDown
-                  : ArrowUpDown;
+                    ? ArrowDown
+                    : ArrowUpDown;
 
         return h(
             Button,

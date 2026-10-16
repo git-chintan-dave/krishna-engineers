@@ -1,26 +1,18 @@
-<script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
-import { ChevronRight, Menu } from '@lucide/vue';
-import { computed, reactive, ref, watch } from 'vue';
+<script lang="ts" setup>
+import {Link, usePage} from '@inertiajs/vue3';
+import {ChevronRight, Menu} from '@lucide/vue';
+import {computed, reactive, ref, watch} from 'vue';
 
 import AppLogo from '@/components/AppLogo.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 
-import { Button } from '@/components/ui/button';
+import {Button} from '@/components/ui/button';
 
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import {Collapsible, CollapsibleContent, CollapsibleTrigger,} from '@/components/ui/collapsible';
 
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import {DropdownMenu, DropdownMenuContent, DropdownMenuTrigger,} from '@/components/ui/dropdown-menu';
 
 import {
     NavigationMenu,
@@ -32,31 +24,20 @@ import {
     navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
 
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from '@/components/ui/sheet';
+import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,} from '@/components/ui/sheet';
 
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '@/components/ui/tooltip';
 
 import UserMenuContent from '@/components/UserMenuContent.vue';
 
-import { useCurrentUrl } from '@/composables/useCurrentUrl';
-import { getInitials } from '@/composables/useInitials';
-import { toUrl } from '@/lib/utils';
+import {useCurrentUrl} from '@/composables/useCurrentUrl';
+import {getInitials} from '@/composables/useInitials';
+import {toUrl} from '@/lib/utils';
 
-import { getMainNavItems, rightNavItems } from '@/config/navigation';
+import {getMainNavItems, rightNavItems} from '@/config/navigation';
 
-import type { BreadcrumbItem, NavItem } from '@/types';
-import { dashboard } from '@/routes';
+import type {BreadcrumbItem, NavItem} from '@/types';
+import {dashboard} from '@/routes';
 
 /*
 |--------------------------------------------------------------------------
@@ -92,7 +73,7 @@ const mainNavItems = computed(() =>
     getMainNavItems(page.props.auth?.user?.role),
 );
 
-const { isCurrentOrParentUrl } = useCurrentUrl();
+const {isCurrentOrParentUrl} = useCurrentUrl();
 
 const activeItemStyles = 'bg-accent text-accent-foreground';
 
@@ -196,11 +177,11 @@ watch(
                     <Sheet v-model:open="mobileMenuState">
                         <SheetTrigger as-child>
                             <Button
-                                variant="ghost"
-                                size="icon"
                                 class="mr-2 size-9 cursor-pointer"
+                                size="icon"
+                                variant="ghost"
                             >
-                                <Menu class="size-5" aria-hidden="true" />
+                                <Menu aria-hidden="true" class="size-5"/>
 
                                 <span class="sr-only">
                                     Open navigation menu
@@ -209,8 +190,8 @@ watch(
                         </SheetTrigger>
 
                         <SheetContent
-                            side="left"
                             class="flex w-[300px] flex-col p-2 sm:w-[340px]"
+                            side="left"
                         >
                             <SheetTitle class="sr-only">
                                 Navigation menu
@@ -221,7 +202,7 @@ watch(
                             <SheetHeader
                                 class="shrink-0 flex-row justify-start space-y-0 text-left"
                             >
-                                <AppLogo />
+                                <AppLogo/>
                             </SheetHeader>
 
                             <!-- Navigation -->
@@ -230,8 +211,8 @@ watch(
                                 <!-- Scrollable Navigation -->
 
                                 <nav
-                                    class="min-h-0 flex-1 overflow-y-auto py-6 pt-0 pr-2"
                                     aria-label="Mobile navigation"
+                                    class="min-h-0 flex-1 overflow-y-auto py-6 pt-0 pr-2"
                                 >
                                     <div class="space-y-1">
                                         <template
@@ -245,19 +226,19 @@ watch(
                                                     !hasChildren(item) &&
                                                     item.href
                                                 "
-                                                :href="item.href"
-                                                class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
                                                 :class="
                                                     isItemActive(item)
                                                         ? activeItemStyles
                                                         : ''
                                                 "
+                                                :href="item.href"
+                                                class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
                                             >
                                                 <component
-                                                    v-if="item.icon"
                                                     :is="item.icon"
-                                                    class="size-5 shrink-0"
+                                                    v-if="item.icon"
                                                     aria-hidden="true"
+                                                    class="size-5 shrink-0"
                                                 />
 
                                                 <span>
@@ -283,19 +264,19 @@ watch(
 
                                                 <CollapsibleTrigger as-child>
                                                     <button
-                                                        type="button"
-                                                        class="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
                                                         :class="
                                                             isItemActive(item)
                                                                 ? activeItemStyles
                                                                 : ''
                                                         "
+                                                        class="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
+                                                        type="button"
                                                     >
                                                         <component
-                                                            v-if="item.icon"
                                                             :is="item.icon"
-                                                            class="size-5 shrink-0"
+                                                            v-if="item.icon"
                                                             aria-hidden="true"
+                                                            class="size-5 shrink-0"
                                                         />
 
                                                         <span>
@@ -303,8 +284,8 @@ watch(
                                                         </span>
 
                                                         <ChevronRight
-                                                            class="ml-auto size-4 shrink-0 transition-transform duration-200 group-data-[state=open]/mobile-collapsible:rotate-90"
                                                             aria-hidden="true"
+                                                            class="ml-auto size-4 shrink-0 transition-transform duration-200 group-data-[state=open]/mobile-collapsible:rotate-90"
                                                         />
                                                     </button>
                                                 </CollapsibleTrigger>
@@ -318,10 +299,6 @@ watch(
                                                         <Link
                                                             v-for="subItem in item.items"
                                                             :key="subItem.title"
-                                                            :href="
-                                                                subItem.href!
-                                                            "
-                                                            class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
                                                             :class="
                                                                 isItemActive(
                                                                     subItem,
@@ -329,16 +306,20 @@ watch(
                                                                     ? activeItemStyles
                                                                     : ''
                                                             "
+                                                            :href="
+                                                                subItem.href!
+                                                            "
+                                                            class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
                                                         >
                                                             <component
-                                                                v-if="
-                                                                    subItem.icon
-                                                                "
                                                                 :is="
                                                                     subItem.icon
                                                                 "
-                                                                class="size-4 shrink-0"
+                                                                v-if="
+                                                                    subItem.icon
+                                                                "
                                                                 aria-hidden="true"
+                                                                class="size-4 shrink-0"
                                                             />
 
                                                             <span>
@@ -364,15 +345,15 @@ watch(
                                         v-for="item in rightNavItems"
                                         :key="item.title"
                                         :href="toUrl(item.href)"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
                                         class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
+                                        rel="noopener noreferrer"
+                                        target="_blank"
                                     >
                                         <component
-                                            v-if="item.icon"
                                             :is="item.icon"
-                                            class="size-5 shrink-0"
+                                            v-if="item.icon"
                                             aria-hidden="true"
+                                            class="size-5 shrink-0"
                                         />
 
                                         <span>
@@ -395,7 +376,7 @@ watch(
                     :href="dashboard()"
                     class="flex shrink-0 items-center gap-x-2"
                 >
-                    <AppLogo />
+                    <AppLogo/>
                 </Link>
 
                 <!--
@@ -420,7 +401,6 @@ watch(
 
                                 <Link
                                     v-if="!hasChildren(item) && item.href"
-                                    :href="item.href"
                                     :class="[
                                         navigationMenuTriggerStyle(),
                                         isItemActive(item)
@@ -428,20 +408,21 @@ watch(
                                             : '',
                                         'h-9 cursor-pointer px-3',
                                     ]"
+                                    :href="item.href"
                                 >
                                     <component
-                                        v-if="item.icon"
                                         :is="item.icon"
-                                        class="mr-2 size-4"
+                                        v-if="item.icon"
                                         aria-hidden="true"
+                                        class="mr-2 size-4"
                                     />
 
                                     {{ item.title }}
 
                                     <span
                                         v-if="isItemActive(item)"
-                                        class="absolute inset-x-0 bottom-0 h-0.5 bg-black dark:bg-white"
                                         aria-hidden="true"
+                                        class="absolute inset-x-0 bottom-0 h-0.5 bg-black dark:bg-white"
                                     />
                                 </Link>
 
@@ -458,10 +439,10 @@ watch(
                                         ]"
                                     >
                                         <component
-                                            v-if="item.icon"
                                             :is="item.icon"
-                                            class="mr-2 size-4"
+                                            v-if="item.icon"
                                             aria-hidden="true"
+                                            class="mr-2 size-4"
                                         />
 
                                         {{ item.title }}
@@ -474,20 +455,20 @@ watch(
                                                 :key="subItem.title"
                                             >
                                                 <NavigationMenuLink
-                                                    as-child
                                                     :active="
                                                         isItemActive(subItem)
                                                     "
+                                                    as-child
                                                 >
                                                     <Link
                                                         :href="subItem.href!"
                                                         class="flex flex-row flex-nowrap items-center gap-3 rounded-md px-3 py-2.5"
                                                     >
                                                         <component
-                                                            v-if="subItem.icon"
                                                             :is="subItem.icon"
-                                                            class="size-4 shrink-0"
+                                                            v-if="subItem.icon"
                                                             aria-hidden="true"
+                                                            class="size-4 shrink-0"
                                                         />
 
                                                         <span
@@ -505,8 +486,8 @@ watch(
 
                                     <span
                                         v-if="isItemActive(item)"
-                                        class="absolute inset-x-0 bottom-0 h-0.5 bg-black dark:bg-white"
                                         aria-hidden="true"
+                                        class="absolute inset-x-0 bottom-0 h-0.5 bg-black dark:bg-white"
                                     />
                                 </template>
                             </NavigationMenuItem>
@@ -535,15 +516,15 @@ watch(
                                 <Tooltip>
                                     <TooltipTrigger as-child>
                                         <Button
-                                            variant="ghost"
-                                            size="icon"
                                             as-child
                                             class="group size-9 cursor-pointer"
+                                            size="icon"
+                                            variant="ghost"
                                         >
                                             <a
                                                 :href="toUrl(item.href)"
-                                                target="_blank"
                                                 rel="noopener noreferrer"
+                                                target="_blank"
                                             >
                                                 <span class="sr-only">
                                                     {{ item.title }}
@@ -551,8 +532,8 @@ watch(
 
                                                 <component
                                                     :is="item.icon"
-                                                    class="size-5 opacity-80 group-hover:opacity-100"
                                                     aria-hidden="true"
+                                                    class="size-5 opacity-80 group-hover:opacity-100"
                                                 />
                                             </a>
                                         </Button>
@@ -573,17 +554,17 @@ watch(
                     <DropdownMenu>
                         <DropdownMenuTrigger as-child>
                             <Button
-                                variant="ghost"
-                                size="icon"
                                 class="relative size-10 w-auto cursor-pointer rounded-full p-1 focus-within:ring-2 focus-within:ring-primary"
+                                size="icon"
+                                variant="ghost"
                             >
                                 <Avatar
                                     class="size-8 overflow-hidden rounded-full"
                                 >
                                     <AvatarImage
                                         v-if="auth.user.avatar"
-                                        :src="auth.user.avatar"
                                         :alt="auth.user.name"
+                                        :src="auth.user.avatar"
                                     />
 
                                     <AvatarFallback
@@ -598,7 +579,7 @@ watch(
                         </DropdownMenuTrigger>
 
                         <DropdownMenuContent align="end" class="w-56">
-                            <UserMenuContent :user="auth.user" />
+                            <UserMenuContent :user="auth.user"/>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

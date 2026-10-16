@@ -34,15 +34,6 @@ class ToolTransaction extends Model
         return 'uuid';
     }
 
-    protected function casts(): array
-    {
-        return [
-            'type' => ToolTransactionType::class,
-            'quantity' => 'integer',
-            'return_scrap' => 'boolean',
-        ];
-    }
-
     public function tool(): BelongsTo
     {
         return $this->belongsTo(Tool::class);
@@ -71,5 +62,14 @@ class ToolTransaction extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'type' => ToolTransactionType::class,
+            'quantity' => 'integer',
+            'return_scrap' => 'boolean',
+        ];
     }
 }

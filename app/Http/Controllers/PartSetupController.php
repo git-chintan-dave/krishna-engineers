@@ -28,7 +28,9 @@ class PartSetupController extends Controller
 
     public function __construct(
         private readonly FileUploadService $fileUploadService,
-    ) {}
+    )
+    {
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -38,7 +40,8 @@ class PartSetupController extends Controller
 
     public function index(
         IndexPartSetupRequest $request,
-    ): Response {
+    ): Response
+    {
         Gate::authorize(
             'viewAny',
             PartSetup::class,
@@ -104,9 +107,9 @@ class PartSetupController extends Controller
         $partSetups = $query
             ->when(
                 $filters['part_id'] ?? null,
-                fn (
+                fn(
                     Builder $query,
-                    int $partId,
+                    int     $partId,
                 ): Builder => $query->where(
                     'part_setups.part_id',
                     $partId,
@@ -114,9 +117,9 @@ class PartSetupController extends Controller
             )
             ->when(
                 $filters['setup_id'] ?? null,
-                fn (
+                fn(
                     Builder $query,
-                    int $setupId,
+                    int     $setupId,
                 ): Builder => $query->where(
                     'part_setups.setup_id',
                     $setupId,
@@ -151,25 +154,10 @@ class PartSetupController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function create(): Response
-    {
-        Gate::authorize(
-            'create',
-            PartSetup::class,
-        );
-
-        return Inertia::render('PartSetups/Create', []);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Store
-    |--------------------------------------------------------------------------
-    */
-
     public function store(
         PartSetupRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize(
             'create',
             PartSetup::class,
@@ -202,13 +190,30 @@ class PartSetupController extends Controller
 
     /*
     |--------------------------------------------------------------------------
+    | Store
+    |--------------------------------------------------------------------------
+    */
+
+    public function create(): Response
+    {
+        Gate::authorize(
+            'create',
+            PartSetup::class,
+        );
+
+        return Inertia::render('PartSetups/Create', []);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | Edit
     |--------------------------------------------------------------------------
     */
 
     public function edit(
         PartSetup $partSetup,
-    ): Response {
+    ): Response
+    {
         Gate::authorize(
             'view',
             $partSetup,
@@ -234,8 +239,9 @@ class PartSetupController extends Controller
 
     public function update(
         PartSetupRequest $request,
-        PartSetup $partSetup,
-    ): RedirectResponse {
+        PartSetup        $partSetup,
+    ): RedirectResponse
+    {
         Gate::authorize(
             'update',
             $partSetup,
@@ -276,7 +282,8 @@ class PartSetupController extends Controller
 
     public function destroy(
         PartSetup $partSetup,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize(
             'delete',
             $partSetup,
@@ -300,7 +307,8 @@ class PartSetupController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize(
             'deleteAny',
             PartSetup::class,

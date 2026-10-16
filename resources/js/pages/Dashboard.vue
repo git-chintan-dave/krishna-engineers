@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import {
     ArrowDown,
     ArrowUp,
@@ -10,13 +10,13 @@ import {
     Users,
     Wrench,
 } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import {computed, ref} from 'vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { dashboardPage } from '@/config/dashboard';
-import { dashboard } from '@/routes';
+import {Button} from '@/components/ui/button';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import {dashboardPage} from '@/config/dashboard';
+import {dashboard} from '@/routes';
 import type {
     DashboardActivity,
     DashboardAttendanceSummary,
@@ -345,7 +345,7 @@ const attendanceItems = computed(() =>
         label:
             dashboardPage.attendanceStatuses[
                 item.label.toLowerCase() as keyof typeof dashboardPage.attendanceStatuses
-            ] ?? item.label,
+                ] ?? item.label,
     })),
 );
 
@@ -408,9 +408,9 @@ const getActivityIcon = (type: string) => {
                 <Button
                     v-for="action in dashboardQuickActions"
                     :key="action.label"
-                    variant="outline"
-                    class="h-auto justify-start gap-3 px-4 py-3 text-left"
                     as-child
+                    class="h-auto justify-start gap-3 px-4 py-3 text-left"
+                    variant="outline"
                 >
                     <a :href="action.href">
                         <span
@@ -474,7 +474,6 @@ const getActivityIcon = (type: string) => {
 
                         <div class="mt-4 flex items-center gap-1.5 text-xs">
                             <span
-                                class="inline-flex items-center gap-0.5 font-medium"
                                 :class="
                                     stat.trend === 'up'
                                         ? 'text-emerald-600 dark:text-emerald-400'
@@ -482,6 +481,7 @@ const getActivityIcon = (type: string) => {
                                           ? 'text-rose-600 dark:text-rose-400'
                                           : 'text-muted-foreground'
                                 "
+                                class="inline-flex items-center gap-0.5 font-medium"
                             >
                                 <ArrowUp
                                     v-if="stat.trend === 'up'"
@@ -541,7 +541,6 @@ const getActivityIcon = (type: string) => {
                                 class="flex flex-1 flex-col items-center gap-2"
                             >
                                 <div
-                                    class="w-full rounded-t-md bg-primary/80"
                                     :style="{
                                         height: `${Math.max(
                                             (item.productionQuantity / 1300) *
@@ -550,6 +549,7 @@ const getActivityIcon = (type: string) => {
                                         )}px`,
                                     }"
                                     :title="`Production: ${item.productionQuantity}`"
+                                    class="w-full rounded-t-md bg-primary/80"
                                 />
 
                                 <span class="text-xs text-muted-foreground">
@@ -561,7 +561,6 @@ const getActivityIcon = (type: string) => {
                                 class="flex flex-1 flex-col items-center gap-2"
                             >
                                 <div
-                                    class="w-full rounded-t-md bg-muted-foreground/40"
                                     :style="{
                                         height: `${Math.max(
                                             (item.rejectionQuantity / 20) * 210,
@@ -569,6 +568,7 @@ const getActivityIcon = (type: string) => {
                                         )}px`,
                                     }"
                                     :title="`Rejected: ${item.rejectionQuantity}`"
+                                    class="w-full rounded-t-md bg-muted-foreground/40"
                                 />
                             </div>
                         </div>
@@ -578,7 +578,7 @@ const getActivityIcon = (type: string) => {
                         class="mt-4 flex items-center justify-center gap-6 text-xs text-muted-foreground"
                     >
                         <div class="flex items-center gap-2">
-                            <span class="size-2.5 rounded-full bg-primary" />
+                            <span class="size-2.5 rounded-full bg-primary"/>
                             Production
                         </div>
 
@@ -612,9 +612,9 @@ const getActivityIcon = (type: string) => {
                         </p>
                     </div>
 
-                    <Button variant="ghost" size="sm" class="shrink-0">
+                    <Button class="shrink-0" size="sm" variant="ghost">
                         {{ dashboardPage.machineViewAllLabel }}
-                        <ArrowUpRight class="ml-1 size-4" />
+                        <ArrowUpRight class="ml-1 size-4"/>
                     </Button>
                 </CardHeader>
 
@@ -622,78 +622,78 @@ const getActivityIcon = (type: string) => {
                     <div class="overflow-x-auto">
                         <table class="w-full min-w-[620px] text-sm">
                             <thead>
-                                <tr
-                                    class="border-b text-left text-xs text-muted-foreground"
-                                >
-                                    <th class="pb-3 font-medium">
-                                        {{
-                                            dashboardPage.table.machine.machine
-                                        }}
-                                    </th>
+                            <tr
+                                class="border-b text-left text-xs text-muted-foreground"
+                            >
+                                <th class="pb-3 font-medium">
+                                    {{
+                                        dashboardPage.table.machine.machine
+                                    }}
+                                </th>
 
-                                    <th class="pb-3 font-medium">
-                                        {{
-                                            dashboardPage.table.machine.operator
-                                        }}
-                                    </th>
+                                <th class="pb-3 font-medium">
+                                    {{
+                                        dashboardPage.table.machine.operator
+                                    }}
+                                </th>
 
-                                    <th class="pb-3 text-right font-medium">
-                                        {{ dashboardPage.table.machine.parts }}
-                                    </th>
+                                <th class="pb-3 text-right font-medium">
+                                    {{ dashboardPage.table.machine.parts }}
+                                </th>
 
-                                    <th class="pb-3 text-right font-medium">
-                                        {{
-                                            dashboardPage.table.machine.quantity
-                                        }}
-                                    </th>
+                                <th class="pb-3 text-right font-medium">
+                                    {{
+                                        dashboardPage.table.machine.quantity
+                                    }}
+                                </th>
 
-                                    <th class="pb-3 text-right font-medium">
-                                        {{
-                                            dashboardPage.table.machine
-                                                .productionTime
-                                        }}
-                                    </th>
-                                </tr>
+                                <th class="pb-3 text-right font-medium">
+                                    {{
+                                        dashboardPage.table.machine
+                                            .productionTime
+                                    }}
+                                </th>
+                            </tr>
                             </thead>
 
                             <tbody>
-                                <tr
-                                    v-for="machine in dashboardMachinePerformance"
-                                    :key="machine.id"
-                                    class="border-b last:border-0"
+                            <tr
+                                v-for="machine in dashboardMachinePerformance"
+                                :key="machine.id"
+                                class="border-b last:border-0"
+                            >
+                                <td class="py-3">
+                                    <div>
+                                        <p class="font-medium">
+                                            {{ machine.referenceName }}
+                                        </p>
+
+                                        <p
+                                            class="max-w-48 truncate text-xs text-muted-foreground"
+                                        >
+                                            {{ machine.name }}
+                                        </p>
+                                    </div>
+                                </td>
+
+                                <td class="py-3 text-muted-foreground">
+                                    {{ machine.operator }}
+                                </td>
+
+                                <td class="py-3 text-right tabular-nums">
+                                    {{ machine.parts }}
+                                </td>
+
+                                <td
+                                    class="py-3 text-right font-medium tabular-nums"
                                 >
-                                    <td class="py-3">
-                                        <div>
-                                            <p class="font-medium">
-                                                {{ machine.referenceName }}
-                                            </p>
+                                    {{ machine.quantity }}
+                                </td>
 
-                                            <p
-                                                class="max-w-48 truncate text-xs text-muted-foreground"
-                                            >
-                                                {{ machine.name }}
-                                            </p>
-                                        </div>
-                                    </td>
-
-                                    <td class="py-3 text-muted-foreground">
-                                        {{ machine.operator }}
-                                    </td>
-
-                                    <td class="py-3 text-right tabular-nums">
-                                        {{ machine.parts }}
-                                    </td>
-
-                                    <td
-                                        class="py-3 text-right font-medium tabular-nums"
-                                    >
-                                        {{ machine.quantity }}
-                                    </td>
-
-                                    <td class="py-3 text-right tabular-nums">
-                                        {{ machine.productionTime }}
-                                    </td>
-                                </tr>
+                                <td class="py-3 text-right tabular-nums">
+                                    {{ machine.productionTime }}
+                                </td>
+                            </tr>
                             </tbody>
                         </table>
                     </div>
@@ -709,9 +709,9 @@ const getActivityIcon = (type: string) => {
                         {{ dashboardPage.attendanceTitle }}
                     </CardTitle>
 
-                    <Button variant="ghost" size="sm" class="shrink-0">
+                    <Button class="shrink-0" size="sm" variant="ghost">
                         {{ dashboardPage.attendanceViewAllLabel }}
-                        <ArrowUpRight class="ml-1 size-4" />
+                        <ArrowUpRight class="ml-1 size-4"/>
                     </Button>
                 </CardHeader>
 
@@ -752,74 +752,74 @@ const getActivityIcon = (type: string) => {
                     <div class="overflow-x-auto">
                         <table class="w-full min-w-[720px] text-sm">
                             <thead>
-                                <tr
-                                    class="border-b text-left text-xs text-muted-foreground"
-                                >
-                                    <th class="pb-3 font-medium">
-                                        {{
-                                            dashboardPage.table.operator
-                                                .operator
-                                        }}
-                                    </th>
+                            <tr
+                                class="border-b text-left text-xs text-muted-foreground"
+                            >
+                                <th class="pb-3 font-medium">
+                                    {{
+                                        dashboardPage.table.operator
+                                            .operator
+                                    }}
+                                </th>
 
-                                    <th class="pb-3 text-right font-medium">
-                                        {{
-                                            dashboardPage.table.operator
-                                                .quantity
-                                        }}
-                                    </th>
+                                <th class="pb-3 text-right font-medium">
+                                    {{
+                                        dashboardPage.table.operator
+                                            .quantity
+                                    }}
+                                </th>
 
-                                    <th class="pb-3 text-right font-medium">
-                                        {{
-                                            dashboardPage.table.operator
-                                                .rejected
-                                        }}
-                                    </th>
+                                <th class="pb-3 text-right font-medium">
+                                    {{
+                                        dashboardPage.table.operator
+                                            .rejected
+                                    }}
+                                </th>
 
-                                    <th class="pb-3 text-right font-medium">
-                                        {{
-                                            dashboardPage.table.operator
-                                                .productionTime
-                                        }}
-                                    </th>
+                                <th class="pb-3 text-right font-medium">
+                                    {{
+                                        dashboardPage.table.operator
+                                            .productionTime
+                                    }}
+                                </th>
 
-                                    <th class="pb-3 text-right font-medium">
-                                        {{
-                                            dashboardPage.table.operator
-                                                .efficiency
-                                        }}
-                                    </th>
-                                </tr>
+                                <th class="pb-3 text-right font-medium">
+                                    {{
+                                        dashboardPage.table.operator
+                                            .efficiency
+                                    }}
+                                </th>
+                            </tr>
                             </thead>
 
                             <tbody>
-                                <tr
-                                    v-for="operator in dashboardOperatorPerformance"
-                                    :key="operator.id"
-                                    class="border-b last:border-0"
+                            <tr
+                                v-for="operator in dashboardOperatorPerformance"
+                                :key="operator.id"
+                                class="border-b last:border-0"
+                            >
+                                <td class="py-3 font-medium">
+                                    {{ operator.name }}
+                                </td>
+
+                                <td class="py-3 text-right tabular-nums">
+                                    {{ operator.quantity }}
+                                </td>
+
+                                <td class="py-3 text-right tabular-nums">
+                                    {{ operator.rejectionQuantity }}
+                                </td>
+
+                                <td class="py-3 text-right tabular-nums">
+                                    {{ operator.productionTime }}
+                                </td>
+
+                                <td
+                                    class="py-3 text-right font-medium tabular-nums"
                                 >
-                                    <td class="py-3 font-medium">
-                                        {{ operator.name }}
-                                    </td>
-
-                                    <td class="py-3 text-right tabular-nums">
-                                        {{ operator.quantity }}
-                                    </td>
-
-                                    <td class="py-3 text-right tabular-nums">
-                                        {{ operator.rejectionQuantity }}
-                                    </td>
-
-                                    <td class="py-3 text-right tabular-nums">
-                                        {{ operator.productionTime }}
-                                    </td>
-
-                                    <td
-                                        class="py-3 text-right font-medium tabular-nums"
-                                    >
-                                        {{ operator.efficiency }}%
-                                    </td>
-                                </tr>
+                                    {{ operator.efficiency }}%
+                                </td>
+                            </tr>
                             </tbody>
                         </table>
                     </div>
@@ -850,7 +850,7 @@ const getActivityIcon = (type: string) => {
                             <div
                                 class="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted"
                             >
-                                <PackagePlus class="size-4" />
+                                <PackagePlus class="size-4"/>
                             </div>
 
                             <div class="min-w-0">

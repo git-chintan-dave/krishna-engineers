@@ -1,20 +1,17 @@
-<script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+<script lang="ts" setup>
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
 
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
 
-import { operatorWorkLogPage } from '@/config/operatorWorkLogs';
+import {operatorWorkLogPage} from '@/config/operatorWorkLogs';
 
-import { index as operatorWorkLogs, store } from '@/routes/operator';
+import {index as operatorWorkLogs, store} from '@/routes/operator';
 
 import OperatorWorkLogForm from '@/pages/WorkLogs/Operator/components/OperatorWorkLogForm.vue';
 
-import type {
-    OperatorWorkLogFormData,
-    OperatorWorkLogPartSetupOption,
-} from '@/types/operatorWorkLog';
+import type {OperatorWorkLogFormData, OperatorWorkLogPartSetupOption,} from '@/types/operatorWorkLog';
 
 /*
 |--------------------------------------------------------------------------
@@ -95,21 +92,21 @@ const handleCancel = () => {
 
 <template>
     <FormLayout
-        :title="operatorWorkLogPage.form.createTitle"
         :description="operatorWorkLogPage.form.createDescription"
+        :title="operatorWorkLogPage.form.createTitle"
     >
         <OperatorWorkLogForm
-            :form="form"
+            :can-select-operator="props.canSelectOperator"
+            :current-user-id="props.currentUserId"
             :errors="form.errors"
+            :form="form"
+            :is-create="true"
+            :last-reports="props.lastReports"
+            :part-setups="props.partSetups"
             :processing="form.processing"
             :submit-label="operatorWorkLogPage.form.createSubmitLabel"
-            :part-setups="props.partSetups"
-            :current-user-id="props.currentUserId"
-            :can-select-operator="props.canSelectOperator"
-            :last-reports="props.lastReports"
-            :is-create="true"
-            @submit="handleSubmit"
             @cancel="handleCancel"
+            @submit="handleSubmit"
         />
     </FormLayout>
 </template>

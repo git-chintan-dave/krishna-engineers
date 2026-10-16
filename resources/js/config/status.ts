@@ -1,5 +1,5 @@
-import type { SelectOption } from '@/types/common';
-import type { StatusFilter } from '@/types/listing';
+import type {SelectOption} from '@/types/common';
+import type {StatusFilter} from '@/types/listing';
 
 export const statusOptions: SelectOption<StatusFilter>[] = [
     {

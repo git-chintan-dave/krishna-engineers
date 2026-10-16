@@ -1,15 +1,15 @@
-import { createColumnHelper } from '@tanstack/vue-table';
-import { h } from 'vue';
+import {createColumnHelper} from '@tanstack/vue-table';
+import {h} from 'vue';
 
 import AppImageThumbnail from '@/components/common/AppImageThumbnail.vue';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createDateColumn } from '@/table/columns/dateColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import { createStatusColumn } from '@/table/columns/statusColumn';
-import { createPrimaryColumn } from '@/table/helpers/primaryColumn';
-import { createSortableColumn } from '@/table/helpers/sortableColumn';
-import { edit } from '@/routes/parts';
-import type { Part } from '@/types/part';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createDateColumn} from '@/table/columns/dateColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createStatusColumn} from '@/table/columns/statusColumn';
+import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
+import {createSortableColumn} from '@/table/helpers/sortableColumn';
+import {edit} from '@/routes/parts';
+import type {Part} from '@/types/part';
 
 const columnHelper = createColumnHelper<any, Part>();
 
@@ -63,7 +63,7 @@ export const createPartColumns = (handleDelete: (uuid: string) => void) =>
             minSize: 100,
             enableSorting: false,
             enableColumnFilter: false,
-            cell: ({ row }) =>
+            cell: ({row}) =>
                 h(AppImageThumbnail, {
                     src: row.original.image,
                     alt: row.original.name,

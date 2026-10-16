@@ -1,20 +1,14 @@
-<script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
-import { login, dashboard } from '@/routes';
+<script lang="ts" setup>
+import {Head, Link} from '@inertiajs/vue3';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from '@/components/ui/card';
+import {dashboard, login} from '@/routes';
 </script>
 
 <template>
     <Head title="Welcome to Krishna Engineers">
         <meta
-            name="description"
             content="Krishna Engineers — a smarter way to manage production, attendance, and daily operations."
+            name="description"
         />
     </Head>
 
@@ -25,9 +19,9 @@ import { login, dashboard } from '@/routes';
             <Card class="rounded-xl shadow-lg">
                 <CardHeader class="px-8 pt-8 text-center sm:px-10">
                     <img
-                        src="/logo.svg"
                         alt="Krishna Engineers"
                         class="mx-auto mb-4 h-20 w-auto max-w-56 object-contain"
+                        src="/logo.svg"
                     />
 
                     <CardTitle class="text-2xl font-bold tracking-tight">

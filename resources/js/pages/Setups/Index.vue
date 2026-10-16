@@ -1,29 +1,19 @@
-﻿<script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+﻿<script lang="ts" setup>
+import {router} from '@inertiajs/vue3';
+import {ref} from 'vue';
 
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import ListingActions from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { setupPage } from '@/config/setups';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as setupsRoute,
-} from '@/routes/setups';
-import { createSetupColumns } from '@/table/setups';
-import type {
-    Setup,
-    SetupFilters,
-    SetupSort,
-    SetupsResponse,
-} from '@/types/setup';
-import type { StatusFilter } from '@/types/listing';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {setupPage} from '@/config/setups';
+import {bulkDestroy, create, destroy, index as setupsRoute,} from '@/routes/setups';
+import {createSetupColumns} from '@/table/setups';
+import type {Setup, SetupFilters, SetupSort, SetupsResponse,} from '@/types/setup';
+import type {StatusFilter} from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------
@@ -122,8 +112,8 @@ const handleDeleteSelected = () => {
 
 <template>
     <ListingLayout
-        :title="setupPage.title"
         :description="setupPage.description"
+        :title="setupPage.title"
     >
         <!--
         |--------------------------------------------------------------------------
@@ -133,10 +123,10 @@ const handleDeleteSelected = () => {
 
         <template #actions>
             <ListingActions
-                :create-url="create()"
                 :create-label="setupPage.createLabel"
-                :selected-count="selectedCount"
+                :create-url="create()"
                 :resource-label="setupPage.resourceLabel"
+                :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
             />
         </template>
@@ -150,12 +140,12 @@ const handleDeleteSelected = () => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
-                :search-placeholder="setupPage.searchPlaceholder"
-                :search-button-label="setupPage.searchButtonLabel"
                 :clear-button-label="setupPage.clearButtonLabel"
                 :clear-disabled="!searchQuery.trim() && filterStatus === 'all'"
-                @search="search"
+                :search-button-label="setupPage.searchButtonLabel"
+                :search-placeholder="setupPage.searchPlaceholder"
                 @clear="handleClearFilters"
+                @search="search"
             >
                 <template #filters>
                     <div class="w-full shrink-0 sm:w-48">
@@ -163,8 +153,8 @@ const handleDeleteSelected = () => {
                             :model-value="
                                 filterStatus === 'all' ? null : filterStatus
                             "
-                            placeholder="All statuses"
                             clearable
+                            placeholder="All statuses"
                             @update:model-value="handleStatusChange"
                         />
                     </div>
@@ -180,15 +170,15 @@ const handleDeleteSelected = () => {
 
         <template #table>
             <DataTable
-                :table="table"
                 :columns-count="columns.length"
-                :total="setups.meta.total"
-                :page-index="setups.meta.current_page - 1"
-                :page-size="setups.meta.per_page"
-                :selected-count="selectedCount"
-                :page-size-options="[10, 25, 50, 100]"
                 :empty-text="setupPage.emptyText"
                 :item-label="setupPage.itemLabel"
+                :page-index="setups.meta.current_page - 1"
+                :page-size="setups.meta.per_page"
+                :page-size-options="[10, 25, 50, 100]"
+                :selected-count="selectedCount"
+                :table="table"
+                :total="setups.meta.total"
             />
         </template>
     </ListingLayout>

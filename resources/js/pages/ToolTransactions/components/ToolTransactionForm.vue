@@ -1,15 +1,7 @@
-<script setup lang="ts">
-import type { InertiaForm } from '@inertiajs/vue3';
-import {
-    ArrowLeftRight,
-    Box,
-    Hash,
-    MessageSquare,
-    Settings2,
-    User,
-    Wrench,
-} from '@lucide/vue';
-import { computed, watch } from 'vue';
+<script lang="ts" setup>
+import type {InertiaForm} from '@inertiajs/vue3';
+import {ArrowLeftRight, Box, Hash, MessageSquare, Settings2, User, Wrench,} from '@lucide/vue';
+import {computed, watch} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -23,8 +15,8 @@ import AppSetupSelect from '@/components/selects/AppSetupSelect.vue';
 import AppToolSelect from '@/components/selects/AppToolSelect.vue';
 import AppToolTransactionTypeSelect from '@/components/selects/AppToolTransactionTypeSelect.vue';
 
-import { toolTransactionPage } from '@/config/toolTransactions';
-import type { ToolTransactionType } from '@/types/toolTransaction';
+import {toolTransactionPage} from '@/config/toolTransactions';
+import type {ToolTransactionType} from '@/types/toolTransaction';
 
 /*
 |--------------------------------------------------------------------------
@@ -138,155 +130,155 @@ const handleTypeChange = (value: string | number | null): void => {
     <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
         <!-- Transaction Details -->
         <FormSection
-            :title="toolTransactionPage.form.sectionTitle"
             :description="toolTransactionPage.form.sectionDescription"
+            :title="toolTransactionPage.form.sectionTitle"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Transaction Type -->
                 <AppField
+                    :error="props.errors.type"
                     :label="toolTransactionPage.form.typeLabel"
                     input-id="tool-transaction-type"
-                    :error="props.errors.type"
                     required
                 >
                     <AppToolTransactionTypeSelect
                         id="tool-transaction-type"
+                        :clearable="!props.isEditing"
+                        :disabled="props.processing || props.isEditing"
+                        :error="props.errors.type"
+                        :icon="ArrowLeftRight"
                         :model-value="props.form.type || null"
                         :placeholder="toolTransactionPage.form.typePlaceholder"
-                        :disabled="props.processing || props.isEditing"
-                        :icon="ArrowLeftRight"
-                        :error="props.errors.type"
                         searchable
-                        :clearable="!props.isEditing"
                         @update:model-value="handleTypeChange"
                     />
                 </AppField>
 
                 <!-- Tool -->
                 <AppField
+                    :error="props.errors.tool_id"
                     :label="toolTransactionPage.form.toolLabel"
                     input-id="tool-transaction-tool"
-                    :error="props.errors.tool_id"
                     required
                 >
                     <AppToolSelect
                         id="tool-transaction-tool"
                         v-model="props.form.toolId"
-                        :placeholder="toolTransactionPage.form.toolPlaceholder"
-                        :disabled="props.processing || props.isEditing"
-                        :icon="Wrench"
-                        :error="props.errors.tool_id"
-                        searchable
                         :clearable="!props.isEditing"
+                        :disabled="props.processing || props.isEditing"
+                        :error="props.errors.tool_id"
+                        :icon="Wrench"
+                        :placeholder="toolTransactionPage.form.toolPlaceholder"
+                        searchable
                     />
                 </AppField>
 
                 <!-- Quantity -->
                 <AppField
+                    :error="props.errors.quantity"
                     :label="toolTransactionPage.form.quantityLabel"
                     input-id="tool-transaction-quantity"
-                    :error="props.errors.quantity"
                     required
                 >
                     <AppInput
                         id="tool-transaction-quantity"
                         v-model.number="props.form.quantity"
-                        type="number"
-                        :min="quantityMin"
+                        :disabled="props.processing"
+                        :error="props.errors.quantity"
+                        :icon="Hash"
                         :max="2147483647"
-                        step="1"
+                        :min="quantityMin"
                         :placeholder="
                             toolTransactionPage.form.quantityPlaceholder
                         "
-                        :disabled="props.processing"
-                        :icon="Hash"
-                        :error="props.errors.quantity"
+                        step="1"
+                        type="number"
                     />
                 </AppField>
 
                 <!-- From User -->
                 <AppField
                     v-if="showUsers"
+                    :error="props.errors.from_user_id"
                     :label="toolTransactionPage.form.fromUserLabel"
                     input-id="tool-transaction-from-user"
-                    :error="props.errors.from_user_id"
                 >
                     <AppEmployeeSelect
                         id="tool-transaction-from-user"
                         v-model="props.form.fromUserId"
+                        :disabled="props.processing || props.isEditing"
+                        :error="props.errors.from_user_id"
+                        :icon="User"
                         :placeholder="
                             toolTransactionPage.form.fromUserPlaceholder
                         "
-                        :disabled="props.processing || props.isEditing"
-                        :icon="User"
-                        :error="props.errors.from_user_id"
-                        searchable
                         clearable
+                        searchable
                     />
                 </AppField>
 
                 <!-- To User -->
                 <AppField
                     v-if="showUsers"
+                    :error="props.errors.to_user_id"
                     :label="toolTransactionPage.form.toUserLabel"
                     input-id="tool-transaction-to-user"
-                    :error="props.errors.to_user_id"
                     required
                 >
                     <AppEmployeeSelect
                         id="tool-transaction-to-user"
                         v-model="props.form.toUserId"
+                        :disabled="props.processing || props.isEditing"
+                        :error="props.errors.to_user_id"
+                        :icon="User"
                         :placeholder="
                             toolTransactionPage.form.toUserPlaceholder
                         "
-                        :disabled="props.processing || props.isEditing"
-                        :icon="User"
-                        :error="props.errors.to_user_id"
-                        searchable
                         clearable
+                        searchable
                     />
                 </AppField>
 
                 <!-- Part -->
                 <AppField
                     v-if="showPartAndSetup"
+                    :error="props.errors.part_id"
                     :label="toolTransactionPage.form.partLabel"
                     input-id="tool-transaction-part"
-                    :error="props.errors.part_id"
                 >
                     <AppPartSelect
                         id="tool-transaction-part"
                         v-model="props.form.partId"
-                        :placeholder="toolTransactionPage.form.partPlaceholder"
                         :disabled="props.processing || props.isEditing"
-                        :icon="Box"
                         :error="props.errors.part_id"
-                        searchable
+                        :icon="Box"
+                        :placeholder="toolTransactionPage.form.partPlaceholder"
                         clearable
+                        searchable
                     />
                 </AppField>
 
                 <!-- Setup -->
                 <AppField
                     v-if="showPartAndSetup"
+                    :error="props.errors.setup_id"
                     :label="toolTransactionPage.form.setupLabel"
                     input-id="tool-transaction-setup"
-                    :error="props.errors.setup_id"
                 >
                     <AppSetupSelect
                         id="tool-transaction-setup"
                         v-model="props.form.setupId"
-                        :part-id="props.form.partId"
-                        :placeholder="toolTransactionPage.form.setupPlaceholder"
                         :disabled="
                             props.processing ||
                             props.isEditing ||
                             !props.form.partId
                         "
-                        :icon="Settings2"
                         :error="props.errors.setup_id"
-                        searchable
+                        :icon="Settings2"
+                        :part-id="props.form.partId"
+                        :placeholder="toolTransactionPage.form.setupPlaceholder"
                         clearable
+                        searchable
                     />
                 </AppField>
 
@@ -294,19 +286,19 @@ const handleTypeChange = (value: string | number | null): void => {
                 <div v-if="showReturnScrap" class="md:col-span-2">
                     <ToggleCardInput
                         v-model="props.form.returnScrap"
-                        :title="toolTransactionPage.form.returnScrapTitle"
-                        :label="toolTransactionPage.form.returnScrapLabel"
-                        :description="
-                            toolTransactionPage.form.returnScrapDescription
-                        "
                         :active-text="
                             toolTransactionPage.form.returnScrapActiveText
                         "
+                        :description="
+                            toolTransactionPage.form.returnScrapDescription
+                        "
+                        :disabled="props.processing || props.isEditing"
+                        :error="props.errors.return_scrap"
                         :inactive-text="
                             toolTransactionPage.form.returnScrapInactiveText
                         "
-                        :error="props.errors.return_scrap"
-                        :disabled="props.processing || props.isEditing"
+                        :label="toolTransactionPage.form.returnScrapLabel"
+                        :title="toolTransactionPage.form.returnScrapTitle"
                     />
                 </div>
             </div>
@@ -314,24 +306,24 @@ const handleTypeChange = (value: string | number | null): void => {
 
         <!-- Additional Information -->
         <FormSection
-            title="Additional Information"
             description="Add an optional note for this tool transaction."
+            title="Additional Information"
         >
             <div class="grid min-w-0 gap-5">
                 <AppField
+                    :error="props.errors.remarks"
                     :label="toolTransactionPage.form.remarksLabel"
                     input-id="tool-transaction-remarks"
-                    :error="props.errors.remarks"
                 >
                     <AppInput
                         id="tool-transaction-remarks"
                         v-model="props.form.remarks"
+                        :disabled="props.processing"
+                        :error="props.errors.remarks"
+                        :icon="MessageSquare"
                         :placeholder="
                             toolTransactionPage.form.remarksPlaceholder
                         "
-                        :disabled="props.processing"
-                        :icon="MessageSquare"
-                        :error="props.errors.remarks"
                     />
                 </AppField>
             </div>
@@ -339,9 +331,9 @@ const handleTypeChange = (value: string | number | null): void => {
 
         <!-- Actions -->
         <FormActions
-            :submit-label="props.submitLabel"
             :cancel-label="toolTransactionPage.form.cancelLabel"
             :processing="props.processing"
+            :submit-label="props.submitLabel"
             @cancel="emit('cancel')"
         />
     </form>

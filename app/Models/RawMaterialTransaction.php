@@ -45,13 +45,9 @@ class RawMaterialTransaction extends Model
     |--------------------------------------------------------------------------
     */
 
-    protected function casts(): array
+    public function sectionSize(): BelongsTo
     {
-        return [
-            'type' => RawMaterialTransactionType::class,
-            'quantity' => 'integer',
-            'reference_id' => 'integer',
-        ];
+        return $this->belongsTo(SectionSize::class);
     }
 
     /*
@@ -59,11 +55,6 @@ class RawMaterialTransaction extends Model
     | Relationships
     |--------------------------------------------------------------------------
     */
-
-    public function sectionSize(): BelongsTo
-    {
-        return $this->belongsTo(SectionSize::class);
-    }
 
     public function user(): BelongsTo
     {
@@ -75,55 +66,70 @@ class RawMaterialTransaction extends Model
         return $this->morphTo();
     }
 
+    public function scopeForSectionSize(
+        Builder $query,
+        int     $sectionSizeId,
+    ): Builder
+    {
+        return $query->where('section_size_id', $sectionSizeId);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Scopes
     |--------------------------------------------------------------------------
     */
 
-    public function scopeForSectionSize(
-        Builder $query,
-        int $sectionSizeId,
-    ): Builder {
-        return $query->where('section_size_id', $sectionSizeId);
-    }
-
     public function scopeOfType(
-        Builder $query,
+        Builder                    $query,
         RawMaterialTransactionType $type,
-    ): Builder {
+    ): Builder
+    {
         return $query->where('type', $type);
     }
 
     public function scopeForUser(
         Builder $query,
-        int $userId,
-    ): Builder {
+        int     $userId,
+    ): Builder
+    {
         return $query->where('user_id', $userId);
     }
 
     public function scopeFromDate(
         Builder $query,
-        string $date,
-    ): Builder {
+        string  $date,
+    ): Builder
+    {
         return $query->whereDate('created_at', '>=', $date);
     }
 
     public function scopeToDate(
         Builder $query,
-        string $date,
-    ): Builder {
+        string  $date,
+    ): Builder
+    {
         return $query->whereDate('created_at', '<=', $date);
     }
 
     public function scopeBetweenDates(
         Builder $query,
-        string $fromDate,
-        string $toDate,
-    ): Builder {
+        string  $fromDate,
+        string  $toDate,
+    ): Builder
+    {
         return $query->whereBetween('created_at', [
             "{$fromDate} 00:00:00",
             "{$toDate} 23:59:59.999999",
         ]);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'type' => RawMaterialTransactionType::class,
+            'quantity' => 'integer',
+            'reference_id' => 'integer',
+        ];
     }
 }

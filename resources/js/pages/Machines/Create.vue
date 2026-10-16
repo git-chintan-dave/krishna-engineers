@@ -1,12 +1,12 @@
-﻿<script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+﻿<script lang="ts" setup>
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { machinePage } from '@/config/machines';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {machinePage} from '@/config/machines';
 import MachineForm from '@/pages/Machines/components/MachineForm.vue';
-import { index as machines, store } from '@/routes/machines';
-import type { MachineFormData } from '@/types/machine';
+import {index as machines, store} from '@/routes/machines';
+import type {MachineFormData} from '@/types/machine';
 
 /*
 |--------------------------------------------------------------------------
@@ -55,16 +55,16 @@ const handleCancel = () => {
 
 <template>
     <FormLayout
-        :title="machinePage.form.createTitle"
         :description="machinePage.form.createDescription"
+        :title="machinePage.form.createTitle"
     >
         <MachineForm
-            :form="form"
             :errors="form.errors"
+            :form="form"
             :processing="form.processing"
             :submit-label="machinePage.form.createSubmitLabel"
-            @submit="handleSubmit"
             @cancel="handleCancel"
+            @submit="handleSubmit"
         />
     </FormLayout>
 </template>

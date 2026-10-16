@@ -23,11 +23,11 @@ class BandsawWorkLogResource extends JsonResource
                 'id' => $this->user_id,
                 'name' => $this->whenLoaded(
                     'user',
-                    fn () => $this->user->name,
+                    fn() => $this->user->name,
                 ),
                 'employee_code' => $this->whenLoaded(
                     'user',
-                    fn () => $this->user->employee_code,
+                    fn() => $this->user->employee_code,
                 ),
             ],
 
@@ -35,22 +35,22 @@ class BandsawWorkLogResource extends JsonResource
                 'id' => $this->part_id,
                 'name' => $this->whenLoaded(
                     'part',
-                    fn () => $this->part->name,
+                    fn() => $this->part->name,
                 ),
                 'reference_name' => $this->whenLoaded(
                     'part',
-                    fn () => $this->part->reference_name,
+                    fn() => $this->part->reference_name,
                 ),
             ],
 
             'section' => [
                 'id' => $this->whenLoaded(
                     'sectionSize',
-                    fn () => $this->sectionSize?->section_id,
+                    fn() => $this->sectionSize?->section_id,
                 ),
                 'name' => $this->whenLoaded(
                     'sectionSize',
-                    fn () => $this->sectionSize?->section?->name,
+                    fn() => $this->sectionSize?->section?->name,
                 ),
             ],
 
@@ -58,7 +58,7 @@ class BandsawWorkLogResource extends JsonResource
                 'id' => $this->section_size_id,
                 'size' => $this->whenLoaded(
                     'sectionSize',
-                    fn () => $this->sectionSize?->size,
+                    fn() => $this->sectionSize?->size,
                 ),
             ],
 

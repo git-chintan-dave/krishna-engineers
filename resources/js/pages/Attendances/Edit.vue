@@ -1,19 +1,12 @@
-﻿<script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+﻿<script lang="ts" setup>
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { attendancePage } from '@/config/attendances';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {attendancePage} from '@/config/attendances';
 import AttendanceForm from '@/pages/Attendances/components/AttendanceForm.vue';
-import {
-    index as attendances,
-    update as updateAttendance,
-} from '@/routes/attendances';
-import type {
-    Attendance,
-    AttendanceEmployeeOption,
-    AttendanceFormData,
-} from '@/types/attendance';
+import {index as attendances, update as updateAttendance,} from '@/routes/attendances';
+import type {Attendance, AttendanceEmployeeOption, AttendanceFormData,} from '@/types/attendance';
 
 /*
 |--------------------------------------------------------------------------
@@ -87,18 +80,18 @@ const handleCancel = () => {
 
 <template>
     <FormLayout
-        :title="attendancePage.form.editTitle"
         :description="attendancePage.form.editDescription"
+        :title="attendancePage.form.editTitle"
     >
         <AttendanceForm
-            :form="form"
             :attendance="attendance"
             :employees="employees"
             :errors="form.errors"
+            :form="form"
             :processing="form.processing"
             :submit-label="attendancePage.form.editSubmitLabel"
-            @submit="handleSubmit"
             @cancel="handleCancel"
+            @submit="handleSubmit"
         />
     </FormLayout>
 </template>

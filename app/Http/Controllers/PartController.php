@@ -26,7 +26,9 @@ class PartController extends Controller
 
     private const string IMAGE_DIRECTORY = 'parts';
 
-    public function __construct(private readonly FileUploadService $fileUploadService) {}
+    public function __construct(private readonly FileUploadService $fileUploadService)
+    {
+    }
 
     public function index(IndexPartRequest $request): Response
     {
@@ -42,16 +44,16 @@ class PartController extends Controller
             ->with('section')
             ->when(
                 $filters['section_id'] ?? null,
-                fn (Builder $query, int $sectionId): Builder => $query->where(
+                fn(Builder $query, int $sectionId): Builder => $query->where(
                     'section_id',
                     $sectionId,
                 ),
             )
             ->when(
                 $filters['status'] ?? null,
-                fn (
+                fn(
                     Builder $query,
-                    string $status,
+                    string  $status,
                 ): Builder => $query->where(
                     'status',
                     $status,
@@ -73,13 +75,6 @@ class PartController extends Controller
         ]);
     }
 
-    public function create(): Response
-    {
-        Gate::authorize('create', Part::class);
-
-        return Inertia::render('Parts/Create', []);
-    }
-
     public function store(PartRequest $request): RedirectResponse
     {
         Gate::authorize('create', Part::class);
@@ -96,6 +91,13 @@ class PartController extends Controller
         return $this->successResponse('created');
     }
 
+    public function create(): Response
+    {
+        Gate::authorize('create', Part::class);
+
+        return Inertia::render('Parts/Create', []);
+    }
+
     public function edit(Part $part): Response
     {
         Gate::authorize('view', $part);
@@ -109,8 +111,9 @@ class PartController extends Controller
 
     public function update(
         PartRequest $request,
-        Part $part,
-    ): RedirectResponse {
+        Part        $part,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $part);
 
         $data = $request->validated();
@@ -140,7 +143,8 @@ class PartController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('deleteAny', Part::class);
 
         Part::query()

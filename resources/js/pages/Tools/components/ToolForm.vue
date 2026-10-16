@@ -1,6 +1,6 @@
-<script setup lang="ts">
-import type { InertiaForm } from '@inertiajs/vue3';
-import { Image, Settings2, ToggleRight, Wrench } from '@lucide/vue';
+<script lang="ts" setup>
+import type {InertiaForm} from '@inertiajs/vue3';
+import {Image, Settings2, ToggleRight, Wrench} from '@lucide/vue';
 
 import AppImagePicker from '@/components/common/AppImagePicker.vue';
 import AppInput from '@/components/common/AppInput.vue';
@@ -9,8 +9,8 @@ import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import ToggleCardInput from '@/components/form/ToggleCardInput.vue';
 import AppToolTypeSelect from '@/components/selects/AppToolTypeSelect.vue';
-import { toolPage } from '@/config/tools';
-import type { ToolFormData } from '@/types/tool';
+import {toolPage} from '@/config/tools';
+import type {ToolFormData} from '@/types/tool';
 
 // Props
 const props = withDefaults(
@@ -49,43 +49,43 @@ const handleImageRemove = (): void => {
     <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
         <!-- Tool Information -->
         <FormSection
-            :title="toolPage.form.toolTitle"
             :description="toolPage.form.toolDescription"
+            :title="toolPage.form.toolTitle"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Type -->
                 <AppField
+                    :error="props.errors.type"
                     :label="toolPage.form.typeLabel"
                     input-id="tool-type"
-                    :error="props.errors.type"
                     required
                 >
                     <AppToolTypeSelect
                         id="tool-type"
                         v-model="props.form.type"
-                        :placeholder="toolPage.form.typePlaceholder"
-                        :error="props.errors.type"
                         :disabled="props.processing"
+                        :error="props.errors.type"
                         :icon="Wrench"
-                        searchable
+                        :placeholder="toolPage.form.typePlaceholder"
                         required
+                        searchable
                     />
                 </AppField>
 
                 <!-- Name -->
                 <AppField
+                    :error="props.errors.name"
                     :label="toolPage.form.nameLabel"
                     input-id="tool-name"
-                    :error="props.errors.name"
                     required
                 >
                     <AppInput
                         id="tool-name"
                         v-model="props.form.name"
-                        :placeholder="toolPage.form.namePlaceholder"
-                        :error="props.errors.name"
                         :disabled="props.processing"
+                        :error="props.errors.name"
                         :icon="Settings2"
+                        :placeholder="toolPage.form.namePlaceholder"
                         autocomplete="off"
                         required
                     />
@@ -95,26 +95,26 @@ const handleImageRemove = (): void => {
 
         <!-- Image & Status -->
         <FormSection
-            :title="toolPage.form.detailsTitle ?? 'Tool Details'"
             :description="
                 toolPage.form.detailsDescription ??
                 'Manage the tool image and status.'
             "
+            :title="toolPage.form.detailsTitle ?? 'Tool Details'"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Image -->
                 <AppField
                     :label="toolPage.form.imageLabel"
-                    input-id="tool-image"
                     class="md:col-span-2"
+                    input-id="tool-image"
                 >
                     <AppImagePicker
                         v-model="props.form.image"
                         :current-image="props.currentImage"
                         :disabled="props.processing"
                         :error="props.errors.image"
-                        :placeholder="toolPage.form.imagePlaceholder"
                         :icon="Image"
+                        :placeholder="toolPage.form.imagePlaceholder"
                         @change="handleImageChange"
                         @remove="handleImageRemove"
                     />
@@ -123,20 +123,20 @@ const handleImageRemove = (): void => {
                 <!-- Status -->
                 <AppField
                     :label="toolPage.form.statusLabel"
-                    input-id="tool-status"
                     class="md:col-span-2"
+                    input-id="tool-status"
                 >
                     <ToggleCardInput
                         v-model="props.form.status"
-                        title="Tool Status"
-                        label="Status"
+                        :disabled="props.processing"
+                        :error="props.errors.status"
+                        :icon="ToggleRight"
                         active-text="Tool is currently active."
                         inactive-text="
                             Tool is currently inactive.
                         "
-                        :disabled="props.processing"
-                        :error="props.errors.status"
-                        :icon="ToggleRight"
+                        label="Status"
+                        title="Tool Status"
                     />
                 </AppField>
             </div>
@@ -144,9 +144,9 @@ const handleImageRemove = (): void => {
 
         <!-- Actions -->
         <FormActions
+            :cancel-label="toolPage.form.cancelLabel"
             :processing="props.processing"
             :submit-label="props.submitLabel"
-            :cancel-label="toolPage.form.cancelLabel"
             @cancel="emit('cancel')"
         />
     </form>

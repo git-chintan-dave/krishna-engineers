@@ -32,6 +32,27 @@ class Attendance extends Model
     }
 
     // Casts
+
+    public function isOpen(): bool
+    {
+        return $this->end_at === null;
+    }
+
+    // Helpers
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    // Relationships
+
+    public function breaks(): HasMany
+    {
+        return $this->hasMany(AttendanceBreak::class)
+            ->orderBy('start_at');
+    }
+
     protected function casts(): array
     {
         return [
@@ -42,23 +63,5 @@ class Attendance extends Model
             'break_seconds' => 'integer',
             'effective_working_seconds' => 'integer',
         ];
-    }
-
-    // Helpers
-    public function isOpen(): bool
-    {
-        return $this->end_at === null;
-    }
-
-    // Relationships
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function breaks(): HasMany
-    {
-        return $this->hasMany(AttendanceBreak::class)
-            ->orderBy('start_at');
     }
 }

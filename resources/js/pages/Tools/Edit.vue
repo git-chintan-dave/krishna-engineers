@@ -1,12 +1,12 @@
-﻿<script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+﻿<script lang="ts" setup>
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { toolPage } from '@/config/tools';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {toolPage} from '@/config/tools';
 import ToolForm from '@/pages/Tools/components/ToolForm.vue';
-import { index as tools, update as updateTool } from '@/routes/tools';
-import type { Tool, ToolFormData } from '@/types/tool';
+import {index as tools, update as updateTool} from '@/routes/tools';
+import type {Tool, ToolFormData} from '@/types/tool';
 
 /*
 |--------------------------------------------------------------------------
@@ -73,17 +73,17 @@ const handleCancel = () => {
 
 <template>
     <FormLayout
-        :title="toolPage.form.editTitle"
         :description="toolPage.form.editDescription"
+        :title="toolPage.form.editTitle"
     >
         <ToolForm
-            :form="form"
+            :current-image="props.tool.image"
             :errors="form.errors"
+            :form="form"
             :processing="form.processing"
             :submit-label="toolPage.form.editSubmitLabel"
-            :current-image="props.tool.image"
-            @submit="handleSubmit"
             @cancel="handleCancel"
+            @submit="handleSubmit"
         />
     </FormLayout>
 </template>

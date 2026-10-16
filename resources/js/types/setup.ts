@@ -1,9 +1,4 @@
-﻿import type {
-    PaginatedResponse,
-    SortDirection,
-    Status,
-    StatusFilter,
-} from '@/types/listing';
+﻿import type {PaginatedResponse, SortDirection, Status, StatusFilter,} from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------

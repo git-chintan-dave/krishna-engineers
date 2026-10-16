@@ -40,6 +40,24 @@ class PartSetupService
     }
 
     /**
+     * Ensure all related master records are active.
+     */
+    protected function ensureActive(Part $part, Setup $setup): void
+    {
+        if (!$part->isActive()) {
+            throw new RuntimeException(
+                'The selected part is inactive.'
+            );
+        }
+
+        if (!$setup->isActive()) {
+            throw new RuntimeException(
+                'The selected setup is inactive.'
+            );
+        }
+    }
+
+    /**
      * Update a part setup configuration.
      */
     public function update(PartSetup $partSetup, array $data): PartSetup
@@ -82,23 +100,5 @@ class PartSetupService
             ->where('part_id', $part->id)
             ->where('setup_id', $setup->id)
             ->first();
-    }
-
-    /**
-     * Ensure all related master records are active.
-     */
-    protected function ensureActive(Part $part, Setup $setup): void
-    {
-        if (! $part->isActive()) {
-            throw new RuntimeException(
-                'The selected part is inactive.'
-            );
-        }
-
-        if (! $setup->isActive()) {
-            throw new RuntimeException(
-                'The selected setup is inactive.'
-            );
-        }
     }
 }

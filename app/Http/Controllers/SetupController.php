@@ -36,7 +36,7 @@ class SetupController extends Controller
         )
             ->when(
                 $filters['status'] ?? null,
-                fn (Builder $query, string $status): Builder => $query->where(
+                fn(Builder $query, string $status): Builder => $query->where(
                     'status',
                     $status,
                 ),
@@ -56,13 +56,6 @@ class SetupController extends Controller
         ]);
     }
 
-    public function create(): Response
-    {
-        Gate::authorize('create', Setup::class);
-
-        return Inertia::render('Setups/Create', []);
-    }
-
     public function store(SetupRequest $request): RedirectResponse
     {
         Gate::authorize('create', Setup::class);
@@ -70,6 +63,13 @@ class SetupController extends Controller
         Setup::create($request->validated());
 
         return $this->successResponse('created');
+    }
+
+    public function create(): Response
+    {
+        Gate::authorize('create', Setup::class);
+
+        return Inertia::render('Setups/Create', []);
     }
 
     public function edit(Setup $setup): Response
@@ -83,8 +83,9 @@ class SetupController extends Controller
 
     public function update(
         SetupRequest $request,
-        Setup $setup,
-    ): RedirectResponse {
+        Setup        $setup,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $setup);
 
         $setup->update($request->validated());
@@ -103,7 +104,8 @@ class SetupController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('deleteAny', Setup::class);
 
         Setup::query()

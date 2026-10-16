@@ -1,15 +1,12 @@
-import { createColumnHelper } from '@tanstack/vue-table';
-import { h } from 'vue';
+import {createColumnHelper} from '@tanstack/vue-table';
+import {h} from 'vue';
 
-import { edit } from '@/routes/tool-transactions';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createDateColumn } from '@/table/columns/dateColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import { createSortableColumn } from '@/table/helpers/sortableColumn';
-import type {
-    ToolTransaction,
-    ToolTransactionType,
-} from '@/types/toolTransaction';
+import {edit} from '@/routes/tool-transactions';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createDateColumn} from '@/table/columns/dateColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createSortableColumn} from '@/table/helpers/sortableColumn';
+import type {ToolTransaction, ToolTransactionType,} from '@/types/toolTransaction';
 
 const columnHelper = createColumnHelper<any, ToolTransaction>();
 
@@ -66,7 +63,7 @@ export const createToolTransactionColumns = (
             header: 'Tool',
             size: 240,
 
-            cell: ({ row }) => {
+            cell: ({row}) => {
                 const value = row.original.tool?.name ?? '—';
 
                 return h(
@@ -85,7 +82,7 @@ export const createToolTransactionColumns = (
             header: 'Type',
             size: 140,
 
-            cell: ({ row }) => {
+            cell: ({row}) => {
                 const type = row.original.type?.value as
                     | ToolTransactionType
                     | undefined;
@@ -114,7 +111,7 @@ export const createToolTransactionColumns = (
             header: 'Quantity',
             size: 100,
 
-            cell: ({ row }) => {
+            cell: ({row}) => {
                 const quantity = row.original.quantity;
 
                 return h(
@@ -135,7 +132,7 @@ export const createToolTransactionColumns = (
             header: 'From User',
             size: 180,
 
-            cell: ({ row }) => {
+            cell: ({row}) => {
                 const user = row.original.from_user;
 
                 if (!user?.name) {
@@ -162,7 +159,7 @@ export const createToolTransactionColumns = (
             header: 'To User',
             size: 180,
 
-            cell: ({ row }) => {
+            cell: ({row}) => {
                 const user = row.original.to_user;
 
                 if (!user?.name) {
@@ -189,7 +186,7 @@ export const createToolTransactionColumns = (
             header: 'Part',
             size: 200,
 
-            cell: ({ row }) => {
+            cell: ({row}) => {
                 const part = row.original.part;
 
                 if (!part?.name) {
@@ -216,7 +213,7 @@ export const createToolTransactionColumns = (
             header: 'Setup',
             size: 130,
 
-            cell: ({ row }) => row.original.setup?.name ?? '—',
+            cell: ({row}) => row.original.setup?.name ?? '—',
         }),
 
         createSortableColumn({
@@ -224,7 +221,7 @@ export const createToolTransactionColumns = (
             header: 'Return / Scrap',
             size: 130,
 
-            cell: ({ row }) => {
+            cell: ({row}) => {
                 const value = row.original.return_scrap;
 
                 if (value === null || value === undefined) {
@@ -240,7 +237,7 @@ export const createToolTransactionColumns = (
             header: 'Created By',
             size: 180,
 
-            cell: ({ row }) => {
+            cell: ({row}) => {
                 const user = row.original.created_by;
 
                 if (!user?.name) {
@@ -267,7 +264,7 @@ export const createToolTransactionColumns = (
             header: 'Remarks',
             size: 240,
 
-            cell: ({ row }) => {
+            cell: ({row}) => {
                 const value = row.original.remarks ?? '—';
 
                 return h(

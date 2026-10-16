@@ -1,9 +1,9 @@
-<script setup lang="ts">
-import { Link, type Href } from '@inertiajs/vue3';
-import { Banknote, Download, FileUp, Plus, Trash2 } from '@lucide/vue';
+<script lang="ts" setup>
+import {type Href, Link} from '@inertiajs/vue3';
+import {Banknote, Download, FileUp, Plus, Trash2} from '@lucide/vue';
 
 import vConfirm from '@/directives/confirm';
-import { Button } from '@/components/ui/button';
+import {Button} from '@/components/ui/button';
 
 /*
 |--------------------------------------------------------------------------
@@ -78,18 +78,18 @@ const emit = defineEmits<{
                     confirmText: deleteConfirmLabel,
                 },
             }"
+            :aria-label="`Delete ${selectedCount} selected ${resourceLabel}`"
+            class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
+            size="sm"
             type="button"
             variant="destructive"
-            size="sm"
-            class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
-            :aria-label="`Delete ${selectedCount} selected ${resourceLabel}`"
         >
-            <Trash2 class="size-4" aria-hidden="true" />
+            <Trash2 aria-hidden="true" class="size-4"/>
 
             <span class="whitespace-nowrap">
                 Delete selected
 
-                <span class="ml-1 opacity-80" aria-hidden="true">
+                <span aria-hidden="true" class="ml-1 opacity-80">
                     ({{ selectedCount }})
                 </span>
             </span>
@@ -99,12 +99,12 @@ const emit = defineEmits<{
         <Button
             v-if="importUrl"
             as-child
-            variant="outline"
-            size="sm"
             class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
+            size="sm"
+            variant="outline"
         >
-            <Link :href="importUrl" :aria-label="importLabel">
-                <FileUp class="size-4" aria-hidden="true" />
+            <Link :aria-label="importLabel" :href="importUrl">
+                <FileUp aria-hidden="true" class="size-4"/>
 
                 <span class="whitespace-nowrap">
                     {{ importLabel }}
@@ -116,12 +116,12 @@ const emit = defineEmits<{
         <Button
             v-if="exportUrl"
             as-child
-            variant="outline"
-            size="sm"
             class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
+            size="sm"
+            variant="outline"
         >
-            <Link :href="exportUrl" :aria-label="exportLabel">
-                <Download class="size-4" aria-hidden="true" />
+            <Link :aria-label="exportLabel" :href="exportUrl">
+                <Download aria-hidden="true" class="size-4"/>
 
                 <span class="whitespace-nowrap">
                     {{ exportLabel }}
@@ -132,20 +132,20 @@ const emit = defineEmits<{
         <!-- Generate -->
         <Button
             v-if="generateUrl"
-            as-child
-            variant="outline"
-            size="sm"
-            class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
             :disabled="generateDisabled"
+            as-child
+            class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
+            size="sm"
+            variant="outline"
         >
             <Link
-                :href="generateUrl"
-                method="post"
-                :aria-label="generateLabel"
                 :aria-disabled="generateDisabled"
+                :aria-label="generateLabel"
+                :href="generateUrl"
                 :tabindex="generateDisabled ? -1 : undefined"
+                method="post"
             >
-                <Banknote class="size-4" aria-hidden="true" />
+                <Banknote aria-hidden="true" class="size-4"/>
 
                 <span class="whitespace-nowrap">
                     {{ generateLabel }}
@@ -157,11 +157,11 @@ const emit = defineEmits<{
         <Button
             v-if="createUrl"
             as-child
-            size="sm"
             class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
+            size="sm"
         >
-            <Link :href="createUrl" :aria-label="createLabel">
-                <Plus class="size-4" aria-hidden="true" />
+            <Link :aria-label="createLabel" :href="createUrl">
+                <Plus aria-hidden="true" class="size-4"/>
 
                 <span class="whitespace-nowrap">
                     {{ createLabel }}

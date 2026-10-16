@@ -1,29 +1,19 @@
-﻿<script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+﻿<script lang="ts" setup>
+import {router} from '@inertiajs/vue3';
+import {ref} from 'vue';
 
 import ListingActions from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { sectionPage } from '@/config/sections';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as sectionsRoute,
-} from '@/routes/sections';
-import { createSectionColumns } from '@/table/sections';
-import type {
-    Section,
-    SectionFilters,
-    SectionSort,
-    SectionsResponse,
-} from '@/types/section';
-import type { StatusFilter } from '@/types/listing';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {sectionPage} from '@/config/sections';
+import {bulkDestroy, create, destroy, index as sectionsRoute,} from '@/routes/sections';
+import {createSectionColumns} from '@/table/sections';
+import type {Section, SectionFilters, SectionSort, SectionsResponse,} from '@/types/section';
+import type {StatusFilter} from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------
@@ -116,16 +106,16 @@ const handleDeleteSelected = () => {
 
 <template>
     <ListingLayout
-        :title="sectionPage.title"
         :description="sectionPage.description"
+        :title="sectionPage.title"
     >
         <!-- Actions -->
         <template #actions>
             <ListingActions
-                :create-url="create()"
                 :create-label="sectionPage.createLabel"
-                :selected-count="selectedCount"
+                :create-url="create()"
                 :resource-label="sectionPage.resourceLabel"
+                :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
             />
         </template>
@@ -134,12 +124,12 @@ const handleDeleteSelected = () => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
-                :search-placeholder="sectionPage.searchPlaceholder"
-                :search-button-label="sectionPage.searchButtonLabel"
                 :clear-button-label="sectionPage.clearButtonLabel"
                 :clear-disabled="!searchQuery.trim() && filterStatus === 'all'"
-                @search="search"
+                :search-button-label="sectionPage.searchButtonLabel"
+                :search-placeholder="sectionPage.searchPlaceholder"
                 @clear="handleClearFilters"
+                @search="search"
             >
                 <template #filters>
                     <div class="w-full shrink-0 sm:w-48">
@@ -147,8 +137,8 @@ const handleDeleteSelected = () => {
                             :model-value="
                                 filterStatus === 'all' ? null : filterStatus
                             "
-                            placeholder="All statuses"
                             clearable
+                            placeholder="All statuses"
                             @update:model-value="handleStatusChange"
                         />
                     </div>
@@ -159,15 +149,15 @@ const handleDeleteSelected = () => {
         <!-- Table -->
         <template #table>
             <DataTable
-                :table="table"
                 :columns-count="columns.length"
-                :total="sections.meta.total"
-                :page-index="sections.meta.current_page - 1"
-                :page-size="sections.meta.per_page"
-                :selected-count="selectedCount"
-                :page-size-options="[10, 25, 50, 100]"
                 :empty-text="sectionPage.emptyText"
                 :item-label="sectionPage.itemLabel"
+                :page-index="sections.meta.current_page - 1"
+                :page-size="sections.meta.per_page"
+                :page-size-options="[10, 25, 50, 100]"
+                :selected-count="selectedCount"
+                :table="table"
+                :total="sections.meta.total"
             />
         </template>
     </ListingLayout>

@@ -1,12 +1,12 @@
-﻿<script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+﻿<script lang="ts" setup>
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { partPage } from '@/config/parts';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {partPage} from '@/config/parts';
 import PartForm from '@/pages/Parts/components/PartForm.vue';
-import { index as parts, store } from '@/routes/parts';
-import type { PartFormData } from '@/types/part';
+import {index as parts, store} from '@/routes/parts';
+import type {PartFormData} from '@/types/part';
 
 defineOptions({
     layout: {
@@ -43,16 +43,16 @@ const handleCancel = () => {
 
 <template>
     <FormLayout
-        :title="partPage.form.createTitle"
         :description="partPage.form.createDescription"
+        :title="partPage.form.createTitle"
     >
         <PartForm
-            :form="form"
             :errors="form.errors"
+            :form="form"
             :processing="form.processing"
             :submit-label="partPage.form.createSubmitLabel"
-            @submit="handleSubmit"
             @cancel="handleCancel"
+            @submit="handleSubmit"
         />
     </FormLayout>
 </template>

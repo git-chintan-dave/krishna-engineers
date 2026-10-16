@@ -34,32 +34,35 @@ class Part extends Model
     }
 
     // Casts
-    protected function casts(): array
-    {
-        return [
-            'status' => Status::class,
-        ];
-    }
 
-    // Relationships
     public function partSetups(): HasMany
     {
         return $this->hasMany(PartSetup::class);
     }
+
+    // Relationships
 
     public function section(): BelongsTo
     {
         return $this->belongsTo(Section::class);
     }
 
-    // Helpers
     public function isActive(): bool
     {
         return $this->status === Status::ACTIVE;
     }
 
+    // Helpers
+
     public function isInactive(): bool
     {
         return $this->status === Status::INACTIVE;
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'status' => Status::class,
+        ];
     }
 }

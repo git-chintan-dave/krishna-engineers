@@ -1,7 +1,7 @@
-<script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import type { InertiaForm } from '@inertiajs/vue3';
-import { ArrowLeftRight, Hash, MessageSquare } from '@lucide/vue';
+<script lang="ts" setup>
+import {computed, ref, watch} from 'vue';
+import type {InertiaForm} from '@inertiajs/vue3';
+import {ArrowLeftRight, Hash, MessageSquare} from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -10,11 +10,8 @@ import FormSection from '@/components/form/FormSection.vue';
 import AppRawMaterialTransactionTypeSelect from '@/components/selects/AppRawMaterialTransactionTypeSelect.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppSectionSizeSelect from '@/components/selects/AppSectionSizeSelect.vue';
-import { rawMaterialTransactionPage } from '@/config/rawMaterialTransactions';
-import type {
-    RawMaterialTransaction,
-    RawMaterialTransactionFormData,
-} from '@/types/rawMaterialTransaction';
+import {rawMaterialTransactionPage} from '@/config/rawMaterialTransactions';
+import type {RawMaterialTransaction, RawMaterialTransactionFormData,} from '@/types/rawMaterialTransaction';
 
 /*
 |--------------------------------------------------------------------------
@@ -79,24 +76,24 @@ watch(selectedSectionId, (newSectionId, oldSectionId) => {
 <template>
     <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
         <FormSection
-            :title="rawMaterialTransactionPage.form.sectionTitle"
             :description="rawMaterialTransactionPage.form.sectionDescription"
+            :title="rawMaterialTransactionPage.form.sectionTitle"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Section -->
 
                 <AppField
-                    label="Section"
                     input-id="raw-material-section"
+                    label="Section"
                     required
                 >
                     <AppSectionSelect
                         id="raw-material-section"
                         v-model="selectedSectionId"
-                        placeholder="Select section"
                         :disabled="props.processing || isEdit"
-                        searchable
                         clearable
+                        placeholder="Select section"
+                        searchable
                     />
                 </AppField>
 
@@ -110,17 +107,17 @@ watch(selectedSectionId, (newSectionId, oldSectionId) => {
                     <AppSectionSizeSelect
                         id="raw-material-section-size"
                         v-model="props.form.section_size_id"
-                        :section-id="selectedSectionId"
-                        :placeholder="
-                            rawMaterialTransactionPage.form
-                                .sectionSizePlaceholder
-                        "
                         :disabled="
                             props.processing || isEdit || !selectedSectionId
                         "
                         :error="props.errors.section_size_id"
-                        searchable
+                        :placeholder="
+                            rawMaterialTransactionPage.form
+                                .sectionSizePlaceholder
+                        "
+                        :section-id="selectedSectionId"
                         clearable
+                        searchable
                     />
                 </AppField>
 
@@ -134,14 +131,14 @@ watch(selectedSectionId, (newSectionId, oldSectionId) => {
                     <AppRawMaterialTransactionTypeSelect
                         id="raw-material-transaction-type"
                         v-model="props.form.type"
+                        :disabled="props.processing || isEdit"
+                        :error="props.errors.type"
+                        :icon="ArrowLeftRight"
                         :placeholder="
                             rawMaterialTransactionPage.form.typePlaceholder
                         "
-                        :disabled="props.processing || isEdit"
-                        :icon="ArrowLeftRight"
-                        searchable
                         clearable
-                        :error="props.errors.type"
+                        searchable
                     />
                 </AppField>
 
@@ -155,17 +152,17 @@ watch(selectedSectionId, (newSectionId, oldSectionId) => {
                     <AppInput
                         id="raw-material-quantity"
                         v-model.number="props.form.quantity"
-                        type="number"
-                        min="1"
-                        max="4294967295"
-                        step="1"
+                        :disabled="props.processing"
+                        :error="props.errors.quantity"
+                        :icon="Hash"
                         :placeholder="
                             rawMaterialTransactionPage.form.quantityPlaceholder
                         "
-                        :disabled="props.processing"
-                        :icon="Hash"
-                        :error="props.errors.quantity"
+                        max="4294967295"
+                        min="1"
                         required
+                        step="1"
+                        type="number"
                     />
                 </AppField>
             </div>
@@ -174,8 +171,8 @@ watch(selectedSectionId, (newSectionId, oldSectionId) => {
         <!-- Additional Information -->
 
         <FormSection
-            title="Additional Information"
             description="Add an optional note for this material transaction."
+            title="Additional Information"
         >
             <div class="grid min-w-0 gap-5">
                 <AppField
@@ -185,12 +182,12 @@ watch(selectedSectionId, (newSectionId, oldSectionId) => {
                     <AppInput
                         id="raw-material-remarks"
                         v-model="props.form.remarks"
+                        :disabled="props.processing"
+                        :error="props.errors.remarks"
+                        :icon="MessageSquare"
                         :placeholder="
                             rawMaterialTransactionPage.form.remarksPlaceholder
                         "
-                        :disabled="props.processing"
-                        :icon="MessageSquare"
-                        :error="props.errors.remarks"
                     />
                 </AppField>
             </div>
@@ -199,9 +196,9 @@ watch(selectedSectionId, (newSectionId, oldSectionId) => {
         <!-- Form Actions -->
 
         <FormActions
-            :submit-label="props.submitLabel"
-            :processing="props.processing"
             :cancel-label="rawMaterialTransactionPage.form.cancelLabel"
+            :processing="props.processing"
+            :submit-label="props.submitLabel"
             @cancel="emit('cancel')"
         />
     </form>

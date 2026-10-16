@@ -1,15 +1,15 @@
-import { createColumnHelper } from '@tanstack/vue-table';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit } from '@/routes/bandsaw';
+import {edit} from '@/routes/bandsaw';
 
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createDateColumn } from '@/table/columns/dateColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createDateColumn} from '@/table/columns/dateColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
 
-import { createPrimaryColumn } from '@/table/helpers/primaryColumn';
-import { createSortableColumn } from '@/table/helpers/sortableColumn';
+import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
+import {createSortableColumn} from '@/table/helpers/sortableColumn';
 
-import type { BandsawWorkLog } from '@/types/bandsawWorkLog';
+import type {BandsawWorkLog} from '@/types/bandsawWorkLog';
 
 const columnHelper = createColumnHelper<any, BandsawWorkLog>();
 
@@ -20,10 +20,10 @@ export const createBandsawWorkLogColumns = (
     columnHelper.columns([
         ...(canManage
             ? [
-                  createSelectColumn({
-                      resourceName: 'bandsaw-work-logs',
-                  }),
-              ]
+                createSelectColumn({
+                    resourceName: 'bandsaw-work-logs',
+                }),
+            ]
             : []),
 
         createDateColumn({
@@ -33,13 +33,13 @@ export const createBandsawWorkLogColumns = (
 
         ...(canManage
             ? [
-                  createPrimaryColumn({
-                      accessorKey: 'user.name',
-                      header: 'Bandsaw',
-                      size: 180,
-                      sortable: false,
-                  }),
-              ]
+                createPrimaryColumn({
+                    accessorKey: 'user.name',
+                    header: 'Bandsaw',
+                    size: 180,
+                    sortable: false,
+                }),
+            ]
             : []),
 
         createPrimaryColumn({
@@ -71,11 +71,11 @@ export const createBandsawWorkLogColumns = (
 
         ...(canManage
             ? [
-                  createActionsColumn({
-                      editUrl: (uuid) => edit(uuid).url,
-                      resourceName: 'bandsaw work log',
-                      handleDelete,
-                  }),
-              ]
+                createActionsColumn({
+                    editUrl: (uuid) => edit(uuid).url,
+                    resourceName: 'bandsaw work log',
+                    handleDelete,
+                }),
+            ]
             : []),
     ]);

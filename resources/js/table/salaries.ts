@@ -1,13 +1,13 @@
-import { router } from '@inertiajs/vue3';
-import { createColumnHelper } from '@tanstack/vue-table';
+import {router} from '@inertiajs/vue3';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit, show, markAsPaid } from '@/routes/salaries';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import { createStatusColumn } from '@/table/columns/statusColumn';
-import { createPrimaryColumn } from '@/table/helpers/primaryColumn';
-import { createSortableColumn } from '@/table/helpers/sortableColumn';
-import type { Salary } from '@/types/salary';
+import {edit, markAsPaid, show} from '@/routes/salaries';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createStatusColumn} from '@/table/columns/statusColumn';
+import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
+import {createSortableColumn} from '@/table/helpers/sortableColumn';
+import type {Salary} from '@/types/salary';
 
 const columnHelper = createColumnHelper<any, Salary>();
 
@@ -28,7 +28,7 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'salary_period_start',
             header: 'Salary Period',
             size: 205,
-            cell: ({ row }) => {
+            cell: ({row}) => {
                 const start = row.original.salary_period_start_formatted ?? '—';
 
                 const end = row.original.salary_period_end_formatted ?? '—';

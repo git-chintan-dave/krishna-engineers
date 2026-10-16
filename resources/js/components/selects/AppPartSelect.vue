@@ -1,9 +1,9 @@
-<script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+<script lang="ts" setup>
+import {onMounted, ref, watch} from 'vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import { useLookup } from '@/composables/useLookup';
-import type { SelectOption } from '@/types/common';
+import {useLookup} from '@/composables/useLookup';
+import type {SelectOption} from '@/types/common';
 
 /*
 |--------------------------------------------------------------------------
@@ -63,7 +63,7 @@ const emit = defineEmits<{
 
 const options = ref<PartSelectOption[]>([]);
 
-const { loading, parts } = useLookup();
+const {loading, parts} = useLookup();
 
 /*
 |--------------------------------------------------------------------------
@@ -176,15 +176,15 @@ watch(
 
 <template>
     <AppSelect
+        :clearable="clearable"
+        :disabled="disabled"
+        :error="error"
+        :loading="loading"
         :model-value="modelValue"
         :options="options"
         :placeholder="placeholder"
         :searchable="searchable"
-        :clearable="clearable"
-        :disabled="disabled"
-        :loading="loading"
-        :error="error"
-        @update:model-value="handleModelValue"
         @change="handleChange"
+        @update:model-value="handleModelValue"
     />
 </template>

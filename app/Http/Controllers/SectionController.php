@@ -31,7 +31,8 @@ class SectionController extends Controller
 
     public function index(
         IndexSectionRequest $request,
-    ): Response {
+    ): Response
+    {
         Gate::authorize('viewAny', Section::class);
 
         $filters = $request->validated();
@@ -46,9 +47,9 @@ class SectionController extends Controller
         )
             ->when(
                 $filters['status'] ?? null,
-                fn (
+                fn(
                     Builder $query,
-                    string $status,
+                    string  $status,
                 ): Builder => $query->where(
                     'status',
                     $status,
@@ -77,11 +78,15 @@ class SectionController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function create(): Response
+    public function store(
+        SectionRequest $request,
+    ): RedirectResponse
     {
         Gate::authorize('create', Section::class);
 
-        return Inertia::render('Sections/Create', []);
+        Section::create($request->validated());
+
+        return $this->successResponse('created');
     }
 
     /*
@@ -90,14 +95,11 @@ class SectionController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function store(
-        SectionRequest $request,
-    ): RedirectResponse {
+    public function create(): Response
+    {
         Gate::authorize('create', Section::class);
 
-        Section::create($request->validated());
-
-        return $this->successResponse('created');
+        return Inertia::render('Sections/Create', []);
     }
 
     /*
@@ -123,8 +125,9 @@ class SectionController extends Controller
 
     public function update(
         SectionRequest $request,
-        Section $section,
-    ): RedirectResponse {
+        Section        $section,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $section);
 
         $section->update($request->validated());
@@ -155,7 +158,8 @@ class SectionController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('deleteAny', Section::class);
 
         Section::query()

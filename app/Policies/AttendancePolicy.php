@@ -16,6 +16,24 @@ class AttendancePolicy
             || $this->isOperatorOrBandsaw($user);
     }
 
+    private function isAdminOrSupervisor(User $user): bool
+    {
+        return $this->hasRole($user, 'super_admin')
+            || $this->hasRole($user, 'supervisor');
+    }
+
+    private function hasRole(User $user, string $role): bool
+    {
+        return $user->role?->value === $role
+            || $user->role === $role;
+    }
+
+    private function isOperatorOrBandsaw(User $user): bool
+    {
+        return $this->hasRole($user, 'operator')
+            || $this->hasRole($user, 'bandsaw');
+    }
+
     /**
      * Determine whether the user can view the attendance record.
      */
@@ -44,6 +62,12 @@ class AttendancePolicy
         return $this->isAdminOrSupervisor($user);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Private Helpers
+    |--------------------------------------------------------------------------
+    */
+
     /**
      * Determine whether the user can delete the attendance record.
      */
@@ -66,29 +90,5 @@ class AttendancePolicy
     public function import(User $user): bool
     {
         return $this->hasRole($user, 'super_admin');
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Private Helpers
-    |--------------------------------------------------------------------------
-    */
-
-    private function isAdminOrSupervisor(User $user): bool
-    {
-        return $this->hasRole($user, 'super_admin')
-            || $this->hasRole($user, 'supervisor');
-    }
-
-    private function isOperatorOrBandsaw(User $user): bool
-    {
-        return $this->hasRole($user, 'operator')
-            || $this->hasRole($user, 'bandsaw');
-    }
-
-    private function hasRole(User $user, string $role): bool
-    {
-        return $user->role?->value === $role
-            || $user->role === $role;
     }
 }

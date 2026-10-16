@@ -1,17 +1,12 @@
-﻿<script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
+﻿<script lang="ts" setup>
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { partSetupPage } from '@/config/partSetups';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {partSetupPage} from '@/config/partSetups';
 import PartSetupForm from '@/pages/PartSetups/components/PartSetupForm.vue';
-import { index as partSetups, update } from '@/routes/part-setups';
-import type {
-    PartSetup,
-    PartSetupFormData,
-    PartSetupOption,
-} from '@/types/partSetup';
+import {index as partSetups, update} from '@/routes/part-setups';
+import type {PartSetup, PartSetupFormData,} from '@/types/partSetup';
 
 const props = defineProps<{
     partSetup: PartSetup;
@@ -50,17 +45,17 @@ const handleCancel = () => {
 
 <template>
     <FormLayout
-        :title="partSetupPage.form.editTitle"
         :description="partSetupPage.form.editDescription"
+        :title="partSetupPage.form.editTitle"
     >
         <PartSetupForm
-            :form="form"
+            :current-image="props.partSetup.image"
             :errors="form.errors"
+            :form="form"
             :processing="form.processing"
             :submit-label="partSetupPage.form.editSubmitLabel"
-            :current-image="props.partSetup.image"
-            @submit="handleSubmit"
             @cancel="handleCancel"
+            @submit="handleSubmit"
         />
     </FormLayout>
 </template>

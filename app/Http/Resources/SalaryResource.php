@@ -28,7 +28,7 @@ class SalaryResource extends JsonResource
             'user_id' => $this->user_id,
             'user' => $this->whenLoaded(
                 'user',
-                fn (): array => [
+                fn(): array => [
                     'id' => $this->user->id,
                     'name' => $this->user->name,
                     'employee_code' => $this->user->employee_code,

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 /*
 |--------------------------------------------------------------------------
 | Props
@@ -51,7 +51,7 @@ withDefaults(
             v-if="$slots.actions"
             class="flex w-full shrink-0 items-center gap-2 sm:w-auto sm:max-w-[50%] sm:flex-wrap sm:justify-end"
         >
-            <slot name="actions" />
+            <slot name="actions"/>
         </div>
     </header>
 </template>

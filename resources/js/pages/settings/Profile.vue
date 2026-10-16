@@ -1,16 +1,15 @@
-<script setup lang="ts">
-import { Form, Head, usePage } from '@inertiajs/vue3';
-import { Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+<script lang="ts" setup>
+import {Form, Head, Link, usePage} from '@inertiajs/vue3';
+import {computed} from 'vue';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/DeleteUser.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { edit } from '@/routes/profile';
-import { send } from '@/routes/verification';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
+import {edit} from '@/routes/profile';
+import {send} from '@/routes/verification';
 
 defineOptions({
     layout: {
@@ -28,49 +27,49 @@ const user = computed(() => page.props.auth.user);
 </script>
 
 <template>
-    <Head title="Profile settings" />
+    <Head title="Profile settings"/>
 
     <h1 class="sr-only">Profile settings</h1>
 
     <div class="flex flex-col space-y-6">
         <Heading
-            variant="small"
-            title="Profile"
             description="Update your name and email address"
+            title="Profile"
+            variant="small"
         />
 
         <Form
-            v-bind="ProfileController.update.form()"
-            class="space-y-6"
             v-slot="{ errors, processing }"
+            class="space-y-6"
+            v-bind="ProfileController.update.form()"
         >
             <div class="grid gap-2">
                 <Label for="name">Name</Label>
                 <Input
                     id="name"
+                    :default-value="user.name"
+                    autocomplete="name"
                     class="mt-1 block w-full"
                     name="name"
-                    :default-value="user.name"
-                    required
-                    autocomplete="name"
                     placeholder="Full name"
+                    required
                 />
-                <InputError class="mt-2" :message="errors.name" />
+                <InputError :message="errors.name" class="mt-2"/>
             </div>
 
             <div class="grid gap-2">
                 <Label for="email">Email address</Label>
                 <Input
                     id="email"
-                    type="email"
+                    :default-value="user.email"
+                    autocomplete="username"
                     class="mt-1 block w-full"
                     name="email"
-                    :default-value="user.email"
-                    required
-                    autocomplete="username"
                     placeholder="Email address"
+                    required
+                    type="email"
                 />
-                <InputError class="mt-2" :message="errors.email" />
+                <InputError :message="errors.email" class="mt-2"/>
             </div>
 
             <div v-if="page.props.mustVerifyEmail && !user.email_verified_at">
@@ -95,11 +94,12 @@ const user = computed(() => page.props.auth.user);
 
             <div class="flex items-center gap-4">
                 <Button :disabled="processing" data-test="update-profile-button"
-                    >Save</Button
+                >Save
+                </Button
                 >
             </div>
         </Form>
     </div>
 
-    <DeleteUser />
+    <DeleteUser/>
 </template>

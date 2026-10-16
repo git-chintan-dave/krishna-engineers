@@ -32,7 +32,8 @@ class BandsawWorkLogController extends Controller
      */
     public function index(
         IndexBandsawWorkLogRequest $request,
-    ): Response {
+    ): Response
+    {
         Gate::authorize(
             'viewAny',
             BandsawWorkLog::class,
@@ -53,24 +54,24 @@ class BandsawWorkLogController extends Controller
             [],
         )
             ->when($filters['work_date'] ?? null,
-                fn (Builder $query, string $workDate): Builder => $query->forDate($workDate),
+                fn(Builder $query, string $workDate): Builder => $query->forDate($workDate),
             )
             ->when($isBandsaw,
-                fn (Builder $query): Builder => $query->forUser($user->id),
+                fn(Builder $query): Builder => $query->forUser($user->id),
             )
-            ->when(! $isBandsaw && ($filters['user_id'] ?? null),
-                fn (Builder $query): Builder => $query->forUser($filters['user_id']),
+            ->when(!$isBandsaw && ($filters['user_id'] ?? null),
+                fn(Builder $query): Builder => $query->forUser($filters['user_id']),
             )
             ->when($filters['part_id'] ?? null,
-                fn (Builder $query, int $partId): Builder => $query->forPart($partId),
+                fn(Builder $query, int $partId): Builder => $query->forPart($partId),
             )
             ->when($filters['section_id'] ?? null,
-                fn (Builder $query, int $sectionId): Builder => $query->whereHas('sectionSize',
-                    fn (Builder $query): Builder => $query->where('section_id', $sectionId),
+                fn(Builder $query, int $sectionId): Builder => $query->whereHas('sectionSize',
+                    fn(Builder $query): Builder => $query->where('section_id', $sectionId),
                 ),
             )
             ->when($filters['section_size_id'] ?? null,
-                fn (Builder $query, int $sectionSizeId): Builder => $query->forSectionSize($sectionSizeId),
+                fn(Builder $query, int $sectionSizeId): Builder => $query->forSectionSize($sectionSizeId),
             )
             ->orderBy($filters['sort'] ?? 'work_date', $filters['direction'] ?? 'desc')
             ->paginate($filters['per_page'] ?? 10)
@@ -96,164 +97,12 @@ class BandsawWorkLogController extends Controller
     }
 
     /**
-     * Show the form for creating a new Bandsaw work log.
-     */
-    public function create(): Response
-    {
-        Gate::authorize(
-            'create',
-            BandsawWorkLog::class,
-        );
-
-        return Inertia::render(
-            'WorkLogs/Bandsaw/Create',
-            $this->formOptions(
-                includeLastReports: true,
-            ),
-        );
-    }
-
-    /**
-     * Store a newly created Bandsaw work log.
-     */
-    public function store(
-        BandsawWorkLogRequest $request,
-    ): RedirectResponse {
-        Gate::authorize(
-            'create',
-            BandsawWorkLog::class,
-        );
-
-        $data = $request->validated();
-
-        /*
-         * Section ID is used only by the form to
-         * select the section size. It is not stored.
-         */
-        unset($data['section_id']);
-
-        /*
-         * A Bandsaw user can only create a work log
-         * for themselves.
-         */
-        $data = $this->resolveUserId($data);
-
-        BandsawWorkLog::create($data);
-
-        return $this->successResponse('created');
-    }
-
-    /**
-     * Show the form for editing the specified Bandsaw work log.
-     */
-    public function edit(
-        BandsawWorkLog $bandsaw,
-    ): Response {
-        Gate::authorize(
-            'view',
-            $bandsaw,
-        );
-
-        $bandsaw->load([
-            'user',
-            'part',
-            'sectionSize.section',
-        ]);
-
-        return Inertia::render(
-            'WorkLogs/Bandsaw/Edit',
-            [
-                'bandsawWorkLog' => new BandsawWorkLogResource(
-                    $bandsaw,
-                ),
-
-                ...$this->formOptions(
-                    includeLastReports: true,
-                ),
-            ],
-        );
-    }
-
-    /**
-     * Update the specified Bandsaw work log.
-     */
-    public function update(
-        BandsawWorkLogRequest $request,
-        BandsawWorkLog $bandsaw,
-    ): RedirectResponse {
-        Gate::authorize(
-            'update',
-            $bandsaw,
-        );
-
-        $data = $request->validated();
-
-        /*
-         * Section ID is used only by the form to
-         * select the section size. It is not stored.
-         */
-        unset($data['section_id']);
-
-        /*
-         * A Bandsaw user cannot change the employee
-         * assigned to the work log.
-         *
-         * Supervisors and Super Admins may retain the
-         * selected employee from the request.
-         */
-        $data = $this->resolveUserId(
-            $data,
-            $bandsaw,
-        );
-
-        $bandsaw->update($data);
-
-        return $this->successResponse('updated');
-    }
-
-    /**
-     * Remove the specified Bandsaw work log.
-     */
-    public function destroy(
-        BandsawWorkLog $bandsaw,
-    ): RedirectResponse {
-        Gate::authorize(
-            'delete',
-            $bandsaw,
-        );
-
-        $bandsaw->delete();
-
-        return $this->successResponse('deleted');
-    }
-
-    /**
-     * Remove multiple Bandsaw work logs.
-     */
-    public function bulkDestroy(
-        BulkDestroyRequest $request,
-    ): RedirectResponse {
-        Gate::authorize(
-            'deleteAny',
-            BandsawWorkLog::class,
-        );
-
-        BandsawWorkLog::query()
-            ->whereIn(
-                'id',
-                $request->validated('ids'),
-            )
-            ->delete();
-
-        return $this->successResponse('bulk_deleted');
-    }
-
-    /**
      * Get options required by the Bandsaw work log forms.
      */
     private function formOptions(
         bool $includeLastReports = false,
-    ): array {
+    ): array
+    {
         $currentUser = Auth::user();
 
         $role = $currentUser->role instanceof UserRole
@@ -276,7 +125,7 @@ class BandsawWorkLogController extends Controller
             'canSelectBandsaw' => $canSelectBandsaw,
         ];
 
-        if (! $includeLastReports) {
+        if (!$includeLastReports) {
             return $options;
         }
 
@@ -324,8 +173,8 @@ class BandsawWorkLogController extends Controller
             ])
             ->unique('user_id')
             ->mapWithKeys(
-                fn (BandsawWorkLog $log): array => [
-                    (string) $log->user_id => [
+                fn(BandsawWorkLog $log): array => [
+                    (string)$log->user_id => [
                         'part_id' => $log->part_id,
                         'section_id' => $log->sectionSize?->section_id,
                         'section_size_id' => $log->section_size_id,
@@ -341,18 +190,50 @@ class BandsawWorkLogController extends Controller
     }
 
     /**
+     * Store a newly created Bandsaw work log.
+     */
+    public function store(
+        BandsawWorkLogRequest $request,
+    ): RedirectResponse
+    {
+        Gate::authorize(
+            'create',
+            BandsawWorkLog::class,
+        );
+
+        $data = $request->validated();
+
+        /*
+         * Section ID is used only by the form to
+         * select the section size. It is not stored.
+         */
+        unset($data['section_id']);
+
+        /*
+         * A Bandsaw user can only create a work log
+         * for themselves.
+         */
+        $data = $this->resolveUserId($data);
+
+        BandsawWorkLog::create($data);
+
+        return $this->successResponse('created');
+    }
+
+    /**
      * Resolve the Bandsaw user ID.
      */
     private function resolveUserId(
-        array $data,
+        array           $data,
         ?BandsawWorkLog $bandsaw = null,
-    ): array {
+    ): array
+    {
         $currentUser = Auth::user();
 
         $role = $currentUser->role instanceof UserRole
             ? $currentUser->role
             : UserRole::tryFrom(
-                (string) $currentUser->role,
+                (string)$currentUser->role,
             );
 
         if ($role === UserRole::BANDSAW) {
@@ -362,5 +243,132 @@ class BandsawWorkLogController extends Controller
         }
 
         return $data;
+    }
+
+    /**
+     * Show the form for creating a new Bandsaw work log.
+     */
+    public function create(): Response
+    {
+        Gate::authorize(
+            'create',
+            BandsawWorkLog::class,
+        );
+
+        return Inertia::render(
+            'WorkLogs/Bandsaw/Create',
+            $this->formOptions(
+                includeLastReports: true,
+            ),
+        );
+    }
+
+    /**
+     * Show the form for editing the specified Bandsaw work log.
+     */
+    public function edit(
+        BandsawWorkLog $bandsaw,
+    ): Response
+    {
+        Gate::authorize(
+            'view',
+            $bandsaw,
+        );
+
+        $bandsaw->load([
+            'user',
+            'part',
+            'sectionSize.section',
+        ]);
+
+        return Inertia::render(
+            'WorkLogs/Bandsaw/Edit',
+            [
+                'bandsawWorkLog' => new BandsawWorkLogResource(
+                    $bandsaw,
+                ),
+
+                ...$this->formOptions(
+                    includeLastReports: true,
+                ),
+            ],
+        );
+    }
+
+    /**
+     * Update the specified Bandsaw work log.
+     */
+    public function update(
+        BandsawWorkLogRequest $request,
+        BandsawWorkLog        $bandsaw,
+    ): RedirectResponse
+    {
+        Gate::authorize(
+            'update',
+            $bandsaw,
+        );
+
+        $data = $request->validated();
+
+        /*
+         * Section ID is used only by the form to
+         * select the section size. It is not stored.
+         */
+        unset($data['section_id']);
+
+        /*
+         * A Bandsaw user cannot change the employee
+         * assigned to the work log.
+         *
+         * Supervisors and Super Admins may retain the
+         * selected employee from the request.
+         */
+        $data = $this->resolveUserId(
+            $data,
+            $bandsaw,
+        );
+
+        $bandsaw->update($data);
+
+        return $this->successResponse('updated');
+    }
+
+    /**
+     * Remove the specified Bandsaw work log.
+     */
+    public function destroy(
+        BandsawWorkLog $bandsaw,
+    ): RedirectResponse
+    {
+        Gate::authorize(
+            'delete',
+            $bandsaw,
+        );
+
+        $bandsaw->delete();
+
+        return $this->successResponse('deleted');
+    }
+
+    /**
+     * Remove multiple Bandsaw work logs.
+     */
+    public function bulkDestroy(
+        BulkDestroyRequest $request,
+    ): RedirectResponse
+    {
+        Gate::authorize(
+            'deleteAny',
+            BandsawWorkLog::class,
+        );
+
+        BandsawWorkLog::query()
+            ->whereIn(
+                'id',
+                $request->validated('ids'),
+            )
+            ->delete();
+
+        return $this->successResponse('bulk_deleted');
     }
 }

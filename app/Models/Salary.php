@@ -41,6 +41,26 @@ class Salary extends Model
     }
 
     // Casts
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    // Relationships
+
+    public function isDraft(): bool
+    {
+        return $this->status === SalaryStatus::DRAFT;
+    }
+
+    // Status Helpers
+
+    public function isPaid(): bool
+    {
+        return $this->status === SalaryStatus::PAID;
+    }
+
     protected function casts(): array
     {
         return [
@@ -65,22 +85,5 @@ class Salary extends Model
             'status' => SalaryStatus::class,
             'paid_at' => 'datetime',
         ];
-    }
-
-    // Relationships
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    // Status Helpers
-    public function isDraft(): bool
-    {
-        return $this->status === SalaryStatus::DRAFT;
-    }
-
-    public function isPaid(): bool
-    {
-        return $this->status === SalaryStatus::PAID;
     }
 }

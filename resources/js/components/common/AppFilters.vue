@@ -1,8 +1,8 @@
-<script setup lang="ts">
-import { Search } from '@lucide/vue';
-import { useAttrs } from 'vue';
+<script lang="ts" setup>
+import {Search} from '@lucide/vue';
+import {useAttrs} from 'vue';
 
-import { Input } from '@/components/ui/input';
+import {Input} from '@/components/ui/input';
 
 defineOptions({
     inheritAttrs: false,
@@ -44,17 +44,17 @@ const handleSearch = () => {
 <template>
     <div class="relative w-full min-w-0">
         <Search
-            class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
             aria-hidden="true"
+            class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
         />
 
         <Input
-            type="search"
-            :value="modelValue"
-            :placeholder="placeholder"
             :disabled="disabled"
+            :placeholder="placeholder"
+            :value="modelValue"
             aria-label="Search"
             class="h-9 w-full min-w-0 pl-9"
+            type="search"
             v-bind="attrs"
             @input="handleInput"
             @keyup.enter="handleSearch"

@@ -1,7 +1,7 @@
-<script setup lang="ts">
-import { ArrowLeft, LoaderCircle, Save } from '@lucide/vue';
+<script lang="ts" setup>
+import {ArrowLeft, LoaderCircle, Save} from '@lucide/vue';
 
-import { Button } from '@/components/ui/button';
+import {Button} from '@/components/ui/button';
 
 /*
 |--------------------------------------------------------------------------
@@ -44,13 +44,13 @@ const emit = defineEmits<{
         -->
 
         <Button
+            :disabled="processing"
+            class="w-full shrink-0 cursor-pointer sm:w-auto"
             type="button"
             variant="outline"
-            class="w-full shrink-0 cursor-pointer sm:w-auto"
-            :disabled="processing"
             @click="emit('cancel')"
         >
-            <ArrowLeft class="size-4" aria-hidden="true" />
+            <ArrowLeft aria-hidden="true" class="size-4"/>
 
             {{ cancelLabel }}
         </Button>
@@ -62,17 +62,17 @@ const emit = defineEmits<{
         -->
 
         <Button
-            type="submit"
-            class="w-full shrink-0 cursor-pointer sm:w-auto"
             :disabled="processing || disabled"
+            class="w-full shrink-0 cursor-pointer sm:w-auto"
+            type="submit"
         >
             <LoaderCircle
                 v-if="processing"
-                class="size-4 animate-spin"
                 aria-hidden="true"
+                class="size-4 animate-spin"
             />
 
-            <Save v-else class="size-4" aria-hidden="true" />
+            <Save v-else aria-hidden="true" class="size-4"/>
 
             {{ submitLabel }}
         </Button>

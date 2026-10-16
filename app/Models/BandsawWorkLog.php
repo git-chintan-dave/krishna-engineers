@@ -42,12 +42,9 @@ class BandsawWorkLog extends Model
     |--------------------------------------------------------------------------
     */
 
-    protected function casts(): array
+    public function user(): BelongsTo
     {
-        return [
-            'work_date' => 'date',
-            'quantity' => 'integer',
-        ];
+        return $this->belongsTo(User::class);
     }
 
     /*
@@ -55,11 +52,6 @@ class BandsawWorkLog extends Model
     | Relationships
     |--------------------------------------------------------------------------
     */
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
 
     public function part(): BelongsTo
     {
@@ -71,23 +63,25 @@ class BandsawWorkLog extends Model
         return $this->belongsTo(SectionSize::class);
     }
 
+    public function scopeForUser(
+        Builder $query,
+        int     $userId,
+    ): Builder
+    {
+        return $query->where('user_id', $userId);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Scopes
     |--------------------------------------------------------------------------
     */
 
-    public function scopeForUser(
-        Builder $query,
-        int $userId,
-    ): Builder {
-        return $query->where('user_id', $userId);
-    }
-
     public function scopeForDate(
         Builder $query,
-        $date,
-    ): Builder {
+                $date,
+    ): Builder
+    {
         return $query->whereDate(
             'work_date',
             $date,
@@ -96,8 +90,9 @@ class BandsawWorkLog extends Model
 
     public function scopeFromDate(
         Builder $query,
-        $date,
-    ): Builder {
+                $date,
+    ): Builder
+    {
         return $query->whereDate(
             'work_date',
             '>=',
@@ -107,8 +102,9 @@ class BandsawWorkLog extends Model
 
     public function scopeToDate(
         Builder $query,
-        $date,
-    ): Builder {
+                $date,
+    ): Builder
+    {
         return $query->whereDate(
             'work_date',
             '<=',
@@ -118,9 +114,10 @@ class BandsawWorkLog extends Model
 
     public function scopeBetweenDates(
         Builder $query,
-        $fromDate,
-        $toDate,
-    ): Builder {
+                $fromDate,
+                $toDate,
+    ): Builder
+    {
         return $query->whereBetween(
             'work_date',
             [
@@ -132,8 +129,9 @@ class BandsawWorkLog extends Model
 
     public function scopeForPart(
         Builder $query,
-        int $partId,
-    ): Builder {
+        int     $partId,
+    ): Builder
+    {
         return $query->where(
             'part_id',
             $partId,
@@ -142,11 +140,20 @@ class BandsawWorkLog extends Model
 
     public function scopeForSectionSize(
         Builder $query,
-        int $sectionSizeId,
-    ): Builder {
+        int     $sectionSizeId,
+    ): Builder
+    {
         return $query->where(
             'section_size_id',
             $sectionSizeId,
         );
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'work_date' => 'date',
+            'quantity' => 'integer',
+        ];
     }
 }

@@ -1,13 +1,13 @@
-<script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
+<script lang="ts" setup>
+import {Form, Head} from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import { login } from '@/routes';
-import { email } from '@/routes/password';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
+import {Spinner} from '@/components/ui/spinner';
+import {login} from '@/routes';
+import {email} from '@/routes/password';
 
 defineOptions({
     layout: {
@@ -22,7 +22,7 @@ defineProps<{
 </script>
 
 <template>
-    <Head title="Forgot password" />
+    <Head title="Forgot password"/>
 
     <div
         v-if="status"
@@ -32,27 +32,27 @@ defineProps<{
     </div>
 
     <div class="space-y-6">
-        <Form v-bind="email.form()" v-slot="{ errors, processing }">
+        <Form v-slot="{ errors, processing }" v-bind="email.form()">
             <div class="grid gap-2">
                 <Label for="email">Email address</Label>
                 <Input
                     id="email"
-                    type="email"
-                    name="email"
-                    autocomplete="off"
                     v-focus
+                    autocomplete="off"
+                    name="email"
                     placeholder="email@example.com"
+                    type="email"
                 />
-                <InputError :message="errors.email" />
+                <InputError :message="errors.email"/>
             </div>
 
             <div class="my-6 flex items-center justify-start">
                 <Button
-                    class="w-full"
                     :disabled="processing"
+                    class="w-full"
                     data-test="email-password-reset-link-button"
                 >
-                    <Spinner v-if="processing" />
+                    <Spinner v-if="processing"/>
                     Email password reset link
                 </Button>
             </div>

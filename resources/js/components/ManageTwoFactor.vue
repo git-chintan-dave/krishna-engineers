@@ -1,13 +1,13 @@
-<script setup lang="ts">
-import { Form } from '@inertiajs/vue3';
-import { ShieldCheck } from '@lucide/vue';
-import { onUnmounted, ref } from 'vue';
+<script lang="ts" setup>
+import {Form} from '@inertiajs/vue3';
+import {ShieldCheck} from '@lucide/vue';
+import {onUnmounted, ref} from 'vue';
 import Heading from '@/components/Heading.vue';
 import TwoFactorRecoveryCodes from '@/components/TwoFactorRecoveryCodes.vue';
 import TwoFactorSetupModal from '@/components/TwoFactorSetupModal.vue';
-import { Button } from '@/components/ui/button';
-import { useTwoFactorAuth } from '@/composables/useTwoFactorAuth';
-import { disable, enable } from '@/routes/two-factor';
+import {Button} from '@/components/ui/button';
+import {useTwoFactorAuth} from '@/composables/useTwoFactorAuth';
+import {disable, enable} from '@/routes/two-factor';
 
 export type Props = {
     canManageTwoFactor?: boolean;
@@ -21,7 +21,7 @@ withDefaults(defineProps<Props>(), {
     twoFactorEnabled: false,
 });
 
-const { hasSetupData, clearTwoFactorAuthData } = useTwoFactorAuth();
+const {hasSetupData, clearTwoFactorAuthData} = useTwoFactorAuth();
 const showSetupModal = ref<boolean>(false);
 
 onUnmounted(() => clearTwoFactorAuthData());
@@ -30,9 +30,9 @@ onUnmounted(() => clearTwoFactorAuthData());
 <template>
     <div v-if="canManageTwoFactor" class="space-y-6">
         <Heading
-            variant="small"
-            title="Two-factor authentication"
             description="Manage your two-factor authentication settings"
+            title="Two-factor authentication"
+            variant="small"
         />
 
         <div
@@ -47,15 +47,16 @@ onUnmounted(() => clearTwoFactorAuthData());
 
             <div>
                 <Button v-if="hasSetupData" @click="showSetupModal = true">
-                    <ShieldCheck />Continue setup
+                    <ShieldCheck/>
+                    Continue setup
                 </Button>
                 <Form
                     v-else
+                    #default="{ processing }"
                     v-bind="enable.form()"
                     @success="showSetupModal = true"
-                    #default="{ processing }"
                 >
-                    <Button type="submit" :disabled="processing">
+                    <Button :disabled="processing" type="submit">
                         Enable 2FA
                     </Button>
                 </Form>
@@ -70,18 +71,18 @@ onUnmounted(() => clearTwoFactorAuthData());
             </p>
 
             <div class="relative inline">
-                <Form v-bind="disable.form()" #default="{ processing }">
+                <Form #default="{ processing }" v-bind="disable.form()">
                     <Button
-                        variant="destructive"
-                        type="submit"
                         :disabled="processing"
+                        type="submit"
+                        variant="destructive"
                     >
                         Disable 2FA
                     </Button>
                 </Form>
             </div>
 
-            <TwoFactorRecoveryCodes />
+            <TwoFactorRecoveryCodes/>
         </div>
 
         <TwoFactorSetupModal

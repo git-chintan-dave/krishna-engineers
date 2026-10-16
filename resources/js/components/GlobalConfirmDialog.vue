@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import {
     AlertDialog,
     AlertDialogContent,
@@ -7,11 +7,11 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
+import {Button} from '@/components/ui/button';
 
-import { useConfirmState } from '@/composables/useConfirm';
+import {useConfirmState} from '@/composables/useConfirm';
 
-const { state, onConfirm, onCancel } = useConfirmState();
+const {state, onConfirm, onCancel} = useConfirmState();
 </script>
 
 <template>
@@ -32,18 +32,18 @@ const { state, onConfirm, onCancel } = useConfirmState();
 
             <AlertDialogFooter>
                 <Button
+                    class="cursor-pointer"
                     type="button"
                     variant="outline"
-                    class="cursor-pointer"
                     @click="onCancel"
                 >
                     {{ state.cancelText }}
                 </Button>
 
                 <Button
+                    class="cursor-pointer"
                     type="button"
                     variant="destructive"
-                    class="cursor-pointer"
                     @click="onConfirm"
                 >
                     {{ state.confirmText }}

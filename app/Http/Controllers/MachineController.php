@@ -36,7 +36,7 @@ class MachineController extends Controller
         )
             ->when(
                 $filters['status'] ?? null,
-                fn (Builder $query, string $status): Builder => $query->where(
+                fn(Builder $query, string $status): Builder => $query->where(
                     'status',
                     $status,
                 ),
@@ -56,13 +56,6 @@ class MachineController extends Controller
         ]);
     }
 
-    public function create(): Response
-    {
-        Gate::authorize('create', Machine::class);
-
-        return Inertia::render('Machines/Create', []);
-    }
-
     public function store(MachineRequest $request): RedirectResponse
     {
         Gate::authorize('create', Machine::class);
@@ -70,6 +63,13 @@ class MachineController extends Controller
         Machine::create($request->validated());
 
         return $this->successResponse('created');
+    }
+
+    public function create(): Response
+    {
+        Gate::authorize('create', Machine::class);
+
+        return Inertia::render('Machines/Create', []);
     }
 
     public function edit(Machine $machine): Response
@@ -83,8 +83,9 @@ class MachineController extends Controller
 
     public function update(
         MachineRequest $request,
-        Machine $machine,
-    ): RedirectResponse {
+        Machine        $machine,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $machine);
 
         $machine->update($request->validated());
@@ -103,7 +104,8 @@ class MachineController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('deleteAny', Machine::class);
 
         Machine::query()

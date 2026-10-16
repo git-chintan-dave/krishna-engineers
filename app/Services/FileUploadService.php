@@ -11,18 +11,39 @@ class FileUploadService
     private const string DISK = 'public';
 
     /**
+     * Handle storing a new file.
+     *
+     * Returns the existing value when no file was uploaded.
+     */
+    public function store(
+        ?UploadedFile $file,
+        string        $directory,
+    ): ?string
+    {
+        if (!$file) {
+            return null;
+        }
+
+        return $this->upload(
+            $file,
+            $directory,
+        );
+    }
+
+    /**
      * Store a new uploaded file.
      */
     public function upload(
         UploadedFile $file,
-        string $directory,
-    ): string {
+        string       $directory,
+    ): string
+    {
         $extension = $file->getClientOriginalExtension();
 
         $filename = Str::uuid()
-            ->toString()
-            .'.'
-            .$extension;
+                ->toString()
+            . '.'
+            . $extension;
 
         $file->storeAs(
             $directory,
@@ -31,62 +52,6 @@ class FileUploadService
         );
 
         return $filename;
-    }
-
-    /**
-     * Replace an existing file with a new upload.
-     */
-    public function replace(
-        UploadedFile $file,
-        ?string $oldFilename,
-        string $directory,
-    ): string {
-        $filename = $this->upload(
-            $file,
-            $directory,
-        );
-
-        $this->delete(
-            $oldFilename,
-            $directory,
-        );
-
-        return $filename;
-    }
-
-    /**
-     * Delete a stored file.
-     */
-    public function delete(
-        ?string $filename,
-        string $directory,
-    ): void {
-        if (! $filename) {
-            return;
-        }
-
-        Storage::disk(self::DISK)->delete(
-            $directory.'/'.$filename,
-        );
-    }
-
-    /**
-     * Handle storing a new file.
-     *
-     * Returns the existing value when no file was uploaded.
-     */
-    public function store(
-        ?UploadedFile $file,
-        string $directory,
-    ): ?string {
-        if (! $file) {
-            return null;
-        }
-
-        return $this->upload(
-            $file,
-            $directory,
-        );
     }
 
     /**
@@ -100,10 +65,11 @@ class FileUploadService
      */
     public function update(
         ?UploadedFile $file,
-        ?string $oldFilename,
-        string $directory,
-        bool $remove = false,
-    ): ?string {
+        ?string       $oldFilename,
+        string        $directory,
+        bool          $remove = false,
+    ): ?string
+    {
         if ($file) {
             return $this->replace(
                 $file,
@@ -122,5 +88,44 @@ class FileUploadService
         }
 
         return $oldFilename;
+    }
+
+    /**
+     * Replace an existing file with a new upload.
+     */
+    public function replace(
+        UploadedFile $file,
+        ?string      $oldFilename,
+        string       $directory,
+    ): string
+    {
+        $filename = $this->upload(
+            $file,
+            $directory,
+        );
+
+        $this->delete(
+            $oldFilename,
+            $directory,
+        );
+
+        return $filename;
+    }
+
+    /**
+     * Delete a stored file.
+     */
+    public function delete(
+        ?string $filename,
+        string  $directory,
+    ): void
+    {
+        if (!$filename) {
+            return;
+        }
+
+        Storage::disk(self::DISK)->delete(
+            $directory . '/' . $filename,
+        );
     }
 }

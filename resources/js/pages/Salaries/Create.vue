@@ -1,12 +1,12 @@
-<script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+<script lang="ts" setup>
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { salaryPage } from '@/config/salaries';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {salaryPage} from '@/config/salaries';
 import SalaryForm from '@/pages/Salaries/components/SalaryForm.vue';
-import { index as salaries, store } from '@/routes/salaries';
-import type { SalaryFormData } from '@/types/salary';
+import {index as salaries, store} from '@/routes/salaries';
+import type {SalaryFormData} from '@/types/salary';
 
 defineOptions({
     layout: {
@@ -38,16 +38,16 @@ const handleCancel = (): void => {
 
 <template>
     <FormLayout
-        :title="salaryPage.form.createTitle"
         :description="salaryPage.form.createDescription"
+        :title="salaryPage.form.createTitle"
     >
         <SalaryForm
-            :form="form"
             :errors="form.errors"
+            :form="form"
             :processing="form.processing"
             :submit-label="salaryPage.form.createSubmitLabel"
-            @submit="handleSubmit"
             @cancel="handleCancel"
+            @submit="handleSubmit"
         />
     </FormLayout>
 </template>

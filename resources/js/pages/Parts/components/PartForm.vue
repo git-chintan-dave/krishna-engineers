@@ -1,15 +1,7 @@
 ```vue
-<script setup lang="ts">
-import type { InertiaForm } from '@inertiajs/vue3';
-import {
-    Box,
-    Image,
-    Layers3,
-    Ruler,
-    Scale,
-    Settings2,
-    ToggleRight,
-} from '@lucide/vue';
+<script lang="ts" setup>
+import type {InertiaForm} from '@inertiajs/vue3';
+import {Box, Layers3, Ruler, Scale, Settings2, ToggleRight,} from '@lucide/vue';
 
 import AppImagePicker from '@/components/common/AppImagePicker.vue';
 import AppInput from '@/components/common/AppInput.vue';
@@ -18,8 +10,8 @@ import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import ToggleCardInput from '@/components/form/ToggleCardInput.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
-import { partPage } from '@/config/parts';
-import type { PartFormData } from '@/types/part';
+import {partPage} from '@/config/parts';
+import type {PartFormData} from '@/types/part';
 
 // Props
 const props = withDefaults(
@@ -58,75 +50,75 @@ const handleImageRemove = (): void => {
     <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
         <!-- Part Information -->
         <FormSection
-            :title="partPage.form.sectionTitle"
             :description="partPage.form.sectionDescription"
+            :title="partPage.form.sectionTitle"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Part Name -->
                 <AppField
+                    :error="props.errors.name"
                     :label="partPage.form.nameLabel"
                     input-id="part-name"
-                    :error="props.errors.name"
                     required
                 >
                     <AppInput
                         id="part-name"
                         v-model="props.form.name"
-                        :placeholder="partPage.form.namePlaceholder"
                         :disabled="props.processing"
-                        :icon="Box"
                         :error="props.errors.name"
+                        :icon="Box"
+                        :placeholder="partPage.form.namePlaceholder"
                         required
                     />
                 </AppField>
 
                 <!-- New Part Name -->
                 <AppField
+                    :error="props.errors.new_part_name"
                     :label="partPage.form.newPartNameLabel"
                     input-id="part-new-part-name"
-                    :error="props.errors.new_part_name"
                 >
                     <AppInput
                         id="part-new-part-name"
                         v-model="props.form.new_part_name"
-                        :placeholder="partPage.form.newPartNamePlaceholder"
                         :disabled="props.processing"
-                        :icon="Settings2"
                         :error="props.errors.new_part_name"
+                        :icon="Settings2"
+                        :placeholder="partPage.form.newPartNamePlaceholder"
                     />
                 </AppField>
 
                 <!-- Section -->
                 <AppField
+                    :error="props.errors.section_id"
                     :label="partPage.form.sectionLabel"
                     input-id="part-section"
-                    :error="props.errors.section_id"
                 >
                     <AppSectionSelect
                         id="part-section"
                         v-model="props.form.section_id"
-                        :placeholder="partPage.form.sectionPlaceholder"
                         :disabled="props.processing"
-                        :icon="Layers3"
                         :error="props.errors.section_id"
-                        searchable
+                        :icon="Layers3"
+                        :placeholder="partPage.form.sectionPlaceholder"
                         clearable
+                        searchable
                     />
                 </AppField>
 
                 <!-- Cutting Size -->
                 <AppField
+                    :error="props.errors.cutting_size"
                     :label="partPage.form.cuttingSizeLabel"
                     input-id="part-cutting-size"
-                    :error="props.errors.cutting_size"
                 >
                     <AppInput
                         id="part-cutting-size"
                         v-model="props.form.cutting_size"
-                        :placeholder="partPage.form.cuttingSizePlaceholder"
                         :disabled="props.processing"
-                        :icon="Ruler"
                         :error="props.errors.cutting_size"
+                        :icon="Ruler"
+                        :placeholder="partPage.form.cuttingSizePlaceholder"
                     />
                 </AppField>
             </div>
@@ -134,39 +126,39 @@ const handleImageRemove = (): void => {
 
         <!-- Material Details -->
         <FormSection
-            title="Material Details"
             description="Configure the part weight and raw material requirements."
+            title="Material Details"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Part Weight -->
                 <AppField
+                    :error="props.errors.part_weight"
                     :label="partPage.form.partWeightLabel"
                     input-id="part-part-weight"
-                    :error="props.errors.part_weight"
                 >
                     <AppInput
                         id="part-part-weight"
                         v-model="props.form.part_weight"
-                        :placeholder="partPage.form.partWeightPlaceholder"
                         :disabled="props.processing"
-                        :icon="Scale"
                         :error="props.errors.part_weight"
+                        :icon="Scale"
+                        :placeholder="partPage.form.partWeightPlaceholder"
                     />
                 </AppField>
 
                 <!-- Raw Material Weight -->
                 <AppField
+                    :error="props.errors.raw_material_weight"
                     :label="partPage.form.rawMaterialLabel"
                     input-id="part-raw-material-weight"
-                    :error="props.errors.raw_material_weight"
                 >
                     <AppInput
                         id="part-raw-material-weight"
                         v-model="props.form.raw_material_weight"
-                        :placeholder="partPage.form.rawMaterialPlaceholder"
                         :disabled="props.processing"
-                        :icon="Scale"
                         :error="props.errors.raw_material_weight"
+                        :icon="Scale"
+                        :placeholder="partPage.form.rawMaterialPlaceholder"
                     />
                 </AppField>
             </div>
@@ -174,15 +166,15 @@ const handleImageRemove = (): void => {
 
         <!-- Image & Status -->
         <FormSection
-            title="Part Image & Status"
             description="Manage the part image and production availability."
+            title="Part Image & Status"
         >
             <div class="grid min-w-0 gap-5">
                 <!-- Image -->
                 <AppField
+                    :error="props.errors.image"
                     :label="partPage.form.imageLabel"
                     input-id="part-image"
-                    :error="props.errors.image"
                 >
                     <AppImagePicker
                         v-model="props.form.image"
@@ -198,8 +190,6 @@ const handleImageRemove = (): void => {
                 <!-- Status -->
                 <ToggleCardInput
                     v-model="props.form.status"
-                    :label="partPage.form.statusLabel"
-                    title="Part Status"
                     :description="
                         props.form.status
                             ? 'Part is active and available for production.'
@@ -208,15 +198,17 @@ const handleImageRemove = (): void => {
                     :disabled="props.processing"
                     :error="props.errors.status"
                     :icon="ToggleRight"
+                    :label="partPage.form.statusLabel"
+                    title="Part Status"
                 />
             </div>
         </FormSection>
 
         <!-- Actions -->
         <FormActions
-            :submit-label="submitLabel"
             :cancel-label="partPage.form.cancelLabel"
             :processing="processing"
+            :submit-label="submitLabel"
             @cancel="emit('cancel')"
         />
     </form>

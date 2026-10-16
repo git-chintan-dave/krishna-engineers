@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 /*
 |--------------------------------------------------------------------------
 | Props
@@ -38,8 +38,8 @@ withDefaults(
 
             <span
                 v-if="required"
-                class="ml-0.5 text-destructive"
                 aria-hidden="true"
+                class="ml-0.5 text-destructive"
             >
                 *
             </span>
@@ -51,7 +51,7 @@ withDefaults(
         |--------------------------------------------------------------------------
         -->
 
-        <slot />
+        <slot/>
 
         <!--
         |--------------------------------------------------------------------------

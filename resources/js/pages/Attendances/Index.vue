@@ -1,6 +1,6 @@
-﻿<script setup lang="ts">
-import { router, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+﻿<script lang="ts" setup>
+import {router, usePage} from '@inertiajs/vue3';
+import {computed, ref} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import ListingActions from '@/components/common/ListingActions.vue';
@@ -8,23 +8,13 @@ import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { attendancePage } from '@/config/attendances';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as attendancesRoute,
-} from '@/routes/attendances';
-import { view as attendancesImportRoute } from '@/routes/attendances/import';
-import { createAttendanceColumns } from '@/table/attendances';
-import type {
-    Attendance,
-    AttendanceFilters,
-    AttendanceResponse,
-    AttendanceSort,
-} from '@/types/attendance';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {attendancePage} from '@/config/attendances';
+import {bulkDestroy, create, destroy, index as attendancesRoute,} from '@/routes/attendances';
+import {view as attendancesImportRoute} from '@/routes/attendances/import';
+import {createAttendanceColumns} from '@/table/attendances';
+import type {Attendance, AttendanceFilters, AttendanceResponse, AttendanceSort,} from '@/types/attendance';
 
 /*
 |--------------------------------------------------------------------------
@@ -86,7 +76,7 @@ const columns = createAttendanceColumns(
     ['super_admin', 'supervisor'].includes(auth.value.user?.role),
 );
 
-const { table, selectedCount, search, clearFilters, deleteSelected } =
+const {table, selectedCount, search, clearFilters, deleteSelected} =
     useListingTable<Attendance, AttendanceSort>({
         data: () => props.attendances,
         columns,
@@ -137,8 +127,8 @@ const handleDeleteSelected = () => {
 
 <template>
     <ListingLayout
-        :title="attendancePage.title"
         :description="attendancePage.description"
+        :title="attendancePage.title"
     >
         <!--
         |--------------------------------------------------------------------------
@@ -148,20 +138,20 @@ const handleDeleteSelected = () => {
 
         <template #actions>
             <ListingActions
+                :create-label="attendancePage.createLabel"
                 :create-url="
                     ['super_admin', 'supervisor'].includes(auth.user?.role)
                         ? create().url
                         : undefined
                 "
-                :create-label="attendancePage.createLabel"
                 :import-url="
                     auth.user?.role === 'super_admin'
                         ? attendancesImportRoute().url
                         : undefined
                 "
-                import-label="Import"
-                :selected-count="selectedCount"
                 :resource-label="attendancePage.resourceLabel"
+                :selected-count="selectedCount"
+                import-label="Import"
                 @delete-selected="handleDeleteSelected"
             />
         </template>
@@ -174,16 +164,16 @@ const handleDeleteSelected = () => {
 
         <template #filters>
             <ListingFilters
-                :searchable="false"
-                :search-button-label="attendancePage.searchButtonLabel"
                 :clear-button-label="attendancePage.clearButtonLabel"
                 :clear-disabled="
                     filterEmployee === 'all' &&
                     !filterStartDate &&
                     !filterEndDate
                 "
-                @search="handleSearch"
+                :search-button-label="attendancePage.searchButtonLabel"
+                :searchable="false"
                 @clear="handleClearFilters"
+                @search="handleSearch"
             >
                 <template #filters>
                     <div
@@ -208,18 +198,18 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-40">
                         <AppInput
                             v-model="filterStartDate"
-                            type="date"
-                            placeholder="Start date"
                             aria-label="Start date"
+                            placeholder="Start date"
+                            type="date"
                         />
                     </div>
 
                     <div class="w-full shrink-0 sm:w-40">
                         <AppInput
                             v-model="filterEndDate"
-                            type="date"
-                            placeholder="End date"
                             aria-label="End date"
+                            placeholder="End date"
+                            type="date"
                         />
                     </div>
                 </template>
@@ -234,15 +224,15 @@ const handleDeleteSelected = () => {
 
         <template #table>
             <DataTable
-                :table="table"
                 :columns-count="columns.length"
-                :total="attendances.meta.total"
-                :page-index="attendances.meta.current_page - 1"
-                :page-size="attendances.meta.per_page"
-                :selected-count="selectedCount"
-                :page-size-options="[10, 25, 50, 100]"
                 :empty-text="attendancePage.emptyText"
                 :item-label="attendancePage.itemLabel"
+                :page-index="attendances.meta.current_page - 1"
+                :page-size="attendances.meta.per_page"
+                :page-size-options="[10, 25, 50, 100]"
+                :selected-count="selectedCount"
+                :table="table"
+                :total="attendances.meta.total"
             />
         </template>
     </ListingLayout>

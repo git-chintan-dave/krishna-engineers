@@ -1,6 +1,6 @@
-<script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue';
-import { Image, Trash2, Upload, X } from '@lucide/vue';
+<script lang="ts" setup>
+import {computed, onBeforeUnmount, ref} from 'vue';
+import {Image, Trash2, Upload, X} from '@lucide/vue';
 
 // Props
 const props = withDefaults(
@@ -148,10 +148,10 @@ onBeforeUnmount(() => {
     <div class="min-w-0 space-y-3">
         <input
             ref="inputRef"
-            type="file"
             :accept="accept"
             :disabled="disabled"
             class="hidden"
+            type="file"
             @change="handleFileChange"
         />
 
@@ -169,30 +169,30 @@ onBeforeUnmount(() => {
 
             <button
                 v-if="!disabled"
-                type="button"
-                class="absolute top-2 right-2 inline-flex size-8 items-center justify-center rounded-md border bg-background/95 shadow-sm transition hover:bg-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                 :aria-label="removeLabel"
                 :title="removeLabel"
+                class="absolute top-2 right-2 inline-flex size-8 items-center justify-center rounded-md border bg-background/95 shadow-sm transition hover:bg-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                type="button"
                 @click="removeImage"
             >
-                <X class="size-4" />
+                <X class="size-4"/>
             </button>
         </div>
 
         <!-- Empty state -->
         <button
             v-if="!hasImage"
-            type="button"
-            class="flex h-36 w-full max-w-52 flex-col items-center justify-center gap-2 rounded-md border border-dashed bg-muted/20 px-4 text-center transition hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-52"
             :disabled="disabled"
+            class="flex h-36 w-full max-w-52 flex-col items-center justify-center gap-2 rounded-md border border-dashed bg-muted/20 px-4 text-center transition hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-52"
+            type="button"
             @click="openPicker"
         >
             <div
                 class="flex size-10 items-center justify-center rounded-md border bg-background"
             >
                 <Image
-                    class="size-5 text-muted-foreground"
                     aria-hidden="true"
+                    class="size-5 text-muted-foreground"
                 />
             </div>
 
@@ -212,20 +212,20 @@ onBeforeUnmount(() => {
         <!-- Image actions -->
         <div v-else-if="!disabled" class="flex flex-wrap items-center gap-2">
             <button
-                type="button"
                 class="inline-flex min-h-9 items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                type="button"
                 @click="openPicker"
             >
-                <Upload class="size-4" />
+                <Upload class="size-4"/>
                 Change image
             </button>
 
             <button
-                type="button"
                 class="inline-flex min-h-9 items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium text-destructive transition hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                type="button"
                 @click="removeImage"
             >
-                <Trash2 class="size-4" />
+                <Trash2 class="size-4"/>
                 {{ removeLabel }}
             </button>
         </div>

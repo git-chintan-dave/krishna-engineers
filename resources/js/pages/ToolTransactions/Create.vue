@@ -1,25 +1,25 @@
-﻿<script setup lang="ts">
-import { router, useForm, usePage } from '@inertiajs/vue3';
+﻿<script lang="ts" setup>
+import {router, useForm, usePage} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
 import ToolTransactionForm from '@/pages/ToolTransactions/components/ToolTransactionForm.vue';
 
-import { toolTransactionPage } from '@/config/toolTransactions';
-import { dashboard } from '@/routes';
-import { index as toolTransactions, store } from '@/routes/tool-transactions';
+import {toolTransactionPage} from '@/config/toolTransactions';
+import {dashboard} from '@/routes';
+import {index as toolTransactions, store} from '@/routes/tool-transactions';
 
-import type { ToolTransactionType } from '@/types/toolTransaction';
-import { computed } from 'vue';
+import type {ToolTransactionType} from '@/types/toolTransaction';
+import {computed} from 'vue';
 
 defineOptions({
     layout: {
         breadcrumbs: [
-            { title: 'Dashboard', href: dashboard() },
+            {title: 'Dashboard', href: dashboard()},
             {
                 title: toolTransactionPage.title,
                 href: toolTransactions(),
             },
-            { title: 'Create' },
+            {title: 'Create'},
         ],
     },
 });
@@ -61,16 +61,16 @@ const handleCancel = () => {
 
 <template>
     <FormLayout
-        :title="toolTransactionPage.form.createTitle"
         :description="toolTransactionPage.form.createDescription"
+        :title="toolTransactionPage.form.createTitle"
     >
         <ToolTransactionForm
-            :form="form"
             :errors="form.errors"
+            :form="form"
             :processing="form.processing"
             :submit-label="toolTransactionPage.form.createSubmitLabel"
-            @submit="handleSubmit"
             @cancel="handleCancel"
+            @submit="handleSubmit"
         />
     </FormLayout>
 </template>

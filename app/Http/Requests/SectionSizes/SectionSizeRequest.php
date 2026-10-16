@@ -29,7 +29,7 @@ class SectionSizeRequest extends FormRequest
                 'max:255',
                 Rule::unique('section_sizes', 'size')
                     ->where(
-                        fn ($query) => $query->where(
+                        fn($query) => $query->where(
                             'section_id',
                             $this->input('section_id'),
                         ),

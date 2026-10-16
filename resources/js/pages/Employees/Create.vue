@@ -1,12 +1,12 @@
-﻿<script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+﻿<script lang="ts" setup>
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { employeePage } from '@/config/employees';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {employeePage} from '@/config/employees';
 import EmployeeForm from '@/pages/Employees/components/EmployeeForm.vue';
-import { index as employees, store } from '@/routes/employees';
-import type { EmployeeFormData } from '@/types/employee';
+import {index as employees, store} from '@/routes/employees';
+import type {EmployeeFormData} from '@/types/employee';
 
 // Layout
 defineOptions({
@@ -52,16 +52,16 @@ const handleCancel = () => {
 
 <template>
     <FormLayout
-        :title="employeePage.form.createTitle"
         :description="employeePage.form.createDescription"
+        :title="employeePage.form.createTitle"
     >
         <EmployeeForm
-            :form="form"
             :errors="form.errors"
+            :form="form"
             :processing="form.processing"
             :submit-label="employeePage.form.createSubmitLabel"
-            @submit="handleSubmit"
             @cancel="handleCancel"
+            @submit="handleSubmit"
         />
     </FormLayout>
 </template>

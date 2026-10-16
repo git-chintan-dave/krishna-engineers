@@ -42,7 +42,7 @@ class SectionSizeController extends Controller
         )
             ->when(
                 $filters['section_id'] ?? null,
-                fn (Builder $query, int $sectionId): Builder => $query->where(
+                fn(Builder $query, int $sectionId): Builder => $query->where(
                     'section_id',
                     $sectionId,
                 ),
@@ -70,11 +70,13 @@ class SectionSizeController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function create(): Response
+    public function store(SectionSizeRequest $request): RedirectResponse
     {
         Gate::authorize('create', SectionSize::class);
 
-        return Inertia::render('SectionSizes/Create', []);
+        SectionSize::create($request->validated());
+
+        return $this->successResponse('created');
     }
 
     /*
@@ -83,13 +85,11 @@ class SectionSizeController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function store(SectionSizeRequest $request): RedirectResponse
+    public function create(): Response
     {
         Gate::authorize('create', SectionSize::class);
 
-        SectionSize::create($request->validated());
-
-        return $this->successResponse('created');
+        return Inertia::render('SectionSizes/Create', []);
     }
 
     /*
@@ -117,8 +117,9 @@ class SectionSizeController extends Controller
 
     public function update(
         SectionSizeRequest $request,
-        SectionSize $sectionSize,
-    ): RedirectResponse {
+        SectionSize        $sectionSize,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $sectionSize);
 
         $sectionSize->update($request->validated());
@@ -149,7 +150,8 @@ class SectionSizeController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('deleteAny', SectionSize::class);
 
         SectionSize::query()

@@ -1,7 +1,7 @@
-import { h } from 'vue';
+import {h} from 'vue';
 
-import { createSortableHeader } from '@/table/helpers/sortableHeader';
-import type { ColumnAlign } from '@/table/types';
+import {createSortableHeader} from '@/table/helpers/sortableHeader';
+import type {ColumnAlign} from '@/table/types';
 
 /*
 |--------------------------------------------------------------------------
@@ -64,12 +64,12 @@ const formatCellValue = (value: unknown): string => {
 */
 
 export const createPrimaryColumn = <TData = unknown>({
-    header,
-    size,
-    sortable = false,
-    align = 'left',
-    ...accessor
-}: PrimaryColumnOptions<TData>) => ({
+                                                         header,
+                                                         size,
+                                                         sortable = false,
+                                                         align = 'left',
+                                                         ...accessor
+                                                     }: PrimaryColumnOptions<TData>) => ({
     ...accessor,
 
     /*
@@ -90,9 +90,9 @@ export const createPrimaryColumn = <TData = unknown>({
 
     header: sortable
         ? createSortableHeader({
-              label: header,
-              align,
-          })
+            label: header,
+            align,
+        })
         : header,
 
     /*
@@ -101,7 +101,7 @@ export const createPrimaryColumn = <TData = unknown>({
     |--------------------------------------------------------------------------
     */
 
-    cell: ({ getValue }: { getValue: () => unknown }) =>
+    cell: ({getValue}: { getValue: () => unknown }) =>
         h(
             'span',
             {
@@ -121,9 +121,9 @@ export const createPrimaryColumn = <TData = unknown>({
 
     ...(size !== undefined
         ? {
-              size,
-              minSize: size,
-              maxSize: size,
-          }
+            size,
+            minSize: size,
+            maxSize: size,
+        }
         : {}),
 });

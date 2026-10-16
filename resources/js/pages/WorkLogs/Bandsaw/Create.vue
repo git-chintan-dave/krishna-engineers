@@ -1,15 +1,12 @@
-<script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+<script lang="ts" setup>
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
 import BandsawWorkLogForm from '@/pages/WorkLogs/Bandsaw/components/BandsawWorkLogForm.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { bandsawWorkLogPage } from '@/config/bandsawWorkLogs';
-import { index as bandsawWorkLogs, store } from '@/routes/bandsaw';
-import type {
-    BandsawWorkLogFormData,
-    BandsawWorkLogLastReport,
-} from '@/types/bandsawWorkLog';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {bandsawWorkLogPage} from '@/config/bandsawWorkLogs';
+import {index as bandsawWorkLogs, store} from '@/routes/bandsaw';
+import type {BandsawWorkLogFormData, BandsawWorkLogLastReport,} from '@/types/bandsawWorkLog';
 
 /*
 |--------------------------------------------------------------------------
@@ -75,19 +72,19 @@ const handleCancel = (): void => {
 
 <template>
     <FormLayout
-        :title="bandsawWorkLogPage.form.createTitle"
         :description="bandsawWorkLogPage.form.createDescription"
+        :title="bandsawWorkLogPage.form.createTitle"
     >
         <BandsawWorkLogForm
-            :form="form"
+            :can-select-bandsaw="props.canSelectBandsaw"
             :errors="form.errors"
+            :form="form"
+            :is-create="true"
+            :last-reports="props.lastReports"
             :processing="form.processing"
             :submit-label="bandsawWorkLogPage.form.createSubmitLabel"
-            :can-select-bandsaw="props.canSelectBandsaw"
-            :last-reports="props.lastReports"
-            :is-create="true"
-            @submit="handleSubmit"
             @cancel="handleCancel"
+            @submit="handleSubmit"
         />
     </FormLayout>
 </template>

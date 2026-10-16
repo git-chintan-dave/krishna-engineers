@@ -27,7 +27,8 @@ class EmployeeController extends Controller
     // Index
     public function index(
         IndexUserRequest $request,
-    ): Response {
+    ): Response
+    {
         Gate::authorize('viewAny', User::class);
 
         $filters = $request->validated();
@@ -51,17 +52,37 @@ class EmployeeController extends Controller
     }
 
     // Create
-    public function create(): Response
-    {
-        Gate::authorize('create', User::class);
 
-        return Inertia::render('Employees/Create', []);
+    private function employeeQuery(array $filters): Builder
+    {
+        return $this->applyIndexFilters(
+            User::query(),
+            $filters,
+            [
+                'name',
+                'employee_code',
+            ],
+        )
+            ->when(
+                $filters['role'] ?? null,
+                fn(Builder $query, string $role): Builder => $query->where('role', $role),
+            )
+            ->when(
+                $filters['shift'] ?? null,
+                fn(Builder $query, string $shift): Builder => $query->where('shift', $shift),
+            )
+            ->when(
+                $filters['status'] ?? null,
+                fn(Builder $query, string $status): Builder => $query->where('status', $status),
+            );
     }
 
     // Store
+
     public function store(
         UserRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('create', User::class);
 
         User::create($request->validated());
@@ -70,9 +91,20 @@ class EmployeeController extends Controller
     }
 
     // Edit
+
+    public function create(): Response
+    {
+        Gate::authorize('create', User::class);
+
+        return Inertia::render('Employees/Create', []);
+    }
+
+    // Update
+
     public function edit(
         User $employee,
-    ): Response {
+    ): Response
+    {
         Gate::authorize('view', $employee);
 
         return Inertia::render('Employees/Edit', [
@@ -80,11 +112,13 @@ class EmployeeController extends Controller
         ]);
     }
 
-    // Update
+    // Destroy
+
     public function update(
         UserRequest $request,
-        User $employee,
-    ): RedirectResponse {
+        User        $employee,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $employee);
 
         $data = $request->validated();
@@ -98,10 +132,12 @@ class EmployeeController extends Controller
         return $this->successResponse('updated');
     }
 
-    // Destroy
+    // Bulk Destroy
+
     public function destroy(
         User $employee,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('delete', $employee);
 
         $employee->delete();
@@ -109,10 +145,12 @@ class EmployeeController extends Controller
         return $this->successResponse('deleted');
     }
 
-    // Bulk Destroy
+    // Helpers
+
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('deleteAny', User::class);
 
         User::query()
@@ -121,30 +159,5 @@ class EmployeeController extends Controller
             ->delete();
 
         return $this->successResponse('bulk_deleted');
-    }
-
-    // Helpers
-    private function employeeQuery(array $filters): Builder
-    {
-        return $this->applyIndexFilters(
-            User::query(),
-            $filters,
-            [
-                'name',
-                'employee_code',
-            ],
-        )
-            ->when(
-                $filters['role'] ?? null,
-                fn (Builder $query, string $role): Builder => $query->where('role', $role),
-            )
-            ->when(
-                $filters['shift'] ?? null,
-                fn (Builder $query, string $shift): Builder => $query->where('shift', $shift),
-            )
-            ->when(
-                $filters['status'] ?? null,
-                fn (Builder $query, string $status): Builder => $query->where('status', $status),
-            );
     }
 }

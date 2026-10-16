@@ -1,5 +1,5 @@
-<script setup lang="ts">
-import { ref } from 'vue';
+<script lang="ts" setup>
+import {ref} from 'vue';
 
 import AppImageViewer from '@/components/common/AppImageViewer.vue';
 
@@ -33,34 +33,34 @@ const openViewer = () => {
 <template>
     <template v-if="src">
         <button
-            type="button"
-            class="group relative block overflow-hidden rounded-md border bg-muted/20 transition hover:border-primary/40 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-            :class="size === 'sm' ? 'size-12' : 'size-16'"
             :aria-label="`View ${alt}`"
+            :class="size === 'sm' ? 'size-12' : 'size-16'"
             :title="`View ${alt}`"
+            class="group relative block overflow-hidden rounded-md border bg-muted/20 transition hover:border-primary/40 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+            type="button"
             @click="openViewer"
         >
             <img
-                :src="src"
                 :alt="alt"
+                :src="src"
                 class="h-full w-full object-contain p-1 transition duration-200 group-hover:scale-105"
-                loading="lazy"
                 decoding="async"
+                loading="lazy"
             />
 
             <span
-                class="pointer-events-none absolute inset-0 bg-black/0 transition group-hover:bg-black/10"
                 aria-hidden="true"
+                class="pointer-events-none absolute inset-0 bg-black/0 transition group-hover:bg-black/10"
             />
         </button>
 
-        <AppImageViewer v-model:open="viewerOpen" :src="src" :alt="alt" />
+        <AppImageViewer v-model:open="viewerOpen" :alt="alt" :src="src"/>
     </template>
 
     <span
         v-else
-        class="inline-flex size-12 items-center justify-center rounded-md border border-dashed bg-muted/20 text-xs text-muted-foreground"
         aria-label="No image"
+        class="inline-flex size-12 items-center justify-center rounded-md border border-dashed bg-muted/20 text-xs text-muted-foreground"
     >
         —
     </span>

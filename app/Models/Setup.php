@@ -27,27 +27,30 @@ class Setup extends Model
     }
 
     // Casts
-    protected function casts(): array
-    {
-        return [
-            'status' => Status::class,
-        ];
-    }
 
-    // Relationships
     public function partSetups(): HasMany
     {
         return $this->hasMany(PartSetup::class);
     }
 
-    // Helpers
+    // Relationships
+
     public function isActive(): bool
     {
         return $this->status === Status::ACTIVE;
     }
 
+    // Helpers
+
     public function isInactive(): bool
     {
         return $this->status === Status::INACTIVE;
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'status' => Status::class,
+        ];
     }
 }

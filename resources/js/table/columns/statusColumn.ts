@@ -1,6 +1,6 @@
-import { h } from 'vue';
+import {h} from 'vue';
 
-import { Badge } from '@/components/ui/badge';
+import {Badge} from '@/components/ui/badge';
 
 /*
 |--------------------------------------------------------------------------
@@ -24,11 +24,11 @@ type StatusColumnOptions = {
 */
 
 export const createStatusColumn = ({
-    accessorKey = 'status',
-    header = 'Status',
-    size = 120,
-    getVariant,
-}: StatusColumnOptions = {}) => ({
+                                       accessorKey = 'status',
+                                       header = 'Status',
+                                       size = 120,
+                                       getVariant,
+                                   }: StatusColumnOptions = {}) => ({
     accessorKey,
 
     /*
@@ -45,15 +45,15 @@ export const createStatusColumn = ({
     |--------------------------------------------------------------------------
     */
 
-    cell: ({ row }: any) => {
+    cell: ({row}: any) => {
         const status =
             (row.getValue(accessorKey) as string | null | undefined) ?? '';
 
         const variant = getVariant
             ? getVariant(status)
             : status === 'active'
-              ? 'default'
-              : 'secondary';
+                ? 'default'
+                : 'secondary';
 
         return h(
             Badge,

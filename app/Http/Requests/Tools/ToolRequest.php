@@ -38,7 +38,7 @@ class ToolRequest extends FormRequest
                 'max:255',
                 Rule::unique('tools', 'name')
                     ->where(
-                        fn (Builder $query): Builder => $query->where(
+                        fn(Builder $query): Builder => $query->where(
                             'type',
                             $this->input('type'),
                         ),

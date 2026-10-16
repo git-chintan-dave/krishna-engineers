@@ -43,16 +43,9 @@ class OperatorWorkLog extends Model
     |--------------------------------------------------------------------------
     */
 
-    protected function casts(): array
+    public function user(): BelongsTo
     {
-        return [
-            'work_date' => 'date',
-            'machine_cycle_time' => 'integer',
-            'actual_cycle_time' => 'integer',
-            'quantity' => 'integer',
-            'rejection_quantity' => 'integer',
-            'production_seconds' => 'integer',
-        ];
+        return $this->belongsTo(User::class);
     }
 
     /*
@@ -60,11 +53,6 @@ class OperatorWorkLog extends Model
     | Relationships
     |--------------------------------------------------------------------------
     */
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
 
     public function machine(): BelongsTo
     {
@@ -86,74 +74,88 @@ class OperatorWorkLog extends Model
         return $this->belongsTo(PartSetup::class);
     }
 
+    public function scopeForUser(
+        Builder $query,
+        int     $userId
+    ): Builder
+    {
+        return $query->where('user_id', $userId);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Scopes
     |--------------------------------------------------------------------------
     */
 
-    public function scopeForUser(
-        Builder $query,
-        int $userId
-    ): Builder {
-        return $query->where('user_id', $userId);
-    }
-
     public function scopeForDate(
         Builder $query,
-        string $date
-    ): Builder {
+        string  $date
+    ): Builder
+    {
         return $query->whereDate('work_date', $date);
     }
 
     public function scopeFromDate(
         Builder $query,
-        string $date
-    ): Builder {
+        string  $date
+    ): Builder
+    {
         return $query->whereDate('work_date', '>=', $date);
     }
 
     public function scopeToDate(
         Builder $query,
-        string $date
-    ): Builder {
+        string  $date
+    ): Builder
+    {
         return $query->whereDate('work_date', '<=', $date);
     }
 
     public function scopeBetweenDates(
         Builder $query,
-        string $from,
-        string $to
-    ): Builder {
+        string  $from,
+        string  $to
+    ): Builder
+    {
         return $query->whereBetween('work_date', [$from, $to]);
     }
 
     public function scopeForMachine(
         Builder $query,
-        int $machineId
-    ): Builder {
+        int     $machineId
+    ): Builder
+    {
         return $query->where('machine_id', $machineId);
     }
 
     public function scopeForPart(
         Builder $query,
-        int $partId
-    ): Builder {
+        int     $partId
+    ): Builder
+    {
         return $query->where('part_id', $partId);
     }
 
     public function scopeForSetup(
         Builder $query,
-        int $setupId
-    ): Builder {
+        int     $setupId
+    ): Builder
+    {
         return $query->where('setup_id', $setupId);
     }
 
     public function scopeForShift(
         Builder $query,
-        string $shift
-    ): Builder {
+        string  $shift
+    ): Builder
+    {
         return $query->where('shift', $shift);
+    }
+
+    public function calculateProductionSeconds(): int
+    {
+        return $this->quantity * $this->actual_cycle_time;
     }
 
     /*
@@ -162,13 +164,20 @@ class OperatorWorkLog extends Model
     |--------------------------------------------------------------------------
     */
 
-    public function calculateProductionSeconds(): int
-    {
-        return $this->quantity * $this->actual_cycle_time;
-    }
-
     public function hasRejections(): bool
     {
         return $this->rejection_quantity > 0;
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'work_date' => 'date',
+            'machine_cycle_time' => 'integer',
+            'actual_cycle_time' => 'integer',
+            'quantity' => 'integer',
+            'rejection_quantity' => 'integer',
+            'production_seconds' => 'integer',
+        ];
     }
 }

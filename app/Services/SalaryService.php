@@ -15,114 +15,6 @@ use RuntimeException;
 class SalaryService
 {
     /**
-     * Generate a salary record for a user and period.
-     */
-    public function generate(
-        User $user,
-        CarbonInterface $periodStart,
-        CarbonInterface $periodEnd,
-        float $upad = 0,
-        float $paidLoan = 0,
-        float $adjustment = 0,
-        ?string $adjustmentReason = null,
-    ): Salary {
-        return DB::transaction(function () use (
-            $user,
-            $periodStart,
-            $periodEnd,
-            $upad,
-            $paidLoan,
-            $adjustment,
-            $adjustmentReason,
-        ): Salary {
-            $existing = $user->salaries()
-                ->where(
-                    'salary_period_start',
-                    $periodStart->toDateString(),
-                )
-                ->where(
-                    'salary_period_end',
-                    $periodEnd->toDateString(),
-                )
-                ->first();
-
-            if ($existing) {
-                throw new RuntimeException(
-                    'Salary for this period has already been generated.',
-                );
-            }
-
-            $workingDays = $this->getWorkingDays(
-                $user,
-                $periodStart,
-                $periodEnd,
-            );
-
-            $baseSalary = (float) $user->salary;
-            $incentiveRate = (float) $user->incentive_per_day;
-            $deductionRate = (float) $user->deduction_per_day;
-
-            $incentive = $this->calculateIncentive(
-                $workingDays,
-                $incentiveRate,
-            );
-
-            $deduction = $this->calculateDeduction(
-                $workingDays,
-                $deductionRate,
-            );
-
-            $finalPayable = $this->calculateFinalPayable(
-                baseSalary: $baseSalary,
-                incentive: $incentive,
-                adjustment: $adjustment,
-                upad: $upad,
-                paidLoan: $paidLoan,
-                deduction: $deduction,
-            );
-
-            try {
-                return $user->salaries()->create([
-                    'salary_period_start' => $periodStart->toDateString(),
-                    'salary_period_end' => $periodEnd->toDateString(),
-
-                    'base_salary' => $baseSalary,
-                    'working_days' => $workingDays,
-
-                    'upad' => $upad,
-                    'paid_loan' => $paidLoan,
-
-                    'incentive_rate' => $incentiveRate,
-                    'incentive' => $incentive,
-
-                    'deduction_rate' => $deductionRate,
-                    'deduction' => $deduction,
-
-                    'adjustment' => $adjustment,
-                    'adjustment_reason' => $adjustmentReason,
-
-                    'final_payable' => $finalPayable,
-
-                    'status' => SalaryStatus::DRAFT,
-                    'paid_at' => null,
-                ]);
-            } catch (QueryException $e) {
-                if ($this->isUniqueViolation($e)) {
-                    throw new RuntimeException(
-                        'Salary for this period has already been generated.',
-                        previous: $e,
-                    );
-                }
-
-                throw new RuntimeException(
-                    'Unable to generate salary. Please try again.',
-                    previous: $e,
-                );
-            }
-        });
-    }
-
-    /**
      * Generate draft salaries for all eligible employees
      * for the previous calendar month.
      *
@@ -139,7 +31,8 @@ class SalaryService
      */
     public function generateForAllEmployees(
         ?CarbonInterface $referenceDate = null,
-    ): array {
+    ): array
+    {
         $referenceDate = $referenceDate
             ? Carbon::instance($referenceDate)
             : now();
@@ -215,15 +108,216 @@ class SalaryService
     }
 
     /**
+     * Generate a salary record for a user and period.
+     */
+    public function generate(
+        User            $user,
+        CarbonInterface $periodStart,
+        CarbonInterface $periodEnd,
+        float           $upad = 0,
+        float           $paidLoan = 0,
+        float           $adjustment = 0,
+        ?string         $adjustmentReason = null,
+    ): Salary
+    {
+        return DB::transaction(function () use (
+            $user,
+            $periodStart,
+            $periodEnd,
+            $upad,
+            $paidLoan,
+            $adjustment,
+            $adjustmentReason,
+        ): Salary {
+            $existing = $user->salaries()
+                ->where(
+                    'salary_period_start',
+                    $periodStart->toDateString(),
+                )
+                ->where(
+                    'salary_period_end',
+                    $periodEnd->toDateString(),
+                )
+                ->first();
+
+            if ($existing) {
+                throw new RuntimeException(
+                    'Salary for this period has already been generated.',
+                );
+            }
+
+            $workingDays = $this->getWorkingDays(
+                $user,
+                $periodStart,
+                $periodEnd,
+            );
+
+            $baseSalary = (float)$user->salary;
+            $incentiveRate = (float)$user->incentive_per_day;
+            $deductionRate = (float)$user->deduction_per_day;
+
+            $incentive = $this->calculateIncentive(
+                $workingDays,
+                $incentiveRate,
+            );
+
+            $deduction = $this->calculateDeduction(
+                $workingDays,
+                $deductionRate,
+            );
+
+            $finalPayable = $this->calculateFinalPayable(
+                baseSalary: $baseSalary,
+                incentive: $incentive,
+                adjustment: $adjustment,
+                upad: $upad,
+                paidLoan: $paidLoan,
+                deduction: $deduction,
+            );
+
+            try {
+                return $user->salaries()->create([
+                    'salary_period_start' => $periodStart->toDateString(),
+                    'salary_period_end' => $periodEnd->toDateString(),
+
+                    'base_salary' => $baseSalary,
+                    'working_days' => $workingDays,
+
+                    'upad' => $upad,
+                    'paid_loan' => $paidLoan,
+
+                    'incentive_rate' => $incentiveRate,
+                    'incentive' => $incentive,
+
+                    'deduction_rate' => $deductionRate,
+                    'deduction' => $deduction,
+
+                    'adjustment' => $adjustment,
+                    'adjustment_reason' => $adjustmentReason,
+
+                    'final_payable' => $finalPayable,
+
+                    'status' => SalaryStatus::DRAFT,
+                    'paid_at' => null,
+                ]);
+            } catch (QueryException $e) {
+                if ($this->isUniqueViolation($e)) {
+                    throw new RuntimeException(
+                        'Salary for this period has already been generated.',
+                        previous: $e,
+                    );
+                }
+
+                throw new RuntimeException(
+                    'Unable to generate salary. Please try again.',
+                    previous: $e,
+                );
+            }
+        });
+    }
+
+    /**
+     * Get the number of working days for a salary period.
+     */
+    private function getWorkingDays(
+        User            $user,
+        CarbonInterface $periodStart,
+        CarbonInterface $periodEnd,
+    ): int
+    {
+        return $user->attendances()
+            ->whereBetween('attendance_date', [
+                $periodStart->toDateString(),
+                $periodEnd->toDateString(),
+            ])
+            ->whereNotNull('start_at')
+            ->count();
+    }
+
+    private function calculateIncentive(
+        int   $workingDays,
+        float $rate,
+    ): float
+    {
+        if ($workingDays <= 23) {
+            return 0;
+        }
+
+        return round(
+            ($workingDays - 23) * $rate,
+            2,
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Attendance
+    |--------------------------------------------------------------------------
+    */
+
+    private function calculateDeduction(
+        int   $workingDays,
+        float $rate,
+    ): float
+    {
+        if ($workingDays >= 21) {
+            return 0;
+        }
+
+        return round(
+            (21 - $workingDays) * $rate,
+            2,
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Calculation Helpers
+    |--------------------------------------------------------------------------
+    */
+
+    private function calculateFinalPayable(
+        float $baseSalary,
+        float $incentive,
+        float $adjustment,
+        float $upad,
+        float $paidLoan,
+        float $deduction,
+    ): float
+    {
+        return round(
+            $baseSalary
+            + $incentive
+            + $adjustment
+            - $upad
+            - $paidLoan
+            - $deduction,
+            2,
+        );
+    }
+
+    /**
+     * Determine whether the database exception is a unique constraint
+     * violation.
+     */
+    private function isUniqueViolation(
+        QueryException $exception,
+    ): bool
+    {
+        return $exception->getCode() === '23000';
+    }
+
+    /**
      * Recalculate a draft salary.
      */
     public function recalculate(
-        Salary $salary,
-        float $upad = 0,
-        float $paidLoan = 0,
-        float $adjustment = 0,
+        Salary  $salary,
+        float   $upad = 0,
+        float   $paidLoan = 0,
+        float   $adjustment = 0,
         ?string $adjustmentReason = null,
-    ): Salary {
+    ): Salary
+    {
         if ($salary->isPaid()) {
             throw new RuntimeException(
                 'A paid salary cannot be recalculated.',
@@ -247,16 +341,16 @@ class SalaryService
 
             $incentive = $this->calculateIncentive(
                 $workingDays,
-                (float) $salary->incentive_rate,
+                (float)$salary->incentive_rate,
             );
 
             $deduction = $this->calculateDeduction(
                 $workingDays,
-                (float) $salary->deduction_rate,
+                (float)$salary->deduction_rate,
             );
 
             $finalPayable = $this->calculateFinalPayable(
-                baseSalary: (float) $salary->base_salary,
+                baseSalary: (float)$salary->base_salary,
                 incentive: $incentive,
                 adjustment: $adjustment,
                 upad: $upad,
@@ -287,9 +381,10 @@ class SalaryService
      * Mark salary as paid.
      */
     public function markAsPaid(
-        Salary $salary,
+        Salary  $salary,
         ?Carbon $paidAt = null,
-    ): Salary {
+    ): Salary
+    {
         if ($salary->isPaid()) {
             throw new RuntimeException(
                 'Salary has already been paid.',
@@ -311,97 +406,28 @@ class SalaryService
 
     /*
     |--------------------------------------------------------------------------
-    | Attendance
+    | Database Helpers
     |--------------------------------------------------------------------------
     */
-
-    /**
-     * Get the number of working days for a salary period.
-     */
-    private function getWorkingDays(
-        User $user,
-        CarbonInterface $periodStart,
-        CarbonInterface $periodEnd,
-    ): int {
-        return $user->attendances()
-            ->whereBetween('attendance_date', [
-                $periodStart->toDateString(),
-                $periodEnd->toDateString(),
-            ])
-            ->whereNotNull('start_at')
-            ->count();
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Calculation Helpers
-    |--------------------------------------------------------------------------
-    */
-
-    private function calculateIncentive(
-        int $workingDays,
-        float $rate,
-    ): float {
-        if ($workingDays <= 23) {
-            return 0;
-        }
-
-        return round(
-            ($workingDays - 23) * $rate,
-            2,
-        );
-    }
-
-    private function calculateDeduction(
-        int $workingDays,
-        float $rate,
-    ): float {
-        if ($workingDays >= 21) {
-            return 0;
-        }
-
-        return round(
-            (21 - $workingDays) * $rate,
-            2,
-        );
-    }
-
-    private function calculateFinalPayable(
-        float $baseSalary,
-        float $incentive,
-        float $adjustment,
-        float $upad,
-        float $paidLoan,
-        float $deduction,
-    ): float {
-        return round(
-            $baseSalary
-            + $incentive
-            + $adjustment
-            - $upad
-            - $paidLoan
-            - $deduction,
-            2,
-        );
-    }
 
     /**
      * Preview salary calculation for a user and period.
      */
     public function preview(
-        User $user,
+        User            $user,
         CarbonInterface $periodStart,
         CarbonInterface $periodEnd,
-    ): array {
+    ): array
+    {
         $workingDays = $this->getWorkingDays(
             $user,
             $periodStart,
             $periodEnd,
         );
 
-        $baseSalary = (float) $user->salary;
-        $incentiveRate = (float) $user->incentive_per_day;
-        $deductionRate = (float) $user->deduction_per_day;
+        $baseSalary = (float)$user->salary;
+        $incentiveRate = (float)$user->incentive_per_day;
+        $deductionRate = (float)$user->deduction_per_day;
 
         $incentive = $this->calculateIncentive(
             $workingDays,
@@ -461,21 +487,5 @@ class SalaryService
                 '',
             ),
         ];
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Database Helpers
-    |--------------------------------------------------------------------------
-    */
-
-    /**
-     * Determine whether the database exception is a unique constraint
-     * violation.
-     */
-    private function isUniqueViolation(
-        QueryException $exception,
-    ): bool {
-        return $exception->getCode() === '23000';
     }
 }

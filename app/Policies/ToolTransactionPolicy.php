@@ -8,6 +8,14 @@ use App\Models\User;
 
 class ToolTransactionPolicy
 {
+    public function view(
+        User            $user,
+        ToolTransaction $toolTransaction,
+    ): bool
+    {
+        return $this->viewAny($user);
+    }
+
     public function viewAny(User $user): bool
     {
         return in_array(
@@ -17,34 +25,29 @@ class ToolTransactionPolicy
         );
     }
 
-    public function view(
-        User $user,
-        ToolTransaction $toolTransaction,
-    ): bool {
-        return $this->viewAny($user);
-    }
-
     public function create(User $user): bool
     {
         return $this->viewAny($user);
     }
 
-    public function update(
-        User $user,
+    public function delete(
+        User            $user,
         ToolTransaction $toolTransaction,
-    ): bool {
+    ): bool
+    {
+        return $this->update($user, $toolTransaction);
+    }
+
+    public function update(
+        User            $user,
+        ToolTransaction $toolTransaction,
+    ): bool
+    {
         return $user->role === UserRole::SUPER_ADMIN
             || (
                 $user->role === UserRole::SUPERVISOR
                 && $toolTransaction->created_by_user_id === $user->id
             );
-    }
-
-    public function delete(
-        User $user,
-        ToolTransaction $toolTransaction,
-    ): bool {
-        return $this->update($user, $toolTransaction);
     }
 
     public function deleteAny(User $user): bool

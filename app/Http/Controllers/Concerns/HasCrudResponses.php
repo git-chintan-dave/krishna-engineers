@@ -9,27 +9,29 @@ use Illuminate\Http\RedirectResponse;
 trait HasCrudResponses
 {
     protected function successResponse(
-        string $action,
+        string  $action,
         ?string $message = null,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         return ResponseHelper::success(
             message: $message ?? FlashMessage::success(
-                $action,
-                self::MODULE_NAME,
-            ),
+            $action,
+            self::MODULE_NAME,
+        ),
             route: self::INDEX_ROUTE,
         );
     }
 
     protected function errorResponse(
-        string $action,
+        string  $action,
         ?string $message = null,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         return ResponseHelper::error(
             message: $message ?? FlashMessage::error(
-                $action,
-                self::MODULE_NAME,
-            ),
+            $action,
+            self::MODULE_NAME,
+        ),
             route: self::INDEX_ROUTE,
         );
     }

@@ -1,4 +1,4 @@
-import { reactive, readonly } from 'vue';
+import {reactive, readonly} from 'vue';
 
 export type ConfirmOptions = {
     title?: string;

@@ -28,6 +28,21 @@ class AttendanceBreak extends Model
     }
 
     // Casts
+
+    public function isOpen(): bool
+    {
+        return $this->end_at === null;
+    }
+
+    // Helpers
+
+    public function attendance(): BelongsTo
+    {
+        return $this->belongsTo(Attendance::class);
+    }
+
+    // Relationships
+
     protected function casts(): array
     {
         return [
@@ -35,17 +50,5 @@ class AttendanceBreak extends Model
             'end_at' => 'datetime',
             'duration_seconds' => 'integer',
         ];
-    }
-
-    // Helpers
-    public function isOpen(): bool
-    {
-        return $this->end_at === null;
-    }
-
-    // Relationships
-    public function attendance(): BelongsTo
-    {
-        return $this->belongsTo(Attendance::class);
     }
 }

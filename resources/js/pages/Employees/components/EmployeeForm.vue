@@ -1,14 +1,5 @@
-<script setup lang="ts">
-import {
-    Badge,
-    CalendarDays,
-    CreditCard,
-    IndianRupee,
-    LockKeyhole,
-    Mail,
-    Phone,
-    User,
-} from '@lucide/vue';
+<script lang="ts" setup>
+import {Badge, CalendarDays, CreditCard, IndianRupee, LockKeyhole, Mail, Phone, User,} from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -17,8 +8,8 @@ import FormSection from '@/components/form/FormSection.vue';
 import ToggleCardInput from '@/components/form/ToggleCardInput.vue';
 import AppUserRoleSelect from '@/components/selects/AppUserRoleSelect.vue';
 import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
-import { employeePage } from '@/config/employees';
-import type { EmployeeFormData } from '@/types/employee';
+import {employeePage} from '@/config/employees';
+import type {EmployeeFormData} from '@/types/employee';
 
 // Props
 const props = withDefaults(
@@ -48,8 +39,8 @@ const emit = defineEmits<{
     <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
         <!-- Employee Information -->
         <FormSection
-            :title="employeePage.form.employeeSectionTitle"
             :description="employeePage.form.employeeSectionDescription"
+            :title="employeePage.form.employeeSectionTitle"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Name -->
@@ -61,10 +52,10 @@ const emit = defineEmits<{
                     <AppInput
                         id="employee-name"
                         v-model="props.form.name"
-                        :placeholder="employeePage.form.namePlaceholder"
                         :disabled="processing"
                         :error="errors.name"
                         :icon="User"
+                        :placeholder="employeePage.form.namePlaceholder"
                         required
                     />
                 </AppField>
@@ -78,10 +69,10 @@ const emit = defineEmits<{
                     <AppInput
                         id="employee-code"
                         v-model="props.form.employee_code"
-                        :placeholder="employeePage.form.employeeCodePlaceholder"
                         :disabled="processing"
                         :error="errors.employee_code"
                         :icon="Badge"
+                        :placeholder="employeePage.form.employeeCodePlaceholder"
                         required
                     />
                 </AppField>
@@ -94,10 +85,10 @@ const emit = defineEmits<{
                     <AppInput
                         id="employee-joining-date"
                         v-model="props.form.joining_date"
-                        type="date"
                         :disabled="processing"
                         :error="errors.joining_date"
                         :icon="CalendarDays"
+                        type="date"
                     />
                 </AppField>
 
@@ -109,13 +100,13 @@ const emit = defineEmits<{
                     <AppInput
                         id="employee-phone-number"
                         v-model="props.form.phone_number"
-                        type="tel"
-                        inputmode="numeric"
-                        maxlength="10"
-                        :placeholder="employeePage.form.phoneNumberPlaceholder"
                         :disabled="processing"
                         :error="errors.phone_number"
                         :icon="Phone"
+                        :placeholder="employeePage.form.phoneNumberPlaceholder"
+                        inputmode="numeric"
+                        maxlength="10"
+                        type="tel"
                     />
                 </AppField>
 
@@ -127,15 +118,15 @@ const emit = defineEmits<{
                     <AppInput
                         id="employee-alternate-phone-number"
                         v-model="props.form.alternate_phone_number"
-                        type="tel"
-                        inputmode="numeric"
-                        maxlength="10"
-                        :placeholder="
-                            employeePage.form.alternatePhoneNumberPlaceholder
-                        "
                         :disabled="processing"
                         :error="errors.alternate_phone_number"
                         :icon="Phone"
+                        :placeholder="
+                            employeePage.form.alternatePhoneNumberPlaceholder
+                        "
+                        inputmode="numeric"
+                        maxlength="10"
+                        type="tel"
                     />
                 </AppField>
 
@@ -147,11 +138,11 @@ const emit = defineEmits<{
                     <AppInput
                         id="employee-email"
                         v-model="props.form.email"
-                        type="email"
-                        :placeholder="employeePage.form.emailPlaceholder"
                         :disabled="processing"
                         :error="errors.email"
                         :icon="Mail"
+                        :placeholder="employeePage.form.emailPlaceholder"
+                        type="email"
                     />
                 </AppField>
 
@@ -163,13 +154,13 @@ const emit = defineEmits<{
                     <AppInput
                         id="employee-aadhar-number"
                         v-model="props.form.aadhar_number"
-                        type="text"
-                        inputmode="numeric"
-                        maxlength="12"
-                        :placeholder="employeePage.form.aadharNumberPlaceholder"
                         :disabled="processing"
                         :error="errors.aadhar_number"
                         :icon="CreditCard"
+                        :placeholder="employeePage.form.aadharNumberPlaceholder"
+                        inputmode="numeric"
+                        maxlength="12"
+                        type="text"
                     />
                 </AppField>
             </div>
@@ -178,8 +169,8 @@ const emit = defineEmits<{
         <!-- Authentication -->
         <FormSection
             v-if="!isEdit"
-            :title="employeePage.form.authenticationSectionTitle"
             :description="employeePage.form.authenticationSectionDescription"
+            :title="employeePage.form.authenticationSectionTitle"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Password -->
@@ -191,12 +182,12 @@ const emit = defineEmits<{
                     <AppInput
                         id="employee-password"
                         v-model="props.form.password"
-                        type="password"
-                        :placeholder="employeePage.form.passwordPlaceholder"
                         :disabled="processing"
                         :error="errors.password"
                         :icon="LockKeyhole"
+                        :placeholder="employeePage.form.passwordPlaceholder"
                         required
+                        type="password"
                     />
                 </AppField>
 
@@ -209,14 +200,14 @@ const emit = defineEmits<{
                     <AppInput
                         id="employee-password-confirmation"
                         v-model="props.form.password_confirmation"
-                        type="password"
-                        :placeholder="
-                            employeePage.form.passwordConfirmationPlaceholder
-                        "
                         :disabled="processing"
                         :error="errors.password_confirmation"
                         :icon="LockKeyhole"
+                        :placeholder="
+                            employeePage.form.passwordConfirmationPlaceholder
+                        "
                         required
+                        type="password"
                     />
                 </AppField>
             </div>
@@ -224,8 +215,8 @@ const emit = defineEmits<{
 
         <!-- Employee Configuration -->
         <FormSection
-            :title="employeePage.form.configurationSectionTitle"
             :description="employeePage.form.configurationSectionDescription"
+            :title="employeePage.form.configurationSectionTitle"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Role -->
@@ -236,9 +227,9 @@ const emit = defineEmits<{
                 >
                     <AppUserRoleSelect
                         v-model="props.form.role"
-                        :placeholder="employeePage.form.rolePlaceholder"
                         :disabled="processing"
                         :error="errors.role"
+                        :placeholder="employeePage.form.rolePlaceholder"
                         searchable
                     />
                 </AppField>
@@ -250,9 +241,9 @@ const emit = defineEmits<{
                 >
                     <AppUserShiftSelect
                         v-model="props.form.shift"
-                        :placeholder="employeePage.form.shiftPlaceholder"
                         :disabled="processing"
                         :error="errors.shift"
+                        :placeholder="employeePage.form.shiftPlaceholder"
                         searchable
                     />
                 </AppField>
@@ -261,8 +252,8 @@ const emit = defineEmits<{
 
         <!-- Salary Configuration -->
         <FormSection
-            :title="employeePage.form.salarySectionTitle"
             :description="employeePage.form.salarySectionDescription"
+            :title="employeePage.form.salarySectionTitle"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2 lg:grid-cols-3">
                 <!-- Salary -->
@@ -274,14 +265,14 @@ const emit = defineEmits<{
                     <AppInput
                         id="employee-salary"
                         v-model="props.form.salary"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        :placeholder="employeePage.form.salaryPlaceholder"
                         :disabled="processing"
                         :error="errors.salary"
                         :icon="IndianRupee"
+                        :placeholder="employeePage.form.salaryPlaceholder"
+                        min="0"
                         required
+                        step="0.01"
+                        type="number"
                     />
                 </AppField>
 
@@ -294,16 +285,16 @@ const emit = defineEmits<{
                     <AppInput
                         id="employee-incentive-per-day"
                         v-model="props.form.incentive_per_day"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        :placeholder="
-                            employeePage.form.incentivePerDayPlaceholder
-                        "
                         :disabled="processing"
                         :error="errors.incentive_per_day"
                         :icon="IndianRupee"
+                        :placeholder="
+                            employeePage.form.incentivePerDayPlaceholder
+                        "
+                        min="0"
                         required
+                        step="0.01"
+                        type="number"
                     />
                 </AppField>
 
@@ -316,16 +307,16 @@ const emit = defineEmits<{
                     <AppInput
                         id="employee-deduction-per-day"
                         v-model="props.form.deduction_per_day"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        :placeholder="
-                            employeePage.form.deductionPerDayPlaceholder
-                        "
                         :disabled="processing"
                         :error="errors.deduction_per_day"
                         :icon="IndianRupee"
+                        :placeholder="
+                            employeePage.form.deductionPerDayPlaceholder
+                        "
+                        min="0"
                         required
+                        step="0.01"
+                        type="number"
                     />
                 </AppField>
             </div>
@@ -333,25 +324,25 @@ const emit = defineEmits<{
 
         <!-- Account Status -->
         <FormSection
-            :title="employeePage.form.accountSectionTitle"
             :description="employeePage.form.accountSectionDescription"
+            :title="employeePage.form.accountSectionTitle"
         >
             <ToggleCardInput
                 v-model="props.form.status"
-                title="Employee Status"
-                label="Status"
-                active-text="Employee account is currently active."
-                inactive-text="Employee account is currently inactive."
                 :disabled="processing"
                 :error="errors.status"
+                active-text="Employee account is currently active."
+                inactive-text="Employee account is currently inactive."
+                label="Status"
+                title="Employee Status"
             />
         </FormSection>
 
         <!-- Form Actions -->
         <FormActions
-            :submit-label="submitLabel"
-            :processing="processing"
             :cancel-label="employeePage.form.cancelLabel"
+            :processing="processing"
+            :submit-label="submitLabel"
             @cancel="emit('cancel')"
         />
     </form>

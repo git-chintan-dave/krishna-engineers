@@ -1,6 +1,6 @@
-import { h } from 'vue';
+import {h} from 'vue';
 
-import { Checkbox } from '@/components/ui/checkbox';
+import {Checkbox} from '@/components/ui/checkbox';
 
 /*
 |--------------------------------------------------------------------------
@@ -20,9 +20,9 @@ type SelectColumnOptions<TData = any> = {
 */
 
 export const createSelectColumn = <TData = any>({
-    resourceName,
-    isSelectable,
-}: SelectColumnOptions<TData>) => ({
+                                                    resourceName,
+                                                    isSelectable,
+                                                }: SelectColumnOptions<TData>) => ({
     id: 'select',
 
     /*
@@ -41,7 +41,7 @@ export const createSelectColumn = <TData = any>({
     |--------------------------------------------------------------------------
     */
 
-    header: ({ table }: any) =>
+    header: ({table}: any) =>
         h(Checkbox, {
             modelValue:
                 table.getIsAllPageRowsSelected() ||
@@ -62,7 +62,7 @@ export const createSelectColumn = <TData = any>({
     |--------------------------------------------------------------------------
     */
 
-    cell: ({ row }: any) => {
+    cell: ({row}: any) => {
         const selectable = isSelectable?.(row.original) ?? true;
 
         if (!selectable) {

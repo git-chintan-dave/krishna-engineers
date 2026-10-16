@@ -50,28 +50,12 @@ class User extends Authenticatable
         return 'uuid';
     }
 
-    protected function casts(): array
-    {
-        return [
-            'role' => UserRole::class,
-            'shift' => UserShift::class,
-            'status' => Status::class,
-            'joining_date' => 'date',
-            'salary' => 'decimal:2',
-            'incentive_per_day' => 'decimal:2',
-            'deduction_per_day' => 'decimal:2',
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'two_factor_confirmed_at' => 'datetime',
-        ];
-    }
-
-    // Role Helpers
-
     public function isSuperAdmin(): bool
     {
         return $this->role === UserRole::SUPER_ADMIN;
     }
+
+    // Role Helpers
 
     public function isSupervisor(): bool
     {
@@ -93,19 +77,17 @@ class User extends Authenticatable
         return $this->role === UserRole::DEBURRING_PACKAGING;
     }
 
-    // Status Helpers
-
     public function isActive(): bool
     {
         return $this->status === Status::ACTIVE;
     }
 
+    // Status Helpers
+
     public function isInactive(): bool
     {
         return $this->status === Status::INACTIVE;
     }
-
-    // Attendance Helpers
 
     public function attendanceForDate(CarbonInterface|string $date): ?Attendance
     {
@@ -114,12 +96,20 @@ class User extends Authenticatable
             ->first();
     }
 
+    // Attendance Helpers
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
     // Salary Helpers
 
     public function salaryForPeriod(
         CarbonInterface|string $startDate,
         CarbonInterface|string $endDate
-    ): ?Salary {
+    ): ?Salary
+    {
         return $this->salaries()
             ->where('salary_period_start', $startDate)
             ->where('salary_period_end', $endDate)
@@ -128,13 +118,24 @@ class User extends Authenticatable
 
     // Relationships
 
-    public function attendances(): HasMany
-    {
-        return $this->hasMany(Attendance::class);
-    }
-
     public function salaries(): HasMany
     {
         return $this->hasMany(Salary::class);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'role' => UserRole::class,
+            'shift' => UserShift::class,
+            'status' => Status::class,
+            'joining_date' => 'date',
+            'salary' => 'decimal:2',
+            'incentive_per_day' => 'decimal:2',
+            'deduction_per_day' => 'decimal:2',
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'two_factor_confirmed_at' => 'datetime',
+        ];
     }
 }

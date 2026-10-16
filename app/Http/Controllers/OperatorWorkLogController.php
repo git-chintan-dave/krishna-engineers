@@ -60,25 +60,25 @@ class OperatorWorkLogController extends Controller
             ],
         )
             ->when($isOperator,
-                fn (Builder $query): Builder => $query->forUser($user->id),
+                fn(Builder $query): Builder => $query->forUser($user->id),
             )
-            ->when(! $isOperator && ($filters['user_id'] ?? null),
-                fn (Builder $query): Builder => $query->forUser($filters['user_id']),
+            ->when(!$isOperator && ($filters['user_id'] ?? null),
+                fn(Builder $query): Builder => $query->forUser($filters['user_id']),
             )
             ->when($filters['work_date'] ?? null,
-                fn (Builder $query, string $workDate): Builder => $query->forDate($workDate),
+                fn(Builder $query, string $workDate): Builder => $query->forDate($workDate),
             )
             ->when($filters['shift'] ?? null,
-                fn (Builder $query, string $shift): Builder => $query->forShift($shift),
+                fn(Builder $query, string $shift): Builder => $query->forShift($shift),
             )
             ->when($filters['machine_id'] ?? null,
-                fn (Builder $query, int $machineId): Builder => $query->forMachine($machineId),
+                fn(Builder $query, int $machineId): Builder => $query->forMachine($machineId),
             )
             ->when($filters['part_id'] ?? null,
-                fn (Builder $query, int $partId): Builder => $query->forPart($partId),
+                fn(Builder $query, int $partId): Builder => $query->forPart($partId),
             )
             ->when($filters['setup_id'] ?? null,
-                fn (Builder $query, int $setupId): Builder => $query->forSetup($setupId),
+                fn(Builder $query, int $setupId): Builder => $query->forSetup($setupId),
             )
             ->orderBy($filters['sort'] ?? 'work_date', $filters['direction'] ?? 'desc')
             ->paginate($filters['per_page'] ?? 10)
@@ -111,13 +111,102 @@ class OperatorWorkLogController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function create(): Response
+    /**
+     * Shared dropdown options for index, create and edit.
+     *
+     * @return array<string, mixed>
+     */
+    private function formOptions(
+        bool $includeLastReports = false,
+    ): array
     {
-        Gate::authorize('create', OperatorWorkLog::class);
+        $currentUser = Auth::user();
 
-        return Inertia::render('WorkLogs/Operator/Create', [
-            ...$this->formOptions(includeLastReports: true),
-        ]);
+        $role = $currentUser->role instanceof UserRole
+            ? $currentUser->role->value
+            : $currentUser->role;
+
+        $isOperator = $role === UserRole::OPERATOR->value;
+
+        $canSelectOperator = in_array(
+            $role,
+            [
+                UserRole::SUPER_ADMIN->value,
+                UserRole::SUPERVISOR->value,
+            ],
+            true,
+        );
+
+        $options = [
+            /*
+             * Used by the form to determine machine/actual cycle time
+             * after Part + Setup selection.
+             */
+            'partSetups' => PartSetup::query()
+                ->get([
+                    'id',
+                    'part_id',
+                    'setup_id',
+                    'machine_cycle_time_seconds',
+                    'actual_cycle_time_seconds',
+                ]),
+        ];
+
+        if (!$includeLastReports) {
+            return [
+                ...$options,
+                'currentUserId' => $currentUser->id,
+                'canSelectOperator' => $canSelectOperator,
+            ];
+        }
+
+        /*
+         * Last report per operator is used to make creating the next
+         * work log faster by pre-filling shift/machine/part/setup.
+         */
+        $operatorIds = User::query()
+            ->where('role', UserRole::OPERATOR->value)
+            ->where('status', Status::ACTIVE->value)
+            ->pluck('id');
+
+        /*
+         * Include the logged-in operator even if their account is
+         * currently inactive.
+         */
+        if ($isOperator) {
+            $operatorIds->push($currentUser->id);
+        }
+
+        $lastReports = OperatorWorkLog::query()
+            ->whereIn('user_id', $operatorIds->unique())
+            ->orderByDesc('work_date')
+            ->orderByDesc('id')
+            ->get([
+                'user_id',
+                'shift',
+                'machine_id',
+                'part_id',
+                'setup_id',
+            ])
+            ->unique('user_id')
+            ->mapWithKeys(fn(
+                OperatorWorkLog $log
+            ): array => [
+                (string)$log->user_id => [
+                    'shift' => $log->shift,
+                    'machine_id' => $log->machine_id,
+                    'part_id' => $log->part_id,
+                    'setup_id' => $log->setup_id,
+                ],
+            ])
+            ->all();
+
+        return [
+            ...$options,
+            'currentUserId' => $currentUser->id,
+            'canSelectOperator' => $canSelectOperator,
+            'lastReports' => $lastReports,
+        ];
     }
 
     /*
@@ -128,7 +217,8 @@ class OperatorWorkLogController extends Controller
 
     public function store(
         OperatorWorkLogRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('create', OperatorWorkLog::class);
 
         $data = $request->validated();
@@ -182,6 +272,55 @@ class OperatorWorkLogController extends Controller
     |--------------------------------------------------------------------------
     */
 
+    /**
+     * Resolve and validate the selected Part Setup.
+     *
+     * A Part Setup must belong to the selected Part and Setup.
+     *
+     * @throws ValidationException
+     */
+    private function resolvePartSetup(
+        int $partSetupId,
+        int $partId,
+        int $setupId,
+    ): PartSetup
+    {
+        $partSetup = PartSetup::query()
+            ->whereKey($partSetupId)
+            ->where('part_id', $partId)
+            ->where('setup_id', $setupId)
+            ->first();
+
+        if (!$partSetup) {
+            throw ValidationException::withMessages([
+                'part_setup_id' => 'The selected part setup is invalid for the selected part and setup.',
+            ]);
+        }
+
+        return $partSetup;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update
+    |--------------------------------------------------------------------------
+    */
+
+    public function create(): Response
+    {
+        Gate::authorize('create', OperatorWorkLog::class);
+
+        return Inertia::render('WorkLogs/Operator/Create', [
+            ...$this->formOptions(includeLastReports: true),
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Destroy
+    |--------------------------------------------------------------------------
+    */
+
     public function edit(OperatorWorkLog $operator): Response
     {
         Gate::authorize('update', $operator);
@@ -205,14 +344,15 @@ class OperatorWorkLogController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | Update
+    | Bulk Destroy
     |--------------------------------------------------------------------------
     */
 
     public function update(
         OperatorWorkLogRequest $request,
-        OperatorWorkLog $operator,
-    ): RedirectResponse {
+        OperatorWorkLog        $operator,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $operator);
 
         $data = $request->validated();
@@ -251,13 +391,14 @@ class OperatorWorkLogController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | Destroy
+    | Form Options
     |--------------------------------------------------------------------------
     */
 
     public function destroy(
         OperatorWorkLog $operator,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('delete', $operator);
 
         $operator->delete();
@@ -267,13 +408,14 @@ class OperatorWorkLogController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | Bulk Destroy
+    | Part Setup
     |--------------------------------------------------------------------------
     */
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('deleteAny', OperatorWorkLog::class);
 
         OperatorWorkLog::query()
@@ -281,141 +423,5 @@ class OperatorWorkLogController extends Controller
             ->delete();
 
         return $this->successResponse('bulk_deleted');
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Form Options
-    |--------------------------------------------------------------------------
-    */
-
-    /**
-     * Shared dropdown options for index, create and edit.
-     *
-     * @return array<string, mixed>
-     */
-    private function formOptions(
-        bool $includeLastReports = false,
-    ): array {
-        $currentUser = Auth::user();
-
-        $role = $currentUser->role instanceof UserRole
-            ? $currentUser->role->value
-            : $currentUser->role;
-
-        $isOperator = $role === UserRole::OPERATOR->value;
-
-        $canSelectOperator = in_array(
-            $role,
-            [
-                UserRole::SUPER_ADMIN->value,
-                UserRole::SUPERVISOR->value,
-            ],
-            true,
-        );
-
-        $options = [
-            /*
-             * Used by the form to determine machine/actual cycle time
-             * after Part + Setup selection.
-             */
-            'partSetups' => PartSetup::query()
-                ->get([
-                    'id',
-                    'part_id',
-                    'setup_id',
-                    'machine_cycle_time_seconds',
-                    'actual_cycle_time_seconds',
-                ]),
-        ];
-
-        if (! $includeLastReports) {
-            return [
-                ...$options,
-                'currentUserId' => $currentUser->id,
-                'canSelectOperator' => $canSelectOperator,
-            ];
-        }
-
-        /*
-         * Last report per operator is used to make creating the next
-         * work log faster by pre-filling shift/machine/part/setup.
-         */
-        $operatorIds = User::query()
-            ->where('role', UserRole::OPERATOR->value)
-            ->where('status', Status::ACTIVE->value)
-            ->pluck('id');
-
-        /*
-         * Include the logged-in operator even if their account is
-         * currently inactive.
-         */
-        if ($isOperator) {
-            $operatorIds->push($currentUser->id);
-        }
-
-        $lastReports = OperatorWorkLog::query()
-            ->whereIn('user_id', $operatorIds->unique())
-            ->orderByDesc('work_date')
-            ->orderByDesc('id')
-            ->get([
-                'user_id',
-                'shift',
-                'machine_id',
-                'part_id',
-                'setup_id',
-            ])
-            ->unique('user_id')
-            ->mapWithKeys(fn (
-                OperatorWorkLog $log
-            ): array => [
-                (string) $log->user_id => [
-                    'shift' => $log->shift,
-                    'machine_id' => $log->machine_id,
-                    'part_id' => $log->part_id,
-                    'setup_id' => $log->setup_id,
-                ],
-            ])
-            ->all();
-
-        return [
-            ...$options,
-            'currentUserId' => $currentUser->id,
-            'canSelectOperator' => $canSelectOperator,
-            'lastReports' => $lastReports,
-        ];
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Part Setup
-    |--------------------------------------------------------------------------
-    */
-
-    /**
-     * Resolve and validate the selected Part Setup.
-     *
-     * A Part Setup must belong to the selected Part and Setup.
-     *
-     * @throws ValidationException
-     */
-    private function resolvePartSetup(
-        int $partSetupId,
-        int $partId,
-        int $setupId,
-    ): PartSetup {
-        $partSetup = PartSetup::query()
-            ->whereKey($partSetupId)
-            ->where('part_id', $partId)
-            ->where('setup_id', $setupId)
-            ->first();
-
-        if (! $partSetup) {
-            throw ValidationException::withMessages([
-                'part_setup_id' => 'The selected part setup is invalid for the selected part and setup.',
-            ]);
-        }
-
-        return $partSetup;
     }
 }

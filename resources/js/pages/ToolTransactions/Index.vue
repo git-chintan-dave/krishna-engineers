@@ -1,6 +1,6 @@
-﻿<script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+﻿<script lang="ts" setup>
+import {router} from '@inertiajs/vue3';
+import {ref} from 'vue';
 
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppPartSelect from '@/components/selects/AppPartSelect.vue';
@@ -12,24 +12,16 @@ import ListingFilters from '@/components/common/ListingFilters.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
 
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
 
-import { toolTransactionPage } from '@/config/toolTransactions';
+import {toolTransactionPage} from '@/config/toolTransactions';
 
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as toolTransactionsRoute,
-} from '@/routes/tool-transactions';
+import {bulkDestroy, create, destroy, index as toolTransactionsRoute,} from '@/routes/tool-transactions';
 
-import { createToolTransactionColumns } from '@/table/toolTransactions';
+import {createToolTransactionColumns} from '@/table/toolTransactions';
 
-import type {
-    ToolTransaction,
-    ToolTransactionType,
-} from '@/types/toolTransaction';
+import type {ToolTransaction, ToolTransactionType,} from '@/types/toolTransaction';
 
 /*
 |--------------------------------------------------------------------------
@@ -207,29 +199,29 @@ const handleDeleteSelected = () => {
 
 <template>
     <ListingLayout
-        :title="toolTransactionPage.title"
         :description="toolTransactionPage.description"
+        :title="toolTransactionPage.title"
     >
         <template #actions>
             <ListingActions
-                :create-url="create()"
                 :create-label="toolTransactionPage.createLabel"
-                :selected-count="selectedCount"
+                :create-url="create()"
                 :resource-label="toolTransactionPage.resourceLabel"
+                :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
             />
         </template>
 
         <template #filters>
             <ListingFilters
-                :searchable="false"
                 v-model:search="searchQuery"
-                :search-placeholder="toolTransactionPage.searchPlaceholder"
-                :search-button-label="toolTransactionPage.searchButtonLabel"
                 :clear-button-label="toolTransactionPage.clearButtonLabel"
                 :clear-disabled="!searchQuery.trim() && !hasAdditionalFilters()"
-                @search="search"
+                :search-button-label="toolTransactionPage.searchButtonLabel"
+                :search-placeholder="toolTransactionPage.searchPlaceholder"
+                :searchable="false"
                 @clear="handleClearFilters"
+                @search="search"
             >
                 <template #filters>
                     <div class="w-full shrink-0 sm:w-48">
@@ -238,8 +230,8 @@ const handleDeleteSelected = () => {
                                 filterToolId === 'all' ? null : filterToolId
                             "
                             :placeholder="toolTransactionPage.toolPlaceholder"
-                            searchable
                             clearable
+                            searchable
                             @update:model-value="handleToolChange"
                         />
                     </div>
@@ -250,8 +242,8 @@ const handleDeleteSelected = () => {
                                 filterType === 'all' ? null : filterType
                             "
                             :placeholder="toolTransactionPage.typePlaceholder"
-                            searchable
                             clearable
+                            searchable
                             @update:model-value="handleTypeChange"
                         />
                     </div>
@@ -266,8 +258,8 @@ const handleDeleteSelected = () => {
                             :placeholder="
                                 toolTransactionPage.fromUserPlaceholder
                             "
-                            searchable
                             clearable
+                            searchable
                             @update:model-value="handleFromUserChange"
                         />
                     </div>
@@ -278,8 +270,8 @@ const handleDeleteSelected = () => {
                                 filterToUserId === 'all' ? null : filterToUserId
                             "
                             :placeholder="toolTransactionPage.toUserPlaceholder"
-                            searchable
                             clearable
+                            searchable
                             @update:model-value="handleToUserChange"
                         />
                     </div>
@@ -290,8 +282,8 @@ const handleDeleteSelected = () => {
                                 filterPartId === 'all' ? null : filterPartId
                             "
                             :placeholder="toolTransactionPage.partPlaceholder"
-                            searchable
                             clearable
+                            searchable
                             @update:model-value="handlePartChange"
                         />
                     </div>
@@ -305,8 +297,8 @@ const handleDeleteSelected = () => {
                                 filterPartId === 'all' ? null : filterPartId
                             "
                             :placeholder="toolTransactionPage.setupPlaceholder"
-                            searchable
                             clearable
+                            searchable
                             @update:model-value="handleSetupChange"
                         />
                     </div>
@@ -316,15 +308,15 @@ const handleDeleteSelected = () => {
 
         <template #table>
             <DataTable
-                :table="table"
                 :columns-count="columns.length"
-                :total="transactions.meta.total"
-                :page-index="transactions.meta.current_page - 1"
-                :page-size="transactions.meta.per_page"
-                :selected-count="selectedCount"
-                :page-size-options="[10, 25, 50, 100]"
                 :empty-text="toolTransactionPage.emptyText"
                 :item-label="toolTransactionPage.itemLabel"
+                :page-index="transactions.meta.current_page - 1"
+                :page-size="transactions.meta.per_page"
+                :page-size-options="[10, 25, 50, 100]"
+                :selected-count="selectedCount"
+                :table="table"
+                :total="transactions.meta.total"
             />
         </template>
     </ListingLayout>

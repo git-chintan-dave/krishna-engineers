@@ -10,16 +10,20 @@ use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
+use Throwable;
 
 class AttendanceImport implements ToCollection, WithCalculatedFormulas
 {
     public function __construct(
         private readonly AttendanceService $attendanceService,
-    ) {}
+    )
+    {
+    }
 
     public function collection(
         Collection $rows,
-    ): void {
+    ): void
+    {
         $employeeCode = $this->extractEmployeeCode(
             $rows,
         );
@@ -50,7 +54,8 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
 
     private function extractEmployeeCode(
         Collection $rows,
-    ): ?string {
+    ): ?string
+    {
         /*
          * Employee code is stored in B3.
          */
@@ -60,12 +65,13 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
 
         return blank($employeeCode)
             ? null
-            : trim((string) $employeeCode);
+            : trim((string)$employeeCode);
     }
 
     private function findEmployee(
         string $employeeCode,
-    ): User {
+    ): User
+    {
         $user = User::query()
             ->where(
                 'employee_code',
@@ -73,7 +79,7 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
             )
             ->first();
 
-        if (! $user) {
+        if (!$user) {
             throw new AttendanceImportException(
                 "Employee code {$employeeCode} was not found.",
             );
@@ -89,9 +95,10 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
     */
 
     private function importAttendanceRow(
-        User $user,
+        User  $user,
         mixed $row,
-    ): void {
+    ): void
+    {
         $row = $row instanceof Collection
             ? $row
             : collect($row);
@@ -165,10 +172,157 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
     |--------------------------------------------------------------------------
     */
 
+    private function parseDate(
+        mixed $value,
+    ): ?string
+    {
+        if (
+            $value === null
+            || trim((string)$value) === ''
+        ) {
+            return null;
+        }
+
+        if ($value instanceof CarbonInterface) {
+            return $value->toDateString();
+        }
+
+        if (is_numeric($value)) {
+            try {
+                return Carbon::createFromTimestamp(
+                    ((float)$value - 25569) * 86400,
+                )->toDateString();
+            } catch (Throwable) {
+                return null;
+            }
+        }
+
+        $value = trim((string)$value);
+
+        foreach ([
+                     'd-m-Y',
+                     'd/m/Y',
+                     'Y-m-d',
+                     'm/d/Y',
+                     'd.m.Y',
+                 ] as $format) {
+            try {
+                return Carbon::createFromFormat(
+                    $format,
+                    $value,
+                )->toDateString();
+            } catch (Throwable) {
+                // Try next format.
+            }
+        }
+
+        try {
+            return Carbon::parse(
+                $value,
+            )->toDateString();
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Excel Parsing
+    |--------------------------------------------------------------------------
+    */
+
+    private function parseTime(
+        mixed $value,
+    ): ?string
+    {
+        if (
+            $value === null
+            || trim((string)$value) === ''
+        ) {
+            return null;
+        }
+
+        if ($value instanceof CarbonInterface) {
+            return $value->format('H:i:s');
+        }
+
+        if (is_numeric($value)) {
+            $fraction = (float)$value;
+
+            /*
+             * Excel time values are represented as a
+             * fraction of a 24-hour day.
+             */
+            if (
+                $fraction >= 0
+                && $fraction < 1
+            ) {
+                $seconds = (int)round(
+                    $fraction * 86400,
+                );
+
+                $seconds %= 86400;
+
+                return gmdate(
+                    'H:i:s',
+                    $seconds,
+                );
+            }
+        }
+
+        $value = trim((string)$value);
+
+        /*
+         * Values such as "--:--" represent no punch.
+         */
+        if (
+            $value === '--:--'
+            || $value === '--:--:--'
+            || $value === '-'
+        ) {
+            return null;
+        }
+
+        foreach ([
+                     'H:i:s',
+                     'H:i',
+                     'g:i A',
+                     'g:i:s A',
+                 ] as $format) {
+            try {
+                return Carbon::createFromFormat(
+                    $format,
+                    $value,
+                )->format('H:i:s');
+            } catch (Throwable) {
+                // Try next format.
+            }
+        }
+
+        try {
+            return Carbon::parse(
+                $value,
+            )->format('H:i:s');
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    private function combineDateAndTime(
+        string $date,
+        string $time,
+    ): Carbon
+    {
+        return Carbon::parse(
+            "{$date} {$time}",
+        );
+    }
+
     private function extractBreaks(
         Collection $row,
-        string $attendanceDate,
-    ): array {
+        string     $attendanceDate,
+    ): array
+    {
         $breaks = [];
 
         /*
@@ -221,7 +375,7 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
                 'end_at' => $breakEnd,
                 'duration_seconds' => max(
                     0,
-                    (int) $breakStart->diffInSeconds(
+                    (int)$breakStart->diffInSeconds(
                         $breakEnd,
                     ),
                 ),
@@ -229,148 +383,5 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
         }
 
         return $breaks;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Excel Parsing
-    |--------------------------------------------------------------------------
-    */
-
-    private function parseDate(
-        mixed $value,
-    ): ?string {
-        if (
-            $value === null
-            || trim((string) $value) === ''
-        ) {
-            return null;
-        }
-
-        if ($value instanceof CarbonInterface) {
-            return $value->toDateString();
-        }
-
-        if (is_numeric($value)) {
-            try {
-                return Carbon::createFromTimestamp(
-                    ((float) $value - 25569) * 86400,
-                )->toDateString();
-            } catch (\Throwable) {
-                return null;
-            }
-        }
-
-        $value = trim((string) $value);
-
-        foreach ([
-            'd-m-Y',
-            'd/m/Y',
-            'Y-m-d',
-            'm/d/Y',
-            'd.m.Y',
-        ] as $format) {
-            try {
-                return Carbon::createFromFormat(
-                    $format,
-                    $value,
-                )->toDateString();
-            } catch (\Throwable) {
-                // Try next format.
-            }
-        }
-
-        try {
-            return Carbon::parse(
-                $value,
-            )->toDateString();
-        } catch (\Throwable) {
-            return null;
-        }
-    }
-
-    private function parseTime(
-        mixed $value,
-    ): ?string {
-        if (
-            $value === null
-            || trim((string) $value) === ''
-        ) {
-            return null;
-        }
-
-        if ($value instanceof CarbonInterface) {
-            return $value->format('H:i:s');
-        }
-
-        if (is_numeric($value)) {
-            $fraction = (float) $value;
-
-            /*
-             * Excel time values are represented as a
-             * fraction of a 24-hour day.
-             */
-            if (
-                $fraction >= 0
-                && $fraction < 1
-            ) {
-                $seconds = (int) round(
-                    $fraction * 86400,
-                );
-
-                $seconds %= 86400;
-
-                return gmdate(
-                    'H:i:s',
-                    $seconds,
-                );
-            }
-        }
-
-        $value = trim((string) $value);
-
-        /*
-         * Values such as "--:--" represent no punch.
-         */
-        if (
-            $value === '--:--'
-            || $value === '--:--:--'
-            || $value === '-'
-        ) {
-            return null;
-        }
-
-        foreach ([
-            'H:i:s',
-            'H:i',
-            'g:i A',
-            'g:i:s A',
-        ] as $format) {
-            try {
-                return Carbon::createFromFormat(
-                    $format,
-                    $value,
-                )->format('H:i:s');
-            } catch (\Throwable) {
-                // Try next format.
-            }
-        }
-
-        try {
-            return Carbon::parse(
-                $value,
-            )->format('H:i:s');
-        } catch (\Throwable) {
-            return null;
-        }
-    }
-
-    private function combineDateAndTime(
-        string $date,
-        string $time,
-    ): Carbon {
-        return Carbon::parse(
-            "{$date} {$time}",
-        );
     }
 }

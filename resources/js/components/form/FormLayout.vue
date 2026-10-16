@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import AppPageHeader from '@/components/common/AppPageHeader.vue';
 
 /*
@@ -26,7 +26,7 @@ const props = withDefaults(
         |--------------------------------------------------------------------------
         -->
 
-        <AppPageHeader :title="title" :description="description" />
+        <AppPageHeader :description="description" :title="title"/>
 
         <!--
         |--------------------------------------------------------------------------
@@ -35,7 +35,7 @@ const props = withDefaults(
         -->
 
         <section :aria-label="`${title} form`" class="min-w-0">
-            <slot />
+            <slot/>
         </section>
     </div>
 </template>
