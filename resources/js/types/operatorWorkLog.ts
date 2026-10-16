@@ -1,4 +1,5 @@
-import type {PaginatedResponse, SortDirection} from '@/types/listing';
+
+import type { PaginatedResponse, SortDirection } from '@/types/listing';
 
 export type OperatorWorkLog = {
     id: number;
@@ -40,6 +41,12 @@ export type OperatorWorkLog = {
 
     production_seconds: number;
     production_seconds_formatted: string;
+
+    daily_production_seconds: number;
+    daily_production_seconds_formatted: string;
+
+    effective_working_seconds: number | null;
+    production_efficiency: number | null;
 
     remarks: string | null;
 
@@ -83,6 +90,8 @@ export type OperatorWorkLogSort =
     | 'part_id'
     | 'setup_id'
     | 'quantity'
+    | 'rejection_quantity'
+    | 'production_seconds'
     | 'created_at';
 
 export type OperatorWorkLogFilters = {
@@ -98,4 +107,5 @@ export type OperatorWorkLogFilters = {
     direction: SortDirection;
 };
 
-export type OperatorWorkLogsResponse = PaginatedResponse<OperatorWorkLog>;
+export type OperatorWorkLogsResponse =
+    PaginatedResponse<OperatorWorkLog>;

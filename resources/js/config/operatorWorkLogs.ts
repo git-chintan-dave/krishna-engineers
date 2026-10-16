@@ -1,3 +1,4 @@
+
 export const operatorWorkLogPage = {
     title: 'Operator Work Logs',
     description:
@@ -19,6 +20,22 @@ export const operatorWorkLogPage = {
     emptyText: 'No operator work logs found.',
     itemLabel: 'work logs',
     resourceLabel: 'operator work log',
+
+    table: {
+        workDateLabel: 'Work Date',
+        operatorLabel: 'Operator',
+        shiftLabel: 'Shift',
+        machineLabel: 'Machine',
+        partLabel: 'Part',
+        setupLabel: 'Setup',
+        machineCycleTimeLabel: 'Machine Cycle',
+        actualCycleTimeLabel: 'Actual Cycle',
+        quantityLabel: 'Quantity',
+        rejectionQuantityLabel: 'Rejected',
+        productionTimeLabel: 'Production Time',
+        dailyProductionTimeLabel: 'Daily Production',
+        productionEfficiencyLabel: 'Daily Efficiency',
+    },
 
     form: {
         sectionTitle: 'Production Work',

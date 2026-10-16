@@ -1,15 +1,16 @@
-import {createColumnHelper} from '@tanstack/vue-table';
 
-import {edit} from '@/routes/operator';
+import { createColumnHelper } from '@tanstack/vue-table';
 
-import {createActionsColumn} from '@/table/columns/actionsColumn';
-import {createDateColumn} from '@/table/columns/dateColumn';
-import {createSelectColumn} from '@/table/columns/selectColumn';
+import { edit } from '@/routes/operator';
 
-import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
-import {createSortableColumn} from '@/table/helpers/sortableColumn';
+import { createActionsColumn } from '@/table/columns/actionsColumn';
+import { createDateColumn } from '@/table/columns/dateColumn';
+import { createSelectColumn } from '@/table/columns/selectColumn';
 
-import type {OperatorWorkLog} from '@/types/operatorWorkLog';
+import { createPrimaryColumn } from '@/table/helpers/primaryColumn';
+import { createSortableColumn } from '@/table/helpers/sortableColumn';
+
+import type { OperatorWorkLog } from '@/types/operatorWorkLog';
 
 const columnHelper = createColumnHelper<any, OperatorWorkLog>();
 
@@ -42,6 +43,14 @@ export const createOperatorWorkLogColumns = (
                 }),
             ]
             : []),
+
+        createPrimaryColumn({
+            accessorKey: 'shift',
+            header: 'Shift',
+            size: 100,
+            align: 'center',
+            sortable: false,
+        }),
 
         createPrimaryColumn({
             accessorKey: 'machine.name',
@@ -86,7 +95,25 @@ export const createOperatorWorkLogColumns = (
             header: 'Production Time',
             size: 140,
             align: 'center',
-            cell: ({row}) => row.original.production_seconds_formatted ?? '—',
+            cell: ({ row }) =>
+                row.original.production_seconds_formatted ?? '—',
+        }),
+
+        columnHelper.accessor('production_efficiency', {
+            header: 'Daily Efficiency',
+            enableSorting: false,
+            cell: ({ row, getValue }) => {
+                const current = row.original;
+                const efficiency = getValue() as number | null;
+
+                const previous = row.index > 0
+                    ? row.getParentRow?.()
+                    : undefined;
+
+                return efficiency == null
+                    ? '—'
+                    : `${efficiency.toFixed(2)}%`;
+            },
         }),
 
         ...(canManage

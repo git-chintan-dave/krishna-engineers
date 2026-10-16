@@ -10,6 +10,7 @@ use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\OperatorWorkLogs\IndexOperatorWorkLogRequest;
 use App\Http\Requests\OperatorWorkLogs\OperatorWorkLogRequest;
 use App\Http\Resources\OperatorWorkLogResource;
+use App\Models\Attendance;
 use App\Models\OperatorWorkLog;
 use App\Models\PartSetup;
 use App\Models\User;
@@ -29,28 +30,25 @@ class OperatorWorkLogController extends Controller
 
     private const string INDEX_ROUTE = 'operator.index';
 
-    /*
-    |--------------------------------------------------------------------------
-    | Index
-    |--------------------------------------------------------------------------
-    */
-
     public function index(IndexOperatorWorkLogRequest $request): Response
     {
         Gate::authorize('viewAny', OperatorWorkLog::class);
 
         $user = $request->user();
         $filters = $request->validated();
-
         $isOperator = $user->role === UserRole::OPERATOR;
 
-        $operatorWorkLogs = $this->applyIndexFilters(
+        $query = $this->withDailyProductionMetrics(
             OperatorWorkLog::query()->with([
                 'user',
                 'machine',
                 'part',
                 'setup',
             ]),
+        );
+
+        $operatorWorkLogs = $this->applyIndexFilters(
+            $query,
             $filters,
             [
                 'work_date',
@@ -59,28 +57,38 @@ class OperatorWorkLogController extends Controller
                 'production_seconds',
             ],
         )
-            ->when($isOperator,
+            ->when(
+                $isOperator,
                 fn(Builder $query): Builder => $query->forUser($user->id),
             )
-            ->when(!$isOperator && ($filters['user_id'] ?? null),
+            ->when(
+                !$isOperator && ($filters['user_id'] ?? null),
                 fn(Builder $query): Builder => $query->forUser($filters['user_id']),
             )
-            ->when($filters['work_date'] ?? null,
+            ->when(
+                $filters['work_date'] ?? null,
                 fn(Builder $query, string $workDate): Builder => $query->forDate($workDate),
             )
-            ->when($filters['shift'] ?? null,
+            ->when(
+                $filters['shift'] ?? null,
                 fn(Builder $query, string $shift): Builder => $query->forShift($shift),
             )
-            ->when($filters['machine_id'] ?? null,
+            ->when(
+                $filters['machine_id'] ?? null,
                 fn(Builder $query, int $machineId): Builder => $query->forMachine($machineId),
             )
-            ->when($filters['part_id'] ?? null,
+            ->when(
+                $filters['part_id'] ?? null,
                 fn(Builder $query, int $partId): Builder => $query->forPart($partId),
             )
-            ->when($filters['setup_id'] ?? null,
+            ->when(
+                $filters['setup_id'] ?? null,
                 fn(Builder $query, int $setupId): Builder => $query->forSetup($setupId),
             )
-            ->orderBy($filters['sort'] ?? 'work_date', $filters['direction'] ?? 'desc')
+            ->orderBy(
+                $filters['sort'] ?? 'work_date',
+                $filters['direction'] ?? 'desc',
+            )
             ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();
 
@@ -105,20 +113,36 @@ class OperatorWorkLogController extends Controller
         ]);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Create
-    |--------------------------------------------------------------------------
-    */
+    /**
+     * Add aggregated production time and attendance time for each
+     * operator and work date without executing a query per result row.
+     *
+     * @param Builder<OperatorWorkLog> $query
+     * @return Builder<OperatorWorkLog>
+     */
+    private function withDailyProductionMetrics(Builder $query): Builder
+    {
+        return $query->addSelect([
+            'daily_production_seconds' => OperatorWorkLog::query()
+                ->from('operator_work_logs as daily_logs')
+                ->selectRaw('COALESCE(SUM(daily_logs.production_seconds), 0)')
+                ->whereColumn('daily_logs.user_id', 'operator_work_logs.user_id')
+                ->whereColumn('daily_logs.work_date', 'operator_work_logs.work_date'),
+
+            'effective_working_seconds' => Attendance::query()
+                ->select('effective_working_seconds')
+                ->whereColumn('attendances.user_id', 'operator_work_logs.user_id')
+                ->whereColumn('attendances.attendance_date', 'operator_work_logs.work_date')
+                ->limit(1),
+        ]);
+    }
 
     /**
      * Shared dropdown options for index, create and edit.
      *
      * @return array<string, mixed>
      */
-    private function formOptions(
-        bool $includeLastReports = false,
-    ): array
+    private function formOptions(bool $includeLastReports = false): array
     {
         $currentUser = Auth::user();
 
@@ -138,18 +162,13 @@ class OperatorWorkLogController extends Controller
         );
 
         $options = [
-            /*
-             * Used by the form to determine machine/actual cycle time
-             * after Part + Setup selection.
-             */
-            'partSetups' => PartSetup::query()
-                ->get([
-                    'id',
-                    'part_id',
-                    'setup_id',
-                    'machine_cycle_time_seconds',
-                    'actual_cycle_time_seconds',
-                ]),
+            'partSetups' => PartSetup::query()->get([
+                'id',
+                'part_id',
+                'setup_id',
+                'machine_cycle_time_seconds',
+                'actual_cycle_time_seconds',
+            ]),
         ];
 
         if (!$includeLastReports) {
@@ -160,19 +179,11 @@ class OperatorWorkLogController extends Controller
             ];
         }
 
-        /*
-         * Last report per operator is used to make creating the next
-         * work log faster by pre-filling shift/machine/part/setup.
-         */
         $operatorIds = User::query()
             ->where('role', UserRole::OPERATOR->value)
             ->where('status', Status::ACTIVE->value)
             ->pluck('id');
 
-        /*
-         * Include the logged-in operator even if their account is
-         * currently inactive.
-         */
         if ($isOperator) {
             $operatorIds->push($currentUser->id);
         }
@@ -189,10 +200,8 @@ class OperatorWorkLogController extends Controller
                 'setup_id',
             ])
             ->unique('user_id')
-            ->mapWithKeys(fn(
-                OperatorWorkLog $log
-            ): array => [
-                (string)$log->user_id => [
+            ->mapWithKeys(fn(OperatorWorkLog $log): array => [
+                (string) $log->user_id => [
                     'shift' => $log->shift,
                     'machine_id' => $log->machine_id,
                     'part_id' => $log->part_id,
@@ -209,72 +218,86 @@ class OperatorWorkLogController extends Controller
         ];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Store
-    |--------------------------------------------------------------------------
-    */
+    public function create(): Response
+    {
+        Gate::authorize('create', OperatorWorkLog::class);
 
-    public function store(
-        OperatorWorkLogRequest $request,
-    ): RedirectResponse
+        return Inertia::render('WorkLogs/Operator/Create', [
+            ...$this->formOptions(includeLastReports: true),
+        ]);
+    }
+
+    public function store(OperatorWorkLogRequest $request): RedirectResponse
     {
         Gate::authorize('create', OperatorWorkLog::class);
 
         $data = $request->validated();
-
         $user = $request->user();
 
-        /*
-         * Operators can only create a log for themselves.
-         *
-         * Supervisor / Super Admin can select an operator.
-         */
         if ($user->role === UserRole::OPERATOR) {
             $data['user_id'] = $user->id;
         }
 
-        /*
-         * Verify the selected Part Setup and obtain its cycle-time
-         * configuration from the database.
-         */
         $partSetup = $this->resolvePartSetup(
             partSetupId: $data['part_setup_id'],
             partId: $data['part_id'],
             setupId: $data['setup_id'],
         );
 
-        /*
-         * Machine cycle time is always the historical value configured
-         * in Part Setup. Never trust the frontend value.
-         */
-        $data['machine_cycle_time'] =
-            $partSetup->machine_cycle_time_seconds;
-
-        /*
-         * actual_cycle_time is intentionally taken from the request.
-         *
-         * The form initially receives the Part Setup actual cycle time,
-         * but an operator/supervisor may adjust it when the real cycle
-         * differs.
-         */
-        $data['production_seconds'] =
-            $data['quantity'] * $data['actual_cycle_time'];
+        $data['machine_cycle_time'] = $partSetup->machine_cycle_time_seconds;
+        $data['production_seconds'] = $data['quantity'] * $data['actual_cycle_time'];
 
         OperatorWorkLog::create($data);
 
         return $this->successResponse('created');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Edit
-    |--------------------------------------------------------------------------
-    */
+    public function edit(OperatorWorkLog $operator): Response
+    {
+        Gate::authorize('update', $operator);
+
+        $operator = $this->withDailyProductionMetrics(
+            OperatorWorkLog::query(),
+        )
+            ->with([
+                'user',
+                'machine',
+                'part',
+                'setup',
+                'partSetup',
+            ])
+            ->whereKey($operator->getKey())
+            ->firstOrFail();
+
+        return Inertia::render('WorkLogs/Operator/Edit', [
+            'operatorWorkLog' => new OperatorWorkLogResource($operator),
+            ...$this->formOptions(includeLastReports: true),
+        ]);
+    }
+
+    public function update(
+        OperatorWorkLogRequest $request,
+        OperatorWorkLog $operator,
+    ): RedirectResponse {
+        Gate::authorize('update', $operator);
+
+        $data = $request->validated();
+
+        $partSetup = $this->resolvePartSetup(
+            partSetupId: $data['part_setup_id'],
+            partId: $data['part_id'],
+            setupId: $data['setup_id'],
+        );
+
+        $data['machine_cycle_time'] = $partSetup->machine_cycle_time_seconds;
+        $data['production_seconds'] = $data['quantity'] * $data['actual_cycle_time'];
+
+        $operator->update($data);
+
+        return $this->successResponse('updated');
+    }
 
     /**
-     * Resolve and validate the selected Part Setup.
-     *
      * A Part Setup must belong to the selected Part and Setup.
      *
      * @throws ValidationException
@@ -283,8 +306,7 @@ class OperatorWorkLogController extends Controller
         int $partSetupId,
         int $partId,
         int $setupId,
-    ): PartSetup
-    {
+    ): PartSetup {
         $partSetup = PartSetup::query()
             ->whereKey($partSetupId)
             ->where('part_id', $partId)
@@ -300,104 +322,7 @@ class OperatorWorkLogController extends Controller
         return $partSetup;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Update
-    |--------------------------------------------------------------------------
-    */
-
-    public function create(): Response
-    {
-        Gate::authorize('create', OperatorWorkLog::class);
-
-        return Inertia::render('WorkLogs/Operator/Create', [
-            ...$this->formOptions(includeLastReports: true),
-        ]);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Destroy
-    |--------------------------------------------------------------------------
-    */
-
-    public function edit(OperatorWorkLog $operator): Response
-    {
-        Gate::authorize('update', $operator);
-
-        $operator->load([
-            'user',
-            'machine',
-            'part',
-            'setup',
-            'partSetup',
-        ]);
-
-        return Inertia::render('WorkLogs/Operator/Edit', [
-            'operatorWorkLog' => new OperatorWorkLogResource(
-                $operator,
-            ),
-
-            ...$this->formOptions(includeLastReports: true),
-        ]);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Bulk Destroy
-    |--------------------------------------------------------------------------
-    */
-
-    public function update(
-        OperatorWorkLogRequest $request,
-        OperatorWorkLog        $operator,
-    ): RedirectResponse
-    {
-        Gate::authorize('update', $operator);
-
-        $data = $request->validated();
-
-        /*
-         * Supervisors and Super Admins can change the operator.
-         *
-         * Operators cannot reach this action because the policy denies
-         * update(), but keeping the assignment here makes the controller
-         * explicit and safe.
-         */
-        $partSetup = $this->resolvePartSetup(
-            partSetupId: $data['part_setup_id'],
-            partId: $data['part_id'],
-            setupId: $data['setup_id'],
-        );
-
-        /*
-         * Always refresh the machine cycle snapshot from Part Setup
-         * when the work log is updated.
-         */
-        $data['machine_cycle_time'] =
-            $partSetup->machine_cycle_time_seconds;
-
-        /*
-         * Recalculate production time whenever quantity or actual cycle
-         * time changes.
-         */
-        $data['production_seconds'] =
-            $data['quantity'] * $data['actual_cycle_time'];
-
-        $operator->update($data);
-
-        return $this->successResponse('updated');
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Form Options
-    |--------------------------------------------------------------------------
-    */
-
-    public function destroy(
-        OperatorWorkLog $operator,
-    ): RedirectResponse
+    public function destroy(OperatorWorkLog $operator): RedirectResponse
     {
         Gate::authorize('delete', $operator);
 
@@ -406,15 +331,7 @@ class OperatorWorkLogController extends Controller
         return $this->successResponse('deleted');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Part Setup
-    |--------------------------------------------------------------------------
-    */
-
-    public function bulkDestroy(
-        BulkDestroyRequest $request,
-    ): RedirectResponse
+    public function bulkDestroy(BulkDestroyRequest $request): RedirectResponse
     {
         Gate::authorize('deleteAny', OperatorWorkLog::class);
 
