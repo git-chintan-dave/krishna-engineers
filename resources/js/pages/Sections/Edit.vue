@@ -38,7 +38,7 @@ const handleSubmit = () => {
             ...data,
             status: data.status ? 'active' : 'inactive',
         }))
-        .put(updateSection(props.section.id).url);
+        .put(updateSection(props.section.uuid).url);
 };
 
 /*

@@ -68,7 +68,7 @@ const handleSubmit = () => {
                 : 'inactive',
         }))
         .put(
-            updateSetup(props.setup.id).url,
+            updateSetup(props.setup.uuid).url,
         );
 };
 

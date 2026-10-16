@@ -120,7 +120,6 @@ class SectionSizeController extends Controller
         SectionSize $sectionSize,
     ): RedirectResponse {
         Gate::authorize('update', $sectionSize);
-        dd("Here");
 
         $sectionSize->update($request->validated());
 

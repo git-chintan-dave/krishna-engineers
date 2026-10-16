@@ -59,7 +59,7 @@ const handleSubmit = () => {
             ...data,
             status: data.status ? 'active' : 'inactive',
         }))
-        .put(updateTool(props.tool.id).url);
+        .put(updateTool(props.tool.uuid).url);
 };
 
 /*

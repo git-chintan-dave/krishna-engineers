@@ -52,7 +52,7 @@ const form = useForm<SectionSizeFormData>({
 */
 
 const handleSubmit = () => {
-    form.put(updateSectionSize(props.sectionSize.id).url);
+    form.put(updateSectionSize(props.sectionSize.uuid).url);
 };
 
 /*

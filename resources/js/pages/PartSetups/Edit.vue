@@ -42,7 +42,7 @@ const handleSubmit = () => {
                 ? Number(data.setup_id)
                 : null,
         }))
-        .put(update(props.partSetup.id).url);
+        .put(update(props.partSetup.uuid).url);
 };
 
 const handleCancel = () => {
