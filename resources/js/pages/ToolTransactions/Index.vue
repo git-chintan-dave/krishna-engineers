@@ -1,6 +1,6 @@
 ﻿<script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import {router} from '@inertiajs/vue3';
+import {ref} from 'vue';
 
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppPartSelect from '@/components/selects/AppPartSelect.vue';
@@ -12,24 +12,16 @@ import ListingFilters from '@/components/common/ListingFilters.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
 
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
 
-import { toolTransactionPage } from '@/config/toolTransactions';
+import {toolTransactionPage} from '@/config/toolTransactions';
 
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as toolTransactionsRoute,
-} from '@/routes/tool-transactions';
+import {bulkDestroy, create, destroy, index as toolTransactionsRoute,} from '@/routes/tool-transactions';
 
-import { createToolTransactionColumns } from '@/table/toolTransactions';
+import {createToolTransactionColumns} from '@/table/toolTransactions';
 
-import type {
-    ToolTransaction,
-    ToolTransactionType,
-} from '@/types/toolTransaction';
+import type {ToolTransaction, ToolTransactionType,} from '@/types/toolTransaction';
 
 /*
 |--------------------------------------------------------------------------
@@ -37,10 +29,7 @@ import type {
 |--------------------------------------------------------------------------
 */
 
-type ToolTransactionSort =
-    | 'created_at'
-    | 'quantity'
-    | 'type';
+type ToolTransactionSort = 'created_at' | 'quantity' | 'type';
 
 type ToolTransactionFilters = {
     search: string;
@@ -64,12 +53,11 @@ type ToolTransactionPagination = {
         to: number | null;
         total: number;
     };
-    links?: unknown;
 };
 
 /*
 |--------------------------------------------------------------------------
-| Props
+| Props & Layout
 |--------------------------------------------------------------------------
 */
 
@@ -77,12 +65,6 @@ const props = defineProps<{
     transactions: ToolTransactionPagination;
     filters: ToolTransactionFilters;
 }>();
-
-/*
-|--------------------------------------------------------------------------
-| Page
-|--------------------------------------------------------------------------
-*/
 
 defineOptions({
     layout: {
@@ -123,19 +105,15 @@ const filterSetupId = ref<number | 'all'>(
     props.filters.setupId ?? 'all',
 );
 
-/*
-|--------------------------------------------------------------------------
-| Filter Actions
-|--------------------------------------------------------------------------
-*/
-
 const handleToolChange = (value: number | null) => {
     filterToolId.value = value ?? 'all';
 };
 
-const handleTypeChange = (value: string | null) => {
+const handleTypeChange = (value: string | number | null) => {
     filterType.value =
-        (value as ToolTransactionType | null) ?? 'all';
+        typeof value === 'string'
+            ? (value as ToolTransactionType)
+            : 'all';
 };
 
 const handleFromUserChange = (value: number | null) => {
@@ -160,11 +138,9 @@ const handleSetupChange = (value: number | null) => {
 |--------------------------------------------------------------------------
 */
 
-const columns = createToolTransactionColumns(
-    (id) => {
-        router.delete(destroy(id).url);
-    },
-);
+const columns = createToolTransactionColumns((uuid) => {
+    router.delete(destroy(uuid).url);
+});
 
 const {
     table,
@@ -173,60 +149,62 @@ const {
     search,
     clearFilters,
     deleteSelected,
-} = useListingTable<
-    ToolTransaction,
-    ToolTransactionSort
->({
+} = useListingTable<ToolTransaction, ToolTransactionSort>({
     data: () => props.transactions,
-
     columns,
-
     filters: {
         search: props.filters.search ?? '',
         sort: props.filters.sort,
         direction: props.filters.direction,
     },
-
     route: toolTransactionsRoute.url(),
-
+    searchable:false,
     additionalFilters: () => ({
         tool_id:
-            filterToolId.value !== 'all'
-                ? filterToolId.value
-                : undefined,
+            filterToolId.value === 'all'
+                ? undefined
+                : filterToolId.value,
 
         type:
-            filterType.value !== 'all'
-                ? filterType.value
-                : undefined,
+            filterType.value === 'all'
+                ? undefined
+                : filterType.value,
 
         from_user_id:
-            filterFromUserId.value !== 'all'
-                ? filterFromUserId.value
-                : undefined,
+            filterFromUserId.value === 'all'
+                ? undefined
+                : filterFromUserId.value,
 
         to_user_id:
-            filterToUserId.value !== 'all'
-                ? filterToUserId.value
-                : undefined,
+            filterToUserId.value === 'all'
+                ? undefined
+                : filterToUserId.value,
 
         part_id:
-            filterPartId.value !== 'all'
-                ? filterPartId.value
-                : undefined,
+            filterPartId.value === 'all'
+                ? undefined
+                : filterPartId.value,
 
         setup_id:
-            filterSetupId.value !== 'all'
-                ? filterSetupId.value
-                : undefined,
+            filterSetupId.value === 'all'
+                ? undefined
+                : filterSetupId.value,
     }),
 });
 
 /*
 |--------------------------------------------------------------------------
-| Clear Filters
+| Actions
 |--------------------------------------------------------------------------
 */
+
+const hasAdditionalFilters = () =>
+    filterToolId.value !== 'all' ||
+    filterType.value !== 'all' ||
+    filterFromUserId.value !== 'all' ||
+    filterToUserId.value !== 'all' ||
+    filterPartId.value !== 'all' ||
+    filterSetupId.value !== 'all';
 
 const handleClearFilters = () => {
     filterToolId.value = 'all';
@@ -239,12 +217,6 @@ const handleClearFilters = () => {
     clearFilters();
 };
 
-/*
-|--------------------------------------------------------------------------
-| Bulk Actions
-|--------------------------------------------------------------------------
-*/
-
 const handleDeleteSelected = () => {
     deleteSelected(bulkDestroy().url);
 };
@@ -255,199 +227,133 @@ const handleDeleteSelected = () => {
         :title="toolTransactionPage.title"
         :description="toolTransactionPage.description"
     >
-        <!--
-        |--------------------------------------------------------------------------
-        | Actions
-        |--------------------------------------------------------------------------
-        -->
-
         <template #actions>
             <ListingActions
                 :create-url="create()"
-                :create-label="
-                    toolTransactionPage.createLabel
-                "
+                :create-label="toolTransactionPage.createLabel"
                 :selected-count="selectedCount"
-                :resource-label="
-                    toolTransactionPage.resourceLabel
-                "
+                :resource-label="toolTransactionPage.resourceLabel"
                 @delete-selected="handleDeleteSelected"
             />
         </template>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Filters
-        |--------------------------------------------------------------------------
-        -->
-
         <template #filters>
             <ListingFilters
+                :searchable="false"
                 v-model:search="searchQuery"
-                :search-placeholder="
-                    toolTransactionPage.searchPlaceholder
-                "
-                :search-button-label="
-                    toolTransactionPage.searchButtonLabel
-                "
-                :clear-button-label="
-                    toolTransactionPage.clearButtonLabel
-                "
+                :search-placeholder="toolTransactionPage.searchPlaceholder"
+                :search-button-label="toolTransactionPage.searchButtonLabel"
+                :clear-button-label="toolTransactionPage.clearButtonLabel"
                 :clear-disabled="
-                    !searchQuery.trim() &&
-                    filterToolId === 'all' &&
-                    filterType === 'all' &&
-                    filterFromUserId === 'all' &&
-                    filterToUserId === 'all' &&
-                    filterPartId === 'all' &&
-                    filterSetupId === 'all'
-                "
+        !searchQuery.trim() && !hasAdditionalFilters()
+    "
                 @search="search"
                 @clear="handleClearFilters"
             >
                 <template #filters>
-                    <!-- Tool -->
                     <div class="w-full shrink-0 sm:w-48">
                         <AppToolSelect
                             :model-value="
-                                filterToolId === 'all'
-                                    ? null
-                                    : filterToolId
-                            "
-                            :placeholder="
-                                toolTransactionPage.toolPlaceholder
-                            "
+                    filterToolId === 'all'
+                        ? null
+                        : filterToolId
+                "
+                            :placeholder="toolTransactionPage.toolPlaceholder"
                             searchable
                             clearable
-                            @update:model-value="
-                                handleToolChange
-                            "
+                            @update:model-value="handleToolChange"
                         />
                     </div>
 
-                    <!-- Transaction Type -->
                     <div class="w-full shrink-0 sm:w-48">
                         <AppToolTransactionTypeSelect
                             :model-value="
-                                filterType === 'all'
-                                    ? null
-                                    : filterType
-                            "
-                            :placeholder="
-                                toolTransactionPage.typePlaceholder
-                            "
+                    filterType === 'all'
+                        ? null
+                        : filterType
+                "
+                            :placeholder="toolTransactionPage.typePlaceholder"
                             searchable
                             clearable
-                            @update:model-value="
-                                handleTypeChange
-                            "
+                            @update:model-value="handleTypeChange"
                         />
                     </div>
 
-                    <!-- From User -->
                     <div class="w-full shrink-0 sm:w-48">
                         <AppEmployeeSelect
                             :model-value="
-                                filterFromUserId === 'all'
-                                    ? null
-                                    : filterFromUserId
-                            "
-                            :placeholder="
-                                toolTransactionPage.fromUserPlaceholder
-                            "
+                    filterFromUserId === 'all'
+                        ? null
+                        : filterFromUserId
+                "
+                            :placeholder="toolTransactionPage.fromUserPlaceholder"
                             searchable
                             clearable
-                            @update:model-value="
-                                handleFromUserChange
-                            "
+                            @update:model-value="handleFromUserChange"
                         />
                     </div>
 
-                    <!-- To User -->
                     <div class="w-full shrink-0 sm:w-48">
                         <AppEmployeeSelect
                             :model-value="
-                                filterToUserId === 'all'
-                                    ? null
-                                    : filterToUserId
-                            "
-                            :placeholder="
-                                toolTransactionPage.toUserPlaceholder
-                            "
+                    filterToUserId === 'all'
+                        ? null
+                        : filterToUserId
+                "
+                            :placeholder="toolTransactionPage.toUserPlaceholder"
                             searchable
                             clearable
-                            @update:model-value="
-                                handleToUserChange
-                            "
+                            @update:model-value="handleToUserChange"
                         />
                     </div>
 
-                    <!-- Part -->
                     <div class="w-full shrink-0 sm:w-48">
                         <AppPartSelect
                             :model-value="
-                                filterPartId === 'all'
-                                    ? null
-                                    : filterPartId
-                            "
-                            :placeholder="
-                                toolTransactionPage.partPlaceholder
-                            "
+                    filterPartId === 'all'
+                        ? null
+                        : filterPartId
+                "
+                            :placeholder="toolTransactionPage.partPlaceholder"
                             searchable
                             clearable
-                            @update:model-value="
-                                handlePartChange
-                            "
+                            @update:model-value="handlePartChange"
                         />
                     </div>
 
-                    <!-- Setup -->
                     <div class="w-full shrink-0 sm:w-48">
                         <AppSetupSelect
                             :model-value="
-                                filterSetupId === 'all'
-                                    ? null
-                                    : filterSetupId
-                            "
-                            :placeholder="
-                                toolTransactionPage.setupPlaceholder
-                            "
+                    filterSetupId === 'all'
+                        ? null
+                        : filterSetupId
+                "
+                            :part-id="
+                    filterPartId === 'all'
+                        ? null
+                        : filterPartId
+                "
+                            :placeholder="toolTransactionPage.setupPlaceholder"
                             searchable
                             clearable
-                            @update:model-value="
-                                handleSetupChange
-                            "
+                            @update:model-value="handleSetupChange"
                         />
                     </div>
                 </template>
             </ListingFilters>
         </template>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Table
-        |--------------------------------------------------------------------------
-        -->
-
         <template #table>
             <DataTable
                 :table="table"
                 :columns-count="columns.length"
                 :total="transactions.meta.total"
-                :page-index="
-                    transactions.meta.current_page - 1
-                "
-                :page-size="
-                    transactions.meta.per_page
-                "
+                :page-index="transactions.meta.current_page - 1"
+                :page-size="transactions.meta.per_page"
                 :selected-count="selectedCount"
                 :page-size-options="[10, 25, 50, 100]"
-                :empty-text="
-                    toolTransactionPage.emptyText
-                "
-                :item-label="
-                    toolTransactionPage.itemLabel
-                "
+                :empty-text="toolTransactionPage.emptyText"
+                :item-label="toolTransactionPage.itemLabel"
             />
         </template>
     </ListingLayout>

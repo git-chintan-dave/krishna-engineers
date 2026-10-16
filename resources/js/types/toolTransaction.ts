@@ -2,7 +2,6 @@ export type ToolTransactionType =
     | 'opening'
     | 'purchase'
     | 'issue'
-    | 'return'
     | 'adjustment';
 
 export type ToolTransactionTool = {
@@ -14,13 +13,13 @@ export type ToolTransactionTool = {
 export type ToolTransactionUser = {
     id: number | null;
     name: string | null;
-    employeeCode: string | null;
+    employee_code: string | null;
 };
 
 export type ToolTransactionPart = {
     id: number | null;
     name: string | null;
-    referenceName: string | null;
+    new_part_name: string | null;
 };
 
 export type ToolTransactionSetup = {
@@ -31,25 +30,25 @@ export type ToolTransactionSetup = {
 export type ToolTransactionCreatedBy = {
     id: number | null;
     name: string | null;
-    employeeCode: string | null;
+    employee_code: string | null;
 };
 
 export type ToolTransaction = {
     id: number;
     uuid: string;
-    tool: ToolTransactionTool;
+    tool: ToolTransactionTool | null;
     type: {
         value: ToolTransactionType | null;
         label: string | null;
     };
     quantity: number;
-    fromUser: ToolTransactionUser;
-    toUser: ToolTransactionUser;
-    part: ToolTransactionPart;
-    setup: ToolTransactionSetup;
-    returnScrap: boolean | null;
-    createdBy: ToolTransactionCreatedBy;
+    from_user: ToolTransactionUser | null;
+    to_user: ToolTransactionUser | null;
+    part: ToolTransactionPart | null;
+    setup: ToolTransactionSetup | null;
+    return_scrap: boolean | null;
+    created_by: ToolTransactionCreatedBy | null;
     remarks: string | null;
-    createdAt: string | null;
-    updatedAt?: string | null;
+    created_at: string | null;
+    updated_at?: string | null;
 };

@@ -8,96 +8,47 @@ use App\Models\User;
 
 class ToolTransactionPolicy
 {
-    /*
-    |--------------------------------------------------------------------------
-    | View Any
-    |--------------------------------------------------------------------------
-    */
-
     public function viewAny(User $user): bool
     {
         return in_array(
             $user->role,
-            [
-                UserRole::SUPER_ADMIN,
-                UserRole::SUPERVISOR,
-            ],
-            true
+            [UserRole::SUPER_ADMIN, UserRole::SUPERVISOR],
+            true,
         );
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | View
-    |--------------------------------------------------------------------------
-    */
 
     public function view(
         User $user,
-        ToolTransaction $toolTransaction
+        ToolTransaction $toolTransaction,
     ): bool {
-        return in_array(
-            $user->role,
-            [
-                UserRole::SUPER_ADMIN,
-                UserRole::SUPERVISOR,
-            ],
-            true
-        );
+        return $this->viewAny($user);
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Create
-    |--------------------------------------------------------------------------
-    */
 
     public function create(User $user): bool
     {
-        return in_array(
-            $user->role,
-            [
-                UserRole::SUPER_ADMIN,
-                UserRole::SUPERVISOR,
-            ],
-            true
-        );
+        return $this->viewAny($user);
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Update
-    |--------------------------------------------------------------------------
-    */
 
     public function update(
         User $user,
-        ToolTransaction $toolTransaction
+        ToolTransaction $toolTransaction,
     ): bool {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role === UserRole::SUPER_ADMIN
+            || (
+                $user->role === UserRole::SUPERVISOR
+                && $toolTransaction->created_by_user_id === $user->id
+            );
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Delete
-    |--------------------------------------------------------------------------
-    */
 
     public function delete(
         User $user,
-        ToolTransaction $toolTransaction
+        ToolTransaction $toolTransaction,
     ): bool {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $this->update($user, $toolTransaction);
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Delete Any
-    |--------------------------------------------------------------------------
-    */
 
     public function deleteAny(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $this->viewAny($user);
     }
 }

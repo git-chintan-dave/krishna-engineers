@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ToolTransactionType;
-use App\Helpers\ResponseHelper;
+use App\Http\Controllers\Concerns\HasCrudResponses;
 use App\Http\Requests\ToolTransactions\IndexToolTransactionRequest;
 use App\Http\Requests\ToolTransactions\ToolTransactionRequest;
 use App\Http\Resources\ToolTransactionResource;
@@ -11,301 +11,184 @@ use App\Models\Tool;
 use App\Models\ToolTransaction;
 use App\Models\User;
 use App\Services\ToolTransactionService;
-use App\Support\FlashMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ToolTransactionController extends Controller
 {
+    use HasCrudResponses;
+
     private const string MODULE_NAME = 'Tool Transaction';
+
+    private const string INDEX_ROUTE = 'tool-transactions.index';
 
     public function __construct(
         private readonly ToolTransactionService $toolTransactionService,
     ) {}
 
-    public function index(
-        IndexToolTransactionRequest $request,
-    ): Response {
+    public function index(IndexToolTransactionRequest $request): Response
+    {
         Gate::authorize('viewAny', ToolTransaction::class);
 
         $validated = $request->validated();
 
-        $query = ToolTransaction::query()
-            ->with([
-                'tool',
-                'fromUser',
-                'toUser',
-                'part',
-                'setup',
-                'createdBy',
-            ]);
+        $query = ToolTransaction::query()->with([
+            'tool',
+            'fromUser',
+            'toUser',
+            'part',
+            'setup',
+            'createdBy',
+        ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Search
-        |--------------------------------------------------------------------------
-        */
-
-        if (! empty($validated['search'])) {
-            $search = $validated['search'];
-
+        $query->when($validated['search'] ?? null, function ($query, $search) {
             $query->where(function ($query) use ($search) {
                 $query
-                    ->whereHas('tool', function ($query) use ($search) {
-                        $query->where(
-                            'name',
-                            'like',
-                            "%{$search}%",
-                        );
-                    })
+                    ->whereHas(
+                        'tool',
+                        fn ($query) => $query->where('name', 'like', "%{$search}%"),
+                    )
                     ->orWhereHas('fromUser', function ($query) use ($search) {
-                        $query
-                            ->where(
-                                'name',
-                                'like',
-                                "%{$search}%",
-                            )
-                            ->orWhere(
-                                'employee_code',
-                                'like',
-                                "%{$search}%",
-                            );
+                        $query->where('name', 'like', "%{$search}%")
+                            ->orWhere('employee_code', 'like', "%{$search}%");
                     })
                     ->orWhereHas('toUser', function ($query) use ($search) {
-                        $query
-                            ->where(
-                                'name',
-                                'like',
-                                "%{$search}%",
-                            )
-                            ->orWhere(
-                                'employee_code',
-                                'like',
-                                "%{$search}%",
-                            );
+                        $query->where('name', 'like', "%{$search}%")
+                            ->orWhere('employee_code', 'like', "%{$search}%");
                     })
                     ->orWhereHas('part', function ($query) use ($search) {
-                        $query
-                            ->where(
-                                'name',
-                                'like',
-                                "%{$search}%",
-                            )
-                            ->orWhere(
-                                'reference_name',
-                                'like',
-                                "%{$search}%",
-                            );
+                        $query->where('name', 'like', "%{$search}%")
+                            ->orWhere('reference_name', 'like', "%{$search}%");
                     })
-                    ->orWhere(
-                        'remarks',
-                        'like',
-                        "%{$search}%",
-                    );
+                    ->orWhere('remarks', 'like', "%{$search}%");
             });
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Filters
-        |--------------------------------------------------------------------------
-        */
+        });
 
         $query
             ->when(
                 $validated['tool_id'] ?? null,
-                fn ($query, $toolId) => $query->where(
-                    'tool_id',
-                    $toolId,
-                ),
+                fn ($query, $id) => $query->where('tool_id', $id),
             )
             ->when(
                 $validated['type'] ?? null,
-                fn ($query, $type) => $query->where(
-                    'type',
-                    $type,
-                ),
+                fn ($query, $type) => $query->where('type', $type),
             )
             ->when(
                 $validated['from_user_id'] ?? null,
-                fn ($query, $userId) => $query->where(
-                    'from_user_id',
-                    $userId,
-                ),
+                fn ($query, $id) => $query->where('from_user_id', $id),
             )
             ->when(
                 $validated['to_user_id'] ?? null,
-                fn ($query, $userId) => $query->where(
-                    'to_user_id',
-                    $userId,
-                ),
+                fn ($query, $id) => $query->where('to_user_id', $id),
             )
             ->when(
                 $validated['part_id'] ?? null,
-                fn ($query, $partId) => $query->where(
-                    'part_id',
-                    $partId,
-                ),
+                fn ($query, $id) => $query->where('part_id', $id),
             )
             ->when(
                 $validated['setup_id'] ?? null,
-                fn ($query, $setupId) => $query->where(
-                    'setup_id',
-                    $setupId,
-                )
+                fn ($query, $id) => $query->where('setup_id', $id),
             )
             ->when(
                 $validated['from_date'] ?? null,
-                fn ($query, $date) => $query->whereDate(
-                    'created_at',
-                    '>=',
-                    $date,
-                ),
+                fn ($query, $date) => $query->whereDate('created_at', '>=', $date),
             )
             ->when(
                 $validated['to_date'] ?? null,
-                fn ($query, $date) => $query->whereDate(
-                    'created_at',
-                    '<=',
-                    $date,
-                ),
+                fn ($query, $date) => $query->whereDate('created_at', '<=', $date),
             );
 
-        /*
-        |--------------------------------------------------------------------------
-        | Sorting & Pagination
-        |--------------------------------------------------------------------------
-        */
-
-        $sort = $validated['sort'] ?? 'created_at';
-        $direction = $validated['direction'] ?? 'desc';
-        $perPage = $validated['per_page'] ?? 15;
-
         $transactions = $query
-            ->orderBy($sort, $direction)
-            ->paginate($perPage)
+            ->orderBy(
+                $validated['sort'] ?? 'created_at',
+                $validated['direction'] ?? 'desc',
+            )
+            ->paginate($validated['per_page'] ?? 15)
             ->withQueryString();
 
-        return Inertia::render(
-            'ToolTransactions/Index',
-            [
-                'transactions' => ToolTransactionResource::collection(
-                    $transactions,
-                ),
-
-                'filters' => [
-                    'search' => $validated['search'] ?? '',
-                    'toolId' => $validated['tool_id'] ?? null,
-                    'type' => $validated['type'] ?? null,
-                    'fromUserId' => $validated['from_user_id'] ?? null,
-                    'toUserId' => $validated['to_user_id'] ?? null,
-                    'partId' => $validated['part_id'] ?? null,
-                    'setupId' => $validated['setup_id'] ?? null,
-                    'fromDate' => $validated['from_date'] ?? null,
-                    'toDate' => $validated['to_date'] ?? null,
-                    'sort' => $validated['sort'] ?? 'created_at',
-                    'direction' => $validated['direction'] ?? 'desc',
-                ],
+        return Inertia::render('ToolTransactions/Index', [
+            'transactions' => ToolTransactionResource::collection($transactions),
+            'filters' => [
+                'search' => $validated['search'] ?? '',
+                'toolId' => $validated['tool_id'] ?? null,
+                'type' => $validated['type'] ?? null,
+                'fromUserId' => $validated['from_user_id'] ?? null,
+                'toUserId' => $validated['to_user_id'] ?? null,
+                'partId' => $validated['part_id'] ?? null,
+                'setupId' => $validated['setup_id'] ?? null,
+                'fromDate' => $validated['from_date'] ?? null,
+                'toDate' => $validated['to_date'] ?? null,
+                'sort' => $validated['sort'] ?? 'created_at',
+                'direction' => $validated['direction'] ?? 'desc',
+                'perPage' => $validated['per_page'] ?? 15,
             ],
-        );
+        ]);
     }
 
     public function create(): Response
     {
         Gate::authorize('create', ToolTransaction::class);
 
-        return Inertia::render(
-            'ToolTransactions/Create',
-        );
+        return Inertia::render('ToolTransactions/Create', []);
     }
 
-    public function store(
-        ToolTransactionRequest $request,
-    ): RedirectResponse {
+    public function store(ToolTransactionRequest $request): RedirectResponse
+    {
         Gate::authorize('create', ToolTransaction::class);
 
-        $validated = $request->validated();
         $user = Auth::user();
 
-        $transaction = ToolTransactionType::from(
-            $validated['type'],
-        );
+        $data = $request->validated();
+        $tool = Tool::query()->findOrFail($data['tool_id']);
+        $type = ToolTransactionType::from($data['type']);
+        $quantity = (int) $data['quantity'];
 
-        match ($transaction) {
-            ToolTransactionType::OPENING =>
-            $this->toolTransactionService->opening(
-                tool: Tool::findOrFail(
-                    $validated['tool_id'],
-                ),
-                quantity: (int) $validated['quantity'],
+        match ($type) {
+            ToolTransactionType::OPENING => $this->toolTransactionService->opening(
+                tool: $tool,
+                quantity: $quantity,
                 user: $user,
-                remarks: $validated['remarks'] ?? null,
+                remarks: $data['remarks'] ?? null,
             ),
 
-            ToolTransactionType::PURCHASE =>
-            $this->toolTransactionService->purchase(
-                tool: Tool::findOrFail(
-                    $validated['tool_id'],
-                ),
-                quantity: (int) $validated['quantity'],
+            ToolTransactionType::PURCHASE => $this->toolTransactionService->purchase(
+                tool: $tool,
+                quantity: $quantity,
                 user: $user,
-                remarks: $validated['remarks'] ?? null,
+                remarks: $data['remarks'] ?? null,
             ),
 
-            ToolTransactionType::ISSUE =>
-            $this->toolTransactionService->issue(
-                tool: Tool::findOrFail(
-                    $validated['tool_id'],
-                ),
-                fromUser: User::findOrFail(
-                    $validated['from_user_id'],
-                ),
-                toUser: User::findOrFail(
-                    $validated['to_user_id'],
-                ),
-                quantity: (int) $validated['quantity'],
+            ToolTransactionType::ISSUE => $this->toolTransactionService->issue(
+                tool: $tool,
+                fromUser: isset($data['from_user_id'])
+                    ? User::query()->findOrFail($data['from_user_id'])
+                    : null,
+                toUser: User::query()->findOrFail($data['to_user_id']),
+                quantity: $quantity,
                 createdBy: $user,
-                partId: $validated['part_id'] ?? null,
-                setupId: $validated['setup_id'] ?? null,
-                remarks: $validated['remarks'] ?? null,
+                partId: $data['part_id'] ?? null,
+                setupId: $data['setup_id'] ?? null,
+                returnScrap: $data['return_scrap'] ?? null,
+                remarks: $data['remarks'] ?? null,
             ),
 
-            ToolTransactionType::RETURN =>
-            $this->toolTransactionService->return(
-                tool: Tool::findOrFail(
-                    $validated['tool_id'],
-                ),
-                fromUser: User::findOrFail(
-                    $validated['from_user_id'],
-                ),
-                quantity: (int) $validated['quantity'],
+            ToolTransactionType::ADJUSTMENT => $this->toolTransactionService->adjustment(
+                tool: $tool,
+                quantity: $quantity,
                 createdBy: $user,
-                partId: $validated['part_id'] ?? null,
-                setupId: $validated['setup_id'] ?? null,
-                returnScrap: $validated['return_scrap'] ?? null,
-                remarks: $validated['remarks'] ?? null,
-            ),
-
-            ToolTransactionType::ADJUSTMENT =>
-            $this->toolTransactionService->adjustment(
-                tool: Tool::findOrFail(
-                    $validated['tool_id'],
-                ),
-                quantity: (int) $validated['quantity'],
-                createdBy: $user,
-                remarks: $validated['remarks'] ?? null,
+                remarks: $data['remarks'] ?? null,
             ),
         };
 
         return $this->successResponse('created');
     }
 
-    public function edit(
-        ToolTransaction $toolTransaction,
-    ): Response {
+    public function edit(ToolTransaction $toolTransaction): Response
+    {
         Gate::authorize('update', $toolTransaction);
 
         $toolTransaction->load([
@@ -314,16 +197,12 @@ class ToolTransactionController extends Controller
             'toUser',
             'part',
             'setup',
+            'createdBy',
         ]);
 
-        return Inertia::render(
-            'ToolTransactions/Edit',
-            [
-                'transaction' => new ToolTransactionResource(
-                    $toolTransaction,
-                ),
-            ],
-        );
+        return Inertia::render('ToolTransactions/Edit', [
+            'transaction' => new ToolTransactionResource($toolTransaction),
+        ]);
     }
 
     public function update(
@@ -332,69 +211,69 @@ class ToolTransactionController extends Controller
     ): RedirectResponse {
         Gate::authorize('update', $toolTransaction);
 
+        /** @var User $user */
+        $user = Auth::user();
+
         $this->toolTransactionService->update(
             transaction: $toolTransaction,
             data: $request->validated(),
-            user: Auth::user(),
+            user: $user,
         );
 
         return $this->successResponse('updated');
     }
 
-    public function destroy(
-        ToolTransaction $toolTransaction,
-    ): RedirectResponse {
+    public function destroy(ToolTransaction $toolTransaction): RedirectResponse
+    {
         Gate::authorize('delete', $toolTransaction);
+
+        /** @var User $user */
+        $user = Auth::user();
 
         $this->toolTransactionService->delete(
             transaction: $toolTransaction,
-            user: Auth::user(),
+            user: $user,
         );
 
         return $this->successResponse('deleted');
     }
 
-    public function bulkDestroy(
-        IndexToolTransactionRequest $request,
-    ): RedirectResponse {
-        Gate::authorize(
-            'deleteAny',
-            ToolTransaction::class,
-        );
+    public function bulkDestroy(IndexToolTransactionRequest $request): RedirectResponse
+    {
+        Gate::authorize('deleteAny', ToolTransaction::class);
 
-        $ids = $request->validate([
-            'ids' => [
-                'required',
-                'array',
-                'min:1',
-            ],
-            'ids.*' => [
-                'required',
-                'integer',
-            ],
-        ])['ids'];
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['required', 'integer', 'distinct', 'min:1'],
+        ]);
 
-        $transactions = ToolTransaction::query()
-            ->whereIn('id', $ids)
-            ->get();
+        /** @var User $user */
+        $user = Auth::user();
+
+        $query = ToolTransaction::query()
+            ->whereIn('id', $validated['ids']);
+
+        if ($user->role !== \App\Enums\UserRole::SUPER_ADMIN) {
+            $query->where('created_by_user_id', $user->id);
+        }
+
+        $transactions = $query->get();
+
+        if ($transactions->count() !== count($validated['ids'])) {
+            throw ValidationException::withMessages([
+                'ids' => 'One or more transactions were not found or you are not authorized to delete them.',
+            ]);
+        }
+
+        foreach ($transactions as $transaction) {
+            Gate::authorize('delete', $transaction);
+        }
 
         $this->toolTransactionService->bulkDelete(
             transactions: $transactions,
-            user: Auth::user(),
+            user: $user,
         );
 
         return $this->successResponse('bulk_deleted');
-    }
-
-    private function successResponse(
-        string $action,
-    ): RedirectResponse {
-        return ResponseHelper::success(
-            message: FlashMessage::success(
-                $action,
-                self::MODULE_NAME,
-            ),
-            route: 'tool-transactions.index',
-        );
     }
 }

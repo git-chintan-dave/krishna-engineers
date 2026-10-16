@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Str;
 
 #[Fillable([
     'tool_id',
@@ -35,7 +34,6 @@ class ToolTransaction extends Model
         return 'uuid';
     }
 
-    // Casts
     protected function casts(): array
     {
         return [
@@ -45,7 +43,6 @@ class ToolTransaction extends Model
         ];
     }
 
-    // Relationships
     public function tool(): BelongsTo
     {
         return $this->belongsTo(Tool::class);

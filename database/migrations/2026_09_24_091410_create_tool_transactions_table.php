@@ -25,7 +25,7 @@ return new class extends Migration
                 'type',
                 array_column(ToolTransactionType::cases(), 'value')
             );
-            $table->unsignedInteger('quantity');
+            $table->integer('quantity');
             $table->foreignId('from_user_id')
                 ->nullable()
                 ->constrained('users')

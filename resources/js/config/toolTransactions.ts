@@ -4,7 +4,7 @@ export const toolTransactionPage = {
     title: 'Tool Transactions',
 
     description:
-        'Manage tool stock, issue, return, adjustment, and transaction history.',
+        'Manage tool stock, issue tools to users, record adjustments, and track transaction history.',
 
     createLabel: 'Add Transaction',
 
@@ -36,10 +36,6 @@ export const toolTransactionPage = {
         {
             value: 'issue',
             label: 'Issue',
-        },
-        {
-            value: 'return',
-            label: 'Return',
         },
         {
             value: 'adjustment',
@@ -91,18 +87,18 @@ export const toolTransactionPage = {
         setupLabel: 'Setup',
         setupPlaceholder: 'Select setup',
 
-        returnScrapLabel: 'Return / Scrap',
+        returnScrapLabel: 'Returned Tool Is Scrap',
 
-        returnScrapTitle: 'Return / Scrap',
+        returnScrapTitle: 'Returned Tool Condition',
 
         returnScrapDescription:
-            'Mark whether the returned tool quantity should be treated as scrap.',
+            'Indicate whether the returned tool is being marked as scrap.',
 
         returnScrapActiveText:
-            'This transaction is marked as scrap.',
+            'The returned tool is marked as scrap.',
 
         returnScrapInactiveText:
-            'This transaction is not marked as scrap.',
+            'The returned tool is not marked as scrap.',
 
         remarksLabel: 'Remarks',
         remarksPlaceholder: 'Enter remarks',

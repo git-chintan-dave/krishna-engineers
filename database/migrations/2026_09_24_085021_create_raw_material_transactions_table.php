@@ -24,9 +24,10 @@ return new class extends Migration
                 'type',
                 array_column(RawMaterialTransactionType::cases(), 'value')
             );
-            $table->unsignedInteger('quantity');
+            $table->integer('quantity');
             $table->foreignIdFor(User::class)
                 ->nullable()
+                ->constrained()
                 ->nullOnDelete();
             $table->string('reference_type')->nullable();
             $table->unsignedBigInteger('reference_id')->nullable();

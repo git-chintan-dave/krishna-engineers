@@ -1,15 +1,12 @@
-import { createColumnHelper } from '@tanstack/vue-table';
-import { h } from 'vue';
+import {createColumnHelper} from '@tanstack/vue-table';
+import {h} from 'vue';
 
-import { edit } from '@/routes/tool-transactions';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createDateColumn } from '@/table/columns/dateColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import { createSortableColumn } from '@/table/helpers/sortableColumn';
-import type {
-    ToolTransaction,
-    ToolTransactionType,
-} from '@/types/toolTransaction';
+import {edit} from '@/routes/tool-transactions';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createDateColumn} from '@/table/columns/dateColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createSortableColumn} from '@/table/helpers/sortableColumn';
+import type {ToolTransaction, ToolTransactionType,} from '@/types/toolTransaction';
 
 const columnHelper =
     createColumnHelper<any, ToolTransaction>();
@@ -40,19 +37,7 @@ const getTypeClass = (type: ToolTransactionType) => {
                 'dark:bg-orange-950/40 dark:text-orange-400',
             ];
 
-        case 'return':
-            return [
-                'bg-purple-50 text-purple-700',
-                'dark:bg-purple-950/40 dark:text-purple-400',
-            ];
-
         case 'adjustment':
-            return [
-                'bg-slate-50 text-slate-700',
-                'dark:bg-slate-950/40 dark:text-slate-400',
-            ];
-
-        default:
             return [
                 'bg-slate-50 text-slate-700',
                 'dark:bg-slate-950/40 dark:text-slate-400',
@@ -80,17 +65,13 @@ export const createToolTransactionColumns = (
             size: 240,
 
             cell: ({ row }) => {
-                const value =
-                    row.original.tool?.name ?? '—';
+                const value = row.original.tool?.name ?? '—';
 
                 return h(
                     'div',
                     {
                         class: 'truncate',
-                        title:
-                            value !== '—'
-                                ? value
-                                : undefined,
+                        title: value !== '—' ? value : undefined,
                     },
                     value,
                 );
@@ -103,24 +84,22 @@ export const createToolTransactionColumns = (
             size: 140,
 
             cell: ({ row }) => {
-                const type =
-                    row.original.type?.value;
+                const type = row.original.type?.value as
+                    | ToolTransactionType
+                    | undefined;
 
                 if (!type) {
                     return '—';
                 }
 
-                const label =
-                    row.original.type?.label ?? type;
+                const label = row.original.type?.label ?? type;
 
                 return h(
                     'span',
                     {
                         class: [
                             'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium',
-                            getTypeClass(
-                                type as ToolTransactionType,
-                            ),
+                            getTypeClass(type),
                         ],
                     },
                     label,
@@ -132,22 +111,37 @@ export const createToolTransactionColumns = (
             accessorKey: 'quantity',
             header: 'Quantity',
             size: 100,
+
+            cell: ({ row }) => {
+                const quantity = row.original.quantity;
+
+                return h(
+                    'span',
+                    {
+                        class:
+                            quantity < 0
+                                ? 'font-medium text-destructive'
+                                : undefined,
+                    },
+                    String(quantity),
+                );
+            },
         }),
 
         createSortableColumn({
-            accessorKey: 'fromUser.name',
+            accessorKey: 'from_user.name',
             header: 'From User',
             size: 180,
 
             cell: ({ row }) => {
-                const user = row.original.fromUser;
+                const user = row.original.from_user;
 
                 if (!user?.name) {
                     return '—';
                 }
 
-                const value = user.employeeCode
-                    ? `${user.name} (${user.employeeCode})`
+                const value = user.employee_code
+                    ? `${user.name} (${user.employee_code})`
                     : user.name;
 
                 return h(
@@ -162,19 +156,19 @@ export const createToolTransactionColumns = (
         }),
 
         createSortableColumn({
-            accessorKey: 'toUser.name',
+            accessorKey: 'to_user.name',
             header: 'To User',
             size: 180,
 
             cell: ({ row }) => {
-                const user = row.original.toUser;
+                const user = row.original.to_user;
 
                 if (!user?.name) {
                     return '—';
                 }
 
-                const value = user.employeeCode
-                    ? `${user.name} (${user.employeeCode})`
+                const value = user.employee_code
+                    ? `${user.name} (${user.employee_code})`
                     : user.name;
 
                 return h(
@@ -196,12 +190,12 @@ export const createToolTransactionColumns = (
             cell: ({ row }) => {
                 const part = row.original.part;
 
-                if (!part) {
+                if (!part?.name) {
                     return '—';
                 }
 
-                const value = part.referenceName
-                    ? `${part.referenceName} - ${part.name}`
+                const value = part.new_part_name
+                    ? `${part.name} (${part.new_part_name})`
                     : part.name;
 
                 return h(
@@ -220,42 +214,39 @@ export const createToolTransactionColumns = (
             header: 'Setup',
             size: 130,
 
-            cell: ({ row }) =>
-                row.original.setup?.name ?? '—',
+            cell: ({ row }) => row.original.setup?.name ?? '—',
         }),
 
         createSortableColumn({
-            accessorKey: 'returnScrap',
+            accessorKey: 'return_scrap',
             header: 'Return / Scrap',
             size: 130,
 
             cell: ({ row }) => {
-                const value =
-                    row.original.returnScrap;
+                const value = row.original.return_scrap;
 
-                if (value === null) {
+                if (value === null || value === undefined) {
                     return '—';
                 }
 
-                return value ? 'Scrap' : 'Return';
+                return value ? 'Scrap' : 'Not Scrap';
             },
         }),
 
         createSortableColumn({
-            accessorKey: 'createdBy.name',
+            accessorKey: 'created_by.name',
             header: 'Created By',
             size: 180,
 
             cell: ({ row }) => {
-                const user =
-                    row.original.createdBy;
+                const user = row.original.created_by;
 
                 if (!user?.name) {
                     return '—';
                 }
 
-                const value = user.employeeCode
-                    ? `${user.name} (${user.employeeCode})`
+                const value = user.employee_code
+                    ? `${user.name} (${user.employee_code})`
                     : user.name;
 
                 return h(
@@ -275,17 +266,13 @@ export const createToolTransactionColumns = (
             size: 240,
 
             cell: ({ row }) => {
-                const value =
-                    row.original.remarks ?? '—';
+                const value = row.original.remarks ?? '—';
 
                 return h(
                     'div',
                     {
                         class: 'truncate',
-                        title:
-                            value !== '—'
-                                ? value
-                                : undefined,
+                        title: value !== '—' ? value : undefined,
                     },
                     value,
                 );

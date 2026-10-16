@@ -11,14 +11,7 @@ enum ToolTransactionType: string
     case OPENING = 'opening';
     case PURCHASE = 'purchase';
     case ISSUE = 'issue';
-    case RETURN = 'return';
     case ADJUSTMENT = 'adjustment';
-
-    /*
-    |--------------------------------------------------------------------------
-    | Label
-    |--------------------------------------------------------------------------
-    */
 
     public function label(): string
     {
@@ -26,7 +19,6 @@ enum ToolTransactionType: string
             self::OPENING => 'Opening',
             self::PURCHASE => 'Purchase',
             self::ISSUE => 'Issue',
-            self::RETURN => 'Return',
             self::ADJUSTMENT => 'Adjustment',
         };
     }

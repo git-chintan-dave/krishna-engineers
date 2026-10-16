@@ -1,89 +1,45 @@
 ﻿<script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
 import ToolTransactionForm from '@/pages/ToolTransactions/components/ToolTransactionForm.vue';
 
-import { toolTransactionPage } from '@/config/toolTransactions';
-import { dashboard } from '@/routes';
+import {toolTransactionPage} from '@/config/toolTransactions';
+import {dashboard} from '@/routes';
+import {index as toolTransactions, update,} from '@/routes/tool-transactions';
 
-import {
-    index as toolTransactions,
-    update,
-} from '@/routes/tool-transactions';
-
-import type {
-    ToolTransaction,
-    ToolTransactionType,
-} from '@/types/toolTransaction';
-
-/*
-|--------------------------------------------------------------------------
-| Layout
-|--------------------------------------------------------------------------
-*/
+import type {ToolTransaction, ToolTransactionType,} from '@/types/toolTransaction';
 
 defineOptions({
     layout: {
         breadcrumbs: [
-            {
-                title: 'Dashboard',
-                href: dashboard(),
-            },
+            { title: 'Dashboard', href: dashboard() },
             {
                 title: toolTransactionPage.title,
                 href: toolTransactions(),
             },
-            {
-                title: 'Edit',
-            },
+            { title: 'Edit' },
         ],
     },
 });
-
-/*
-|--------------------------------------------------------------------------
-| Props
-|--------------------------------------------------------------------------
-*/
 
 const props = defineProps<{
     transaction: ToolTransaction;
 }>();
 
-/*
-|--------------------------------------------------------------------------
-| Form
-|--------------------------------------------------------------------------
-*/
-
 const form = useForm({
     toolId: props.transaction.tool?.id ?? null,
-
     type:
         props.transaction.type?.value ??
         ('' as ToolTransactionType | ''),
-
     quantity: props.transaction.quantity,
-
-    fromUserId: props.transaction.fromUser?.id ?? null,
-
-    toUserId: props.transaction.toUser?.id ?? null,
-
+    fromUserId: props.transaction.from_user?.id ?? null,
+    toUserId: props.transaction.to_user?.id ?? null,
     partId: props.transaction.part?.id ?? null,
-
     setupId: props.transaction.setup?.id ?? null,
-
-    returnScrap: props.transaction.returnScrap,
-
+    returnScrap: props.transaction.return_scrap,
     remarks: props.transaction.remarks ?? '',
 });
-
-/*
-|--------------------------------------------------------------------------
-| Actions
-|--------------------------------------------------------------------------
-*/
 
 const handleSubmit = () => {
     form.transform((data) => ({
@@ -94,11 +50,9 @@ const handleSubmit = () => {
         to_user_id: data.toUserId,
         part_id: data.partId,
         setup_id: data.setupId,
-        return_scrap: data.returnScrap,
+        return_scrap: data.type === 'issue' ? data.returnScrap : null,
         remarks: data.remarks || null,
-    })).put(
-        update(props.transaction.id).url,
-    );
+    })).put(update(props.transaction.uuid).url);
 };
 
 const handleCancel = () => {
@@ -109,17 +63,14 @@ const handleCancel = () => {
 <template>
     <FormLayout
         :title="toolTransactionPage.form.editTitle"
-        :description="
-            toolTransactionPage.form.editDescription
-        "
+        :description="toolTransactionPage.form.editDescription"
     >
         <ToolTransactionForm
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                toolTransactionPage.form.editSubmitLabel
-            "
+            :submit-label="toolTransactionPage.form.editSubmitLabel"
+            is-editing
             @submit="handleSubmit"
             @cancel="handleCancel"
         />

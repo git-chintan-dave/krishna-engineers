@@ -1,72 +1,44 @@
 ﻿<script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+import {router, useForm, usePage} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
 import ToolTransactionForm from '@/pages/ToolTransactions/components/ToolTransactionForm.vue';
 
-import { toolTransactionPage } from '@/config/toolTransactions';
-import { dashboard } from '@/routes';
+import {toolTransactionPage} from '@/config/toolTransactions';
+import {dashboard} from '@/routes';
+import {index as toolTransactions, store,} from '@/routes/tool-transactions';
 
-import {
-    index as toolTransactions,
-    store,
-} from '@/routes/tool-transactions';
-
-import type { ToolTransactionType } from '@/types/toolTransaction';
-
-/*
-|--------------------------------------------------------------------------
-| Layout
-|--------------------------------------------------------------------------
-*/
+import type {ToolTransactionType} from '@/types/toolTransaction';
+import {computed} from "vue";
 
 defineOptions({
     layout: {
         breadcrumbs: [
-            {
-                title: 'Dashboard',
-                href: dashboard(),
-            },
+            { title: 'Dashboard', href: dashboard() },
             {
                 title: toolTransactionPage.title,
                 href: toolTransactions(),
             },
-            {
-                title: 'Create',
-            },
+            { title: 'Create' },
         ],
     },
 });
 
-/*
-|--------------------------------------------------------------------------
-| Form
-|--------------------------------------------------------------------------
-*/
+const page = usePage();
+
+const auth = computed(() => page.props.auth);
 
 const form = useForm({
     toolId: null as number | null,
-
     type: '' as ToolTransactionType | '',
-
     quantity: null as number | null,
-
-    fromUserId: null as number | null,
+    fromUserId: auth.value.user.id,
     toUserId: null as number | null,
-
     partId: null as number | null,
     setupId: null as number | null,
-
     returnScrap: null as boolean | null,
-
     remarks: '',
 });
-
-/*
-|--------------------------------------------------------------------------
-| Actions
-|--------------------------------------------------------------------------
-*/
 
 const handleSubmit = () => {
     form.transform((data) => ({
@@ -77,7 +49,7 @@ const handleSubmit = () => {
         to_user_id: data.toUserId,
         part_id: data.partId,
         setup_id: data.setupId,
-        return_scrap: data.returnScrap,
+        return_scrap: data.type === 'issue' ? data.returnScrap : null,
         remarks: data.remarks || null,
     })).post(store().url);
 };
@@ -90,17 +62,13 @@ const handleCancel = () => {
 <template>
     <FormLayout
         :title="toolTransactionPage.form.createTitle"
-        :description="
-            toolTransactionPage.form.createDescription
-        "
+        :description="toolTransactionPage.form.createDescription"
     >
         <ToolTransactionForm
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                toolTransactionPage.form.createSubmitLabel
-            "
+            :submit-label="toolTransactionPage.form.createSubmitLabel"
             @submit="handleSubmit"
             @cancel="handleCancel"
         />

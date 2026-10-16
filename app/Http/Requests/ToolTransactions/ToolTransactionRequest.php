@@ -6,6 +6,7 @@ use App\Enums\ToolTransactionType;
 use App\Models\Part;
 use App\Models\Setup;
 use App\Models\Tool;
+use App\Models\ToolTransaction;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -34,16 +35,23 @@ class ToolTransactionRequest extends FormRequest
             'quantity' => [
                 'required',
                 'integer',
-                'min:1',
+                'max:4294967295',
+                Rule::when(
+                    $this->input('type') === ToolTransactionType::ADJUSTMENT->value,
+                    ['not_in:0', 'min:-2147483648'],
+                    ['min:1'],
+                ),
             ],
 
             'from_user_id' => [
                 'nullable',
                 'integer',
                 Rule::exists(User::class, 'id'),
+                'different:to_user_id',
             ],
 
             'to_user_id' => [
+                'required_if:type,' . ToolTransactionType::ISSUE->value,
                 'nullable',
                 'integer',
                 Rule::exists(User::class, 'id'),
