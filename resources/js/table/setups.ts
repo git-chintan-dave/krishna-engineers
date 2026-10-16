@@ -5,7 +5,7 @@ import {createActionsColumn} from '@/table/columns/actionsColumn';
 import {createDateColumn} from '@/table/columns/dateColumn';
 import {createSelectColumn} from '@/table/columns/selectColumn';
 import {createStatusColumn} from '@/table/columns/statusColumn';
-import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
+import {createColumn} from '@/table/helpers/createColumn';
 import type {Setup} from '@/types/setup';
 
 const columnHelper = createColumnHelper<any, Setup>();
@@ -16,11 +16,12 @@ export const createSetupColumns = (handleDelete: (uuid: string) => void) =>
             resourceName: 'setups',
         }),
 
-        createPrimaryColumn({
+        createColumn({
             accessorKey: 'name',
             header: 'Name',
             size: 300,
             sortable: true,
+            primary: true,
         }),
 
         createStatusColumn({

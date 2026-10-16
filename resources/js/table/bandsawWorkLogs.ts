@@ -1,14 +1,10 @@
 import {createColumnHelper} from '@tanstack/vue-table';
 
 import {edit} from '@/routes/bandsaw';
-
 import {createActionsColumn} from '@/table/columns/actionsColumn';
 import {createDateColumn} from '@/table/columns/dateColumn';
 import {createSelectColumn} from '@/table/columns/selectColumn';
-
-import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
-import {createSortableColumn} from '@/table/helpers/sortableColumn';
-
+import {createColumn} from '@/table/helpers/createColumn';
 import type {BandsawWorkLog} from '@/types/bandsawWorkLog';
 
 const columnHelper = createColumnHelper<any, BandsawWorkLog>();
@@ -33,40 +29,41 @@ export const createBandsawWorkLogColumns = (
 
         ...(canManage
             ? [
-                createPrimaryColumn({
+                createColumn({
                     accessorKey: 'user.name',
                     header: 'Bandsaw',
                     size: 180,
-                    sortable: false,
+                    primary: true,
                 }),
             ]
             : []),
 
-        createPrimaryColumn({
+        createColumn({
             accessorKey: 'part.name',
             header: 'Part',
             size: 160,
-            sortable: false,
+            primary: true,
         }),
 
-        createPrimaryColumn({
+        createColumn({
             accessorKey: 'section.name',
             header: 'Section',
             size: 140,
-            sortable: false,
+            primary: true,
         }),
 
-        createPrimaryColumn({
+        createColumn({
             accessorKey: 'section_size.size',
             header: 'Section Size',
             size: 140,
-            sortable: false,
+            primary: true,
         }),
 
-        createSortableColumn({
+        createColumn({
             accessorKey: 'quantity',
             header: 'Quantity',
             size: 100,
+            sortable: true,
         }),
 
         ...(canManage

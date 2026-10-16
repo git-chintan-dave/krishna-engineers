@@ -1,5 +1,7 @@
 import {h} from 'vue';
 
+import {createColumn} from '@/table/helpers/createColumn';
+
 /*
 |--------------------------------------------------------------------------
 | Types
@@ -24,55 +26,29 @@ export const createImageColumn = <TData>({
                                              getAlt = () => 'Image',
                                              title = 'Image',
                                              size = 100,
-                                         }: ImageColumnOptions<TData>) => ({
-    id: 'image',
+                                         }: ImageColumnOptions<TData>) =>
+    createColumn<TData, string | null>({
+        id: 'image',
+        accessorFn: (row) => getImage(row),
+        header: title,
+        size,
+        cell: ({ getValue, row }) => {
+            const image = getValue();
 
-    /*
-    |--------------------------------------------------------------------------
-    | Header
-    |--------------------------------------------------------------------------
-    */
+            if (!image) {
+                return h(
+                    'span',
+                    { class: 'text-sm font-normal text-muted-foreground' },
+                    'N/A',
+                );
+            }
 
-    header: title,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Cell
-    |--------------------------------------------------------------------------
-    */
-
-    cell: ({row}: any) => {
-        const data = row.original as TData;
-        const image = getImage(data);
-
-        if (!image) {
-            return h(
-                'span',
-                {
-                    class: 'text-sm text-muted-foreground',
-                },
-                'N/A',
-            );
-        }
-
-        return h('img', {
-            src: image,
-            alt: getAlt(data),
-
-            class: ['size-10 shrink-0', 'rounded-md border', 'object-cover'],
-
-            loading: 'lazy',
-            decoding: 'async',
-        });
-    },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Width
-    |--------------------------------------------------------------------------
-    */
-
-    size,
-    minSize: size,
-    maxSize: size,
-});
+            return h('img', {
+                src: image,
+                alt: getAlt(row.original),
+                class: ['size-10 shrink-0 rounded-md border object-cover'],
+                loading: 'lazy',
+                decoding: 'async',
+            });
+        },
+    });

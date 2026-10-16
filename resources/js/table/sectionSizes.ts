@@ -4,8 +4,7 @@ import {edit} from '@/routes/section-sizes';
 import {createActionsColumn} from '@/table/columns/actionsColumn';
 import {createDateColumn} from '@/table/columns/dateColumn';
 import {createSelectColumn} from '@/table/columns/selectColumn';
-import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
-import {createSortableColumn} from '@/table/helpers/sortableColumn';
+import {createColumn} from '@/table/helpers/createColumn';
 import type {SectionSize} from '@/types/sectionSize';
 
 const columnHelper = createColumnHelper<any, SectionSize>();
@@ -18,29 +17,33 @@ export const createSectionSizeColumns = (
             resourceName: 'section-sizes',
         }),
 
-        createPrimaryColumn({
+        createColumn<SectionSize, string>({
             id: 'section',
-            accessorFn: (row: SectionSize) => row.section?.name ?? '-',
+            accessorFn: (row) => row.section?.name ?? '—',
             header: 'Section',
             size: 260,
+            primary: true,
         }),
 
-        createSortableColumn({
+        createColumn({
             accessorKey: 'size',
             header: 'Size',
             size: 180,
+            sortable: true,
         }),
 
-        createSortableColumn({
+        createColumn({
             accessorKey: 'weight',
             header: 'Weight',
             size: 160,
+            sortable: true,
         }),
 
-        createSortableColumn({
+        createColumn({
             accessorKey: 'quantity',
             header: 'Quantity',
             size: 160,
+            sortable: true,
         }),
 
         createDateColumn({

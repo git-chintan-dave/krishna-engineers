@@ -3,13 +3,11 @@ import {createColumnHelper} from '@tanstack/vue-table';
 import {edit} from '@/routes/tools';
 import {createActionsColumn} from '@/table/columns/actionsColumn';
 import {createDateColumn} from '@/table/columns/dateColumn';
+import {createImageColumn} from '@/table/columns/imageColumn';
 import {createSelectColumn} from '@/table/columns/selectColumn';
 import {createStatusColumn} from '@/table/columns/statusColumn';
-import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
-import {createSortableColumn} from '@/table/helpers/sortableColumn';
+import {createColumn} from '@/table/helpers/createColumn';
 import type {Tool} from '@/types/tool';
-import {h} from 'vue';
-import AppImageThumbnail from '@/components/common/AppImageThumbnail.vue';
 
 const columnHelper = createColumnHelper<any, Tool>();
 
@@ -19,37 +17,33 @@ export const createToolColumns = (handleDelete: (uuid: string) => void) =>
             resourceName: 'tools',
         }),
 
-        createPrimaryColumn({
+        createColumn({
             accessorKey: 'name',
             header: 'Name',
             size: 260,
             sortable: true,
+            primary: true,
         }),
 
-        createSortableColumn({
+        createColumn({
             accessorKey: 'type_label',
             header: 'Type',
             size: 160,
+            sortable: true,
         }),
 
-        createSortableColumn({
+        createColumn({
             accessorKey: 'quantity',
             header: 'Quantity',
             size: 160,
+            sortable: true,
         }),
 
-        {
-            id: 'image',
-            header: 'Image',
+        createImageColumn<Tool>({
+            getImage: (tool) => tool.image,
+            getAlt: (tool) => tool.name,
             size: 80,
-            enableSorting: false,
-            cell: ({row}) =>
-                h(AppImageThumbnail, {
-                    src: row.original.image,
-                    alt: row.original.name,
-                    size: 'sm',
-                }),
-        },
+        }),
 
         createStatusColumn({
             header: 'Status',

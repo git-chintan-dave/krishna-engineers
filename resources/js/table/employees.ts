@@ -4,8 +4,7 @@ import {edit} from '@/routes/employees';
 import {createActionsColumn} from '@/table/columns/actionsColumn';
 import {createSelectColumn} from '@/table/columns/selectColumn';
 import {createStatusColumn} from '@/table/columns/statusColumn';
-import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
-import {createSortableColumn} from '@/table/helpers/sortableColumn';
+import {createColumn} from '@/table/helpers/createColumn';
 import type {Employee} from '@/types/employee';
 
 const columnHelper = createColumnHelper<any, Employee>();
@@ -17,37 +16,42 @@ export const createEmployeeColumns = (handleDelete: (uuid: string) => void) =>
             isSelectable: (row: Employee) => row.role !== 'super_admin',
         }),
 
-        createPrimaryColumn({
+        createColumn({
             accessorKey: 'name',
             header: 'Name',
             size: 260,
             sortable: true,
+            primary: true,
         }),
 
-        createSortableColumn({
+        createColumn({
             accessorKey: 'employee_code',
             header: 'Employee Code',
             size: 160,
+            sortable: true,
         }),
 
-        createSortableColumn({
+        createColumn({
             accessorKey: 'phone_number',
             header: 'Phone',
             size: 150,
+            sortable: true,
         }),
 
-        createSortableColumn({
+        createColumn<Employee, string>({
             accessorKey: 'role',
             header: 'Role',
             size: 170,
-            cell: ({row}: any) => row.original.role_label ?? '—',
+            sortable: true,
+            cell: ({ row }) => row.original.role_label ?? '—',
         }),
 
-        createSortableColumn({
+        createColumn<Employee, string>({
             accessorKey: 'shift',
             header: 'Shift',
             size: 120,
-            cell: ({row}: any) => row.original.shift_label ?? '—',
+            sortable: true,
+            cell: ({ row }) => row.original.shift_label ?? '—',
         }),
 
         createStatusColumn({

@@ -2,13 +2,11 @@ import {createColumnHelper} from '@tanstack/vue-table';
 
 import {edit} from '@/routes/part-setups';
 import {createActionsColumn} from '@/table/columns/actionsColumn';
-import {createSelectColumn} from '@/table/columns/selectColumn';
-import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
-import {createSortableColumn} from '@/table/helpers/sortableColumn';
-import type {PartSetup} from '@/types/partSetup';
 import {createDateColumn} from '@/table/columns/dateColumn';
-import {h} from 'vue';
-import AppImageThumbnail from '@/components/common/AppImageThumbnail.vue';
+import {createImageColumn} from '@/table/columns/imageColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createColumn} from '@/table/helpers/createColumn';
+import type {PartSetup} from '@/types/partSetup';
 
 const columnHelper = createColumnHelper<any, PartSetup>();
 
@@ -24,50 +22,48 @@ export const createPartSetupColumns = (handleDelete: (uuid: string) => void) =>
             resourceName: 'part setups',
         }),
 
-        createPrimaryColumn({
+        createColumn({
             id: 'part',
             accessorFn: (row: PartSetup) => row.part?.name ?? '—',
             header: 'Part',
             size: 260,
             sortable: true,
+            primary: true,
         }),
 
-        createPrimaryColumn({
+        createColumn({
             id: 'setup',
             accessorFn: (row: PartSetup) => row.setup?.name ?? '—',
             header: 'Setup',
             size: 180,
             sortable: true,
+            primary: true,
         }),
 
-        createSortableColumn({
+        createColumn({
             accessorKey: 'machine_cycle_time_seconds',
             header: 'Machine Cycle Time',
             size: 180,
-            cell: ({row}: any) =>
+            sortable: true,
+            cell: ({ row }: { row: { original: PartSetup } }) =>
                 row.original.machine_cycle_time_formatted ?? '—',
         }),
 
-        createSortableColumn({
+        createColumn({
             accessorKey: 'actual_cycle_time_seconds',
             header: 'Actual Cycle Time',
             size: 180,
-            cell: ({row}: any) =>
+            sortable: true,
+            cell: ({ row }: { row: { original: PartSetup } }) =>
                 row.original.actual_cycle_time_formatted ?? '—',
         }),
 
-        {
-            id: 'image',
-            header: 'Image',
+        createImageColumn<PartSetup>({
+            getImage: (partSetup) => partSetup.image,
+            getAlt: (partSetup) =>
+                `${partSetup.part?.name ?? 'Part'}-${partSetup.setup?.name ?? 'Setup'}`,
             size: 80,
-            enableSorting: false,
-            cell: ({row}) =>
-                h(AppImageThumbnail, {
-                    src: row.original.image,
-                    alt: `${row.original.part.name}-${row.original.setup.name}`,
-                    size: 'sm',
-                }),
-        },
+        }),
 
         createDateColumn({
             accessorKey: 'created_at',

@@ -1,16 +1,11 @@
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { createColumnHelper } from '@tanstack/vue-table';
-
-import { edit } from '@/routes/operator';
-
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createDateColumn } from '@/table/columns/dateColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-
-import { createPrimaryColumn } from '@/table/helpers/primaryColumn';
-import { createSortableColumn } from '@/table/helpers/sortableColumn';
-
-import type { OperatorWorkLog } from '@/types/operatorWorkLog';
+import {edit} from '@/routes/operator';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createDateColumn} from '@/table/columns/dateColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createColumn} from '@/table/helpers/createColumn';
+import type {OperatorWorkLog} from '@/types/operatorWorkLog';
 
 const columnHelper = createColumnHelper<any, OperatorWorkLog>();
 
@@ -34,81 +29,80 @@ export const createOperatorWorkLogColumns = (
 
         ...(canManage
             ? [
-                createPrimaryColumn({
+                createColumn({
                     accessorKey: 'user.name',
                     header: 'Operator',
                     size: 180,
                     align: 'center',
-                    sortable: false,
+                    primary: true,
                 }),
             ]
             : []),
 
-        createPrimaryColumn({
+        createColumn({
             accessorKey: 'shift',
             header: 'Shift',
             size: 100,
             align: 'center',
-            sortable: false,
+            primary: true,
         }),
 
-        createPrimaryColumn({
+        createColumn({
             accessorKey: 'machine.name',
             header: 'Machine',
             size: 160,
             align: 'center',
-            sortable: false,
+            primary: true,
         }),
 
-        createPrimaryColumn({
+        createColumn({
             accessorKey: 'part.name',
             header: 'Part',
             size: 160,
             align: 'center',
-            sortable: false,
+            primary: true,
         }),
 
-        createPrimaryColumn({
+        createColumn({
             accessorKey: 'setup.name',
             header: 'Setup',
             size: 100,
             align: 'center',
-            sortable: false,
+            primary: true,
         }),
 
-        createSortableColumn({
+        createColumn({
             accessorKey: 'quantity',
             header: 'Quantity',
             size: 100,
             align: 'center',
+            sortable: true,
         }),
 
-        createSortableColumn({
+        createColumn({
             accessorKey: 'rejection_quantity',
             header: 'Rejected',
             size: 100,
             align: 'center',
+            sortable: true,
         }),
 
-        createSortableColumn({
+        createColumn<OperatorWorkLog, number | null>({
             accessorKey: 'production_seconds',
             header: 'Production Time',
             size: 140,
             align: 'center',
+            sortable: true,
             cell: ({ row }) =>
                 row.original.production_seconds_formatted ?? '—',
         }),
 
-        columnHelper.accessor('production_efficiency', {
+        createColumn<OperatorWorkLog, number | null>({
+            accessorKey: 'production_efficiency',
             header: 'Daily Efficiency',
-            enableSorting: false,
-            cell: ({ row, getValue }) => {
-                const current = row.original;
-                const efficiency = getValue() as number | null;
-
-                const previous = row.index > 0
-                    ? row.getParentRow?.()
-                    : undefined;
+            align: 'center',
+            cell: ({ getValue }) => {
+                const efficiency = getValue();
 
                 return efficiency == null
                     ? '—'

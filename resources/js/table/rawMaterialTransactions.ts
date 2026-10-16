@@ -4,8 +4,7 @@ import {edit} from '@/routes/raw-material-transactions';
 import {createActionsColumn} from '@/table/columns/actionsColumn';
 import {createDateColumn} from '@/table/columns/dateColumn';
 import {createSelectColumn} from '@/table/columns/selectColumn';
-import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
-import {createSortableColumn} from '@/table/helpers/sortableColumn';
+import {createColumn} from '@/table/helpers/createColumn';
 import type {RawMaterialTransaction} from '@/types/rawMaterialTransaction';
 
 const columnHelper = createColumnHelper<any, RawMaterialTransaction>();
@@ -24,35 +23,39 @@ export const createRawMaterialTransactionColumns = (
             ]
             : []),
 
-        createPrimaryColumn<RawMaterialTransaction>({
+        createColumn<RawMaterialTransaction, string>({
+            id: 'section_size',
             accessorFn: (row) =>
                 row.section_size.section
-                    ? `${row.section_size.section} - ${row.section_size.size}`
-                    : row.section_size.size,
-            id: 'section_size',
+                    ? `${row.section_size.section} - ${row.section_size.size ?? '—'}`
+                    : row.section_size.size ?? '—',
             header: 'Section Size',
             size: 240,
+            primary: true,
         }),
 
-        createSortableColumn({
+        createColumn<RawMaterialTransaction, RawMaterialTransaction['type']>({
             accessorKey: 'type',
             header: 'Type',
             size: 140,
-            cell: ({row}) => row.original.type.label,
+            sortable: true,
+            cell: ({ row }) => row.original.type.label,
         }),
 
-        createSortableColumn({
+        createColumn<RawMaterialTransaction, number>({
             accessorKey: 'quantity',
             header: 'Quantity',
             size: 120,
             align: 'center',
+            sortable: true,
         }),
 
-        createSortableColumn({
+        createColumn<RawMaterialTransaction, RawMaterialTransaction['user']>({
             accessorKey: 'user',
             header: 'User',
             size: 180,
-            cell: ({row}) => {
+            sortable: true,
+            cell: ({ row }) => {
                 const user = row.original.user;
 
                 if (!user?.name) {

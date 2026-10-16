@@ -1,14 +1,11 @@
 import {createColumnHelper} from '@tanstack/vue-table';
-import {h} from 'vue';
-
-import AppImageThumbnail from '@/components/common/AppImageThumbnail.vue';
+import {edit} from '@/routes/parts';
 import {createActionsColumn} from '@/table/columns/actionsColumn';
 import {createDateColumn} from '@/table/columns/dateColumn';
 import {createSelectColumn} from '@/table/columns/selectColumn';
 import {createStatusColumn} from '@/table/columns/statusColumn';
-import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
-import {createSortableColumn} from '@/table/helpers/sortableColumn';
-import {edit} from '@/routes/parts';
+import {createColumn} from '@/table/helpers/createColumn';
+import {createImageColumn} from "@/table/columns/imageColumn";
 import type {Part} from '@/types/part';
 
 const columnHelper = createColumnHelper<any, Part>();
@@ -19,57 +16,54 @@ export const createPartColumns = (handleDelete: (uuid: string) => void) =>
             resourceName: 'parts',
         }),
 
-        createPrimaryColumn({
+        createColumn({
             accessorKey: 'name',
             header: 'Part Name',
             size: 260,
             sortable: true,
+            primary: true,
         }),
 
-        createSortableColumn({
+        createColumn({
             accessorKey: 'new_part_name',
             header: 'New Part Name',
             size: 220,
+            sortable: true,
         }),
 
-        createSortableColumn({
+        createColumn({
             accessorKey: 'section.name',
             header: 'Section',
             size: 160,
+            sortable: true,
         }),
 
-        createSortableColumn({
+        createColumn({
             accessorKey: 'cutting_size',
             header: 'Cutting Size',
             size: 180,
+            sortable: true,
         }),
 
-        createSortableColumn({
+        createColumn({
             accessorKey: 'part_weight',
             header: 'Part Weight',
             size: 160,
+            sortable: true,
         }),
 
-        createSortableColumn({
+        createColumn({
             accessorKey: 'raw_material_weight',
             header: 'Raw Material Weight',
             size: 190,
+            sortable: true,
         }),
 
-        {
-            id: 'image',
-            header: 'Image',
+        createImageColumn<Part>({
+            getImage: (part) => part.image,
+            getAlt: (part) => part.name,
             size: 100,
-            minSize: 100,
-            enableSorting: false,
-            enableColumnFilter: false,
-            cell: ({row}) =>
-                h(AppImageThumbnail, {
-                    src: row.original.image,
-                    alt: row.original.name,
-                    size: 'sm',
-                }),
-        },
+        }),
 
         createStatusColumn({
             header: 'Status',

@@ -41,7 +41,6 @@ export const createActionsColumn = ({
                                         showMarkAsPaid,
                                     }: ActionsColumnOptions) => {
     const hasDetails = Boolean(detailsUrl);
-
     const hasMarkAsPaid = Boolean(markAsPaidUrl && handleMarkAsPaid);
 
     const columnSize =
@@ -52,37 +51,21 @@ export const createActionsColumn = ({
 
     return {
         id: 'actions',
-
         size: columnSize,
         minSize: columnSize,
         maxSize: columnSize,
 
-        /*
-        |--------------------------------------------------------------------------
-        | Cell
-        |--------------------------------------------------------------------------
-        */
-
-        cell: ({row}: any) => {
+        cell: ({ row }: any) => {
             const uuid = row.original.uuid;
-
             const name =
                 row.original.name ?? row.original.user?.name ?? 'record';
 
             const actions = [];
 
             const canEdit = showEdit?.(row.original) ?? true;
-
             const canDelete = showDelete?.(row.original) ?? true;
-
             const canMarkAsPaid =
                 hasMarkAsPaid && (showMarkAsPaid?.(row.original) ?? true);
-
-            /*
-            |--------------------------------------------------------------------------
-            | Details
-            |--------------------------------------------------------------------------
-            */
 
             if (detailsUrl) {
                 actions.push(
@@ -104,20 +87,15 @@ export const createActionsColumn = ({
                         () =>
                             h(
                                 Link,
-                                {
-                                    href: detailsUrl(uuid),
-                                },
+                                { href: detailsUrl(uuid) },
                                 () => [
                                     h(Eye, {
                                         class: 'size-3.5',
                                         'aria-hidden': 'true',
                                     }),
-
                                     h(
                                         'span',
-                                        {
-                                            class: 'sr-only',
-                                        },
+                                        { class: 'sr-only' },
                                         `View ${name}`,
                                     ),
                                 ],
@@ -125,12 +103,6 @@ export const createActionsColumn = ({
                     ),
                 );
             }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Edit
-            |--------------------------------------------------------------------------
-            */
 
             if (canEdit) {
                 actions.push(
@@ -152,20 +124,15 @@ export const createActionsColumn = ({
                         () =>
                             h(
                                 Link,
-                                {
-                                    href: editUrl(uuid),
-                                },
+                                { href: editUrl(uuid) },
                                 () => [
                                     h(Pencil, {
                                         class: 'size-3.5',
                                         'aria-hidden': 'true',
                                     }),
-
                                     h(
                                         'span',
-                                        {
-                                            class: 'sr-only',
-                                        },
+                                        { class: 'sr-only' },
                                         `Edit ${name}`,
                                     ),
                                 ],
@@ -173,12 +140,6 @@ export const createActionsColumn = ({
                     ),
                 );
             }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Mark As Paid
-            |--------------------------------------------------------------------------
-            */
 
             if (canMarkAsPaid && markAsPaidUrl && handleMarkAsPaid) {
                 actions.push(
@@ -202,12 +163,9 @@ export const createActionsColumn = ({
                                     class: 'size-3.5',
                                     'aria-hidden': 'true',
                                 }),
-
                                 h(
                                     'span',
-                                    {
-                                        class: 'sr-only',
-                                    },
+                                    { class: 'sr-only' },
                                     `Mark ${name} as paid`,
                                 ),
                             ],
@@ -217,12 +175,11 @@ export const createActionsColumn = ({
                                 vConfirm,
                                 {
                                     action: () => handleMarkAsPaid(uuid),
-
                                     options: {
                                         title: `Mark ${resourceName} as paid?`,
                                         description:
                                             `This will mark the ${resourceName} as paid. ` +
-                                            `Paid records cannot be edited.`,
+                                            'Paid records cannot be edited.',
                                         confirmText: 'Mark as Paid',
                                     },
                                 },
@@ -231,12 +188,6 @@ export const createActionsColumn = ({
                     ),
                 );
             }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Delete
-            |--------------------------------------------------------------------------
-            */
 
             if (canDelete) {
                 actions.push(
@@ -259,12 +210,9 @@ export const createActionsColumn = ({
                                     class: 'size-3.5',
                                     'aria-hidden': 'true',
                                 }),
-
                                 h(
                                     'span',
-                                    {
-                                        class: 'sr-only',
-                                    },
+                                    { class: 'sr-only' },
                                     `Delete ${name}`,
                                 ),
                             ],
@@ -274,11 +222,10 @@ export const createActionsColumn = ({
                                 vConfirm,
                                 {
                                     action: () => handleDelete(uuid),
-
                                     options: {
                                         title: `Delete ${resourceName}?`,
                                         description:
-                                            `This action cannot be undone. ` +
+                                            'This action cannot be undone. ' +
                                             `The ${resourceName} will be permanently deleted.`,
                                         confirmText: 'Delete',
                                     },
@@ -289,18 +236,12 @@ export const createActionsColumn = ({
                 );
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Actions Wrapper
-            |--------------------------------------------------------------------------
-            */
-
             return h(
                 'div',
                 {
                     class: [
                         'flex items-center justify-end',
-                        'gap-1 whitespace-nowrap',
+                        'gap-1 whitespace-nowrap text-sm',
                     ],
                 },
                 actions,

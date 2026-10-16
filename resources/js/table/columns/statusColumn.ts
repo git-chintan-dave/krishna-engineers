@@ -1,6 +1,8 @@
-import {h} from 'vue';
 
-import {Badge} from '@/components/ui/badge';
+import { h } from 'vue';
+
+import { Badge } from '@/components/ui/badge';
+import { createColumn } from '@/table/helpers/createColumn';
 
 /*
 |--------------------------------------------------------------------------
@@ -28,58 +30,28 @@ export const createStatusColumn = ({
                                        header = 'Status',
                                        size = 120,
                                        getVariant,
-                                   }: StatusColumnOptions = {}) => ({
-    accessorKey,
+                                   }: StatusColumnOptions = {}) =>
+    createColumn({
+        accessorKey,
+        header,
+        size,
+        enableSorting: false,
+        cell: ({ getValue }) => {
+            const status = (getValue() as string | null | undefined) ?? '';
 
-    /*
-    |--------------------------------------------------------------------------
-    | Header
-    |--------------------------------------------------------------------------
-    */
+            const variant = getVariant
+                ? getVariant(status)
+                : status === 'active'
+                    ? 'default'
+                    : 'secondary';
 
-    header,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Cell
-    |--------------------------------------------------------------------------
-    */
-
-    cell: ({row}: any) => {
-        const status =
-            (row.getValue(accessorKey) as string | null | undefined) ?? '';
-
-        const variant = getVariant
-            ? getVariant(status)
-            : status === 'active'
-                ? 'default'
-                : 'secondary';
-
-        return h(
-            Badge,
-            {
-                variant,
-                class: 'capitalize',
-            },
-            () => status || '—',
-        );
-    },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Width
-    |--------------------------------------------------------------------------
-    */
-
-    size,
-    minSize: size,
-    maxSize: size,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Sorting
-    |--------------------------------------------------------------------------
-    */
-
-    enableSorting: false,
-});
+            return h(
+                Badge,
+                {
+                    variant,
+                    class: 'text-sm! font-normal! capitalize',
+                },
+                () => status || '—',
+            );
+        },
+    });

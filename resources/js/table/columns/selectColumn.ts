@@ -25,23 +25,11 @@ export const createSelectColumn = <TData = any>({
                                                 }: SelectColumnOptions<TData>) => ({
     id: 'select',
 
-    /*
-    |--------------------------------------------------------------------------
-    | Width
-    |--------------------------------------------------------------------------
-    */
-
     size: 48,
     minSize: 48,
     maxSize: 48,
 
-    /*
-    |--------------------------------------------------------------------------
-    | Header
-    |--------------------------------------------------------------------------
-    */
-
-    header: ({table}: any) =>
+    header: ({ table }: any) =>
         h(Checkbox, {
             modelValue:
                 table.getIsAllPageRowsSelected() ||
@@ -52,17 +40,10 @@ export const createSelectColumn = <TData = any>({
             },
 
             ariaLabel: `Select all ${resourceName}`,
-
             class: 'cursor-pointer',
         }),
 
-    /*
-    |--------------------------------------------------------------------------
-    | Cell
-    |--------------------------------------------------------------------------
-    */
-
-    cell: ({row}: any) => {
+    cell: ({ row }: any) => {
         const selectable = isSelectable?.(row.original) ?? true;
 
         if (!selectable) {
@@ -77,24 +58,12 @@ export const createSelectColumn = <TData = any>({
             },
 
             ariaLabel: `Select ${row.original.name}`,
-
             class: 'cursor-pointer',
         });
     },
 
-    /*
-    |--------------------------------------------------------------------------
-    | Row Selection
-    |--------------------------------------------------------------------------
-    */
-
-    enableRowSelection: (row: any) => isSelectable?.(row.original) ?? true,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Sorting
-    |--------------------------------------------------------------------------
-    */
+    enableRowSelection: (row: any) =>
+        isSelectable?.(row.original) ?? true,
 
     enableSorting: false,
 });

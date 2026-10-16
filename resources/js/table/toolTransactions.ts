@@ -5,16 +5,10 @@ import {edit} from '@/routes/tool-transactions';
 import {createActionsColumn} from '@/table/columns/actionsColumn';
 import {createDateColumn} from '@/table/columns/dateColumn';
 import {createSelectColumn} from '@/table/columns/selectColumn';
-import {createSortableColumn} from '@/table/helpers/sortableColumn';
+import {createColumn} from '@/table/helpers/createColumn';
 import type {ToolTransaction, ToolTransactionType,} from '@/types/toolTransaction';
 
 const columnHelper = createColumnHelper<any, ToolTransaction>();
-
-/*
-|--------------------------------------------------------------------------
-| Type Badge
-|--------------------------------------------------------------------------
-*/
 
 const getTypeClass = (type: ToolTransactionType) => {
     switch (type) {
@@ -44,12 +38,6 @@ const getTypeClass = (type: ToolTransactionType) => {
     }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Columns
-|--------------------------------------------------------------------------
-*/
-
 export const createToolTransactionColumns = (
     handleDelete: (uuid: string) => void,
 ) =>
@@ -58,12 +46,12 @@ export const createToolTransactionColumns = (
             resourceName: 'tool transactions',
         }),
 
-        createSortableColumn({
+        createColumn<ToolTransaction, string>({
             accessorKey: 'tool.name',
             header: 'Tool',
             size: 240,
-
-            cell: ({row}) => {
+            sortable: true,
+            cell: ({ row }) => {
                 const value = row.original.tool?.name ?? '—';
 
                 return h(
@@ -77,12 +65,12 @@ export const createToolTransactionColumns = (
             },
         }),
 
-        createSortableColumn({
+        createColumn<ToolTransaction, string>({
             accessorKey: 'type',
             header: 'Type',
             size: 140,
-
-            cell: ({row}) => {
+            sortable: true,
+            cell: ({ row }) => {
                 const type = row.original.type?.value as
                     | ToolTransactionType
                     | undefined;
@@ -106,12 +94,12 @@ export const createToolTransactionColumns = (
             },
         }),
 
-        createSortableColumn({
+        createColumn<ToolTransaction, number>({
             accessorKey: 'quantity',
             header: 'Quantity',
             size: 100,
-
-            cell: ({row}) => {
+            sortable: true,
+            cell: ({ row }) => {
                 const quantity = row.original.quantity;
 
                 return h(
@@ -127,12 +115,12 @@ export const createToolTransactionColumns = (
             },
         }),
 
-        createSortableColumn({
+        createColumn<ToolTransaction, string>({
             accessorKey: 'from_user.name',
             header: 'From User',
             size: 180,
-
-            cell: ({row}) => {
+            sortable: true,
+            cell: ({ row }) => {
                 const user = row.original.from_user;
 
                 if (!user?.name) {
@@ -143,23 +131,16 @@ export const createToolTransactionColumns = (
                     ? `${user.name} (${user.employee_code})`
                     : user.name;
 
-                return h(
-                    'div',
-                    {
-                        class: 'truncate',
-                        title: value,
-                    },
-                    value,
-                );
+                return h('div', { class: 'truncate', title: value }, value);
             },
         }),
 
-        createSortableColumn({
+        createColumn<ToolTransaction, string>({
             accessorKey: 'to_user.name',
             header: 'To User',
             size: 180,
-
-            cell: ({row}) => {
+            sortable: true,
+            cell: ({ row }) => {
                 const user = row.original.to_user;
 
                 if (!user?.name) {
@@ -170,23 +151,16 @@ export const createToolTransactionColumns = (
                     ? `${user.name} (${user.employee_code})`
                     : user.name;
 
-                return h(
-                    'div',
-                    {
-                        class: 'truncate',
-                        title: value,
-                    },
-                    value,
-                );
+                return h('div', { class: 'truncate', title: value }, value);
             },
         }),
 
-        createSortableColumn({
+        createColumn<ToolTransaction, string>({
             accessorKey: 'part.reference_name',
             header: 'Part',
             size: 200,
-
-            cell: ({row}) => {
+            sortable: true,
+            cell: ({ row }) => {
                 const part = row.original.part;
 
                 if (!part?.name) {
@@ -197,31 +171,24 @@ export const createToolTransactionColumns = (
                     ? `${part.name} (${part.new_part_name})`
                     : part.name;
 
-                return h(
-                    'div',
-                    {
-                        class: 'truncate',
-                        title: value,
-                    },
-                    value,
-                );
+                return h('div', { class: 'truncate', title: value }, value);
             },
         }),
 
-        createSortableColumn({
+        createColumn<ToolTransaction, string>({
             accessorKey: 'setup.name',
             header: 'Setup',
             size: 130,
-
-            cell: ({row}) => row.original.setup?.name ?? '—',
+            sortable: true,
+            cell: ({ row }) => row.original.setup?.name ?? '—',
         }),
 
-        createSortableColumn({
+        createColumn<ToolTransaction, boolean | null>({
             accessorKey: 'return_scrap',
             header: 'Return / Scrap',
             size: 130,
-
-            cell: ({row}) => {
+            sortable: true,
+            cell: ({ row }) => {
                 const value = row.original.return_scrap;
 
                 if (value === null || value === undefined) {
@@ -232,12 +199,12 @@ export const createToolTransactionColumns = (
             },
         }),
 
-        createSortableColumn({
+        createColumn<ToolTransaction, string>({
             accessorKey: 'created_by.name',
             header: 'Created By',
             size: 180,
-
-            cell: ({row}) => {
+            sortable: true,
+            cell: ({ row }) => {
                 const user = row.original.created_by;
 
                 if (!user?.name) {
@@ -248,23 +215,16 @@ export const createToolTransactionColumns = (
                     ? `${user.name} (${user.employee_code})`
                     : user.name;
 
-                return h(
-                    'div',
-                    {
-                        class: 'truncate',
-                        title: value,
-                    },
-                    value,
-                );
+                return h('div', { class: 'truncate', title: value }, value);
             },
         }),
 
-        createSortableColumn({
+        createColumn<ToolTransaction, string | null>({
             accessorKey: 'remarks',
             header: 'Remarks',
             size: 240,
-
-            cell: ({row}) => {
+            sortable: true,
+            cell: ({ row }) => {
                 const value = row.original.remarks ?? '—';
 
                 return h(
