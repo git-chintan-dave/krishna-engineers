@@ -39,12 +39,9 @@ class OperatorWorkLogController extends Controller
         $isOperator = $user->role === UserRole::OPERATOR;
 
         $query = $this->withDailyProductionMetrics(
-            OperatorWorkLog::query()->with([
-                'user',
-                'machine',
-                'part',
-                'setup',
-            ]),
+            OperatorWorkLog::query()
+                ->select('operator_work_logs.*')
+                ->with(['user', 'machine', 'part', 'setup']),
         );
 
         $operatorWorkLogs = $this->applyIndexFilters(
@@ -114,8 +111,7 @@ class OperatorWorkLogController extends Controller
     }
 
     /**
-     * Add aggregated production time and attendance time for each
-     * operator and work date without executing a query per result row.
+     * Add daily production and attendance metrics for each work log.
      *
      * @param Builder<OperatorWorkLog> $query
      * @return Builder<OperatorWorkLog>
@@ -257,15 +253,10 @@ class OperatorWorkLogController extends Controller
         Gate::authorize('update', $operator);
 
         $operator = $this->withDailyProductionMetrics(
-            OperatorWorkLog::query(),
+            OperatorWorkLog::query()
+                ->select('operator_work_logs.*')
+                ->with(['user', 'machine', 'part', 'setup', 'partSetup']),
         )
-            ->with([
-                'user',
-                'machine',
-                'part',
-                'setup',
-                'partSetup',
-            ])
             ->whereKey($operator->getKey())
             ->firstOrFail();
 
@@ -298,7 +289,7 @@ class OperatorWorkLogController extends Controller
     }
 
     /**
-     * A Part Setup must belong to the selected Part and Setup.
+     * Resolve a part setup belonging to the selected part and setup.
      *
      * @throws ValidationException
      */

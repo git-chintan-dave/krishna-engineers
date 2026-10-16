@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\OperatorWorkLog;
+use App\Services\OperatorProductionEfficiencyService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,15 +15,15 @@ class OperatorWorkLogResource extends JsonResource
     public function toArray(Request $request): array
     {
         $dailyProductionSeconds = (int) ($this->daily_production_seconds ?? 0);
+
         $effectiveWorkingSeconds = $this->effective_working_seconds !== null
             ? (int) $this->effective_working_seconds
             : null;
 
         $productionEfficiency = $effectiveWorkingSeconds !== null
-        && $effectiveWorkingSeconds > 0
-            ? round(
-                ($dailyProductionSeconds / $effectiveWorkingSeconds) * 100,
-                2,
+            ? app(OperatorProductionEfficiencyService::class)->calculate(
+                $dailyProductionSeconds,
+                $effectiveWorkingSeconds,
             )
             : null;
 

@@ -14,19 +14,77 @@ import {computed, ref} from 'vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
 import {Button} from '@/components/ui/button';
-import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+
 import {dashboardPage} from '@/config/dashboard';
 import {dashboard} from '@/routes';
-import type {
-    DashboardActivity,
-    DashboardAttendanceSummary,
-    DashboardInventoryAttention,
-    DashboardMachinePerformance,
-    DashboardOperatorPerformance,
-    DashboardProductionTrend,
-    DashboardQuickAction,
-    DashboardStat,
-} from '@/types/dashboard';
+
+type DashboardStat = {
+    label: string;
+    value: string;
+    description: string;
+};
+
+type DashboardQuickAction = {
+    label: string;
+    description: string;
+    href: string;
+    icon: string;
+};
+
+type DashboardProductionTrend = {
+    date: string;
+    label: string;
+    productionQuantity: number;
+    rejectionQuantity: number;
+};
+
+type DashboardMachinePerformance = {
+    id: number;
+    referenceName: string;
+    name: string;
+    parts: number;
+    quantity: number;
+    productionTime: string;
+};
+
+type DashboardAttendanceSummary = {
+    label: string;
+    value: number;
+};
+
+type DashboardOperatorPerformance = {
+    id: number;
+    name: string;
+    quantity: number;
+    rejectionQuantity: number;
+    productionTime: string;
+    effectiveWorkingSeconds: number | null;
+    efficiency: number | null;
+};
+
+type DashboardActivity = {
+    id: number;
+    description: string;
+    time: string;
+    type: string;
+};
+
+const props = defineProps<{
+    role: string;
+    stats: DashboardStat[];
+    quickActions: DashboardQuickAction[];
+    productionTrend: DashboardProductionTrend[];
+    machinePerformance: DashboardMachinePerformance[];
+    attendanceSummary: DashboardAttendanceSummary[];
+    operatorPerformance: DashboardOperatorPerformance[];
+    recentActivity: DashboardActivity[];
+}>();
 
 defineOptions({
     layout: {
@@ -39,308 +97,41 @@ defineOptions({
     },
 });
 
-// Data
-
-const dashboardStats: DashboardStat[] = [
-    {
-        label: 'Operators Present',
-        value: '18',
-        change: '+2',
-        trend: 'up',
-        description: 'vs yesterday',
-    },
-    {
-        label: 'Machines Active',
-        value: '5',
-        change: '+1',
-        trend: 'up',
-        description: 'vs yesterday',
-    },
-    {
-        label: 'Production Quantity',
-        value: '1,248',
-        change: '+8.4%',
-        trend: 'up',
-        description: 'vs yesterday',
-    },
-    {
-        label: 'Rejected Quantity',
-        value: '12',
-        change: '-14.3%',
-        trend: 'down',
-        description: 'vs yesterday',
-    },
-    {
-        label: 'Bandsaw Quantity',
-        value: '340',
-        change: '+5.6%',
-        trend: 'up',
-        description: 'vs yesterday',
-    },
-    {
-        label: 'Production Time',
-        value: '42:18:30',
-        change: '+6.2%',
-        trend: 'up',
-        description: 'vs yesterday',
-    },
-];
-
-const dashboardQuickActions: DashboardQuickAction[] = [
-    {
-        label: 'Operator Work Log',
-        description: 'Record operator production',
-        href: '/work-logs/operator/create',
-        icon: 'ClipboardList',
-    },
-    {
-        label: 'Bandsaw Work Log',
-        description: 'Record bandsaw production',
-        href: '/work-logs/bandsaw/create',
-        icon: 'Scissors',
-    },
-    {
-        label: 'Add Purchase',
-        description: 'Record material purchase',
-        href: '#',
-        icon: 'PackagePlus',
-    },
-    {
-        label: 'Issue Tool',
-        description: 'Issue a tool to staff',
-        href: '#',
-        icon: 'Wrench',
-    },
-];
-
-const dashboardProductionTrend: DashboardProductionTrend[] = [
-    {
-        date: 'Sep 22',
-        productionQuantity: 980,
-        rejectionQuantity: 18,
-    },
-    {
-        date: 'Sep 23',
-        productionQuantity: 1120,
-        rejectionQuantity: 14,
-    },
-    {
-        date: 'Sep 24',
-        productionQuantity: 1050,
-        rejectionQuantity: 16,
-    },
-    {
-        date: 'Sep 25',
-        productionQuantity: 1185,
-        rejectionQuantity: 11,
-    },
-    {
-        date: 'Sep 26',
-        productionQuantity: 1090,
-        rejectionQuantity: 15,
-    },
-    {
-        date: 'Sep 27',
-        productionQuantity: 1155,
-        rejectionQuantity: 14,
-    },
-    {
-        date: 'Sep 28',
-        productionQuantity: 1248,
-        rejectionQuantity: 12,
-    },
-];
-
-const dashboardMachinePerformance: DashboardMachinePerformance[] = [
-    {
-        id: 1,
-        referenceName: 'M-001',
-        name: 'CNC Turning Machine',
-        operator: 'Operator One',
-        parts: 3,
-        quantity: 320,
-        productionTime: '06:12:30',
-    },
-    {
-        id: 2,
-        referenceName: 'M-002',
-        name: 'CNC Milling Machine',
-        operator: 'Operator Two',
-        parts: 2,
-        quantity: 285,
-        productionTime: '05:48:20',
-    },
-    {
-        id: 3,
-        referenceName: 'M-003',
-        name: 'CNC Lathe Machine',
-        operator: 'Operator Three',
-        parts: 4,
-        quantity: 246,
-        productionTime: '04:52:15',
-    },
-    {
-        id: 4,
-        referenceName: 'M-004',
-        name: 'CNC Machining Center',
-        operator: 'Operator Four',
-        parts: 2,
-        quantity: 218,
-        productionTime: '03:45:40',
-    },
-    {
-        id: 5,
-        referenceName: 'M-005',
-        name: 'CNC Production Machine',
-        operator: 'Operator Five',
-        parts: 3,
-        quantity: 179,
-        productionTime: '03:21:10',
-    },
-];
-
-const dashboardAttendanceSummary: DashboardAttendanceSummary[] = [
-    {
-        label: 'Present',
-        value: 18,
-    },
-    {
-        label: 'Working',
-        value: 14,
-    },
-    {
-        label: 'On Break',
-        value: 2,
-    },
-    {
-        label: 'Logged Out',
-        value: 2,
-    },
-    {
-        label: 'Absent',
-        value: 3,
-    },
-];
-
-const dashboardOperatorPerformance: DashboardOperatorPerformance[] = [
-    {
-        id: 1,
-        name: 'Operator One',
-        quantity: 320,
-        rejectionQuantity: 4,
-        productionTime: '06:12:30',
-        efficiency: 91.4,
-    },
-    {
-        id: 2,
-        name: 'Operator Two',
-        quantity: 285,
-        rejectionQuantity: 2,
-        productionTime: '05:48:20',
-        efficiency: 87.2,
-    },
-    {
-        id: 3,
-        name: 'Operator Three',
-        quantity: 246,
-        rejectionQuantity: 3,
-        productionTime: '04:52:15',
-        efficiency: 84.8,
-    },
-    {
-        id: 4,
-        name: 'Operator Four',
-        quantity: 218,
-        rejectionQuantity: 1,
-        productionTime: '03:45:40',
-        efficiency: 89.6,
-    },
-    {
-        id: 5,
-        name: 'Operator Five',
-        quantity: 179,
-        rejectionQuantity: 2,
-        productionTime: '03:21:10',
-        efficiency: 82.3,
-    },
-];
-
-const dashboardInventoryAttention: DashboardInventoryAttention[] = [
-    {
-        id: 1,
-        type: 'low_stock',
-        title: 'Section 12000 - 127*21',
-        description: 'Only 3 sheets remaining in stock.',
-    },
-    {
-        id: 2,
-        type: 'tool_custody',
-        title: 'Tools with operators',
-        description: '2 tools are currently assigned to operators.',
-    },
-    {
-        id: 3,
-        type: 'pending_return',
-        title: 'Tool return pending',
-        description: '1 tool is currently with a supervisor.',
-    },
-];
-
-const dashboardRecentActivity: DashboardActivity[] = [
-    {
-        id: 1,
-        description: 'Operator One recorded 25 × 2I-2003 on M-001.',
-        time: '10:42 AM',
-        type: 'operator_work_log',
-    },
-    {
-        id: 2,
-        description: 'Bandsaw Operator recorded 10 × 2I-2003.',
-        time: '10:21 AM',
-        type: 'bandsaw_work_log',
-    },
-    {
-        id: 3,
-        description: 'End Mill #END-004 was issued to Operator Two.',
-        time: '9:55 AM',
-        type: 'tool',
-    },
-    {
-        id: 4,
-        description: 'Operator Three resumed work after break.',
-        time: '9:30 AM',
-        type: 'attendance',
-    },
-    {
-        id: 5,
-        description:
-            '5 sheets of Section 12000 - 127*25 were added to inventory.',
-        time: '9:12 AM',
-        type: 'inventory',
-    },
-];
-
-// State
-
 const selectedPeriod = ref('7');
-
 const periodOptions = dashboardPage.productionTrendPeriods;
 
-// Icons
+const isSuperAdmin = computed(() => props.role === 'super_admin');
+const isSupervisor = computed(() => props.role === 'supervisor');
+const isOperator = computed(() => props.role === 'operator');
 
-const statIcons = [Users, Wrench, ClipboardList, ArrowDown, Scissors, Clock3];
+const canViewOperations = computed(
+    () => isSuperAdmin.value || isSupervisor.value,
+);
 
-const quickActionIcons: Record<string, typeof ClipboardList> = {
-    ClipboardList,
-    Scissors,
-    PackagePlus,
-    Wrench,
-};
+const showProductionTrend = computed(
+    () => props.role !== 'bandsaw' && props.productionTrend.length > 0,
+);
 
-// Computed
+const productionTrend = computed(() =>
+    props.productionTrend.slice(-Number(selectedPeriod.value)),
+);
+
+const maxProductionQuantity = computed(() =>
+    Math.max(
+        1,
+        ...productionTrend.value.map((item) => item.productionQuantity),
+    ),
+);
+
+const maxRejectionQuantity = computed(() =>
+    Math.max(
+        1,
+        ...productionTrend.value.map((item) => item.rejectionQuantity),
+    ),
+);
 
 const attendanceItems = computed(() =>
-    dashboardAttendanceSummary.map((item) => ({
+    props.attendanceSummary.map((item) => ({
         ...item,
         label:
             dashboardPage.attendanceStatuses[
@@ -349,65 +140,94 @@ const attendanceItems = computed(() =>
     })),
 );
 
-const productionTrend = computed(() => {
-    if (selectedPeriod.value === '30') {
-        return dashboardProductionTrend;
-    }
+const statIcons: Record<string, typeof ClipboardList> = {
+    'Operators Present': Users,
+    'Operators Absent': Users,
+    'Machines Used': Wrench,
+    'Production Quantity': ClipboardList,
+    'Rejected Quantity': ArrowDown,
+    'Production Time': Clock3,
+    'Work Logs': ClipboardList,
+    'Effective Hours': Clock3,
+    Attendance: Users,
+};
 
-    return dashboardProductionTrend.slice(-7);
-});
-
-// Helpers
+const quickActionIcons: Record<string, typeof ClipboardList> = {
+    ClipboardList,
+    Scissors,
+    PackagePlus,
+    Wrench,
+};
 
 const getActivityIcon = (type: string) => {
     switch (type) {
         case 'operator_work_log':
             return ClipboardList;
-
         case 'bandsaw_work_log':
             return Scissors;
-
-        case 'tool':
-            return Wrench;
-
         case 'attendance':
             return Clock3;
-
+        case 'tool':
+            return Wrench;
         default:
             return PackagePlus;
     }
 };
+
+const formatNumber = (value: number): string =>
+    new Intl.NumberFormat().format(value);
+
+const getProductionHeight = (quantity: number): string =>
+    `${Math.max((quantity / maxProductionQuantity.value) * 190, 4)}px`;
+
+const getRejectionHeight = (quantity: number): string =>
+    `${Math.max((quantity / maxRejectionQuantity.value) * 70, 4)}px`;
 </script>
 
 <template>
     <div class="w-full space-y-6 p-4 md:p-6">
         <!-- Header -->
-        <div
-            class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
-        >
-            <div class="space-y-1">
-                <h1 class="text-2xl font-semibold tracking-tight">
-                    {{ dashboardPage.greeting }}
-                </h1>
+        <section class="space-y-1">
+            <h1 class="text-2xl font-semibold tracking-tight">
+                {{ dashboardPage.greeting }}
+            </h1>
 
-                <p class="text-sm text-muted-foreground">
-                    {{ dashboardPage.description }}
-                </p>
-            </div>
-        </div>
+            <p class="text-sm text-muted-foreground">
+                {{ dashboardPage.description }}
+            </p>
+
+            <p
+                v-if="isSuperAdmin"
+                class="text-xs font-medium text-muted-foreground"
+            >
+                Full production and workforce overview
+            </p>
+
+            <p
+                v-else-if="isSupervisor"
+                class="text-xs font-medium text-muted-foreground"
+            >
+                Production and workforce monitoring
+            </p>
+
+            <p
+                v-else-if="isOperator"
+                class="text-xs font-medium text-muted-foreground"
+            >
+                Your production and attendance overview
+            </p>
+        </section>
 
         <!-- Quick Actions -->
-        <section class="space-y-4">
-            <div>
-                <h2 class="text-base font-semibold">
-                    {{ dashboardPage.quickActionsTitle }}
-                </h2>
-            </div>
+        <section v-if="quickActions.length" class="space-y-4">
+            <h2 class="text-base font-semibold">
+                {{ dashboardPage.quickActionsTitle }}
+            </h2>
 
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <Button
-                    v-for="action in dashboardQuickActions"
-                    :key="action.label"
+                    v-for="action in quickActions"
+                    :key="action.href"
                     as-child
                     class="h-auto justify-start gap-3 px-4 py-3 text-left"
                     variant="outline"
@@ -417,7 +237,7 @@ const getActivityIcon = (type: string) => {
                             class="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted"
                         >
                             <component
-                                :is="quickActionIcons[action.icon]"
+                                :is="quickActionIcons[action.icon] ?? ClipboardList"
                                 class="size-4"
                             />
                         </span>
@@ -439,25 +259,21 @@ const getActivityIcon = (type: string) => {
         </section>
 
         <!-- Overview -->
-        <section class="space-y-4">
-            <div>
-                <h2 class="text-base font-semibold">
-                    {{ dashboardPage.overviewTitle }}
-                </h2>
-            </div>
+        <section v-if="stats.length" class="space-y-4">
+            <h2 class="text-base font-semibold">
+                {{ dashboardPage.overviewTitle }}
+            </h2>
 
             <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                <Card v-for="(stat, index) in dashboardStats" :key="stat.label">
+                <Card v-for="stat in stats" :key="stat.label">
                     <CardContent class="p-5">
                         <div class="flex items-start justify-between gap-4">
-                            <div class="space-y-2">
+                            <div class="min-w-0 space-y-2">
                                 <p class="text-sm text-muted-foreground">
                                     {{ stat.label }}
                                 </p>
 
-                                <p
-                                    class="text-2xl font-semibold tracking-tight"
-                                >
+                                <p class="break-words text-2xl font-semibold tracking-tight">
                                     {{ stat.value }}
                                 </p>
                             </div>
@@ -466,47 +282,22 @@ const getActivityIcon = (type: string) => {
                                 class="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted"
                             >
                                 <component
-                                    :is="statIcons[index]"
+                                    :is="statIcons[stat.label] ?? ClipboardList"
                                     class="size-4 text-muted-foreground"
                                 />
                             </div>
                         </div>
 
-                        <div class="mt-4 flex items-center gap-1.5 text-xs">
-                            <span
-                                :class="
-                                    stat.trend === 'up'
-                                        ? 'text-emerald-600 dark:text-emerald-400'
-                                        : stat.trend === 'down'
-                                          ? 'text-rose-600 dark:text-rose-400'
-                                          : 'text-muted-foreground'
-                                "
-                                class="inline-flex items-center gap-0.5 font-medium"
-                            >
-                                <ArrowUp
-                                    v-if="stat.trend === 'up'"
-                                    class="size-3"
-                                />
-
-                                <ArrowDown
-                                    v-else-if="stat.trend === 'down'"
-                                    class="size-3"
-                                />
-
-                                {{ stat.change }}
-                            </span>
-
-                            <span class="text-muted-foreground">
-                                {{ stat.description }}
-                            </span>
-                        </div>
+                        <p class="mt-4 text-xs text-muted-foreground">
+                            {{ stat.description }}
+                        </p>
                     </CardContent>
                 </Card>
             </div>
         </section>
 
         <!-- Production Trend -->
-        <section>
+        <section v-if="showProductionTrend">
             <Card>
                 <CardHeader
                     class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
@@ -530,55 +321,66 @@ const getActivityIcon = (type: string) => {
 
                 <CardContent>
                     <div
-                        class="flex h-72 items-end gap-2 overflow-x-auto border-b border-l px-4 pt-8 pb-0"
+                        v-if="productionTrend.length"
+                        class="flex h-72 items-end gap-3 overflow-x-auto border-b border-l px-4 pt-8 pb-0"
                     >
                         <div
                             v-for="item in productionTrend"
                             :key="item.date"
-                            class="flex min-w-20 flex-1 items-end gap-1"
+                            class="flex min-w-10 flex-1 items-end gap-1"
                         >
                             <div
-                                class="flex flex-1 flex-col items-center gap-2"
+                                class="flex flex-1 flex-col items-center justify-end gap-2"
                             >
                                 <div
                                     :style="{
-                                        height: `${Math.max(
-                                            (item.productionQuantity / 1300) *
-                                                210,
-                                            12,
-                                        )}px`,
+                                        height: getProductionHeight(
+                                            item.productionQuantity,
+                                        ),
                                     }"
-                                    :title="`Production: ${item.productionQuantity}`"
+                                    :title="`Production: ${formatNumber(item.productionQuantity)}`"
                                     class="w-full rounded-t-md bg-primary/80"
                                 />
 
-                                <span class="text-xs text-muted-foreground">
-                                    {{ item.date }}
+                                <span
+                                    class="whitespace-nowrap text-[10px] text-muted-foreground"
+                                >
+                                    {{ item.label }}
                                 </span>
                             </div>
 
                             <div
-                                class="flex flex-1 flex-col items-center gap-2"
+                                class="flex flex-1 flex-col items-center justify-end gap-2"
                             >
                                 <div
                                     :style="{
-                                        height: `${Math.max(
-                                            (item.rejectionQuantity / 20) * 210,
-                                            8,
-                                        )}px`,
+                                        height: getRejectionHeight(
+                                            item.rejectionQuantity,
+                                        ),
                                     }"
-                                    :title="`Rejected: ${item.rejectionQuantity}`"
+                                    :title="`Rejected: ${formatNumber(item.rejectionQuantity)}`"
                                     class="w-full rounded-t-md bg-muted-foreground/40"
                                 />
+
+                                <span class="text-[10px] text-transparent">
+                                    {{ item.label }}
+                                </span>
                             </div>
                         </div>
                     </div>
 
+                    <p
+                        v-else
+                        class="py-12 text-center text-sm text-muted-foreground"
+                    >
+                        No production data available for this period.
+                    </p>
+
                     <div
-                        class="mt-4 flex items-center justify-center gap-6 text-xs text-muted-foreground"
+                        class="mt-4 flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground"
                     >
                         <div class="flex items-center gap-2">
-                            <span class="size-2.5 rounded-full bg-primary"/>
+                            <span class="size-2.5 rounded-full bg-primary" />
                             Production
                         </div>
 
@@ -593,48 +395,35 @@ const getActivityIcon = (type: string) => {
             </Card>
         </section>
 
-        <!-- Machine + Attendance -->
+        <!-- Machine Performance + Attendance -->
         <section
-            class="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,1fr)]"
+            v-if="canViewOperations"
+            class="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(280px,1fr)]"
         >
             <!-- Machine Performance -->
             <Card>
-                <CardHeader
-                    class="flex flex-row items-start justify-between gap-4"
-                >
-                    <div class="space-y-1">
-                        <CardTitle>
-                            {{ dashboardPage.machinePerformanceTitle }}
-                        </CardTitle>
+                <CardHeader>
+                    <CardTitle>
+                        {{ dashboardPage.machinePerformanceTitle }}
+                    </CardTitle>
 
-                        <p class="text-sm text-muted-foreground">
-                            {{ dashboardPage.machinePerformanceDescription }}
-                        </p>
-                    </div>
-
-                    <Button class="shrink-0" size="sm" variant="ghost">
-                        {{ dashboardPage.machineViewAllLabel }}
-                        <ArrowUpRight class="ml-1 size-4"/>
-                    </Button>
+                    <p class="text-sm text-muted-foreground">
+                        {{ dashboardPage.machinePerformanceDescription }}
+                    </p>
                 </CardHeader>
 
                 <CardContent>
-                    <div class="overflow-x-auto">
-                        <table class="w-full min-w-[620px] text-sm">
+                    <div
+                        v-if="machinePerformance.length"
+                        class="overflow-x-auto"
+                    >
+                        <table class="w-full min-w-[520px] text-sm">
                             <thead>
                             <tr
                                 class="border-b text-left text-xs text-muted-foreground"
                             >
                                 <th class="pb-3 font-medium">
-                                    {{
-                                        dashboardPage.table.machine.machine
-                                    }}
-                                </th>
-
-                                <th class="pb-3 font-medium">
-                                    {{
-                                        dashboardPage.table.machine.operator
-                                    }}
+                                    {{ dashboardPage.table.machine.machine }}
                                 </th>
 
                                 <th class="pb-3 text-right font-medium">
@@ -642,42 +431,31 @@ const getActivityIcon = (type: string) => {
                                 </th>
 
                                 <th class="pb-3 text-right font-medium">
-                                    {{
-                                        dashboardPage.table.machine.quantity
-                                    }}
+                                    {{ dashboardPage.table.machine.quantity }}
                                 </th>
 
                                 <th class="pb-3 text-right font-medium">
-                                    {{
-                                        dashboardPage.table.machine
-                                            .productionTime
-                                    }}
+                                    {{ dashboardPage.table.machine.productionTime }}
                                 </th>
                             </tr>
                             </thead>
 
                             <tbody>
                             <tr
-                                v-for="machine in dashboardMachinePerformance"
+                                v-for="machine in machinePerformance"
                                 :key="machine.id"
                                 class="border-b last:border-0"
                             >
                                 <td class="py-3">
-                                    <div>
-                                        <p class="font-medium">
-                                            {{ machine.referenceName }}
-                                        </p>
+                                    <p class="font-medium">
+                                        {{ machine.referenceName }}
+                                    </p>
 
-                                        <p
-                                            class="max-w-48 truncate text-xs text-muted-foreground"
-                                        >
-                                            {{ machine.name }}
-                                        </p>
-                                    </div>
-                                </td>
-
-                                <td class="py-3 text-muted-foreground">
-                                    {{ machine.operator }}
+                                    <p
+                                        class="max-w-48 truncate text-xs text-muted-foreground"
+                                    >
+                                        {{ machine.name }}
+                                    </p>
                                 </td>
 
                                 <td class="py-3 text-right tabular-nums">
@@ -687,7 +465,7 @@ const getActivityIcon = (type: string) => {
                                 <td
                                     class="py-3 text-right font-medium tabular-nums"
                                 >
-                                    {{ machine.quantity }}
+                                    {{ formatNumber(machine.quantity) }}
                                 </td>
 
                                 <td class="py-3 text-right tabular-nums">
@@ -697,104 +475,110 @@ const getActivityIcon = (type: string) => {
                             </tbody>
                         </table>
                     </div>
+
+                    <p
+                        v-else
+                        class="py-10 text-center text-sm text-muted-foreground"
+                    >
+                        No machine production recorded today.
+                    </p>
                 </CardContent>
             </Card>
 
             <!-- Attendance -->
             <Card>
-                <CardHeader
-                    class="flex flex-row items-start justify-between gap-4"
-                >
+                <CardHeader>
                     <CardTitle>
                         {{ dashboardPage.attendanceTitle }}
                     </CardTitle>
-
-                    <Button class="shrink-0" size="sm" variant="ghost">
-                        {{ dashboardPage.attendanceViewAllLabel }}
-                        <ArrowUpRight class="ml-1 size-4"/>
-                    </Button>
                 </CardHeader>
 
                 <CardContent>
-                    <div class="space-y-4">
+                    <div
+                        v-if="attendanceItems.length"
+                        class="space-y-4"
+                    >
                         <div
                             v-for="item in attendanceItems"
                             :key="item.label"
-                            class="flex items-center justify-between"
+                            class="flex items-center justify-between gap-4"
                         >
                             <span class="text-sm text-muted-foreground">
                                 {{ item.label }}
                             </span>
 
                             <span class="text-sm font-semibold tabular-nums">
-                                {{ item.value }}
+                                {{ formatNumber(item.value) }}
                             </span>
                         </div>
                     </div>
+
+                    <p
+                        v-else
+                        class="py-8 text-center text-sm text-muted-foreground"
+                    >
+                        No attendance data available today.
+                    </p>
                 </CardContent>
             </Card>
         </section>
 
         <!-- Operator Performance -->
-        <section>
+        <section v-if="canViewOperations || isOperator">
             <Card>
                 <CardHeader>
                     <CardTitle>
-                        {{ dashboardPage.operatorPerformanceTitle }}
+                        {{
+                            isOperator
+                                ? 'My Production Today'
+                                : dashboardPage.operatorPerformanceTitle
+                        }}
                     </CardTitle>
 
                     <p class="text-sm text-muted-foreground">
-                        {{ dashboardPage.operatorPerformanceDescription }}
+                        {{
+                            isOperator
+                                ? 'Your recorded production and calculated efficiency.'
+                                : dashboardPage.operatorPerformanceDescription
+                        }}
                     </p>
                 </CardHeader>
 
                 <CardContent>
-                    <div class="overflow-x-auto">
-                        <table class="w-full min-w-[720px] text-sm">
+                    <div
+                        v-if="operatorPerformance.length"
+                        class="overflow-x-auto"
+                    >
+                        <table class="w-full min-w-[680px] text-sm">
                             <thead>
                             <tr
                                 class="border-b text-left text-xs text-muted-foreground"
                             >
                                 <th class="pb-3 font-medium">
-                                    {{
-                                        dashboardPage.table.operator
-                                            .operator
-                                    }}
+                                    {{ dashboardPage.table.operator.operator }}
                                 </th>
 
                                 <th class="pb-3 text-right font-medium">
-                                    {{
-                                        dashboardPage.table.operator
-                                            .quantity
-                                    }}
+                                    {{ dashboardPage.table.operator.quantity }}
                                 </th>
 
                                 <th class="pb-3 text-right font-medium">
-                                    {{
-                                        dashboardPage.table.operator
-                                            .rejected
-                                    }}
+                                    {{ dashboardPage.table.operator.rejected }}
                                 </th>
 
                                 <th class="pb-3 text-right font-medium">
-                                    {{
-                                        dashboardPage.table.operator
-                                            .productionTime
-                                    }}
+                                    {{ dashboardPage.table.operator.productionTime }}
                                 </th>
 
                                 <th class="pb-3 text-right font-medium">
-                                    {{
-                                        dashboardPage.table.operator
-                                            .efficiency
-                                    }}
+                                    {{ dashboardPage.table.operator.efficiency }}
                                 </th>
                             </tr>
                             </thead>
 
                             <tbody>
                             <tr
-                                v-for="operator in dashboardOperatorPerformance"
+                                v-for="operator in operatorPerformance"
                                 :key="operator.id"
                                 class="border-b last:border-0"
                             >
@@ -803,11 +587,11 @@ const getActivityIcon = (type: string) => {
                                 </td>
 
                                 <td class="py-3 text-right tabular-nums">
-                                    {{ operator.quantity }}
+                                    {{ formatNumber(operator.quantity) }}
                                 </td>
 
                                 <td class="py-3 text-right tabular-nums">
-                                    {{ operator.rejectionQuantity }}
+                                    {{ formatNumber(operator.rejectionQuantity) }}
                                 </td>
 
                                 <td class="py-3 text-right tabular-nums">
@@ -817,61 +601,29 @@ const getActivityIcon = (type: string) => {
                                 <td
                                     class="py-3 text-right font-medium tabular-nums"
                                 >
-                                    {{ operator.efficiency }}%
+                                    {{
+                                        operator.efficiency === null
+                                            ? '—'
+                                            : `${operator.efficiency}%`
+                                    }}
                                 </td>
                             </tr>
                             </tbody>
                         </table>
                     </div>
+
+                    <p
+                        v-else
+                        class="py-10 text-center text-sm text-muted-foreground"
+                    >
+                        No operator production recorded today.
+                    </p>
                 </CardContent>
             </Card>
         </section>
 
-        <!-- Inventory + Activity -->
-        <section class="grid gap-6 xl:grid-cols-2">
-            <!-- Inventory Attention -->
-            <Card>
-                <CardHeader>
-                    <CardTitle>
-                        {{ dashboardPage.inventoryAttentionTitle }}
-                    </CardTitle>
-                </CardHeader>
-
-                <CardContent>
-                    <div
-                        v-if="dashboardInventoryAttention.length"
-                        class="space-y-4"
-                    >
-                        <div
-                            v-for="item in dashboardInventoryAttention"
-                            :key="item.id"
-                            class="flex gap-3 rounded-lg border p-3"
-                        >
-                            <div
-                                class="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted"
-                            >
-                                <PackagePlus class="size-4"/>
-                            </div>
-
-                            <div class="min-w-0">
-                                <p class="text-sm font-medium">
-                                    {{ item.title }}
-                                </p>
-
-                                <p class="mt-0.5 text-xs text-muted-foreground">
-                                    {{ item.description }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <p v-else class="text-sm text-muted-foreground">
-                        {{ dashboardPage.empty.inventoryAttention }}
-                    </p>
-                </CardContent>
-            </Card>
-
-            <!-- Recent Activity -->
+        <!-- Recent Activity -->
+        <section>
             <Card>
                 <CardHeader>
                     <CardTitle>
@@ -880,12 +632,9 @@ const getActivityIcon = (type: string) => {
                 </CardHeader>
 
                 <CardContent>
-                    <div
-                        v-if="dashboardRecentActivity.length"
-                        class="space-y-5"
-                    >
+                    <div v-if="recentActivity.length" class="space-y-5">
                         <div
-                            v-for="activity in dashboardRecentActivity"
+                            v-for="activity in recentActivity"
                             :key="activity.id"
                             class="flex gap-3"
                         >
@@ -910,7 +659,10 @@ const getActivityIcon = (type: string) => {
                         </div>
                     </div>
 
-                    <p v-else class="text-sm text-muted-foreground">
+                    <p
+                        v-else
+                        class="py-8 text-center text-sm text-muted-foreground"
+                    >
                         {{ dashboardPage.empty.recentActivity }}
                     </p>
                 </CardContent>

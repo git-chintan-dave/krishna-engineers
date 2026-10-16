@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\BandsawWorkLogController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LookupController;
 use App\Http\Controllers\MachineController;
@@ -16,7 +17,6 @@ use App\Http\Controllers\SetupController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\ToolTransactionController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::inertia('/', 'Welcome')->name('home');
 
@@ -27,7 +27,8 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/dashboard', fn() => Inertia::render('Dashboard', []))
+    Route::get('/dashboard', DashboardController::class)
+        ->middleware('auth')
         ->name('dashboard');
 
     /*
@@ -281,4 +282,4 @@ Route::middleware('auth')->group(function () {
 
 });
 
-require __DIR__ . '/settings.php';
+require __DIR__.'/settings.php';
