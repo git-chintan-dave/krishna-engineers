@@ -57,13 +57,9 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const filterPart = ref<number | null>(
-    props.filters.partId,
-);
+const filterPart = ref<number | null>(props.filters.partId);
 
-const filterSetup = ref<number | null>(
-    props.filters.setupId,
-);
+const filterSetup = ref<number | null>(props.filters.setupId);
 
 /*
 |--------------------------------------------------------------------------
@@ -144,15 +140,9 @@ const handleDeleteSelected = () => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
-                :search-placeholder="
-                    partSetupPage.searchPlaceholder
-                "
-                :search-button-label="
-                    partSetupPage.searchButtonLabel
-                "
-                :clear-button-label="
-                    partSetupPage.clearButtonLabel
-                "
+                :search-placeholder="partSetupPage.searchPlaceholder"
+                :search-button-label="partSetupPage.searchButtonLabel"
+                :clear-button-label="partSetupPage.clearButtonLabel"
                 :clear-disabled="
                     !searchQuery.trim() &&
                     filterPart === null &&
@@ -166,9 +156,7 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-48">
                         <AppPartSelect
                             v-model="filterPart"
-                            :placeholder="
-                                partSetupPage.partPlaceholder
-                            "
+                            :placeholder="partSetupPage.partPlaceholder"
                             clearable
                         />
                     </div>
@@ -177,9 +165,7 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-40">
                         <AppSetupSelect
                             v-model="filterSetup"
-                            :placeholder="
-                                partSetupPage.setupPlaceholder
-                            "
+                            :placeholder="partSetupPage.setupPlaceholder"
                             clearable
                         />
                     </div>
@@ -193,9 +179,7 @@ const handleDeleteSelected = () => {
                 :table="table"
                 :columns-count="columns.length"
                 :total="partSetups.meta.total"
-                :page-index="
-                    partSetups.meta.current_page - 1
-                "
+                :page-index="partSetups.meta.current_page - 1"
                 :page-size="partSetups.meta.per_page"
                 :selected-count="selectedCount"
                 :page-size-options="[10, 25, 50, 100]"

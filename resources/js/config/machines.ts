@@ -18,8 +18,7 @@ export const machinePage = {
 
     form: {
         sectionTitle: 'Machine Information',
-        sectionDescription:
-            'Enter the basic information for the machine.',
+        sectionDescription: 'Enter the basic information for the machine.',
 
         nameLabel: 'Machine Name',
         namePlaceholder: 'Enter machine name',
@@ -31,13 +30,11 @@ export const machinePage = {
         statusPlaceholder: 'Select status',
 
         createTitle: 'Create Machine',
-        createDescription:
-            'Add a new machine to the system.',
+        createDescription: 'Add a new machine to the system.',
         createSubmitLabel: 'Save Machine',
 
         editTitle: 'Edit Machine',
-        editDescription:
-            'Update the machine information.',
+        editDescription: 'Update the machine information.',
         editSubmitLabel: 'Update Machine',
 
         cancelLabel: 'Cancel',

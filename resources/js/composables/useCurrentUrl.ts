@@ -1,6 +1,6 @@
-import {usePage} from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 
-import type {NavItem} from '@/types';
+import type { NavItem } from '@/types';
 
 type NavigationHref = NavItem['href'];
 
@@ -9,9 +9,7 @@ type UrlMethodPair = {
     method?: string;
 };
 
-const getHrefUrl = (
-    href?: NavigationHref,
-): string | null => {
+const getHrefUrl = (href?: NavigationHref): string | null => {
     if (!href) {
         return null;
     }
@@ -34,24 +32,20 @@ const getHrefUrl = (
 const normalizePath = (path: string): string => {
     try {
         return (
-            new URL(
-                path,
-                window.location.origin,
-            ).pathname.replace(/\/+$/, '') || '/'
+            new URL(path, window.location.origin).pathname.replace(
+                /\/+$/,
+                '',
+            ) || '/'
         );
     } catch {
-        return (
-            path.split('?')[0].replace(/\/+$/, '') || '/'
-        );
+        return path.split('?')[0].replace(/\/+$/, '') || '/';
     }
 };
 
 export function useCurrentUrl() {
     const page = usePage();
 
-    const isCurrentUrl = (
-        href?: NavigationHref,
-    ): boolean => {
+    const isCurrentUrl = (href?: NavigationHref): boolean => {
         const hrefUrl = getHrefUrl(href);
 
         if (!hrefUrl) {
@@ -64,9 +58,7 @@ export function useCurrentUrl() {
         return currentPath === itemPath;
     };
 
-    const isCurrentOrParentUrl = (
-        href?: NavigationHref,
-    ): boolean => {
+    const isCurrentOrParentUrl = (href?: NavigationHref): boolean => {
         const hrefUrl = getHrefUrl(href);
 
         if (!hrefUrl) {
@@ -77,8 +69,7 @@ export function useCurrentUrl() {
         const itemPath = normalizePath(hrefUrl);
 
         return (
-            currentPath === itemPath ||
-            currentPath.startsWith(`${itemPath}/`)
+            currentPath === itemPath || currentPath.startsWith(`${itemPath}/`)
         );
     };
 

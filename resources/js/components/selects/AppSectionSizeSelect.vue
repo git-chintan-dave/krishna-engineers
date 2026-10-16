@@ -51,10 +51,7 @@ const emit = defineEmits<{
 
 const options = ref<SelectOption<number>[]>([]);
 
-const {
-    loading,
-    sectionSizes,
-} = useLookup();
+const { loading, sectionSizes } = useLookup();
 
 /*
 |--------------------------------------------------------------------------
@@ -69,9 +66,7 @@ const loadOptions = async (): Promise<void> => {
         return;
     }
 
-    options.value = await sectionSizes(
-        props.sectionId,
-    );
+    options.value = await sectionSizes(props.sectionId);
 };
 
 /*
@@ -109,24 +104,10 @@ watch(
         :placeholder="placeholder"
         :searchable="searchable"
         :clearable="clearable"
-        :disabled="
-            disabled ||
-            loading ||
-            !sectionId
-        "
+        :disabled="disabled || loading || !sectionId"
         :loading="loading"
         :error="error"
-        @update:model-value="
-            emit(
-                'update:modelValue',
-                $event as number | null,
-            )
-        "
-        @change="
-            emit(
-                'change',
-                $event as number | null,
-            )
-        "
+        @update:model-value="emit('update:modelValue', $event as number | null)"
+        @change="emit('change', $event as number | null)"
     />
 </template>

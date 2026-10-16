@@ -26,7 +26,7 @@ class PartController extends Controller
 
     private const string IMAGE_DIRECTORY = 'parts';
 
-    public function __construct( private readonly FileUploadService $fileUploadService, ) {}
+    public function __construct(private readonly FileUploadService $fileUploadService) {}
 
     public function index(IndexPartRequest $request): Response
     {

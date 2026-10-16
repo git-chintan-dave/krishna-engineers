@@ -5,10 +5,7 @@ import FormLayout from '@/components/layouts/FormLayout.vue';
 import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
 import { machinePage } from '@/config/machines';
 import MachineForm from '@/pages/Machines/components/MachineForm.vue';
-import {
-    index as machines,
-    store,
-} from '@/routes/machines';
+import { index as machines, store } from '@/routes/machines';
 import type { MachineFormData } from '@/types/machine';
 
 /*
@@ -45,14 +42,10 @@ const form = useForm<MachineFormData>({
 */
 
 const handleSubmit = () => {
-    form
-        .transform((data) => ({
-            ...data,
-            status: data.status
-                ? 'active'
-                : 'inactive',
-        }))
-        .post(store().url);
+    form.transform((data) => ({
+        ...data,
+        status: data.status ? 'active' : 'inactive',
+    })).post(store().url);
 };
 
 const handleCancel = () => {
@@ -63,17 +56,13 @@ const handleCancel = () => {
 <template>
     <FormLayout
         :title="machinePage.form.createTitle"
-        :description="
-            machinePage.form.createDescription
-        "
+        :description="machinePage.form.createDescription"
     >
         <MachineForm
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                machinePage.form.createSubmitLabel
-            "
+            :submit-label="machinePage.form.createSubmitLabel"
             @submit="handleSubmit"
             @cancel="handleCancel"
         />

@@ -45,13 +45,11 @@ export const attendancePage = {
         removeBreakLabel: 'Remove Break',
 
         createTitle: 'Add Attendance',
-        createDescription:
-            'Record an employee attendance entry.',
+        createDescription: 'Record an employee attendance entry.',
         createSubmitLabel: 'Save Attendance',
 
         editTitle: 'Edit Attendance',
-        editDescription:
-            'Update employee attendance details.',
+        editDescription: 'Update employee attendance details.',
         editSubmitLabel: 'Update Attendance',
 
         cancelLabel: 'Cancel',

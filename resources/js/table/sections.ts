@@ -11,9 +11,7 @@ import type { Section } from '@/types/section';
 
 const columnHelper = createColumnHelper<any, Section>();
 
-export const createSectionColumns = (
-    handleDelete: (uuid: string) => void,
-) =>
+export const createSectionColumns = (handleDelete: (uuid: string) => void) =>
     columnHelper.columns([
         createSelectColumn({
             resourceName: 'sections',

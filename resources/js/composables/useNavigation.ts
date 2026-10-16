@@ -10,9 +10,7 @@ type UrlMethodPair = {
     method?: string;
 };
 
-const getHrefUrl = (
-    href?: NavigationHref,
-): string | null => {
+const getHrefUrl = (href?: NavigationHref): string | null => {
     if (!href) {
         return null;
     }
@@ -32,9 +30,7 @@ const getHrefUrl = (
     return null;
 };
 
-const getPath = (
-    href?: NavigationHref,
-): string | null => {
+const getPath = (href?: NavigationHref): string | null => {
     const hrefUrl = getHrefUrl(href);
 
     if (!hrefUrl) {
@@ -43,10 +39,10 @@ const getPath = (
 
     try {
         return (
-            new URL(
-                hrefUrl,
-                window.location.origin,
-            ).pathname.replace(/\/+$/, '') || '/'
+            new URL(hrefUrl, window.location.origin).pathname.replace(
+                /\/+$/,
+                '',
+            ) || '/'
         );
     } catch {
         return null;
@@ -56,15 +52,13 @@ const getPath = (
 const normalizePath = (path: string): string => {
     try {
         return (
-            new URL(
-                path,
-                window.location.origin,
-            ).pathname.replace(/\/+$/, '') || '/'
+            new URL(path, window.location.origin).pathname.replace(
+                /\/+$/,
+                '',
+            ) || '/'
         );
     } catch {
-        return (
-            path.split('?')[0].replace(/\/+$/, '') || '/'
-        );
+        return path.split('?')[0].replace(/\/+$/, '') || '/';
     }
 };
 
@@ -75,9 +69,7 @@ export function useNavigation() {
         return normalizePath(page.url);
     });
 
-    const isPathActive = (
-        href?: NavigationHref,
-    ): boolean => {
+    const isPathActive = (href?: NavigationHref): boolean => {
         const itemPath = getPath(href);
 
         if (!itemPath) {
@@ -86,24 +78,15 @@ export function useNavigation() {
 
         const current = currentPath.value;
 
-        return (
-            current === itemPath ||
-            current.startsWith(`${itemPath}/`)
-        );
+        return current === itemPath || current.startsWith(`${itemPath}/`);
     };
 
-    const isItemActive = (
-        item: NavItem,
-    ): boolean => {
+    const isItemActive = (item: NavItem): boolean => {
         if (isPathActive(item.href)) {
             return true;
         }
 
-        return (
-            item.items?.some((subItem) =>
-                isItemActive(subItem),
-            ) ?? false
-        );
+        return item.items?.some((subItem) => isItemActive(subItem)) ?? false;
     };
 
     return {

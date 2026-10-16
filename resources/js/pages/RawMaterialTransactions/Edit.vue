@@ -61,11 +61,7 @@ const form = useForm<RawMaterialTransactionFormData>({
 */
 
 const handleSubmit = () => {
-    form.put(
-        updateRawMaterialTransaction(
-            props.transaction.uuid,
-        ).url,
-    );
+    form.put(updateRawMaterialTransaction(props.transaction.uuid).url);
 };
 
 const handleCancel = () => {
@@ -76,9 +72,7 @@ const handleCancel = () => {
 <template>
     <FormLayout
         :title="rawMaterialTransactionPage.form.editTitle"
-        :description="
-            rawMaterialTransactionPage.form.editDescription
-        "
+        :description="rawMaterialTransactionPage.form.editDescription"
     >
         <RawMaterialTransactionForm
             :form="form"

@@ -1,10 +1,5 @@
 import { Link } from '@inertiajs/vue3';
-import {
-    CheckCircle2,
-    Eye,
-    Pencil,
-    Trash2,
-} from '@lucide/vue';
+import { CheckCircle2, Eye, Pencil, Trash2 } from '@lucide/vue';
 import { h, withDirectives } from 'vue';
 
 import { Button } from '@/components/ui/button';
@@ -35,21 +30,19 @@ type ActionsColumnOptions = {
 */
 
 export const createActionsColumn = ({
-                                        editUrl,
-                                        detailsUrl,
-                                        markAsPaidUrl,
-                                        resourceName,
-                                        handleDelete,
-                                        handleMarkAsPaid,
-                                        showDelete,
-                                        showEdit,
-                                        showMarkAsPaid,
-                                    }: ActionsColumnOptions) => {
+    editUrl,
+    detailsUrl,
+    markAsPaidUrl,
+    resourceName,
+    handleDelete,
+    handleMarkAsPaid,
+    showDelete,
+    showEdit,
+    showMarkAsPaid,
+}: ActionsColumnOptions) => {
     const hasDetails = Boolean(detailsUrl);
 
-    const hasMarkAsPaid = Boolean(
-        markAsPaidUrl && handleMarkAsPaid,
-    );
+    const hasMarkAsPaid = Boolean(markAsPaidUrl && handleMarkAsPaid);
 
     const columnSize =
         68 +
@@ -74,21 +67,16 @@ export const createActionsColumn = ({
             const uuid = row.original.uuid;
 
             const name =
-                row.original.name ??
-                row.original.user?.name ??
-                'record';
+                row.original.name ?? row.original.user?.name ?? 'record';
 
             const actions = [];
 
-            const canEdit =
-                showEdit?.(row.original) ?? true;
+            const canEdit = showEdit?.(row.original) ?? true;
 
-            const canDelete =
-                showDelete?.(row.original) ?? true;
+            const canDelete = showDelete?.(row.original) ?? true;
 
             const canMarkAsPaid =
-                hasMarkAsPaid &&
-                (showMarkAsPaid?.(row.original) ?? true);
+                hasMarkAsPaid && (showMarkAsPaid?.(row.original) ?? true);
 
             /*
             |--------------------------------------------------------------------------
@@ -192,11 +180,7 @@ export const createActionsColumn = ({
             |--------------------------------------------------------------------------
             */
 
-            if (
-                canMarkAsPaid &&
-                markAsPaidUrl &&
-                handleMarkAsPaid
-            ) {
+            if (canMarkAsPaid && markAsPaidUrl && handleMarkAsPaid) {
                 actions.push(
                     withDirectives(
                         h(
@@ -232,16 +216,14 @@ export const createActionsColumn = ({
                             [
                                 vConfirm,
                                 {
-                                    action: () =>
-                                        handleMarkAsPaid(uuid),
+                                    action: () => handleMarkAsPaid(uuid),
 
                                     options: {
                                         title: `Mark ${resourceName} as paid?`,
                                         description:
                                             `This will mark the ${resourceName} as paid. ` +
                                             `Paid records cannot be edited.`,
-                                        confirmText:
-                                            'Mark as Paid',
+                                        confirmText: 'Mark as Paid',
                                     },
                                 },
                             ],
@@ -291,8 +273,7 @@ export const createActionsColumn = ({
                             [
                                 vConfirm,
                                 {
-                                    action: () =>
-                                        handleDelete(uuid),
+                                    action: () => handleDelete(uuid),
 
                                     options: {
                                         title: `Delete ${resourceName}?`,

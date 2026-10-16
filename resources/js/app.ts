@@ -46,51 +46,34 @@ initializeTheme();
 initializeFlashToast();
 
 // Register the service worker.
-if (
-    'serviceWorker' in navigator &&
-    import.meta.env.PROD
-) {
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
     window.addEventListener('load', () => {
         void navigator.serviceWorker
             .register('/sw.js')
             .then((registration) => {
-                console.info(
-                    'Service worker registered:',
-                    registration.scope,
-                );
+                console.info('Service worker registered:', registration.scope);
 
-                registration.addEventListener(
-                    'updatefound',
-                    () => {
-                        const newWorker =
-                            registration.installing;
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
 
-                        if (!newWorker) {
-                            return;
+                    if (!newWorker) {
+                        return;
+                    }
+
+                    newWorker.addEventListener('statechange', () => {
+                        if (
+                            newWorker.state === 'installed' &&
+                            navigator.serviceWorker.controller
+                        ) {
+                            console.info(
+                                'New service worker available. Reload to update.',
+                            );
                         }
-
-                        newWorker.addEventListener(
-                            'statechange',
-                            () => {
-                                if (
-                                    newWorker.state ===
-                                    'installed' &&
-                                    navigator.serviceWorker.controller
-                                ) {
-                                    console.info(
-                                        'New service worker available. Reload to update.',
-                                    );
-                                }
-                            },
-                        );
-                    },
-                );
+                    });
+                });
             })
             .catch((error) => {
-                console.error(
-                    'Service worker registration failed:',
-                    error,
-                );
+                console.error('Service worker registration failed:', error);
             });
     });
 }

@@ -1,8 +1,8 @@
-import {h} from 'vue';
+import { h } from 'vue';
 
-import {ArrowDown, ArrowUp, ChevronsUpDown} from '@lucide/vue';
+import { ArrowDown, ArrowUp, ChevronsUpDown } from '@lucide/vue';
 
-import type {ColumnAlign} from '@/table/types';
+import type { ColumnAlign } from '@/table/types';
 
 /*
 |--------------------------------------------------------------------------
@@ -38,10 +38,8 @@ const getAlignmentClass = (align: ColumnAlign): string => {
 |--------------------------------------------------------------------------
 */
 
-export const createSortableHeader = ({
-                                         label,
-                                         align = 'left',
-                                     }: SortableHeaderOptions) =>
+export const createSortableHeader =
+    ({ label, align = 'left' }: SortableHeaderOptions) =>
     ({ column }: any) =>
         h(
             'button',
@@ -55,9 +53,7 @@ export const createSortableHeader = ({
                     getAlignmentClass(align),
                 ],
                 onClick: () =>
-                    column.toggleSorting(
-                        column.getIsSorted() === 'asc',
-                    ),
+                    column.toggleSorting(column.getIsSorted() === 'asc'),
             },
             [
                 h(
@@ -72,8 +68,8 @@ export const createSortableHeader = ({
                     column.getIsSorted() === 'asc'
                         ? ArrowUp
                         : column.getIsSorted() === 'desc'
-                            ? ArrowDown
-                            : ChevronsUpDown,
+                          ? ArrowDown
+                          : ChevronsUpDown,
                     {
                         class: 'size-4 shrink-0',
                     },

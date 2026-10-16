@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import type { InertiaForm } from '@inertiajs/vue3';
-import {
-    Clock3,
-    Image,
-    Settings2,
-    Wrench,
-} from '@lucide/vue';
+import { Clock3, Image, Settings2, Wrench } from '@lucide/vue';
 
 import AppImagePicker from '@/components/common/AppImagePicker.vue';
 import AppInput from '@/components/common/AppInput.vue';
@@ -21,9 +16,7 @@ import type { PartSetupFormData } from '@/types/partSetup';
 const props = withDefaults(
     defineProps<{
         form: InertiaForm<PartSetupFormData>;
-        errors?: Partial<
-            Record<keyof PartSetupFormData, string>
-        >;
+        errors?: Partial<Record<keyof PartSetupFormData, string>>;
         processing?: boolean;
         submitLabel?: string;
         currentImage?: string | null;
@@ -31,8 +24,7 @@ const props = withDefaults(
     {
         errors: () => ({}),
         processing: false,
-        submitLabel:
-        partSetupPage.form.createSubmitLabel,
+        submitLabel: partSetupPage.form.createSubmitLabel,
         currentImage: null,
     },
 );
@@ -54,18 +46,11 @@ const handleImageRemove = (): void => {
 </script>
 
 <template>
-    <form
-        class="min-w-0 space-y-6"
-        @submit.prevent="emit('submit')"
-    >
+    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
         <!-- Part & Setup -->
         <FormSection
-            :title="
-                partSetupPage.form.sectionTitle
-            "
-            :description="
-                partSetupPage.form.sectionDescription
-            "
+            :title="partSetupPage.form.sectionTitle"
+            :description="partSetupPage.form.sectionDescription"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Part -->
@@ -78,10 +63,7 @@ const handleImageRemove = (): void => {
                     <AppPartSelect
                         id="part-setup-part"
                         v-model="props.form.part_id"
-                        :placeholder="
-                            partSetupPage.form
-                                .partPlaceholder
-                        "
+                        :placeholder="partSetupPage.form.partPlaceholder"
                         :disabled="props.processing"
                         :icon="Wrench"
                         :error="props.errors.part_id"
@@ -92,9 +74,7 @@ const handleImageRemove = (): void => {
 
                 <!-- Setup -->
                 <AppField
-                    :label="
-                        partSetupPage.form.setupLabel
-                    "
+                    :label="partSetupPage.form.setupLabel"
                     input-id="part-setup-setup"
                     :error="props.errors.setup_id"
                     required
@@ -102,10 +82,7 @@ const handleImageRemove = (): void => {
                     <AppSetupSelect
                         id="part-setup-setup"
                         v-model="props.form.setup_id"
-                        :placeholder="
-                            partSetupPage.form
-                                .setupPlaceholder
-                        "
+                        :placeholder="partSetupPage.form.setupPlaceholder"
                         :disabled="props.processing"
                         :icon="Settings2"
                         :error="props.errors.setup_id"
@@ -124,87 +101,55 @@ const handleImageRemove = (): void => {
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Machine Cycle Time -->
                 <AppField
-                    :label="
-                        partSetupPage.form
-                            .machineCycleTimeLabel
-                    "
+                    :label="partSetupPage.form.machineCycleTimeLabel"
                     input-id="part-setup-machine-cycle-time"
-                    :error="
-                        props.errors.machine_cycle_time
-                    "
+                    :error="props.errors.machine_cycle_time"
                     required
                 >
                     <AppInput
                         id="part-setup-machine-cycle-time"
-                        v-model="
-                            props.form.machine_cycle_time
-                        "
+                        v-model="props.form.machine_cycle_time"
                         type="number"
                         min="0"
                         step="1"
                         :placeholder="
-                            partSetupPage.form
-                                .machineCycleTimePlaceholder
+                            partSetupPage.form.machineCycleTimePlaceholder
                         "
                         :disabled="props.processing"
                         :icon="Clock3"
-                        :error="
-                            props.errors
-                                .machine_cycle_time
-                        "
+                        :error="props.errors.machine_cycle_time"
                         required
                     />
 
-                    <p
-                        class="mt-2 text-xs leading-5 text-muted-foreground"
-                    >
-                        {{
-                            partSetupPage.form
-                                .machineCycleTimeHelp
-                        }}
+                    <p class="mt-2 text-xs leading-5 text-muted-foreground">
+                        {{ partSetupPage.form.machineCycleTimeHelp }}
                     </p>
                 </AppField>
 
                 <!-- Actual Cycle Time -->
                 <AppField
-                    :label="
-                        partSetupPage.form
-                            .actualCycleTimeLabel
-                    "
+                    :label="partSetupPage.form.actualCycleTimeLabel"
                     input-id="part-setup-actual-cycle-time"
-                    :error="
-                        props.errors.actual_cycle_time
-                    "
+                    :error="props.errors.actual_cycle_time"
                     required
                 >
                     <AppInput
                         id="part-setup-actual-cycle-time"
-                        v-model="
-                            props.form.actual_cycle_time
-                        "
+                        v-model="props.form.actual_cycle_time"
                         type="number"
                         min="0"
                         step="1"
                         :placeholder="
-                            partSetupPage.form
-                                .actualCycleTimePlaceholder
+                            partSetupPage.form.actualCycleTimePlaceholder
                         "
                         :disabled="props.processing"
                         :icon="Clock3"
-                        :error="
-                            props.errors
-                                .actual_cycle_time
-                        "
+                        :error="props.errors.actual_cycle_time"
                         required
                     />
 
-                    <p
-                        class="mt-2 text-xs leading-5 text-muted-foreground"
-                    >
-                        {{
-                            partSetupPage.form
-                                .actualCycleTimeHelp
-                        }}
+                    <p class="mt-2 text-xs leading-5 text-muted-foreground">
+                        {{ partSetupPage.form.actualCycleTimeHelp }}
                     </p>
                 </AppField>
             </div>
@@ -225,9 +170,7 @@ const handleImageRemove = (): void => {
                     :current-image="props.currentImage"
                     :disabled="props.processing"
                     :error="props.errors.image"
-                    :placeholder="
-                        partSetupPage.form.imagePlaceholder
-                    "
+                    :placeholder="partSetupPage.form.imagePlaceholder"
                     @change="handleImageChange"
                     @remove="handleImageRemove"
                 />
@@ -237,9 +180,7 @@ const handleImageRemove = (): void => {
         <!-- Actions -->
         <FormActions
             :submit-label="submitLabel"
-            :cancel-label="
-                partSetupPage.form.cancelLabel
-            "
+            :cancel-label="partSetupPage.form.cancelLabel"
             :processing="processing"
             @cancel="emit('cancel')"
         />

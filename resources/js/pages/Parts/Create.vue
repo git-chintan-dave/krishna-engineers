@@ -5,10 +5,7 @@ import FormLayout from '@/components/layouts/FormLayout.vue';
 import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
 import { partPage } from '@/config/parts';
 import PartForm from '@/pages/Parts/components/PartForm.vue';
-import {
-    index as parts,
-    store,
-} from '@/routes/parts';
+import { index as parts, store } from '@/routes/parts';
 import type { PartFormData } from '@/types/part';
 
 defineOptions({
@@ -33,14 +30,10 @@ const form = useForm<PartFormData>({
 });
 
 const handleSubmit = () => {
-    form
-        .transform((data) => ({
-            ...data,
-            status: data.status
-                ? 'active'
-                : 'inactive',
-        }))
-        .post(store().url);
+    form.transform((data) => ({
+        ...data,
+        status: data.status ? 'active' : 'inactive',
+    })).post(store().url);
 };
 
 const handleCancel = () => {
@@ -51,17 +44,13 @@ const handleCancel = () => {
 <template>
     <FormLayout
         :title="partPage.form.createTitle"
-        :description="
-            partPage.form.createDescription
-        "
+        :description="partPage.form.createDescription"
     >
         <PartForm
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                partPage.form.createSubmitLabel
-            "
+            :submit-label="partPage.form.createSubmitLabel"
             @submit="handleSubmit"
             @cancel="handleCancel"
         />

@@ -45,15 +45,10 @@ export const createSelectColumn = <TData = any>({
         h(Checkbox, {
             modelValue:
                 table.getIsAllPageRowsSelected() ||
-                (table.getIsSomePageRowsSelected() &&
-                    'indeterminate'),
+                (table.getIsSomePageRowsSelected() && 'indeterminate'),
 
-            'onUpdate:modelValue': (
-                value: boolean | 'indeterminate',
-            ) => {
-                table.toggleAllPageRowsSelected(
-                    !!value,
-                );
+            'onUpdate:modelValue': (value: boolean | 'indeterminate') => {
+                table.toggleAllPageRowsSelected(!!value);
             },
 
             ariaLabel: `Select all ${resourceName}`,
@@ -68,8 +63,7 @@ export const createSelectColumn = <TData = any>({
     */
 
     cell: ({ row }: any) => {
-        const selectable =
-            isSelectable?.(row.original) ?? true;
+        const selectable = isSelectable?.(row.original) ?? true;
 
         if (!selectable) {
             return null;
@@ -78,9 +72,7 @@ export const createSelectColumn = <TData = any>({
         return h(Checkbox, {
             modelValue: row.getIsSelected(),
 
-            'onUpdate:modelValue': (
-                value: boolean | 'indeterminate',
-            ) => {
+            'onUpdate:modelValue': (value: boolean | 'indeterminate') => {
                 row.toggleSelected(!!value);
             },
 
@@ -96,9 +88,7 @@ export const createSelectColumn = <TData = any>({
     |--------------------------------------------------------------------------
     */
 
-    enableRowSelection: (
-        row: any,
-    ) => isSelectable?.(row.original) ?? true,
+    enableRowSelection: (row: any) => isSelectable?.(row.original) ?? true,
 
     /*
     |--------------------------------------------------------------------------

@@ -1,7 +1,4 @@
-import type {
-    PaginatedResponse,
-    SortDirection,
-} from '@/types/listing';
+import type { PaginatedResponse, SortDirection } from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------
@@ -66,10 +63,7 @@ export type BandsawWorkLogFormData = {
 |--------------------------------------------------------------------------
 */
 
-export type BandsawWorkLogSort =
-    | 'work_date'
-    | 'quantity'
-    | 'created_at';
+export type BandsawWorkLogSort = 'work_date' | 'quantity' | 'created_at';
 
 /*
 |--------------------------------------------------------------------------
@@ -95,8 +89,7 @@ export type BandsawWorkLogFilters = {
 |--------------------------------------------------------------------------
 */
 
-export type BandsawWorkLogsResponse =
-    PaginatedResponse<BandsawWorkLog>;
+export type BandsawWorkLogsResponse = PaginatedResponse<BandsawWorkLog>;
 
 /*
 |--------------------------------------------------------------------------
@@ -119,8 +112,5 @@ export type BandsawWorkLogLastReport = {
 export type BandsawWorkLogFormOptions = {
     currentUserId: number;
     canSelectBandsaw: boolean;
-    lastReports: Record<
-        string,
-        BandsawWorkLogLastReport
-    >;
+    lastReports: Record<string, BandsawWorkLogLastReport>;
 };

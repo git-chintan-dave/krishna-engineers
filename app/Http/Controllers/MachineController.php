@@ -83,7 +83,7 @@ class MachineController extends Controller
 
     public function update(
         MachineRequest $request,
-        Machine      $machine,
+        Machine $machine,
     ): RedirectResponse {
         Gate::authorize('update', $machine);
 

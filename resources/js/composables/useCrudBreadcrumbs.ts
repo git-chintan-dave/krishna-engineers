@@ -16,12 +16,7 @@ type CrudBreadcrumbOptions = {
     resourceUrl: string;
 };
 
-type CrudPage =
-    | 'listing'
-    | 'create'
-    | 'edit'
-    | 'details'
-    | 'import';
+type CrudPage = 'listing' | 'create' | 'edit' | 'details' | 'import';
 
 /*
 |--------------------------------------------------------------------------

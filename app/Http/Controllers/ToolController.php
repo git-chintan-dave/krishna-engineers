@@ -32,7 +32,7 @@ class ToolController extends Controller
 
     private const string IMAGE_DIRECTORY = 'tools';
 
-    public function __construct( private readonly FileUploadService $fileUploadService, ) {}
+    public function __construct(private readonly FileUploadService $fileUploadService) {}
 
     /*
     |--------------------------------------------------------------------------

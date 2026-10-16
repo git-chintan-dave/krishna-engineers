@@ -686,11 +686,11 @@ class AttendanceService
             $endAt = empty($break['end_at'])
                 ? null
                 : (
-                $break['end_at'] instanceof CarbonInterface
-                    ? $break['end_at']
-                    : Carbon::parse(
-                    $break['end_at'],
-                )
+                    $break['end_at'] instanceof CarbonInterface
+                        ? $break['end_at']
+                        : Carbon::parse(
+                            $break['end_at'],
+                        )
                 );
 
             if (

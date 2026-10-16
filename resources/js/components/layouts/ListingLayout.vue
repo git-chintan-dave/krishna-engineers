@@ -26,14 +26,8 @@ withDefaults(
         |--------------------------------------------------------------------------
         -->
 
-        <AppPageHeader
-            :title="title"
-            :description="description"
-        >
-            <template
-                v-if="$slots.actions"
-                #actions
-            >
+        <AppPageHeader :title="title" :description="description">
+            <template v-if="$slots.actions" #actions>
                 <slot name="actions" />
             </template>
         </AppPageHeader>
@@ -44,11 +38,7 @@ withDefaults(
         |--------------------------------------------------------------------------
         -->
 
-        <section
-            v-if="$slots.filters"
-            aria-label="Filters"
-            class="min-w-0"
-        >
+        <section v-if="$slots.filters" aria-label="Filters" class="min-w-0">
             <slot name="filters" />
         </section>
 
@@ -58,11 +48,7 @@ withDefaults(
         |--------------------------------------------------------------------------
         -->
 
-        <section
-            v-if="$slots.table"
-            aria-label="Data table"
-            class="min-w-0"
-        >
+        <section v-if="$slots.table" aria-label="Data table" class="min-w-0">
             <slot name="table" />
         </section>
 

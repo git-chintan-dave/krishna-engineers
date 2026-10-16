@@ -10,12 +10,7 @@ import {
     X,
 } from '@lucide/vue';
 import type { Component } from 'vue';
-import {
-    computed,
-    nextTick,
-    ref,
-    useAttrs,
-} from 'vue';
+import { computed, nextTick, ref, useAttrs } from 'vue';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -136,11 +131,9 @@ const attrs = useAttrs();
 |--------------------------------------------------------------------------
 */
 
-const inputRef =
-    ref<HTMLInputElement | null>(null);
+const inputRef = ref<HTMLInputElement | null>(null);
 
-const textareaRef =
-    ref<HTMLTextAreaElement | null>(null);
+const textareaRef = ref<HTMLTextAreaElement | null>(null);
 
 /*
 |--------------------------------------------------------------------------
@@ -159,16 +152,12 @@ const showPassword = ref(false);
 |--------------------------------------------------------------------------
 */
 
-const hours = Array.from(
-    { length: 12 },
-    (_, index) =>
-        String(index + 1).padStart(2, '0'),
+const hours = Array.from({ length: 12 }, (_, index) =>
+    String(index + 1).padStart(2, '0'),
 );
 
-const minutes = Array.from(
-    { length: 60 },
-    (_, index) =>
-        String(index).padStart(2, '0'),
+const minutes = Array.from({ length: 60 }, (_, index) =>
+    String(index).padStart(2, '0'),
 );
 
 const periods = ['AM', 'PM'] as const;
@@ -179,36 +168,24 @@ const periods = ['AM', 'PM'] as const;
 |--------------------------------------------------------------------------
 */
 
-const isDateInput = computed(
-    () => props.type === 'date',
-);
+const isDateInput = computed(() => props.type === 'date');
 
-const isTimeInput = computed(
-    () => props.type === 'time',
-);
+const isTimeInput = computed(() => props.type === 'time');
 
-const isDatetimeInput = computed(
-    () => props.type === 'datetime-local',
-);
+const isDatetimeInput = computed(() => props.type === 'datetime-local');
 
 const isNativePickerInput = computed(() =>
-    ['month', 'week'].includes(
-        props.type,
-    ),
+    ['month', 'week'].includes(props.type),
 );
 
-const isPasswordInput = computed(
-    () => props.type === 'password',
-);
+const isPasswordInput = computed(() => props.type === 'password');
 
 const resolvedInputType = computed(() => {
     if (!isPasswordInput.value) {
         return props.type;
     }
 
-    return showPassword.value
-        ? 'text'
-        : 'password';
+    return showPassword.value ? 'text' : 'password';
 });
 
 /*
@@ -222,17 +199,15 @@ const resolvedInputType = computed(() => {
 |
 */
 
-const pickerIcon = computed<
-    Component | null
->(() => {
+const pickerIcon = computed<Component | null>(() => {
     if (props.icon) {
         return props.icon;
     }
 
     if (
-        isDateInput.value
-        || isDatetimeInput.value
-        || isNativePickerInput.value
+        isDateInput.value ||
+        isDatetimeInput.value ||
+        isNativePickerInput.value
     ) {
         return CalendarDays;
     }
@@ -250,29 +225,23 @@ const pickerIcon = computed<
 |--------------------------------------------------------------------------
 */
 
-const hasLeadingContent = computed(
-    () =>
-        !!pickerIcon.value
-        || !!props.prefix,
-);
+const hasLeadingContent = computed(() => !!pickerIcon.value || !!props.prefix);
 
 const hasTrailingContent = computed(
     () =>
-        !!props.suffix
-        || props.clearable
-        || isPasswordInput.value
-        || props.loading,
+        !!props.suffix ||
+        props.clearable ||
+        isPasswordInput.value ||
+        props.loading,
 );
 
-const hasError = computed(
-    () => !!props.error,
-);
+const hasError = computed(() => !!props.error);
 
 const hasValue = computed(
     () =>
-        model.value !== null
-        && model.value !== undefined
-        && String(model.value).length > 0,
+        model.value !== null &&
+        model.value !== undefined &&
+        String(model.value).length > 0,
 );
 
 /*
@@ -288,24 +257,18 @@ const inputClasses = computed(() => [
     'disabled:cursor-not-allowed disabled:opacity-50',
     'read-only:cursor-default',
 
-    props.textarea
-        ? 'min-h-24 py-2'
-        : 'h-9',
+    props.textarea ? 'min-h-24 py-2' : 'h-9',
 
-    hasLeadingContent.value
-        ? 'pl-10'
-        : 'pl-3',
+    hasLeadingContent.value ? 'pl-10' : 'pl-3',
 
-    hasTrailingContent.value
-        ? 'pr-10'
-        : 'pr-3',
+    hasTrailingContent.value ? 'pr-10' : 'pr-3',
 
     hasError.value
         ? [
-            'border-destructive',
-            'focus-visible:border-destructive',
-            'focus-visible:ring-destructive/20',
-        ]
+              'border-destructive',
+              'focus-visible:border-destructive',
+              'focus-visible:ring-destructive/20',
+          ]
         : 'border-input',
 ]);
 
@@ -315,15 +278,11 @@ const inputClasses = computed(() => [
 |--------------------------------------------------------------------------
 */
 
-const nativeModel = computed<
-    string | number | undefined
->({
-    get: () =>
-        model.value ?? undefined,
+const nativeModel = computed<string | number | undefined>({
+    get: () => model.value ?? undefined,
 
     set: (value) => {
-        model.value =
-            value ?? null;
+        model.value = value ?? null;
     },
 });
 
@@ -333,9 +292,7 @@ const nativeModel = computed<
 |--------------------------------------------------------------------------
 */
 
-const getDatePart = (
-    value: string,
-): string => {
+const getDatePart = (value: string): string => {
     if (!value) {
         return '';
     }
@@ -347,20 +304,13 @@ const getDatePart = (
     return value.slice(0, 10);
 };
 
-const getTimePart = (
-    value: string,
-): string => {
+const getTimePart = (value: string): string => {
     if (!value) {
         return '';
     }
 
     if (value.includes('T')) {
-        return (
-            value
-                .split('T')[1]
-                ?.slice(0, 5)
-            ?? ''
-        );
+        return value.split('T')[1]?.slice(0, 5) ?? '';
     }
 
     return value.slice(0, 5);
@@ -372,16 +322,10 @@ const getTimePart = (
 |--------------------------------------------------------------------------
 */
 
-const selectedDate = computed<
-    DateValue | undefined
->({
+const selectedDate = computed<DateValue | undefined>({
     get() {
         const value =
-            typeof model.value === 'string'
-                ? getDatePart(
-                    model.value,
-                )
-                : '';
+            typeof model.value === 'string' ? getDatePart(model.value) : '';
 
         if (!value) {
             return undefined;
@@ -401,64 +345,38 @@ const selectedDate = computed<
             return;
         }
 
-        model.value =
-            value.toString();
+        model.value = value.toString();
     },
 });
 
 const formattedDate = computed(() => {
     const value =
-        typeof model.value === 'string'
-            ? getDatePart(
-                model.value,
-            )
-            : '';
+        typeof model.value === 'string' ? getDatePart(model.value) : '';
 
     if (!value) {
         return '';
     }
 
-    const [
-        year,
-        month,
-        day,
-    ] = value.split('-').map(Number);
+    const [year, month, day] = value.split('-').map(Number);
 
-    if (
-        !year
-        || !month
-        || !day
-    ) {
+    if (!year || !month || !day) {
         return '';
     }
 
-    const date = new Date(
-        year,
-        month - 1,
-        day,
-    );
+    const date = new Date(year, month - 1, day);
 
-    if (
-        Number.isNaN(
-            date.getTime(),
-        )
-    ) {
+    if (Number.isNaN(date.getTime())) {
         return '';
     }
 
-    return new Intl.DateTimeFormat(
-        undefined,
-        {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-        },
-    ).format(date);
+    return new Intl.DateTimeFormat(undefined, {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    }).format(date);
 });
 
-const selectDate = (
-    value: DateValue | undefined,
-): void => {
+const selectDate = (value: DateValue | undefined): void => {
     if (!value) {
         model.value = null;
         datePickerOpen.value = false;
@@ -466,8 +384,7 @@ const selectDate = (
         return;
     }
 
-    model.value =
-        value.toString();
+    model.value = value.toString();
 
     datePickerOpen.value = false;
 };
@@ -478,145 +395,84 @@ const selectDate = (
 |--------------------------------------------------------------------------
 */
 
-const selectedDatetimeDate =
-    computed<
-        DateValue | undefined
-    >({
-        get() {
-            const value =
-                typeof model.value === 'string'
-                    ? getDatePart(
-                        model.value,
-                    )
-                    : '';
+const selectedDatetimeDate = computed<DateValue | undefined>({
+    get() {
+        const value =
+            typeof model.value === 'string' ? getDatePart(model.value) : '';
 
-            if (!value) {
-                return undefined;
-            }
-
-            try {
-                return parseDate(value);
-            } catch {
-                return undefined;
-            }
-        },
-
-        set(value) {
-            if (!value) {
-                model.value = null;
-
-                return;
-            }
-
-            const currentTime =
-                typeof model.value === 'string'
-                    ? getTimePart(
-                        model.value,
-                    )
-                    : '';
-
-            model.value =
-                `${value.toString()}T${
-                    currentTime || '00:00'
-                }`;
-        },
-    });
-
-const formattedDatetime =
-    computed(() => {
-        if (
-            typeof model.value !== 'string'
-            || !model.value
-        ) {
-            return '';
+        if (!value) {
+            return undefined;
         }
 
-        const dateValue =
-            getDatePart(
-                model.value,
-            );
+        try {
+            return parseDate(value);
+        } catch {
+            return undefined;
+        }
+    },
 
-        const timeValue =
-            getTimePart(
-                model.value,
-            );
+    set(value) {
+        if (!value) {
+            model.value = null;
 
-        if (!dateValue) {
-            return '';
+            return;
         }
 
-        const [
-            year,
-            month,
-            day,
-        ] = dateValue
-            .split('-')
-            .map(Number);
+        const currentTime =
+            typeof model.value === 'string' ? getTimePart(model.value) : '';
 
-        if (
-            !year
-            || !month
-            || !day
-        ) {
-            return '';
-        }
+        model.value = `${value.toString()}T${currentTime || '00:00'}`;
+    },
+});
 
-        const date = new Date(
-            year,
-            month - 1,
-            day,
-        );
+const formattedDatetime = computed(() => {
+    if (typeof model.value !== 'string' || !model.value) {
+        return '';
+    }
 
-        if (
-            Number.isNaN(
-                date.getTime(),
-            )
-        ) {
-            return '';
-        }
+    const dateValue = getDatePart(model.value);
 
-        const formattedDateValue =
-            new Intl.DateTimeFormat(
-                undefined,
-                {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric',
-                },
-            ).format(date);
+    const timeValue = getTimePart(model.value);
 
-        if (!timeValue) {
-            return formattedDateValue;
-        }
+    if (!dateValue) {
+        return '';
+    }
 
-        const [
-            hour = '00',
-            minute = '00',
-        ] = timeValue.split(':');
+    const [year, month, day] = dateValue.split('-').map(Number);
 
-        const time = new Date(
-            2000,
-            0,
-            1,
-            Number(hour),
-            Number(minute),
-        );
+    if (!year || !month || !day) {
+        return '';
+    }
 
-        const formattedTimeValue =
-            new Intl.DateTimeFormat(
-                undefined,
-                {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                },
-            ).format(time);
+    const date = new Date(year, month - 1, day);
 
-        return `${formattedDateValue}, ${formattedTimeValue}`;
-    });
+    if (Number.isNaN(date.getTime())) {
+        return '';
+    }
 
-const selectDatetimeDate = (
-    value: DateValue | undefined,
-): void => {
+    const formattedDateValue = new Intl.DateTimeFormat(undefined, {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    }).format(date);
+
+    if (!timeValue) {
+        return formattedDateValue;
+    }
+
+    const [hour = '00', minute = '00'] = timeValue.split(':');
+
+    const time = new Date(2000, 0, 1, Number(hour), Number(minute));
+
+    const formattedTimeValue = new Intl.DateTimeFormat(undefined, {
+        hour: 'numeric',
+        minute: '2-digit',
+    }).format(time);
+
+    return `${formattedDateValue}, ${formattedTimeValue}`;
+});
+
+const selectDatetimeDate = (value: DateValue | undefined): void => {
     if (!value) {
         model.value = null;
 
@@ -624,16 +480,9 @@ const selectDatetimeDate = (
     }
 
     const currentTime =
-        typeof model.value === 'string'
-            ? getTimePart(
-                model.value,
-            )
-            : '';
+        typeof model.value === 'string' ? getTimePart(model.value) : '';
 
-    model.value =
-        `${value.toString()}T${
-            currentTime || '00:00'
-        }`;
+    model.value = `${value.toString()}T${currentTime || '00:00'}`;
 };
 
 /*
@@ -644,26 +493,13 @@ const selectDatetimeDate = (
 
 const timeParts = computed(() => {
     const value =
-        typeof model.value === 'string'
-            ? getTimePart(
-                model.value,
-            )
-            : '';
+        typeof model.value === 'string' ? getTimePart(model.value) : '';
 
-    const [
-        hour = '',
-        minute = '',
-    ] = value.split(':');
+    const [hour = '', minute = ''] = value.split(':');
 
-    const hourNumber =
-        Number(hour);
+    const hourNumber = Number(hour);
 
-    if (
-        !hour
-        || Number.isNaN(
-            hourNumber,
-        )
-    ) {
+    if (!hour || Number.isNaN(hourNumber)) {
         return {
             hour: '12',
             minute: '00',
@@ -672,32 +508,19 @@ const timeParts = computed(() => {
     }
 
     return {
-        hour: String(
-            hourNumber % 12 || 12,
-        ).padStart(2, '0'),
+        hour: String(hourNumber % 12 || 12).padStart(2, '0'),
 
-        minute: minute
-            .padStart(2, '0')
-            .slice(0, 2),
+        minute: minute.padStart(2, '0').slice(0, 2),
 
-        period:
-            hourNumber >= 12
-                ? ('PM' as const)
-                : ('AM' as const),
+        period: hourNumber >= 12 ? ('PM' as const) : ('AM' as const),
     };
 });
 
-const selectedHour = computed(
-    () => timeParts.value.hour,
-);
+const selectedHour = computed(() => timeParts.value.hour);
 
-const selectedMinute = computed(
-    () => timeParts.value.minute,
-);
+const selectedMinute = computed(() => timeParts.value.minute);
 
-const selectedPeriod = computed(
-    () => timeParts.value.period,
-);
+const selectedPeriod = computed(() => timeParts.value.period);
 
 const formattedTime = computed(() => {
     if (!model.value) {
@@ -712,25 +535,17 @@ const updateTime = (
     minute: string,
     period: 'AM' | 'PM',
 ): void => {
-    let hourNumber =
-        Number(hour);
+    let hourNumber = Number(hour);
 
-    if (
-        period === 'AM'
-        && hourNumber === 12
-    ) {
+    if (period === 'AM' && hourNumber === 12) {
         hourNumber = 0;
     }
 
-    if (
-        period === 'PM'
-        && hourNumber !== 12
-    ) {
+    if (period === 'PM' && hourNumber !== 12) {
         hourNumber += 12;
     }
 
-    model.value =
-        `${String(hourNumber).padStart(2, '0')}:${minute}`;
+    model.value = `${String(hourNumber).padStart(2, '0')}:${minute}`;
 };
 
 const updateDatetimeTime = (
@@ -738,99 +553,48 @@ const updateDatetimeTime = (
     minute: string,
     period: 'AM' | 'PM',
 ): void => {
-    let hourNumber =
-        Number(hour);
+    let hourNumber = Number(hour);
 
-    if (
-        period === 'AM'
-        && hourNumber === 12
-    ) {
+    if (period === 'AM' && hourNumber === 12) {
         hourNumber = 0;
     }
 
-    if (
-        period === 'PM'
-        && hourNumber !== 12
-    ) {
+    if (period === 'PM' && hourNumber !== 12) {
         hourNumber += 12;
     }
 
     const dateValue =
-        typeof model.value === 'string'
-            ? getDatePart(
-                model.value,
-            )
-            : '';
+        typeof model.value === 'string' ? getDatePart(model.value) : '';
 
-    const fallbackDate =
-        new Date()
-            .toISOString()
-            .slice(0, 10);
+    const fallbackDate = new Date().toISOString().slice(0, 10);
 
-    model.value =
-        `${
-            dateValue || fallbackDate
-        }T${String(hourNumber).padStart(2, '0')}:${minute}`;
+    model.value = `${
+        dateValue || fallbackDate
+    }T${String(hourNumber).padStart(2, '0')}:${minute}`;
 };
 
-const selectHour = (
-    hour: string,
-): void => {
-    updateTime(
-        hour,
-        selectedMinute.value,
-        selectedPeriod.value,
-    );
+const selectHour = (hour: string): void => {
+    updateTime(hour, selectedMinute.value, selectedPeriod.value);
 };
 
-const selectMinute = (
-    minute: string,
-): void => {
-    updateTime(
-        selectedHour.value,
-        minute,
-        selectedPeriod.value,
-    );
+const selectMinute = (minute: string): void => {
+    updateTime(selectedHour.value, minute, selectedPeriod.value);
 };
 
-const selectPeriod = (
-    period: 'AM' | 'PM',
-): void => {
-    updateTime(
-        selectedHour.value,
-        selectedMinute.value,
-        period,
-    );
+const selectPeriod = (period: 'AM' | 'PM'): void => {
+    updateTime(selectedHour.value, selectedMinute.value, period);
 };
 
-const selectDatetimeHour = (
-    hour: string,
-): void => {
-    updateDatetimeTime(
-        hour,
-        selectedMinute.value,
-        selectedPeriod.value,
-    );
+const selectDatetimeHour = (hour: string): void => {
+    updateDatetimeTime(hour, selectedMinute.value, selectedPeriod.value);
 };
 
-const selectDatetimeMinute = (
-    minute: string,
-): void => {
-    updateDatetimeTime(
-        selectedHour.value,
-        minute,
-        selectedPeriod.value,
-    );
+const selectDatetimeMinute = (minute: string): void => {
+    updateDatetimeTime(selectedHour.value, minute, selectedPeriod.value);
 };
 
-const selectDatetimePeriod = (
-    period: 'AM' | 'PM',
-): void => {
-    updateDatetimeTime(
-        selectedHour.value,
-        selectedMinute.value,
-        period,
-    );
+const selectDatetimePeriod = (period: 'AM' | 'PM'): void => {
+    updateDatetimeTime(selectedHour.value, selectedMinute.value, period);
 };
 
 /*
@@ -848,8 +612,7 @@ const clear = (): void => {
 };
 
 const togglePassword = (): void => {
-    showPassword.value =
-        !showPassword.value;
+    showPassword.value = !showPassword.value;
 
     nextTick(() => {
         focus();
@@ -880,24 +643,16 @@ defineExpose({
         |--------------------------------------------------------------------------
         -->
 
-        <Popover
-            v-if="isDateInput"
-            v-model:open="datePickerOpen"
-        >
+        <Popover v-if="isDateInput" v-model:open="datePickerOpen">
             <PopoverTrigger as-child>
                 <button
                     type="button"
-                    :disabled="
-                        disabled || readonly
-                    "
-                    :aria-invalid="
-                        hasError
-                    "
+                    :disabled="disabled || readonly"
+                    :aria-invalid="hasError"
                     :class="[
                         inputClasses,
                         'relative flex cursor-pointer items-center text-left',
-                        !formattedDate &&
-                            'text-muted-foreground',
+                        !formattedDate && 'text-muted-foreground',
                     ]"
                     v-bind="attrs"
                 >
@@ -907,14 +662,8 @@ defineExpose({
                         aria-hidden="true"
                     />
 
-                    <span
-                        class="block min-w-0 truncate"
-                    >
-                        {{
-                            formattedDate ||
-                            placeholder ||
-                            datePlaceholder
-                        }}
+                    <span class="block min-w-0 truncate">
+                        {{ formattedDate || placeholder || datePlaceholder }}
                     </span>
 
                     <span
@@ -926,16 +675,11 @@ defineExpose({
                 </button>
             </PopoverTrigger>
 
-            <PopoverContent
-                align="start"
-                class="w-auto p-0"
-            >
+            <PopoverContent align="start" class="w-auto p-0">
                 <Calendar
                     v-model="selectedDate"
                     initial-focus
-                    @update:model-value="
-                        selectDate
-                    "
+                    @update:model-value="selectDate"
                 />
             </PopoverContent>
         </Popover>
@@ -946,24 +690,16 @@ defineExpose({
         |--------------------------------------------------------------------------
         -->
 
-        <Popover
-            v-else-if="isTimeInput"
-            v-model:open="timePickerOpen"
-        >
+        <Popover v-else-if="isTimeInput" v-model:open="timePickerOpen">
             <PopoverTrigger as-child>
                 <button
                     type="button"
-                    :disabled="
-                        disabled || readonly
-                    "
-                    :aria-invalid="
-                        hasError
-                    "
+                    :disabled="disabled || readonly"
+                    :aria-invalid="hasError"
                     :class="[
                         inputClasses,
                         'relative flex cursor-pointer items-center text-left',
-                        !formattedTime &&
-                            'text-muted-foreground',
+                        !formattedTime && 'text-muted-foreground',
                     ]"
                     v-bind="attrs"
                 >
@@ -973,14 +709,8 @@ defineExpose({
                         aria-hidden="true"
                     />
 
-                    <span
-                        class="block min-w-0 truncate"
-                    >
-                        {{
-                            formattedTime ||
-                            placeholder ||
-                            timePlaceholder
-                        }}
+                    <span class="block min-w-0 truncate">
+                        {{ formattedTime || placeholder || timePlaceholder }}
                     </span>
 
                     <span
@@ -992,27 +722,18 @@ defineExpose({
                 </button>
             </PopoverTrigger>
 
-            <PopoverContent
-                align="start"
-                class="w-auto min-w-64 p-3"
-            >
-                <div
-                    class="grid grid-cols-3 gap-2"
-                >
+            <PopoverContent align="start" class="w-auto min-w-64 p-3">
+                <div class="grid grid-cols-3 gap-2">
                     <!-- Hours -->
 
-                    <div
-                        class="min-w-0 space-y-1"
-                    >
+                    <div class="min-w-0 space-y-1">
                         <p
                             class="px-2 text-xs font-medium text-muted-foreground"
                         >
                             Hour
                         </p>
 
-                        <div
-                            class="max-h-56 overflow-y-auto rounded-md border"
-                        >
+                        <div class="max-h-56 overflow-y-auto rounded-md border">
                             <button
                                 v-for="hour in hours"
                                 :key="hour"
@@ -1021,15 +742,10 @@ defineExpose({
                                     'flex h-9 w-full items-center justify-center text-sm transition-colors',
                                     'hover:bg-accent hover:text-accent-foreground',
                                     'focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none',
-                                    selectedHour ===
-                                        hour &&
+                                    selectedHour === hour &&
                                         'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
                                 ]"
-                                @click="
-                                    selectHour(
-                                        hour,
-                                    )
-                                "
+                                @click="selectHour(hour)"
                             >
                                 {{ hour }}
                             </button>
@@ -1038,18 +754,14 @@ defineExpose({
 
                     <!-- Minutes -->
 
-                    <div
-                        class="min-w-0 space-y-1"
-                    >
+                    <div class="min-w-0 space-y-1">
                         <p
                             class="px-2 text-xs font-medium text-muted-foreground"
                         >
                             Minute
                         </p>
 
-                        <div
-                            class="max-h-56 overflow-y-auto rounded-md border"
-                        >
+                        <div class="max-h-56 overflow-y-auto rounded-md border">
                             <button
                                 v-for="minute in minutes"
                                 :key="minute"
@@ -1058,15 +770,10 @@ defineExpose({
                                     'flex h-9 w-full items-center justify-center text-sm transition-colors',
                                     'hover:bg-accent hover:text-accent-foreground',
                                     'focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none',
-                                    selectedMinute ===
-                                        minute &&
+                                    selectedMinute === minute &&
                                         'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
                                 ]"
-                                @click="
-                                    selectMinute(
-                                        minute,
-                                    )
-                                "
+                                @click="selectMinute(minute)"
                             >
                                 {{ minute }}
                             </button>
@@ -1075,18 +782,14 @@ defineExpose({
 
                     <!-- Period -->
 
-                    <div
-                        class="min-w-0 space-y-1"
-                    >
+                    <div class="min-w-0 space-y-1">
                         <p
                             class="px-2 text-xs font-medium text-muted-foreground"
                         >
                             Period
                         </p>
 
-                        <div
-                            class="rounded-md border"
-                        >
+                        <div class="rounded-md border">
                             <button
                                 v-for="period in periods"
                                 :key="period"
@@ -1095,15 +798,10 @@ defineExpose({
                                     'flex h-9 w-full items-center justify-center text-sm transition-colors',
                                     'hover:bg-accent hover:text-accent-foreground',
                                     'focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none',
-                                    selectedPeriod ===
-                                        period &&
+                                    selectedPeriod === period &&
                                         'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
                                 ]"
-                                @click="
-                                    selectPeriod(
-                                        period,
-                                    )
-                                "
+                                @click="selectPeriod(period)"
                             >
                                 {{ period }}
                             </button>
@@ -1114,19 +812,12 @@ defineExpose({
                 <div
                     class="mt-3 flex items-center justify-between gap-3 border-t pt-3"
                 >
-                    <span
-                        class="text-xs text-muted-foreground"
-                    >
+                    <span class="text-xs text-muted-foreground">
                         Selected time
                     </span>
 
-                    <span
-                        class="text-sm font-medium"
-                    >
-                        {{
-                            formattedTime ||
-                            '—'
-                        }}
+                    <span class="text-sm font-medium">
+                        {{ formattedTime || '—' }}
                     </span>
                 </div>
             </PopoverContent>
@@ -1138,26 +829,16 @@ defineExpose({
         |--------------------------------------------------------------------------
         -->
 
-        <Popover
-            v-else-if="isDatetimeInput"
-            v-model:open="
-                datetimePickerOpen
-            "
-        >
+        <Popover v-else-if="isDatetimeInput" v-model:open="datetimePickerOpen">
             <PopoverTrigger as-child>
                 <button
                     type="button"
-                    :disabled="
-                        disabled || readonly
-                    "
-                    :aria-invalid="
-                        hasError
-                    "
+                    :disabled="disabled || readonly"
+                    :aria-invalid="hasError"
                     :class="[
                         inputClasses,
                         'relative flex cursor-pointer items-center text-left',
-                        !formattedDatetime &&
-                            'text-muted-foreground',
+                        !formattedDatetime && 'text-muted-foreground',
                     ]"
                     v-bind="attrs"
                 >
@@ -1167,9 +848,7 @@ defineExpose({
                         aria-hidden="true"
                     />
 
-                    <span
-                        class="block min-w-0 truncate"
-                    >
+                    <span class="block min-w-0 truncate">
                         {{
                             formattedDatetime ||
                             placeholder ||
@@ -1188,67 +867,41 @@ defineExpose({
 
             <PopoverContent
                 align="start"
-                class="w-auto min-w-88 max-w-[calc(100vw-2rem)] p-3"
+                class="w-auto max-w-[calc(100vw-2rem)] min-w-88 p-3"
             >
                 <div class="space-y-4">
                     <!-- Date -->
 
                     <div>
-                        <div
-                            class="mb-2 flex items-center gap-2"
-                        >
+                        <div class="mb-2 flex items-center gap-2">
                             <CalendarDays
                                 class="size-4 text-muted-foreground"
                             />
 
-                            <span
-                                class="text-sm font-medium"
-                            >
-                                Date
-                            </span>
+                            <span class="text-sm font-medium"> Date </span>
                         </div>
 
                         <Calendar
-                            v-model="
-                                selectedDatetimeDate
-                            "
+                            v-model="selectedDatetimeDate"
                             initial-focus
-                            @update:model-value="
-                                selectDatetimeDate
-                            "
+                            @update:model-value="selectDatetimeDate"
                         />
                     </div>
 
                     <!-- Time -->
 
-                    <div
-                        class="border-t pt-4"
-                    >
-                        <div
-                            class="mb-2 flex items-center gap-2"
-                        >
-                            <Clock3
-                                class="size-4 text-muted-foreground"
-                            />
+                    <div class="border-t pt-4">
+                        <div class="mb-2 flex items-center gap-2">
+                            <Clock3 class="size-4 text-muted-foreground" />
 
-                            <span
-                                class="text-sm font-medium"
-                            >
-                                Time
-                            </span>
+                            <span class="text-sm font-medium"> Time </span>
                         </div>
 
-                        <div
-                            class="grid grid-cols-3 gap-2"
-                        >
+                        <div class="grid grid-cols-3 gap-2">
                             <!-- Hours -->
 
-                            <div
-                                class="min-w-0 space-y-1"
-                            >
-                                <p
-                                    class="px-2 text-xs text-muted-foreground"
-                                >
+                            <div class="min-w-0 space-y-1">
+                                <p class="px-2 text-xs text-muted-foreground">
                                     Hour
                                 </p>
 
@@ -1263,15 +916,10 @@ defineExpose({
                                             'flex h-8 w-full items-center justify-center text-sm transition-colors',
                                             'hover:bg-accent hover:text-accent-foreground',
                                             'focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none',
-                                            selectedHour ===
-                                                hour &&
+                                            selectedHour === hour &&
                                                 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
                                         ]"
-                                        @click="
-                                            selectDatetimeHour(
-                                                hour,
-                                            )
-                                        "
+                                        @click="selectDatetimeHour(hour)"
                                     >
                                         {{ hour }}
                                     </button>
@@ -1280,12 +928,8 @@ defineExpose({
 
                             <!-- Minutes -->
 
-                            <div
-                                class="min-w-0 space-y-1"
-                            >
-                                <p
-                                    class="px-2 text-xs text-muted-foreground"
-                                >
+                            <div class="min-w-0 space-y-1">
+                                <p class="px-2 text-xs text-muted-foreground">
                                     Minute
                                 </p>
 
@@ -1300,15 +944,10 @@ defineExpose({
                                             'flex h-8 w-full items-center justify-center text-sm transition-colors',
                                             'hover:bg-accent hover:text-accent-foreground',
                                             'focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none',
-                                            selectedMinute ===
-                                                minute &&
+                                            selectedMinute === minute &&
                                                 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
                                         ]"
-                                        @click="
-                                            selectDatetimeMinute(
-                                                minute,
-                                            )
-                                        "
+                                        @click="selectDatetimeMinute(minute)"
                                     >
                                         {{ minute }}
                                     </button>
@@ -1317,18 +956,12 @@ defineExpose({
 
                             <!-- Period -->
 
-                            <div
-                                class="min-w-0 space-y-1"
-                            >
-                                <p
-                                    class="px-2 text-xs text-muted-foreground"
-                                >
+                            <div class="min-w-0 space-y-1">
+                                <p class="px-2 text-xs text-muted-foreground">
                                     Period
                                 </p>
 
-                                <div
-                                    class="rounded-md border"
-                                >
+                                <div class="rounded-md border">
                                     <button
                                         v-for="period in periods"
                                         :key="period"
@@ -1337,15 +970,10 @@ defineExpose({
                                             'flex h-8 w-full items-center justify-center text-sm transition-colors',
                                             'hover:bg-accent hover:text-accent-foreground',
                                             'focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none',
-                                            selectedPeriod ===
-                                                period &&
+                                            selectedPeriod === period &&
                                                 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
                                         ]"
-                                        @click="
-                                            selectDatetimePeriod(
-                                                period,
-                                            )
-                                        "
+                                        @click="selectDatetimePeriod(period)"
                                     >
                                         {{ period }}
                                     </button>
@@ -1359,19 +987,12 @@ defineExpose({
                     <div
                         class="flex items-center justify-between gap-3 border-t pt-3"
                     >
-                        <span
-                            class="text-xs text-muted-foreground"
-                        >
+                        <span class="text-xs text-muted-foreground">
                             Selected
                         </span>
 
-                        <span
-                            class="truncate text-sm font-medium"
-                        >
-                            {{
-                                formattedDatetime ||
-                                'Select date and time'
-                            }}
+                        <span class="truncate text-sm font-medium">
+                            {{ formattedDatetime || 'Select date and time' }}
                         </span>
                     </div>
 
@@ -1381,9 +1002,7 @@ defineExpose({
                         type="button"
                         class="w-full"
                         :disabled="!model"
-                        @click="
-                            datetimePickerOpen = false
-                        "
+                        @click="datetimePickerOpen = false"
                     >
                         Done
                     </Button>
@@ -1397,21 +1016,12 @@ defineExpose({
         |--------------------------------------------------------------------------
         -->
 
-        <div
-            v-else
-            class="relative w-full min-w-0"
-        >
+        <div v-else class="relative w-full min-w-0">
             <!-- Leading Icon / Prefix -->
 
             <component
-                v-if="
-                    pickerIcon
-                    || props.icon
-                "
-                :is="
-                    pickerIcon ||
-                    props.icon
-                "
+                v-if="pickerIcon || props.icon"
+                :is="pickerIcon || props.icon"
                 class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
                 aria-hidden="true"
             />
@@ -1434,22 +1044,14 @@ defineExpose({
             <!-- Clear -->
 
             <button
-                v-else-if="
-                    clearable
-                    && hasValue
-                    && !disabled
-                    && !readonly
-                "
+                v-else-if="clearable && hasValue && !disabled && !readonly"
                 type="button"
                 tabindex="-1"
                 aria-label="Clear input"
                 class="absolute top-1/2 right-2 flex size-7 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 @click="clear"
             >
-                <X
-                    class="size-4"
-                    aria-hidden="true"
-                />
+                <X class="size-4" aria-hidden="true" />
             </button>
 
             <!-- Password -->
@@ -1458,30 +1060,14 @@ defineExpose({
                 v-else-if="isPasswordInput"
                 type="button"
                 tabindex="-1"
-                :disabled="
-                    disabled || readonly
-                "
-                :aria-label="
-                    showPassword
-                        ? 'Hide password'
-                        : 'Show password'
-                "
+                :disabled="disabled || readonly"
+                :aria-label="showPassword ? 'Hide password' : 'Show password'"
                 class="absolute top-1/2 right-2 flex size-7 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none"
-                @click="
-                    togglePassword
-                "
+                @click="togglePassword"
             >
-                <EyeOff
-                    v-if="showPassword"
-                    class="size-4"
-                    aria-hidden="true"
-                />
+                <EyeOff v-if="showPassword" class="size-4" aria-hidden="true" />
 
-                <Eye
-                    v-else
-                    class="size-4"
-                    aria-hidden="true"
-                />
+                <Eye v-else class="size-4" aria-hidden="true" />
             </button>
 
             <!-- Suffix -->
@@ -1517,10 +1103,7 @@ defineExpose({
                 :type="resolvedInputType"
                 :placeholder="
                     props.type === 'search'
-                        ? (
-                            placeholder
-                            || searchPlaceholder
-                        )
+                        ? placeholder || searchPlaceholder
                         : placeholder
                 "
                 :disabled="disabled"
@@ -1533,19 +1116,13 @@ defineExpose({
 
         <!-- Helper -->
 
-        <p
-            v-if="helper && !error"
-            class="mt-1 text-xs text-muted-foreground"
-        >
+        <p v-if="helper && !error" class="mt-1 text-xs text-muted-foreground">
             {{ helper }}
         </p>
 
         <!-- Error -->
 
-        <p
-            v-if="error"
-            class="mt-1 text-xs text-destructive"
-        >
+        <p v-if="error" class="mt-1 text-xs text-destructive">
             {{ error }}
         </p>
 

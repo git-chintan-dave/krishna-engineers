@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import type { InertiaForm } from '@inertiajs/vue3';
-import {
-    Settings2,
-    ToggleRight,
-} from '@lucide/vue';
+import { Settings2, ToggleRight } from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -17,9 +14,7 @@ import type { SetupFormData } from '@/types/setup';
 const props = withDefaults(
     defineProps<{
         form: InertiaForm<SetupFormData>;
-        errors?: Partial<
-            Record<keyof SetupFormData, string>
-        >;
+        errors?: Partial<Record<keyof SetupFormData, string>>;
         processing?: boolean;
         submitLabel?: string;
     }>(),
@@ -38,16 +33,11 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <form
-        class="min-w-0 space-y-6"
-        @submit.prevent="emit('submit')"
-    >
+    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
         <!-- Setup Information -->
         <FormSection
             :title="setupPage.form.sectionTitle"
-            :description="
-                setupPage.form.sectionDescription
-            "
+            :description="setupPage.form.sectionDescription"
         >
             <div class="grid min-w-0 gap-5">
                 <!-- Setup Name -->
@@ -60,9 +50,7 @@ const emit = defineEmits<{
                     <AppInput
                         id="setup-name"
                         v-model="props.form.name"
-                        :placeholder="
-                            setupPage.form.namePlaceholder
-                        "
+                        :placeholder="setupPage.form.namePlaceholder"
                         :disabled="props.processing"
                         :icon="Settings2"
                         :error="props.errors.name"

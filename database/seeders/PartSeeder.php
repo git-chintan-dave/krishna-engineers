@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Enums\Status;
 use App\Models\Part;
-use App\Models\PartType;
 use Illuminate\Database\Seeder;
 
 class PartSeeder extends Seeder

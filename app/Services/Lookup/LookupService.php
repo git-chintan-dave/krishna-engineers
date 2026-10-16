@@ -214,7 +214,6 @@ class LookupService
     /**
      * Get active tools.
      *
-     * @param  string|null  $type
      * @return array<int, array{value: int, label: string}>
      */
     public function tools(?string $type = null): array

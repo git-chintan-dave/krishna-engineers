@@ -1,24 +1,12 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import {
-    ChevronRight,
-    Menu,
-} from '@lucide/vue';
-import {
-    computed,
-    reactive,
-    ref,
-    watch,
-} from 'vue';
+import { ChevronRight, Menu } from '@lucide/vue';
+import { computed, reactive, ref, watch } from 'vue';
 
 import AppLogo from '@/components/AppLogo.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 
-import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
-} from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 import { Button } from '@/components/ui/button';
 
@@ -65,16 +53,10 @@ import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { getInitials } from '@/composables/useInitials';
 import { toUrl } from '@/lib/utils';
 
-import {
-    getMainNavItems,
-    rightNavItems,
-} from '@/config/navigation';
+import { getMainNavItems, rightNavItems } from '@/config/navigation';
 
-import type {
-    BreadcrumbItem,
-    NavItem,
-} from '@/types';
-import {dashboard} from "@/routes";
+import type { BreadcrumbItem, NavItem } from '@/types';
+import { dashboard } from '@/routes';
 
 /*
 |--------------------------------------------------------------------------
@@ -86,12 +68,9 @@ type Props = {
     breadcrumbs?: BreadcrumbItem[];
 };
 
-const props = withDefaults(
-    defineProps<Props>(),
-    {
-        breadcrumbs: () => [],
-    },
-);
+const props = withDefaults(defineProps<Props>(), {
+    breadcrumbs: () => [],
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -113,30 +92,20 @@ const mainNavItems = computed(() =>
     getMainNavItems(page.props.auth?.user?.role),
 );
 
-const {
-    isCurrentOrParentUrl,
-} = useCurrentUrl();
+const { isCurrentOrParentUrl } = useCurrentUrl();
 
-const activeItemStyles =
-    'bg-accent text-accent-foreground';
+const activeItemStyles = 'bg-accent text-accent-foreground';
 
 const hasChildren = (item: NavItem): boolean => {
     return Boolean(item.items?.length);
 };
 
 const isItemActive = (item: NavItem): boolean => {
-    if (
-        item.href &&
-        isCurrentOrParentUrl(item.href)
-    ) {
+    if (item.href && isCurrentOrParentUrl(item.href)) {
         return true;
     }
 
-    return (
-        item.items?.some((subItem) =>
-            isItemActive(subItem),
-        ) ?? false
-    );
+    return item.items?.some((subItem) => isItemActive(subItem)) ?? false;
 };
 
 /*
@@ -151,20 +120,13 @@ const isItemActive = (item: NavItem): boolean => {
 |
 */
 
-const mobileOpenGroups = reactive<
-    Record<string, boolean>
->({});
+const mobileOpenGroups = reactive<Record<string, boolean>>({});
 
-const isMobileGroupOpen = (
-    item: NavItem,
-): boolean => {
+const isMobileGroupOpen = (item: NavItem): boolean => {
     return mobileOpenGroups[item.title] ?? false;
 };
 
-const setMobileGroupOpen = (
-    item: NavItem,
-    open: boolean,
-): void => {
+const setMobileGroupOpen = (item: NavItem, open: boolean): void => {
     mobileOpenGroups[item.title] = open;
 };
 
@@ -213,18 +175,14 @@ watch(
 </script>
 
 <template>
-    <div
-        class="w-full min-w-0 [scrollbar-gutter:stable]"
-    >
+    <div class="w-full min-w-0 [scrollbar-gutter:stable]">
         <!--
         |--------------------------------------------------------------------------
         | Main Header
         |--------------------------------------------------------------------------
         -->
 
-        <header
-            class="h-16 w-full border-b border-sidebar-border/80"
-        >
+        <header class="h-16 w-full border-b border-sidebar-border/80">
             <div
                 class="mx-auto flex h-16 w-full min-w-0 items-center px-4 md:max-w-7xl"
             >
@@ -242,10 +200,7 @@ watch(
                                 size="icon"
                                 class="mr-2 size-9 cursor-pointer"
                             >
-                                <Menu
-                                    class="size-5"
-                                    aria-hidden="true"
-                                />
+                                <Menu class="size-5" aria-hidden="true" />
 
                                 <span class="sr-only">
                                     Open navigation menu
@@ -271,13 +226,11 @@ watch(
 
                             <!-- Navigation -->
 
-                            <div
-                                class="flex min-h-0 flex-1 flex-col"
-                            >
+                            <div class="flex min-h-0 flex-1 flex-col">
                                 <!-- Scrollable Navigation -->
 
                                 <nav
-                                    class="min-h-0 flex-1 overflow-y-auto py-6 pr-2 pt-0"
+                                    class="min-h-0 flex-1 overflow-y-auto py-6 pt-0 pr-2"
                                     aria-label="Mobile navigation"
                                 >
                                     <div class="space-y-1">
@@ -316,9 +269,7 @@ watch(
 
                                             <Collapsible
                                                 v-else
-                                                :open="
-                                                    isMobileGroupOpen(item)
-                                                "
+                                                :open="isMobileGroupOpen(item)"
                                                 class="group/mobile-collapsible"
                                                 @update:open="
                                                     (open) =>
@@ -330,9 +281,7 @@ watch(
                                             >
                                                 <!-- Group Trigger -->
 
-                                                <CollapsibleTrigger
-                                                    as-child
-                                                >
+                                                <CollapsibleTrigger as-child>
                                                     <button
                                                         type="button"
                                                         class="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
@@ -368,9 +317,7 @@ watch(
                                                     >
                                                         <Link
                                                             v-for="subItem in item.items"
-                                                            :key="
-                                                                subItem.title
-                                                            "
+                                                            :key="subItem.title"
                                                             :href="
                                                                 subItem.href!
                                                             "
@@ -457,9 +404,7 @@ watch(
                 |--------------------------------------------------------------------------
                 -->
 
-                <div
-                    class="hidden h-full min-w-0 flex-1 lg:flex"
-                >
+                <div class="hidden h-full min-w-0 flex-1 lg:flex">
                     <NavigationMenu
                         class="ml-6 flex h-full items-stretch xl:ml-10"
                     >
@@ -474,10 +419,7 @@ watch(
                                 <!-- Direct Navigation -->
 
                                 <Link
-                                    v-if="
-                                        !hasChildren(item) &&
-                                        item.href
-                                    "
+                                    v-if="!hasChildren(item) && item.href"
                                     :href="item.href"
                                     :class="[
                                         navigationMenuTriggerStyle(),
@@ -534,34 +476,24 @@ watch(
                                                 <NavigationMenuLink
                                                     as-child
                                                     :active="
-                                                        isItemActive(
-                                                            subItem,
-                                                        )
+                                                        isItemActive(subItem)
                                                     "
                                                 >
                                                     <Link
-                                                        :href="
-                                                            subItem.href!
-                                                        "
+                                                        :href="subItem.href!"
                                                         class="flex flex-row flex-nowrap items-center gap-3 rounded-md px-3 py-2.5"
                                                     >
                                                         <component
-                                                            v-if="
-                                                                subItem.icon
-                                                            "
-                                                            :is="
-                                                                subItem.icon
-                                                            "
+                                                            v-if="subItem.icon"
+                                                            :is="subItem.icon"
                                                             class="size-4 shrink-0"
                                                             aria-hidden="true"
                                                         />
 
                                                         <span
-                                                            class="whitespace-nowrap text-sm font-medium"
+                                                            class="text-sm font-medium whitespace-nowrap"
                                                         >
-                                                            {{
-                                                                subItem.title
-                                                            }}
+                                                            {{ subItem.title }}
                                                         </span>
                                                     </Link>
                                                 </NavigationMenuLink>
@@ -588,9 +520,7 @@ watch(
                 |--------------------------------------------------------------------------
                 -->
 
-                <div
-                    class="ml-auto flex shrink-0 items-center space-x-2"
-                >
+                <div class="ml-auto flex shrink-0 items-center space-x-2">
                     <!-- External Links -->
 
                     <div
@@ -601,9 +531,7 @@ watch(
                             v-for="item in rightNavItems"
                             :key="item.title"
                         >
-                            <TooltipProvider
-                                :delay-duration="0"
-                            >
+                            <TooltipProvider :delay-duration="0">
                                 <Tooltip>
                                     <TooltipTrigger as-child>
                                         <Button
@@ -613,15 +541,11 @@ watch(
                                             class="group size-9 cursor-pointer"
                                         >
                                             <a
-                                                :href="
-                                                    toUrl(item.href)
-                                                "
+                                                :href="toUrl(item.href)"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >
-                                                <span
-                                                    class="sr-only"
-                                                >
+                                                <span class="sr-only">
                                                     {{ item.title }}
                                                 </span>
 
@@ -665,27 +589,16 @@ watch(
                                     <AvatarFallback
                                         class="rounded-lg bg-neutral-200 font-semibold text-black dark:bg-neutral-700 dark:text-white"
                                     >
-                                        {{
-                                            getInitials(
-                                                auth.user?.name,
-                                            )
-                                        }}
+                                        {{ getInitials(auth.user?.name) }}
                                     </AvatarFallback>
                                 </Avatar>
 
-                                <span class="sr-only">
-                                    Open user menu
-                                </span>
+                                <span class="sr-only"> Open user menu </span>
                             </Button>
                         </DropdownMenuTrigger>
 
-                        <DropdownMenuContent
-                            align="end"
-                            class="w-56"
-                        >
-                            <UserMenuContent
-                                :user="auth.user"
-                            />
+                        <DropdownMenuContent align="end" class="w-56">
+                            <UserMenuContent :user="auth.user" />
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -702,9 +615,7 @@ watch(
         |
         -->
 
-        <div
-            class="h-12 w-full border-b border-sidebar-border/70"
-        >
+        <div class="h-12 w-full border-b border-sidebar-border/70">
             <div
                 class="mx-auto flex h-12 w-full min-w-0 items-center px-4 text-neutral-500 md:max-w-7xl"
             >

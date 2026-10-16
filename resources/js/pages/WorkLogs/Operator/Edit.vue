@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import {router, useForm} from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
 import OperatorWorkLogForm from '@/pages/WorkLogs/Operator/components/OperatorWorkLogForm.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {operatorWorkLogPage} from '@/config/operatorWorkLogs';
-import {index as operatorWorkLogs, update,} from '@/routes/operator';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { operatorWorkLogPage } from '@/config/operatorWorkLogs';
+import { index as operatorWorkLogs, update } from '@/routes/operator';
 
-import type {OperatorWorkLog, OperatorWorkLogFormData, OperatorWorkLogPartSetupOption,} from '@/types/operatorWorkLog';
+import type {
+    OperatorWorkLog,
+    OperatorWorkLogFormData,
+    OperatorWorkLogPartSetupOption,
+} from '@/types/operatorWorkLog';
 
 /*
 |--------------------------------------------------------------------------
@@ -27,10 +31,7 @@ const props = defineProps<{
     partSetups: OperatorWorkLogPartSetupOption[];
     currentUserId: number;
     canSelectOperator: boolean;
-    lastReports: Record<
-        string,
-        LastReport
-    >;
+    lastReports: Record<string, LastReport>;
 }>();
 
 /*
@@ -43,8 +44,7 @@ defineOptions({
     layout: {
         breadcrumbs: useCrudBreadcrumbs('edit', {
             resource: operatorWorkLogPage.title,
-            resourceUrl:
-            operatorWorkLogs().url,
+            resourceUrl: operatorWorkLogs().url,
         }),
     },
 });
@@ -55,21 +55,20 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const form =
-    useForm<OperatorWorkLogFormData>({
-        user_id: props.operatorWorkLog.user.id,
-        work_date: props.operatorWorkLog.work_date,
-        shift: props.operatorWorkLog.shift,
-        machine_id: props.operatorWorkLog.machine.id,
-        part_id: props.operatorWorkLog.part.id,
-        setup_id: props.operatorWorkLog.setup.id,
-        part_setup_id: props.operatorWorkLog.part_setup_id,
-        machine_cycle_time: props.operatorWorkLog.machine_cycle_time,
-        actual_cycle_time: props.operatorWorkLog.actual_cycle_time,
-        quantity: props.operatorWorkLog.quantity,
-        rejection_quantity: props.operatorWorkLog.rejection_quantity,
-        remarks: props.operatorWorkLog.remarks ?? '',
-    });
+const form = useForm<OperatorWorkLogFormData>({
+    user_id: props.operatorWorkLog.user.id,
+    work_date: props.operatorWorkLog.work_date,
+    shift: props.operatorWorkLog.shift,
+    machine_id: props.operatorWorkLog.machine.id,
+    part_id: props.operatorWorkLog.part.id,
+    setup_id: props.operatorWorkLog.setup.id,
+    part_setup_id: props.operatorWorkLog.part_setup_id,
+    machine_cycle_time: props.operatorWorkLog.machine_cycle_time,
+    actual_cycle_time: props.operatorWorkLog.actual_cycle_time,
+    quantity: props.operatorWorkLog.quantity,
+    rejection_quantity: props.operatorWorkLog.rejection_quantity,
+    remarks: props.operatorWorkLog.remarks ?? '',
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -78,51 +77,28 @@ const form =
 */
 
 const handleSubmit = () => {
-    form.put(
-        update(
-            props.operatorWorkLog.uuid,
-        ).url,
-    );
+    form.put(update(props.operatorWorkLog.uuid).url);
 };
 
 const handleCancel = () => {
-    router.visit(
-        operatorWorkLogs().url,
-    );
+    router.visit(operatorWorkLogs().url);
 };
 </script>
 
 <template>
     <FormLayout
-        :title="
-            operatorWorkLogPage.form
-                .editTitle
-        "
-        :description="
-            operatorWorkLogPage.form
-                .editDescription
-        "
+        :title="operatorWorkLogPage.form.editTitle"
+        :description="operatorWorkLogPage.form.editDescription"
     >
         <OperatorWorkLogForm
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                operatorWorkLogPage.form
-                    .editSubmitLabel
-            "
-            :part-setups="
-                props.partSetups
-            "
-            :current-user-id="
-                props.currentUserId
-            "
-            :can-select-operator="
-                props.canSelectOperator
-            "
-            :last-reports="
-                props.lastReports
-            "
+            :submit-label="operatorWorkLogPage.form.editSubmitLabel"
+            :part-setups="props.partSetups"
+            :current-user-id="props.currentUserId"
+            :can-select-operator="props.canSelectOperator"
+            :last-reports="props.lastReports"
             :is-create="false"
             @submit="handleSubmit"
             @cancel="handleCancel"

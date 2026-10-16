@@ -59,13 +59,11 @@ export const operatorWorkLogPage = {
         productionTimeLabel: 'Production Time',
 
         createTitle: 'Create Operator Work Log',
-        createDescription:
-            'Add a new production work log for an operator.',
+        createDescription: 'Add a new production work log for an operator.',
         createSubmitLabel: 'Save Work Log',
 
         editTitle: 'Edit Operator Work Log',
-        editDescription:
-            'Update the operator production work log.',
+        editDescription: 'Update the operator production work log.',
         editSubmitLabel: 'Update Work Log',
 
         cancelLabel: 'Cancel',

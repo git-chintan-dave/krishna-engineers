@@ -48,17 +48,11 @@ const props = withDefaults(
 */
 
 const emit = defineEmits<{
-    'update:modelValue': [
-        value: number | null,
-    ];
+    'update:modelValue': [value: number | null];
 
-    change: [
-        value: number | null,
-    ];
+    change: [value: number | null];
 
-    part: [
-        part: PartSelectOption | null,
-    ];
+    part: [part: PartSelectOption | null];
 }>();
 
 /*
@@ -67,13 +61,9 @@ const emit = defineEmits<{
 |--------------------------------------------------------------------------
 */
 
-const options =
-    ref<PartSelectOption[]>([]);
+const options = ref<PartSelectOption[]>([]);
 
-const {
-    loading,
-    parts,
-} = useLookup();
+const { loading, parts } = useLookup();
 
 /*
 |--------------------------------------------------------------------------
@@ -81,28 +71,16 @@ const {
 |--------------------------------------------------------------------------
 */
 
-const getPart = (
-    value: number | null,
-): PartSelectOption | null => {
+const getPart = (value: number | null): PartSelectOption | null => {
     if (value === null) {
         return null;
     }
 
-    return (
-        options.value.find(
-            (option) =>
-                option.value === value,
-        ) ?? null
-    );
+    return options.value.find((option) => option.value === value) ?? null;
 };
 
-const emitSelectedPart = (
-    value: number | null,
-): void => {
-    emit(
-        'part',
-        getPart(value),
-    );
+const emitSelectedPart = (value: number | null): void => {
+    emit('part', getPart(value));
 };
 
 /*
@@ -111,51 +89,32 @@ const emitSelectedPart = (
 |--------------------------------------------------------------------------
 */
 
-const normalizeValue = (
-    value: unknown,
-): number | null => {
+const normalizeValue = (value: unknown): number | null => {
     if (typeof value === 'number') {
         return value;
     }
 
-    if (
-        typeof value === 'string' &&
-        value !== ''
-    ) {
+    if (typeof value === 'string' && value !== '') {
         const numberValue = Number(value);
 
-        return Number.isNaN(numberValue)
-            ? null
-            : numberValue;
+        return Number.isNaN(numberValue) ? null : numberValue;
     }
 
     return null;
 };
 
-const handleModelValue = (
-    value: unknown,
-): void => {
-    const partId =
-        normalizeValue(value);
+const handleModelValue = (value: unknown): void => {
+    const partId = normalizeValue(value);
 
-    emit(
-        'update:modelValue',
-        partId,
-    );
+    emit('update:modelValue', partId);
 
     emitSelectedPart(partId);
 };
 
-const handleChange = (
-    value: unknown,
-): void => {
-    const partId =
-        normalizeValue(value);
+const handleChange = (value: unknown): void => {
+    const partId = normalizeValue(value);
 
-    emit(
-        'change',
-        partId,
-    );
+    emit('change', partId);
 
     emitSelectedPart(partId);
 };
@@ -167,8 +126,7 @@ const handleChange = (
 */
 
 const loadOptions = async (): Promise<void> => {
-    options.value =
-        await parts() as PartSelectOption[];
+    options.value = (await parts()) as PartSelectOption[];
 
     /*
      * Important for:
@@ -178,9 +136,7 @@ const loadOptions = async (): Promise<void> => {
      * modelValue may already contain a Part ID
      * before lookup options finish loading.
      */
-    emitSelectedPart(
-        props.modelValue,
-    );
+    emitSelectedPart(props.modelValue);
 };
 
 onMounted(loadOptions);
@@ -228,11 +184,7 @@ watch(
         :disabled="disabled"
         :loading="loading"
         :error="error"
-        @update:model-value="
-            handleModelValue
-        "
-        @change="
-            handleChange
-        "
+        @update:model-value="handleModelValue"
+        @change="handleChange"
     />
 </template>

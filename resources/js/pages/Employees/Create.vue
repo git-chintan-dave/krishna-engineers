@@ -5,10 +5,7 @@ import FormLayout from '@/components/layouts/FormLayout.vue';
 import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
 import { employeePage } from '@/config/employees';
 import EmployeeForm from '@/pages/Employees/components/EmployeeForm.vue';
-import {
-    index as employees,
-    store,
-} from '@/routes/employees';
+import { index as employees, store } from '@/routes/employees';
 import type { EmployeeFormData } from '@/types/employee';
 
 // Layout
@@ -56,17 +53,13 @@ const handleCancel = () => {
 <template>
     <FormLayout
         :title="employeePage.form.createTitle"
-        :description="
-            employeePage.form.createDescription
-        "
+        :description="employeePage.form.createDescription"
     >
         <EmployeeForm
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                employeePage.form.createSubmitLabel
-            "
+            :submit-label="employeePage.form.createSubmitLabel"
             @submit="handleSubmit"
             @cancel="handleCancel"
         />

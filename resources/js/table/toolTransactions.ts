@@ -1,15 +1,17 @@
-import {createColumnHelper} from '@tanstack/vue-table';
-import {h} from 'vue';
+import { createColumnHelper } from '@tanstack/vue-table';
+import { h } from 'vue';
 
-import {edit} from '@/routes/tool-transactions';
-import {createActionsColumn} from '@/table/columns/actionsColumn';
-import {createDateColumn} from '@/table/columns/dateColumn';
-import {createSelectColumn} from '@/table/columns/selectColumn';
-import {createSortableColumn} from '@/table/helpers/sortableColumn';
-import type {ToolTransaction, ToolTransactionType,} from '@/types/toolTransaction';
+import { edit } from '@/routes/tool-transactions';
+import { createActionsColumn } from '@/table/columns/actionsColumn';
+import { createDateColumn } from '@/table/columns/dateColumn';
+import { createSelectColumn } from '@/table/columns/selectColumn';
+import { createSortableColumn } from '@/table/helpers/sortableColumn';
+import type {
+    ToolTransaction,
+    ToolTransactionType,
+} from '@/types/toolTransaction';
 
-const columnHelper =
-    createColumnHelper<any, ToolTransaction>();
+const columnHelper = createColumnHelper<any, ToolTransaction>();
 
 /*
 |--------------------------------------------------------------------------

@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import type { InertiaForm } from '@inertiajs/vue3';
-import {
-    Image,
-    Settings2,
-    ToggleRight,
-    Wrench,
-} from '@lucide/vue';
+import { Image, Settings2, ToggleRight, Wrench } from '@lucide/vue';
 
 import AppImagePicker from '@/components/common/AppImagePicker.vue';
 import AppInput from '@/components/common/AppInput.vue';
@@ -21,9 +16,7 @@ import type { ToolFormData } from '@/types/tool';
 const props = withDefaults(
     defineProps<{
         form: InertiaForm<ToolFormData>;
-        errors?: Partial<
-            Record<keyof ToolFormData, string>
-        >;
+        errors?: Partial<Record<keyof ToolFormData, string>>;
         processing?: boolean;
         submitLabel?: string;
         currentImage?: string | null;
@@ -53,10 +46,7 @@ const handleImageRemove = (): void => {
 </script>
 
 <template>
-    <form
-        class="min-w-0 space-y-6"
-        @submit.prevent="emit('submit')"
-    >
+    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
         <!-- Tool Information -->
         <FormSection
             :title="toolPage.form.toolTitle"
@@ -73,9 +63,7 @@ const handleImageRemove = (): void => {
                     <AppToolTypeSelect
                         id="tool-type"
                         v-model="props.form.type"
-                        :placeholder="
-                            toolPage.form.typePlaceholder
-                        "
+                        :placeholder="toolPage.form.typePlaceholder"
                         :error="props.errors.type"
                         :disabled="props.processing"
                         :icon="Wrench"
@@ -94,9 +82,7 @@ const handleImageRemove = (): void => {
                     <AppInput
                         id="tool-name"
                         v-model="props.form.name"
-                        :placeholder="
-                            toolPage.form.namePlaceholder
-                        "
+                        :placeholder="toolPage.form.namePlaceholder"
                         :error="props.errors.name"
                         :disabled="props.processing"
                         :icon="Settings2"
@@ -127,9 +113,7 @@ const handleImageRemove = (): void => {
                         :current-image="props.currentImage"
                         :disabled="props.processing"
                         :error="props.errors.image"
-                        :placeholder="
-                            toolPage.form.imagePlaceholder
-                        "
+                        :placeholder="toolPage.form.imagePlaceholder"
                         :icon="Image"
                         @change="handleImageChange"
                         @remove="handleImageRemove"

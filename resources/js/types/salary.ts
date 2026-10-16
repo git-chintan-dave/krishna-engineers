@@ -1,7 +1,4 @@
-import type {
-    PaginatedResponse,
-    SortDirection,
-} from '@/types/listing';
+import type { PaginatedResponse, SortDirection } from '@/types/listing';
 
 export type SalaryStatus = 'draft' | 'paid';
 
@@ -89,8 +86,7 @@ export type SalaryFilters = {
     direction: SortDirection;
 };
 
-export type SalaryResponse =
-    PaginatedResponse<Salary>;
+export type SalaryResponse = PaginatedResponse<Salary>;
 
 export type SalaryEmployeeOption = {
     value: string;

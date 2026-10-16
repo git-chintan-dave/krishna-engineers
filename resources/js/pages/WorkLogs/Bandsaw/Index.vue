@@ -61,21 +61,13 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const filterWorkDate = ref(
-    props.filters.workDate,
-);
+const filterWorkDate = ref(props.filters.workDate);
 
-const filterUserId = ref<number | 'all'>(
-    props.filters.userId ?? 'all',
-);
+const filterUserId = ref<number | 'all'>(props.filters.userId ?? 'all');
 
-const filterPartId = ref<number | 'all'>(
-    props.filters.partId ?? 'all',
-);
+const filterPartId = ref<number | 'all'>(props.filters.partId ?? 'all');
 
-const filterSectionId = ref<number | 'all'>(
-    props.filters.sectionId ?? 'all',
-);
+const filterSectionId = ref<number | 'all'>(props.filters.sectionId ?? 'all');
 
 const filterSectionSizeId = ref<number | 'all'>(
     props.filters.sectionSizeId ?? 'all',
@@ -87,56 +79,40 @@ const filterSectionSizeId = ref<number | 'all'>(
 |--------------------------------------------------------------------------
 */
 
-const columns = createBandsawWorkLogColumns(
-    (id) => {
-        router.delete(destroy(id).url);
-    },
-    props.canSelectBandsaw,
-);
+const columns = createBandsawWorkLogColumns((id) => {
+    router.delete(destroy(id).url);
+}, props.canSelectBandsaw);
 
-const {
-    table,
-    selectedCount,
-    search,
-    clearFilters,
-    deleteSelected,
-} = useListingTable<
-    BandsawWorkLog,
-    BandsawWorkLogSort
->({
-    data: () => props.bandsawWorkLogs,
-    columns,
-    filters: {
-        sort: props.filters.sort,
-        direction: props.filters.direction,
-    },
-    route: bandsawWorkLogsRoute.url(),
-    searchable: false,
-    additionalFilters: () => ({
-        work_date:
-            filterWorkDate.value || undefined,
+const { table, selectedCount, search, clearFilters, deleteSelected } =
+    useListingTable<BandsawWorkLog, BandsawWorkLogSort>({
+        data: () => props.bandsawWorkLogs,
+        columns,
+        filters: {
+            sort: props.filters.sort,
+            direction: props.filters.direction,
+        },
+        route: bandsawWorkLogsRoute.url(),
+        searchable: false,
+        additionalFilters: () => ({
+            work_date: filterWorkDate.value || undefined,
 
-        user_id:
-            filterUserId.value !== 'all'
-                ? filterUserId.value
-                : undefined,
+            user_id:
+                filterUserId.value !== 'all' ? filterUserId.value : undefined,
 
-        part_id:
-            filterPartId.value !== 'all'
-                ? filterPartId.value
-                : undefined,
+            part_id:
+                filterPartId.value !== 'all' ? filterPartId.value : undefined,
 
-        section_id:
-            filterSectionId.value !== 'all'
-                ? filterSectionId.value
-                : undefined,
+            section_id:
+                filterSectionId.value !== 'all'
+                    ? filterSectionId.value
+                    : undefined,
 
-        section_size_id:
-            filterSectionSizeId.value !== 'all'
-                ? filterSectionSizeId.value
-                : undefined,
-    }),
-});
+            section_size_id:
+                filterSectionSizeId.value !== 'all'
+                    ? filterSectionSizeId.value
+                    : undefined,
+        }),
+    });
 
 /*
 |--------------------------------------------------------------------------
@@ -144,35 +120,22 @@ const {
 |--------------------------------------------------------------------------
 */
 
-const handleUserChange = (
-    value: number | null,
-): void => {
-    filterUserId.value =
-        value ?? 'all';
+const handleUserChange = (value: number | null): void => {
+    filterUserId.value = value ?? 'all';
 };
 
-const handlePartChange = (
-    value: number | null,
-): void => {
-    filterPartId.value =
-        value ?? 'all';
+const handlePartChange = (value: number | null): void => {
+    filterPartId.value = value ?? 'all';
 };
 
-const handleSectionChange = (
-    value: number | null,
-): void => {
-    filterSectionId.value =
-        value ?? 'all';
+const handleSectionChange = (value: number | null): void => {
+    filterSectionId.value = value ?? 'all';
 
-    filterSectionSizeId.value =
-        'all';
+    filterSectionSizeId.value = 'all';
 };
 
-const handleSectionSizeChange = (
-    value: number | null,
-): void => {
-    filterSectionSizeId.value =
-        value ?? 'all';
+const handleSectionSizeChange = (value: number | null): void => {
+    filterSectionSizeId.value = value ?? 'all';
 };
 
 const handleClearFilters = (): void => {
@@ -192,41 +155,29 @@ const handleClearFilters = (): void => {
 */
 
 const handleDeleteSelected = (): void => {
-    deleteSelected(
-        bulkDestroy().url,
-    );
+    deleteSelected(bulkDestroy().url);
 };
 </script>
 
 <template>
     <ListingLayout
         :title="bandsawWorkLogPage.title"
-        :description="
-            bandsawWorkLogPage.description
-        "
+        :description="bandsawWorkLogPage.description"
     >
         <template #actions>
             <ListingActions
                 :create-url="create()"
-                :create-label="
-                    bandsawWorkLogPage.createLabel
-                "
+                :create-label="bandsawWorkLogPage.createLabel"
                 :selected-count="selectedCount"
-                :resource-label="
-                    bandsawWorkLogPage.resourceLabel
-                "
-                @delete-selected="
-                    handleDeleteSelected
-                "
+                :resource-label="bandsawWorkLogPage.resourceLabel"
+                @delete-selected="handleDeleteSelected"
             />
         </template>
 
         <template #filters>
             <ListingFilters
                 :searchable="false"
-                :clear-button-label="
-                    bandsawWorkLogPage.clearButtonLabel
-                "
+                :clear-button-label="bandsawWorkLogPage.clearButtonLabel"
                 :clear-disabled="
                     !filterWorkDate &&
                     filterUserId === 'all' &&
@@ -238,13 +189,8 @@ const handleDeleteSelected = (): void => {
                 @clear="handleClearFilters"
             >
                 <template #filters>
-                    <div
-                        class="w-full shrink-0 sm:w-40"
-                    >
-                        <AppInput
-                            v-model="filterWorkDate"
-                            type="date"
-                        />
+                    <div class="w-full shrink-0 sm:w-40">
+                        <AppInput v-model="filterWorkDate" type="date" />
                     </div>
 
                     <div
@@ -253,72 +199,46 @@ const handleDeleteSelected = (): void => {
                     >
                         <AppEmployeeSelect
                             :model-value="
-                                filterUserId === 'all'
-                                    ? null
-                                    : filterUserId
+                                filterUserId === 'all' ? null : filterUserId
                             "
-                            :placeholder="
-                                bandsawWorkLogPage
-                                    .bandsawPlaceholder
-                            "
+                            :placeholder="bandsawWorkLogPage.bandsawPlaceholder"
                             searchable
                             clearable
                             role="bandsaw"
-                            @update:model-value="
-                                handleUserChange
-                            "
+                            @update:model-value="handleUserChange"
                         />
                     </div>
 
-                    <div
-                        class="w-full shrink-0 sm:w-40"
-                    >
+                    <div class="w-full shrink-0 sm:w-40">
                         <AppPartSelect
                             :model-value="
-                                filterPartId === 'all'
-                                    ? null
-                                    : filterPartId
+                                filterPartId === 'all' ? null : filterPartId
                             "
-                            :placeholder="
-                                bandsawWorkLogPage
-                                    .partPlaceholder
-                            "
+                            :placeholder="bandsawWorkLogPage.partPlaceholder"
                             searchable
                             clearable
-                            @update:model-value="
-                                handlePartChange
-                            "
+                            @update:model-value="handlePartChange"
                         />
                     </div>
 
-                    <div
-                        class="w-full shrink-0 sm:w-40"
-                    >
+                    <div class="w-full shrink-0 sm:w-40">
                         <AppSectionSelect
                             :model-value="
                                 filterSectionId === 'all'
                                     ? null
                                     : filterSectionId
                             "
-                            :placeholder="
-                                bandsawWorkLogPage
-                                    .sectionPlaceholder
-                            "
+                            :placeholder="bandsawWorkLogPage.sectionPlaceholder"
                             searchable
                             clearable
-                            @update:model-value="
-                                handleSectionChange
-                            "
+                            @update:model-value="handleSectionChange"
                         />
                     </div>
 
-                    <div
-                        class="w-full shrink-0 sm:w-44"
-                    >
+                    <div class="w-full shrink-0 sm:w-44">
                         <AppSectionSizeSelect
                             :model-value="
-                                filterSectionSizeId ===
-                                'all'
+                                filterSectionSizeId === 'all'
                                     ? null
                                     : filterSectionSizeId
                             "
@@ -328,14 +248,11 @@ const handleDeleteSelected = (): void => {
                                     : filterSectionId
                             "
                             :placeholder="
-                                bandsawWorkLogPage
-                                    .sectionSizePlaceholder
+                                bandsawWorkLogPage.sectionSizePlaceholder
                             "
                             searchable
                             clearable
-                            @update:model-value="
-                                handleSectionSizeChange
-                            "
+                            @update:model-value="handleSectionSizeChange"
                         />
                     </div>
                 </template>
@@ -346,25 +263,13 @@ const handleDeleteSelected = (): void => {
             <DataTable
                 :table="table"
                 :columns-count="columns.length"
-                :total="
-                    bandsawWorkLogs.meta.total
-                "
-                :page-index="
-                    bandsawWorkLogs.meta.current_page - 1
-                "
-                :page-size="
-                    bandsawWorkLogs.meta.per_page
-                "
+                :total="bandsawWorkLogs.meta.total"
+                :page-index="bandsawWorkLogs.meta.current_page - 1"
+                :page-size="bandsawWorkLogs.meta.per_page"
                 :selected-count="selectedCount"
-                :page-size-options="
-                    [10, 25, 50, 100]
-                "
-                :empty-text="
-                    bandsawWorkLogPage.emptyText
-                "
-                :item-label="
-                    bandsawWorkLogPage.itemLabel
-                "
+                :page-size-options="[10, 25, 50, 100]"
+                :empty-text="bandsawWorkLogPage.emptyText"
+                :item-label="bandsawWorkLogPage.itemLabel"
             />
         </template>
     </ListingLayout>

@@ -31,11 +31,7 @@ const isItemActive = (item: NavItem): boolean => {
         return true;
     }
 
-    return (
-        item.items?.some((subItem) =>
-            isItemActive(subItem),
-        ) ?? false
-    );
+    return item.items?.some((subItem) => isItemActive(subItem)) ?? false;
 };
 
 const hasChildren = (item: NavItem): boolean => {
@@ -45,19 +41,12 @@ const hasChildren = (item: NavItem): boolean => {
 
 <template>
     <SidebarGroup>
-        <SidebarGroupLabel>
-            Navigation
-        </SidebarGroupLabel>
+        <SidebarGroupLabel> Navigation </SidebarGroupLabel>
 
         <SidebarMenu>
-            <template
-                v-for="item in items"
-                :key="item.title"
-            >
+            <template v-for="item in items" :key="item.title">
                 <!-- Direct navigation item -->
-                <SidebarMenuItem
-                    v-if="!hasChildren(item)"
-                >
+                <SidebarMenuItem v-if="!hasChildren(item)">
                     <SidebarMenuButton
                         as-child
                         :is-active="isItemActive(item)"
@@ -115,31 +104,17 @@ const hasChildren = (item: NavItem): boolean => {
                                 >
                                     <SidebarMenuSubButton
                                         as-child
-                                        :is-active="
-                                            isItemActive(
-                                                subItem,
-                                            )
-                                        "
+                                        :is-active="isItemActive(subItem)"
                                     >
-                                        <Link
-                                            :href="
-                                                subItem.href!
-                                            "
-                                        >
+                                        <Link :href="subItem.href!">
                                             <component
-                                                v-if="
-                                                    subItem.icon
-                                                "
-                                                :is="
-                                                    subItem.icon
-                                                "
+                                                v-if="subItem.icon"
+                                                :is="subItem.icon"
                                                 aria-hidden="true"
                                             />
 
                                             <span>
-                                                {{
-                                                    subItem.title
-                                                }}
+                                                {{ subItem.title }}
                                             </span>
                                         </Link>
                                     </SidebarMenuSubButton>

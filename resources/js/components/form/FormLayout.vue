@@ -26,10 +26,7 @@ const props = withDefaults(
         |--------------------------------------------------------------------------
         -->
 
-        <AppPageHeader
-            :title="title"
-            :description="description"
-        />
+        <AppPageHeader :title="title" :description="description" />
 
         <!--
         |--------------------------------------------------------------------------
@@ -37,10 +34,7 @@ const props = withDefaults(
         |--------------------------------------------------------------------------
         -->
 
-        <section
-            :aria-label="`${title} form`"
-            class="min-w-0"
-        >
+        <section :aria-label="`${title} form`" class="min-w-0">
             <slot />
         </section>
     </div>

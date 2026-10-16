@@ -49,10 +49,7 @@ const emit = defineEmits<{
 
 const options = ref<SelectOption<string>[]>([]);
 
-const {
-    loading,
-    enumOptions,
-} = useLookup();
+const { loading, enumOptions } = useLookup();
 
 /*
 |--------------------------------------------------------------------------
@@ -61,10 +58,7 @@ const {
 */
 
 const loadOptions = async () => {
-    options.value =
-        await enumOptions<string>(
-            'tool_transaction_type',
-        );
+    options.value = await enumOptions<string>('tool_transaction_type');
 };
 
 onMounted(loadOptions);
@@ -80,17 +74,7 @@ onMounted(loadOptions);
         :disabled="disabled"
         :loading="loading"
         :error="error"
-        @update:model-value="
-            emit(
-                'update:modelValue',
-                $event as string | null,
-            )
-        "
-        @change="
-            emit(
-                'change',
-                $event as string | null,
-            )
-        "
+        @update:model-value="emit('update:modelValue', $event as string | null)"
+        @change="emit('change', $event as string | null)"
     />
 </template>

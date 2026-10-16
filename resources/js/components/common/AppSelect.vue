@@ -1,12 +1,23 @@
 <script setup lang="ts">
-import {computed, useAttrs,} from 'vue';
-import {Check, ChevronsUpDown, X,} from '@lucide/vue';
+import { computed, useAttrs } from 'vue';
+import { Check, ChevronsUpDown, X } from '@lucide/vue';
 
-import {Button} from '@/components/ui/button';
-import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,} from '@/components/ui/command';
-import {Popover, PopoverContent, PopoverTrigger,} from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from '@/components/ui/command';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 
-import type {SelectOption as CommonSelectOption} from '@/types/common';
+import type { SelectOption as CommonSelectOption } from '@/types/common';
 
 defineOptions({
     inheritAttrs: false,
@@ -23,13 +34,10 @@ type Primitive = string | number;
 type Option =
     | Primitive
     | (CommonSelectOption<Primitive> & {
-    [key: string]: unknown;
-});
+          [key: string]: unknown;
+      });
 
-type ModelValue =
-    | Primitive
-    | Primitive[]
-    | null;
+type ModelValue = Primitive | Primitive[] | null;
 
 /*
 |--------------------------------------------------------------------------
@@ -97,9 +105,7 @@ const emit = defineEmits<{
 
 const attrs = useAttrs();
 
-const inputName = computed(
-    () => attrs.name as string | undefined,
-);
+const inputName = computed(() => attrs.name as string | undefined);
 
 /*
 |--------------------------------------------------------------------------
@@ -119,10 +125,7 @@ const open = defineModel<boolean>('open', {
 
 const normalizedOptions = computed(() =>
     props.options.map((option) => {
-        if (
-            typeof option === 'string' ||
-            typeof option === 'number'
-        ) {
+        if (typeof option === 'string' || typeof option === 'number') {
             return {
                 label: String(option),
                 value: option,
@@ -130,17 +133,11 @@ const normalizedOptions = computed(() =>
         }
 
         const value =
-            (option[
-                props.optionValue
-                ] as Primitive | undefined) ??
+            (option[props.optionValue] as Primitive | undefined) ??
             option.value ??
             null;
 
-        const label =
-            option[props.optionLabel] ??
-            option.label ??
-            value ??
-            '';
+        const label = option[props.optionLabel] ?? option.label ?? value ?? '';
 
         return {
             label: String(label),
@@ -155,59 +152,35 @@ const normalizedOptions = computed(() =>
 |--------------------------------------------------------------------------
 */
 
-const selectedValues = computed<Primitive[]>(
-    () => {
-        if (props.multiple) {
-            return Array.isArray(
-                props.modelValue,
-            )
-                ? props.modelValue
-                : [];
-        }
+const selectedValues = computed<Primitive[]>(() => {
+    if (props.multiple) {
+        return Array.isArray(props.modelValue) ? props.modelValue : [];
+    }
 
-        if (
-            props.modelValue === null ||
-            props.modelValue === undefined
-        ) {
-            return [];
-        }
+    if (props.modelValue === null || props.modelValue === undefined) {
+        return [];
+    }
 
-        return [
-            props.modelValue as Primitive,
-        ];
-    },
-);
+    return [props.modelValue as Primitive];
+});
 
 const selectedOptions = computed(() =>
-    normalizedOptions.value.filter(
-        (option) =>
-            selectedValues.value.some(
-                (value) =>
-                    String(value) ===
-                    String(option.value),
-            ),
+    normalizedOptions.value.filter((option) =>
+        selectedValues.value.some(
+            (value) => String(value) === String(option.value),
+        ),
     ),
 );
 
-const selectedOption = computed(
-    () => selectedOptions.value[0],
-);
+const selectedOption = computed(() => selectedOptions.value[0]);
 
-const selectedLabel = computed(
-    () => selectedOption.value?.label ?? '',
-);
+const selectedLabel = computed(() => selectedOption.value?.label ?? '');
 
-const hasSelection = computed(
-    () => selectedValues.value.length > 0,
-);
+const hasSelection = computed(() => selectedValues.value.length > 0);
 
-const isSelected = (
-    value: Primitive,
-) =>
+const isSelected = (value: Primitive) =>
     selectedValues.value.some(
-        (selectedValue) =>
-            String(selectedValue) ===
-            String(value),
+        (selectedValue) => String(selectedValue) === String(value),
     );
 
 /*
@@ -218,14 +191,10 @@ const isSelected = (
 
 const nativeSelectValue = computed(() => {
     if (props.multiple) {
-        return selectedValues.value.map(
-            (value) => String(value),
-        );
+        return selectedValues.value.map((value) => String(value));
     }
 
-    return hasSelection.value
-        ? String(selectedValues.value[0])
-        : '';
+    return hasSelection.value ? String(selectedValues.value[0]) : '';
 });
 
 /*
@@ -234,32 +203,19 @@ const nativeSelectValue = computed(() => {
 |--------------------------------------------------------------------------
 */
 
-const emitValue = (
-    value: ModelValue,
-) => {
-    emit(
-        'update:modelValue',
-        value,
-    );
+const emitValue = (value: ModelValue) => {
+    emit('update:modelValue', value);
 
     emit('change', value);
 };
 
-const selectOption = (
-    value: Primitive,
-) => {
+const selectOption = (value: Primitive) => {
     if (props.multiple) {
-        const currentValues = [
-            ...selectedValues.value,
-        ];
+        const currentValues = [...selectedValues.value];
 
-        const index =
-            currentValues.findIndex(
-                (selectedValue) =>
-                    String(
-                        selectedValue,
-                    ) === String(value),
-            );
+        const index = currentValues.findIndex(
+            (selectedValue) => String(selectedValue) === String(value),
+        );
 
         if (index >= 0) {
             currentValues.splice(index, 1);
@@ -272,19 +228,13 @@ const selectOption = (
         return;
     }
 
-    emitValue(
-        isSelected(value)
-            ? null
-            : value,
-    );
+    emitValue(isSelected(value) ? null : value);
 
     open.value = false;
 };
 
 const clearSelection = () => {
-    emitValue(
-        props.multiple ? [] : null,
-    );
+    emitValue(props.multiple ? [] : null);
 };
 </script>
 
@@ -302,30 +252,21 @@ const clearSelection = () => {
             v-if="required"
             :name="inputName"
             :required="required"
-            :disabled="
-            disabled || loading
-        "
+            :disabled="disabled || loading"
             :multiple="multiple"
             :value="nativeSelectValue"
             tabindex="-1"
             aria-hidden="true"
             class="sr-only"
         >
-            <option
-                v-if="!multiple"
-                value=""
-            >
+            <option v-if="!multiple" value="">
                 {{ placeholder }}
             </option>
 
             <option
                 v-for="option in normalizedOptions"
-                :key="
-                String(option.value)
-            "
-                :value="
-                String(option.value)
-            "
+                :key="String(option.value)"
+                :value="String(option.value)"
             >
                 {{ option.label }}
             </option>
@@ -340,110 +281,67 @@ const clearSelection = () => {
                     :aria-expanded="open"
                     :aria-invalid="!!error"
                     :aria-required="required"
-                    :disabled="
-                    disabled || loading
-                "
+                    :disabled="disabled || loading"
                     class="h-9 w-full min-w-0 justify-between font-normal"
                     :class="
-                    error &&
-                    'border-destructive focus-visible:ring-destructive'
-                "
+                        error &&
+                        'border-destructive focus-visible:ring-destructive'
+                    "
                     v-bind="attrs"
                     :name="undefined"
                 >
                     <!-- Selected Value -->
                     <span
                         class="min-w-0 flex-1 truncate text-left"
-                        :class="[
-                        !hasSelection &&
-                            'text-muted-foreground',
-                    ]"
+                        :class="[!hasSelection && 'text-muted-foreground']"
                     >
-                    <!-- Loading -->
-                    <template
-                        v-if="loading"
-                    >
-                        Loading...
-                    </template>
+                        <!-- Loading -->
+                        <template v-if="loading"> Loading... </template>
 
                         <!-- Multiple -->
-                    <template
-                        v-else-if="
-                            multiple &&
-                            selectedOptions.length
-                        "
-                    >
-                        <span
-                            class="truncate"
+                        <template
+                            v-else-if="multiple && selectedOptions.length"
                         >
-                            {{
-                                selectedOptions[0]
-                                    ?.label
-                            }}
-                        </span>
+                            <span class="truncate">
+                                {{ selectedOptions[0]?.label }}
+                            </span>
 
-                        <span
-                            v-if="
-                                selectedOptions.length >
-                                1
-                            "
-                            class="ml-1 shrink-0 text-xs text-muted-foreground"
-                        >
-                            +{{
-                                selectedOptions.length -
-                                1
-                            }}
-                        </span>
-                    </template>
+                            <span
+                                v-if="selectedOptions.length > 1"
+                                class="ml-1 shrink-0 text-xs text-muted-foreground"
+                            >
+                                +{{ selectedOptions.length - 1 }}
+                            </span>
+                        </template>
 
                         <!-- Single / Empty -->
-                    <template
-                        v-else
-                    >
-                        {{
-                            selectedLabel ||
-                            placeholder
-                        }}
-                    </template>
-                </span>
+                        <template v-else>
+                            {{ selectedLabel || placeholder }}
+                        </template>
+                    </span>
 
                     <!-- Actions -->
-                    <span
-                        class="ml-2 flex shrink-0 items-center gap-1"
-                    >
-                    <!-- Clear -->
-                    <span
-                        v-if="
-                            clearable &&
-                            hasSelection &&
-                            !loading
-                        "
-                        role="button"
-                        tabindex="0"
-                        aria-label="Clear selection"
-                        class="flex size-7 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        @click.stop="
-                            clearSelection
-                        "
-                        @keydown.enter.stop="
-                            clearSelection
-                        "
-                        @keydown.space.prevent.stop="
-                            clearSelection
-                        "
-                    >
-                        <X
-                            class="size-3.5"
+                    <span class="ml-2 flex shrink-0 items-center gap-1">
+                        <!-- Clear -->
+                        <span
+                            v-if="clearable && hasSelection && !loading"
+                            role="button"
+                            tabindex="0"
+                            aria-label="Clear selection"
+                            class="flex size-7 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                            @click.stop="clearSelection"
+                            @keydown.enter.stop="clearSelection"
+                            @keydown.space.prevent.stop="clearSelection"
+                        >
+                            <X class="size-3.5" aria-hidden="true" />
+                        </span>
+
+                        <!-- Dropdown Indicator -->
+                        <ChevronsUpDown
+                            class="size-4 shrink-0 text-muted-foreground opacity-70"
                             aria-hidden="true"
                         />
                     </span>
-
-                        <!-- Dropdown Indicator -->
-                    <ChevronsUpDown
-                        class="size-4 shrink-0 text-muted-foreground opacity-70"
-                        aria-hidden="true"
-                    />
-                </span>
                 </Button>
             </PopoverTrigger>
 
@@ -455,15 +353,11 @@ const clearSelection = () => {
                     <!-- Search -->
                     <CommandInput
                         v-if="searchable"
-                        :placeholder="
-                        searchPlaceholder
-                    "
+                        :placeholder="searchPlaceholder"
                         class="h-9"
                     />
 
-                    <CommandList
-                        class="max-h-60 overflow-x-hidden"
-                    >
+                    <CommandList class="max-h-60 overflow-x-hidden">
                         <!-- Empty -->
                         <CommandEmpty>
                             {{ emptyText }}
@@ -473,38 +367,24 @@ const clearSelection = () => {
                         <CommandGroup>
                             <CommandItem
                                 v-for="option in normalizedOptions"
-                                :key="
-                                String(
-                                    option.value,
-                                )
-                            "
-                                :value="
-                                option.label
-                            "
+                                :key="String(option.value)"
+                                :value="option.label"
                                 class="min-w-0 cursor-pointer"
                                 @select="
-                                selectOption(
-                                    option.value as Primitive,
-                                )
-                            "
+                                    selectOption(option.value as Primitive)
+                                "
                             >
-                            <span
-                                class="min-w-0 flex-1 truncate"
-                            >
-                                {{
-                                    option.label
-                                }}
-                            </span>
+                                <span class="min-w-0 flex-1 truncate">
+                                    {{ option.label }}
+                                </span>
 
                                 <Check
                                     :class="[
-                                    'ml-3 size-4 shrink-0',
-                                    isSelected(
-                                        option.value as Primitive,
-                                    )
-                                        ? 'opacity-100'
-                                        : 'opacity-0',
-                                ]"
+                                        'ml-3 size-4 shrink-0',
+                                        isSelected(option.value as Primitive)
+                                            ? 'opacity-100'
+                                            : 'opacity-0',
+                                    ]"
                                     aria-hidden="true"
                                 />
                             </CommandItem>
@@ -515,10 +395,7 @@ const clearSelection = () => {
         </Popover>
 
         <!-- Error -->
-        <p
-            v-if="error"
-            class="mt-1.5 text-xs text-destructive"
-        >
+        <p v-if="error" class="mt-1.5 text-xs text-destructive">
             {{ error }}
         </p>
     </div>

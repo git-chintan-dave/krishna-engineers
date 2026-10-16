@@ -17,8 +17,7 @@ class BandsawWorkLogResource extends JsonResource
             'id' => $this->id,
             'uuid' => $this->uuid,
 
-            'work_date' =>
-                $this->work_date?->toDateString(),
+            'work_date' => $this->work_date?->toDateString(),
 
             'user' => [
                 'id' => $this->user_id,
@@ -47,13 +46,11 @@ class BandsawWorkLogResource extends JsonResource
             'section' => [
                 'id' => $this->whenLoaded(
                     'sectionSize',
-                    fn () =>
-                    $this->sectionSize?->section_id,
+                    fn () => $this->sectionSize?->section_id,
                 ),
                 'name' => $this->whenLoaded(
                     'sectionSize',
-                    fn () =>
-                    $this->sectionSize?->section?->name,
+                    fn () => $this->sectionSize?->section?->name,
                 ),
             ],
 
@@ -68,11 +65,9 @@ class BandsawWorkLogResource extends JsonResource
             'quantity' => $this->quantity,
             'remarks' => $this->remarks,
 
-            'created_at' =>
-                $this->created_at?->format('d M Y'),
+            'created_at' => $this->created_at?->format('d M Y'),
 
-            'updated_at' =>
-                $this->updated_at?->format('d M Y'),
+            'updated_at' => $this->updated_at?->format('d M Y'),
         ];
     }
 }

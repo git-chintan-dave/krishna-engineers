@@ -1,20 +1,25 @@
 ﻿<script setup lang="ts">
-import {router} from '@inertiajs/vue3';
-import {ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 import ListingActions from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {partPage} from '@/config/parts';
-import {bulkDestroy, create, destroy, index as partsRoute,} from '@/routes/parts';
-import {createPartColumns} from '@/table/parts';
-import type {Part, PartFilters, PartSort, PartsResponse,} from '@/types/part';
-import type {StatusFilter} from '@/types/listing';
-import AppSectionSelect from "@/components/selects/AppSectionSelect.vue";
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { partPage } from '@/config/parts';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as partsRoute,
+} from '@/routes/parts';
+import { createPartColumns } from '@/table/parts';
+import type { Part, PartFilters, PartSort, PartsResponse } from '@/types/part';
+import type { StatusFilter } from '@/types/listing';
+import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 
 /*
 |--------------------------------------------------------------------------
@@ -48,27 +53,18 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const filterSectionId = ref<number | 'all'>(
-    props.filters.sectionId,
-);
+const filterSectionId = ref<number | 'all'>(props.filters.sectionId);
 
-const filterStatus = ref<StatusFilter>(
-    props.filters.status,
-);
+const filterStatus = ref<StatusFilter>(props.filters.status);
 
-const handleSectionChange = (
-    value: number | null,
-) => {
+const handleSectionChange = (value: number | null) => {
     filterSectionId.value = value ?? 'all';
 };
 
-const handleStatusChange = (
-    value: string | null,
-) => {
+const handleStatusChange = (value: string | null) => {
     filterSectionId.value = 'all';
 
-    filterStatus.value =
-        (value as StatusFilter | null) ?? 'all';
+    filterStatus.value = (value as StatusFilter | null) ?? 'all';
 };
 
 const handleClearFilters = () => {
@@ -109,13 +105,8 @@ const {
 
     additionalFilters: () => ({
         section_id:
-            filterSectionId.value !== 'all'
-                ? filterSectionId.value
-                : undefined,
-        status:
-            filterStatus.value !== 'all'
-                ? filterStatus.value
-                : undefined,
+            filterSectionId.value !== 'all' ? filterSectionId.value : undefined,
+        status: filterStatus.value !== 'all' ? filterStatus.value : undefined,
     }),
 });
 
@@ -131,10 +122,7 @@ const handleDeleteSelected = () => {
 </script>
 
 <template>
-    <ListingLayout
-        :title="partPage.title"
-        :description="partPage.description"
-    >
+    <ListingLayout :title="partPage.title" :description="partPage.description">
         <!-- Actions -->
         <template #actions>
             <ListingActions
@@ -150,15 +138,9 @@ const handleDeleteSelected = () => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
-                :search-placeholder="
-                    partPage.searchPlaceholder
-                "
-                :search-button-label="
-                    partPage.searchButtonLabel
-                "
-                :clear-button-label="
-                    partPage.clearButtonLabel
-                "
+                :search-placeholder="partPage.searchPlaceholder"
+                :search-button-label="partPage.searchButtonLabel"
+                :clear-button-label="partPage.clearButtonLabel"
                 :clear-disabled="
                     !searchQuery.trim() &&
                     filterSectionId === 'all' &&
@@ -168,38 +150,26 @@ const handleDeleteSelected = () => {
                 @clear="handleClearFilters"
             >
                 <template #filters>
-                    <div
-                        class="w-full shrink-0 sm:w-48"
-                    >
+                    <div class="w-full shrink-0 sm:w-48">
                         <AppSectionSelect
                             :model-value="
                                 filterSectionId === 'all'
                                     ? null
                                     : filterSectionId
                             "
-                            :placeholder="
-                                partPage.sectionPlaceholder
-                            "
+                            :placeholder="partPage.sectionPlaceholder"
                             clearable
-                            @update:model-value="
-                                handleSectionChange
-                            "
+                            @update:model-value="handleSectionChange"
                         />
                     </div>
-                    <div
-                        class="w-full shrink-0 sm:w-48"
-                    >
+                    <div class="w-full shrink-0 sm:w-48">
                         <AppStatusSelect
                             :model-value="
-                                filterStatus === 'all'
-                                    ? null
-                                    : filterStatus
+                                filterStatus === 'all' ? null : filterStatus
                             "
                             placeholder="All statuses"
                             clearable
-                            @update:model-value="
-                                handleStatusChange
-                            "
+                            @update:model-value="handleStatusChange"
                         />
                     </div>
                 </template>
@@ -212,9 +182,7 @@ const handleDeleteSelected = () => {
                 :table="table"
                 :columns-count="columns.length"
                 :total="parts.meta.total"
-                :page-index="
-                    parts.meta.current_page - 1
-                "
+                :page-index="parts.meta.current_page - 1"
                 :page-size="parts.meta.per_page"
                 :selected-count="selectedCount"
                 :page-size-options="[10, 25, 50, 100]"

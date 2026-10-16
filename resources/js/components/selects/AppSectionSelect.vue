@@ -49,10 +49,7 @@ const emit = defineEmits<{
 
 const options = ref<SelectOption<number>[]>([]);
 
-const {
-    loading,
-    sections,
-} = useLookup();
+const { loading, sections } = useLookup();
 
 /*
 |--------------------------------------------------------------------------
@@ -77,17 +74,7 @@ onMounted(loadOptions);
         :disabled="disabled"
         :loading="loading"
         :error="error"
-        @update:model-value="
-            emit(
-                'update:modelValue',
-                $event as number | null,
-            )
-        "
-        @change="
-            emit(
-                'change',
-                $event as number | null,
-            )
-        "
+        @update:model-value="emit('update:modelValue', $event as number | null)"
+        @change="emit('change', $event as number | null)"
     />
 </template>

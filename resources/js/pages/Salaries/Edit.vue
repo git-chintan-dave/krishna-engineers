@@ -5,14 +5,8 @@ import FormLayout from '@/components/layouts/FormLayout.vue';
 import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
 import { salaryPage } from '@/config/salaries';
 import SalaryForm from '@/pages/Salaries/components/SalaryForm.vue';
-import {
-    index as salaries,
-    update,
-} from '@/routes/salaries';
-import type {
-    Salary,
-    SalaryFormData,
-} from '@/types/salary';
+import { index as salaries, update } from '@/routes/salaries';
+import type { Salary, SalaryFormData } from '@/types/salary';
 
 const props = defineProps<{
     salary: Salary;
@@ -29,15 +23,12 @@ defineOptions({
 
 const form = useForm<SalaryFormData>({
     user_id: props.salary.user_id,
-    salary_period_start:
-    props.salary.salary_period_start,
-    salary_period_end:
-    props.salary.salary_period_end,
+    salary_period_start: props.salary.salary_period_start,
+    salary_period_end: props.salary.salary_period_end,
     upad: props.salary.upad,
     paid_loan: props.salary.paid_loan,
     adjustment: props.salary.adjustment,
-    adjustment_reason:
-        props.salary.adjustment_reason ?? '',
+    adjustment_reason: props.salary.adjustment_reason ?? '',
 });
 
 const handleSubmit = (): void => {
@@ -52,18 +43,14 @@ const handleCancel = (): void => {
 <template>
     <FormLayout
         :title="salaryPage.form.editTitle"
-        :description="
-            salaryPage.form.editDescription
-        "
+        :description="salaryPage.form.editDescription"
     >
         <SalaryForm
             :form="form"
             :salary="salary"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                salaryPage.form.editSubmitLabel
-            "
+            :submit-label="salaryPage.form.editSubmitLabel"
             @submit="handleSubmit"
             @cancel="handleCancel"
         />

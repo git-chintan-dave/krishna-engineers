@@ -30,20 +30,14 @@ watch(
     () => props.open,
     (open) => {
         if (open) {
-            document.addEventListener(
-                'keydown',
-                handleKeydown,
-            );
+            document.addEventListener('keydown', handleKeydown);
 
             document.body.style.overflow = 'hidden';
 
             return;
         }
 
-        document.removeEventListener(
-            'keydown',
-            handleKeydown,
-        );
+        document.removeEventListener('keydown', handleKeydown);
 
         document.body.style.overflow = '';
     },
@@ -51,10 +45,7 @@ watch(
 
 // Lifecycle
 onBeforeUnmount(() => {
-    document.removeEventListener(
-        'keydown',
-        handleKeydown,
-    );
+    document.removeEventListener('keydown', handleKeydown);
 
     document.body.style.overflow = '';
 });

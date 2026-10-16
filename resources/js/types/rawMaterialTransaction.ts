@@ -1,7 +1,4 @@
-import type {
-    PaginatedResponse,
-    SortDirection,
-} from '@/types/listing';
+import type { PaginatedResponse, SortDirection } from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------
@@ -75,10 +72,7 @@ export type RawMaterialTransactionFormData = {
 |--------------------------------------------------------------------------
 */
 
-export type RawMaterialTransactionSort =
-    | 'created_at'
-    | 'quantity'
-    | 'type';
+export type RawMaterialTransactionSort = 'created_at' | 'quantity' | 'type';
 
 /*
 |--------------------------------------------------------------------------

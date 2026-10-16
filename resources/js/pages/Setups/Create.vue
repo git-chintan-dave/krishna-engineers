@@ -5,10 +5,7 @@ import FormLayout from '@/components/layouts/FormLayout.vue';
 import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
 import { setupPage } from '@/config/setups';
 import SetupForm from '@/pages/Setups/components/SetupForm.vue';
-import {
-    index as setups,
-    store,
-} from '@/routes/setups';
+import { index as setups, store } from '@/routes/setups';
 import type { SetupFormData } from '@/types/setup';
 
 /*
@@ -19,13 +16,10 @@ import type { SetupFormData } from '@/types/setup';
 
 defineOptions({
     layout: {
-        breadcrumbs: useCrudBreadcrumbs(
-            'create',
-            {
-                resource: setupPage.title,
-                resourceUrl: setups().url,
-            },
-        ),
+        breadcrumbs: useCrudBreadcrumbs('create', {
+            resource: setupPage.title,
+            resourceUrl: setups().url,
+        }),
     },
 });
 
@@ -47,14 +41,10 @@ const form = useForm<SetupFormData>({
 */
 
 const handleSubmit = () => {
-    form
-        .transform((data) => ({
-            ...data,
-            status: data.status
-                ? 'active'
-                : 'inactive',
-        }))
-        .post(store().url);
+    form.transform((data) => ({
+        ...data,
+        status: data.status ? 'active' : 'inactive',
+    })).post(store().url);
 };
 
 const handleCancel = () => {
@@ -65,17 +55,13 @@ const handleCancel = () => {
 <template>
     <FormLayout
         :title="setupPage.form.createTitle"
-        :description="
-            setupPage.form.createDescription
-        "
+        :description="setupPage.form.createDescription"
     >
         <SetupForm
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                setupPage.form.createSubmitLabel
-            "
+            :submit-label="setupPage.form.createSubmitLabel"
             @submit="handleSubmit"
             @cancel="handleCancel"
         />

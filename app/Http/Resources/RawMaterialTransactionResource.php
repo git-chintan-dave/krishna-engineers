@@ -72,8 +72,7 @@ class RawMaterialTransactionResource extends JsonResource
     private function referenceLabel(): string
     {
         return match (true) {
-            $this->reference instanceof BandsawWorkLog =>
-            "Bandsaw Work Log #{$this->reference->getKey()}",
+            $this->reference instanceof BandsawWorkLog => "Bandsaw Work Log #{$this->reference->getKey()}",
 
             default => "Reference #{$this->reference->getKey()}",
         };

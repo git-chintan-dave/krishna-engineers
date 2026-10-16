@@ -1,8 +1,4 @@
-import type {
-    PaginatedResponse,
-    SortDirection,
-    Status,
-} from '@/types/listing';
+import type { PaginatedResponse, SortDirection, Status } from '@/types/listing';
 
 export type EmployeeRole =
     | 'super_admin'
@@ -11,11 +7,7 @@ export type EmployeeRole =
     | 'bandsaw'
     | 'deburring_packaging';
 
-export type EmployeeShift =
-    | 'day'
-    | 'night'
-    | '8_hr'
-    | '8_hr_total';
+export type EmployeeShift = 'day' | 'night' | '8_hr' | '8_hr_total';
 
 export type EmployeeOption = {
     value: string;
@@ -93,8 +85,6 @@ export type EmployeeFilters = {
     direction: SortDirection;
 };
 
-export type EmployeesResponse =
-    PaginatedResponse<Employee>;
+export type EmployeesResponse = PaginatedResponse<Employee>;
 
-export type EmployeeOptionsResponse =
-    EmployeeOption[];
+export type EmployeeOptionsResponse = EmployeeOption[];

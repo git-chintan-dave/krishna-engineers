@@ -4,6 +4,4 @@ namespace App\Exceptions;
 
 use RuntimeException;
 
-class AttendanceActionException extends RuntimeException
-{
-}
+class AttendanceActionException extends RuntimeException {}

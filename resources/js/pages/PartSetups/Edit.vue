@@ -1,13 +1,17 @@
 ﻿<script setup lang="ts">
-import {router, useForm} from '@inertiajs/vue3';
-import {computed} from 'vue';
+import { router, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {partSetupPage} from '@/config/partSetups';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { partSetupPage } from '@/config/partSetups';
 import PartSetupForm from '@/pages/PartSetups/components/PartSetupForm.vue';
-import {index as partSetups, update,} from '@/routes/part-setups';
-import type {PartSetup, PartSetupFormData, PartSetupOption,} from '@/types/partSetup';
+import { index as partSetups, update } from '@/routes/part-setups';
+import type {
+    PartSetup,
+    PartSetupFormData,
+    PartSetupOption,
+} from '@/types/partSetup';
 
 const props = defineProps<{
     partSetup: PartSetup;
@@ -32,17 +36,11 @@ const form = useForm<PartSetupFormData>({
 });
 
 const handleSubmit = () => {
-    form
-        .transform((data) => ({
-            ...data,
-            part_id: data.part_id
-                ? Number(data.part_id)
-                : null,
-            setup_id: data.setup_id
-                ? Number(data.setup_id)
-                : null,
-        }))
-        .put(update(props.partSetup.uuid).url);
+    form.transform((data) => ({
+        ...data,
+        part_id: data.part_id ? Number(data.part_id) : null,
+        setup_id: data.setup_id ? Number(data.setup_id) : null,
+    })).put(update(props.partSetup.uuid).url);
 };
 
 const handleCancel = () => {
@@ -53,18 +51,13 @@ const handleCancel = () => {
 <template>
     <FormLayout
         :title="partSetupPage.form.editTitle"
-        :description="
-            partSetupPage.form.editDescription
-        "
+        :description="partSetupPage.form.editDescription"
     >
         <PartSetupForm
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                partSetupPage.form
-                    .editSubmitLabel
-            "
+            :submit-label="partSetupPage.form.editSubmitLabel"
             :current-image="props.partSetup.image"
             @submit="handleSubmit"
             @cancel="handleCancel"

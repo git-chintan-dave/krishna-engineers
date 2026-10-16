@@ -3,21 +3,13 @@ import { ref } from 'vue';
 import type { SelectOption } from '@/types/common';
 import type { EnumLookupKey } from '@/types/lookup';
 
-type LookupResponse<
-    TValue extends string | number = string,
-> = {
+type LookupResponse<TValue extends string | number = string> = {
     data: SelectOption<TValue>[];
 };
 
-const enumCache = new Map<
-    EnumLookupKey,
-    SelectOption<string | number>[]
->();
+const enumCache = new Map<EnumLookupKey, SelectOption<string | number>[]>();
 
-const lookupCache = new Map<
-    string,
-    SelectOption<string | number>[]
->();
+const lookupCache = new Map<string, SelectOption<string | number>[]>();
 
 export function useLookup() {
     const loading = ref(false);
@@ -29,9 +21,7 @@ export function useLookup() {
     |--------------------------------------------------------------------------
     */
 
-    async function enumOptions<
-        TValue extends string | number = string,
-    >(
+    async function enumOptions<TValue extends string | number = string>(
         key: EnumLookupKey,
     ): Promise<SelectOption<TValue>[]> {
         const cached = enumCache.get(key);
@@ -44,25 +34,15 @@ export function useLookup() {
         error.value = null;
 
         try {
-            const response = await fetch(
-                `/lookups/enums/${key}`,
-            );
+            const response = await fetch(`/lookups/enums/${key}`);
 
             if (!response.ok) {
-                throw new Error(
-                    `Failed to load lookup: ${key}`,
-                );
+                throw new Error(`Failed to load lookup: ${key}`);
             }
 
-            const result =
-                (await response.json()) as LookupResponse<TValue>;
+            const result = (await response.json()) as LookupResponse<TValue>;
 
-            enumCache.set(
-                key,
-                result.data as SelectOption<
-                    string | number
-                >[],
-            );
+            enumCache.set(key, result.data as SelectOption<string | number>[]);
 
             return result.data;
         } catch (exception) {
@@ -83,9 +63,7 @@ export function useLookup() {
     |--------------------------------------------------------------------------
     */
 
-    async function databaseOptions<
-        TValue extends string | number = number,
-    >(
+    async function databaseOptions<TValue extends string | number = number>(
         key: string,
         url: string,
     ): Promise<SelectOption<TValue>[]> {
@@ -102,19 +80,14 @@ export function useLookup() {
             const response = await fetch(url);
 
             if (!response.ok) {
-                throw new Error(
-                    `Failed to load lookup: ${key}`,
-                );
+                throw new Error(`Failed to load lookup: ${key}`);
             }
 
-            const result =
-                (await response.json()) as LookupResponse<TValue>;
+            const result = (await response.json()) as LookupResponse<TValue>;
 
             lookupCache.set(
                 key,
-                result.data as SelectOption<
-                    string | number
-                >[],
+                result.data as SelectOption<string | number>[],
             );
 
             return result.data;
@@ -130,40 +103,20 @@ export function useLookup() {
         }
     }
 
-    async function parts(): Promise<
-        SelectOption<number>[]
-    > {
-        return databaseOptions<number>(
-            'parts',
-            '/lookups/parts',
-        );
+    async function parts(): Promise<SelectOption<number>[]> {
+        return databaseOptions<number>('parts', '/lookups/parts');
     }
 
-    async function setups(): Promise<
-        SelectOption<number>[]
-    > {
-        return databaseOptions<number>(
-            'setups',
-            '/lookups/setups',
-        );
+    async function setups(): Promise<SelectOption<number>[]> {
+        return databaseOptions<number>('setups', '/lookups/setups');
     }
 
-    async function machines(): Promise<
-        SelectOption<number>[]
-    > {
-        return databaseOptions<number>(
-            'machines',
-            '/lookups/machines',
-        );
+    async function machines(): Promise<SelectOption<number>[]> {
+        return databaseOptions<number>('machines', '/lookups/machines');
     }
 
-    async function sections(): Promise<
-        SelectOption<number>[]
-    > {
-        return databaseOptions<number>(
-            'sections',
-            '/lookups/sections',
-        );
+    async function sections(): Promise<SelectOption<number>[]> {
+        return databaseOptions<number>('sections', '/lookups/sections');
     }
 
     async function sectionSizes(
@@ -188,11 +141,7 @@ export function useLookup() {
 
         return databaseOptions<number>(
             `employees:${queryString}`,
-            `/lookups/employees${
-                queryString
-                    ? `?${queryString}`
-                    : ''
-            }`,
+            `/lookups/employees${queryString ? `?${queryString}` : ''}`,
         );
     }
 
@@ -201,17 +150,13 @@ export function useLookup() {
     ): Promise<SelectOption<number>[]> {
         const queryString = type
             ? new URLSearchParams({
-                type,
-            }).toString()
+                  type,
+              }).toString()
             : '';
 
         return databaseOptions<number>(
             `tools:${queryString}`,
-            `/lookups/tools${
-                queryString
-                    ? `?${queryString}`
-                    : ''
-            }`,
+            `/lookups/tools${queryString ? `?${queryString}` : ''}`,
         );
     }
 
@@ -221,9 +166,7 @@ export function useLookup() {
     |--------------------------------------------------------------------------
     */
 
-    function clearEnumCache(
-        key?: EnumLookupKey,
-    ): void {
+    function clearEnumCache(key?: EnumLookupKey): void {
         if (key) {
             enumCache.delete(key);
 
@@ -233,9 +176,7 @@ export function useLookup() {
         enumCache.clear();
     }
 
-    function clearLookupCache(
-        key?: string,
-    ): void {
+    function clearLookupCache(key?: string): void {
         if (key) {
             lookupCache.delete(key);
 

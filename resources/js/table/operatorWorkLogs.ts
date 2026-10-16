@@ -1,18 +1,17 @@
-import {createColumnHelper} from '@tanstack/vue-table';
+import { createColumnHelper } from '@tanstack/vue-table';
 
-import {edit} from '@/routes/operator';
+import { edit } from '@/routes/operator';
 
-import {createActionsColumn} from '@/table/columns/actionsColumn';
-import {createDateColumn} from '@/table/columns/dateColumn';
-import {createSelectColumn} from '@/table/columns/selectColumn';
+import { createActionsColumn } from '@/table/columns/actionsColumn';
+import { createDateColumn } from '@/table/columns/dateColumn';
+import { createSelectColumn } from '@/table/columns/selectColumn';
 
-import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
-import {createSortableColumn} from '@/table/helpers/sortableColumn';
+import { createPrimaryColumn } from '@/table/helpers/primaryColumn';
+import { createSortableColumn } from '@/table/helpers/sortableColumn';
 
-import type {OperatorWorkLog} from '@/types/operatorWorkLog';
+import type { OperatorWorkLog } from '@/types/operatorWorkLog';
 
-const columnHelper =
-    createColumnHelper<any, OperatorWorkLog>();
+const columnHelper = createColumnHelper<any, OperatorWorkLog>();
 
 export const createOperatorWorkLogColumns = (
     handleDelete: (uuid: string) => void,
@@ -21,11 +20,10 @@ export const createOperatorWorkLogColumns = (
     columnHelper.columns([
         ...(canManage
             ? [
-                createSelectColumn({
-                    resourceName:
-                        'operator-work-logs',
-                }),
-            ]
+                  createSelectColumn({
+                      resourceName: 'operator-work-logs',
+                  }),
+              ]
             : []),
 
         createDateColumn({
@@ -33,15 +31,17 @@ export const createOperatorWorkLogColumns = (
             header: 'Work Date',
         }),
 
-        ...(canManage ? [
-            createPrimaryColumn({
-                accessorKey: 'user.name',
-                header: 'Operator',
-                size: 180,
-                align: 'center',
-                sortable: false,
-            }),
-        ] : []),
+        ...(canManage
+            ? [
+                  createPrimaryColumn({
+                      accessorKey: 'user.name',
+                      header: 'Operator',
+                      size: 180,
+                      align: 'center',
+                      sortable: false,
+                  }),
+              ]
+            : []),
 
         createPrimaryColumn({
             accessorKey: 'machine.name',
@@ -86,20 +86,16 @@ export const createOperatorWorkLogColumns = (
             header: 'Production Time',
             size: 140,
             align: 'center',
-            cell: ({ row }) =>
-                row.original.production_seconds_formatted ??
-                '—',
+            cell: ({ row }) => row.original.production_seconds_formatted ?? '—',
         }),
 
         ...(canManage
             ? [
-                createActionsColumn({
-                    editUrl: (uuid) =>
-                        edit(uuid).url,
-                    resourceName:
-                        'operator work log',
-                    handleDelete,
-                }),
-            ]
+                  createActionsColumn({
+                      editUrl: (uuid) => edit(uuid).url,
+                      resourceName: 'operator work log',
+                      handleDelete,
+                  }),
+              ]
             : []),
     ]);

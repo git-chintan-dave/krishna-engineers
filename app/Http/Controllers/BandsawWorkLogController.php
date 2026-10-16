@@ -65,8 +65,7 @@ class BandsawWorkLogController extends Controller
                 fn (Builder $query, int $partId): Builder => $query->forPart($partId),
             )
             ->when($filters['section_id'] ?? null,
-                fn (Builder $query, int $sectionId): Builder =>
-                $query->whereHas('sectionSize',
+                fn (Builder $query, int $sectionId): Builder => $query->whereHas('sectionSize',
                     fn (Builder $query): Builder => $query->where('section_id', $sectionId),
                 ),
             )

@@ -69,9 +69,7 @@ const searchValue = computed({
 */
 
 const isClearDisabled = computed(
-    () =>
-        props.clearDisabled ??
-        !props.search.trim(),
+    () => props.clearDisabled ?? !props.search.trim(),
 );
 </script>
 
@@ -85,10 +83,7 @@ const isClearDisabled = computed(
         |--------------------------------------------------------------------------
         -->
 
-        <div
-            v-if="searchable"
-            class="w-full min-w-0 sm:min-w-56 sm:flex-1"
-        >
+        <div v-if="searchable" class="w-full min-w-0 sm:min-w-56 sm:flex-1">
             <AppSearch
                 v-model="searchValue"
                 :placeholder="searchPlaceholder"

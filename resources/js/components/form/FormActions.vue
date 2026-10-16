@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import {ArrowLeft, LoaderCircle, Save} from '@lucide/vue';
+import { ArrowLeft, LoaderCircle, Save } from '@lucide/vue';
 
-import {Button} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 
 /*
 |--------------------------------------------------------------------------
@@ -36,9 +36,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <div
-        class="flex min-w-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end"
-    >
+    <div class="flex min-w-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <!--
         |--------------------------------------------------------------------------
         | Cancel
@@ -52,10 +50,7 @@ const emit = defineEmits<{
             :disabled="processing"
             @click="emit('cancel')"
         >
-            <ArrowLeft
-                class="size-4"
-                aria-hidden="true"
-            />
+            <ArrowLeft class="size-4" aria-hidden="true" />
 
             {{ cancelLabel }}
         </Button>
@@ -77,11 +72,7 @@ const emit = defineEmits<{
                 aria-hidden="true"
             />
 
-            <Save
-                v-else
-                class="size-4"
-                aria-hidden="true"
-            />
+            <Save v-else class="size-4" aria-hidden="true" />
 
             {{ submitLabel }}
         </Button>

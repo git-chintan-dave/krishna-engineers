@@ -1,14 +1,17 @@
 ﻿<script setup lang="ts">
-import {router, useForm} from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
 import ToolTransactionForm from '@/pages/ToolTransactions/components/ToolTransactionForm.vue';
 
-import {toolTransactionPage} from '@/config/toolTransactions';
-import {dashboard} from '@/routes';
-import {index as toolTransactions, update,} from '@/routes/tool-transactions';
+import { toolTransactionPage } from '@/config/toolTransactions';
+import { dashboard } from '@/routes';
+import { index as toolTransactions, update } from '@/routes/tool-transactions';
 
-import type {ToolTransaction, ToolTransactionType,} from '@/types/toolTransaction';
+import type {
+    ToolTransaction,
+    ToolTransactionType,
+} from '@/types/toolTransaction';
 
 defineOptions({
     layout: {
@@ -29,9 +32,7 @@ const props = defineProps<{
 
 const form = useForm({
     toolId: props.transaction.tool?.id ?? null,
-    type:
-        props.transaction.type?.value ??
-        ('' as ToolTransactionType | ''),
+    type: props.transaction.type?.value ?? ('' as ToolTransactionType | ''),
     quantity: props.transaction.quantity,
     fromUserId: props.transaction.from_user?.id ?? null,
     toUserId: props.transaction.to_user?.id ?? null,

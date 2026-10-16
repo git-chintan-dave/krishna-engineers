@@ -182,11 +182,7 @@ export function getMainNavItems(role?: string): NavItem[] {
             ];
 
         case 'supervisor':
-            return [
-                dashboardItem,
-                workLogsNav,
-                peopleNav,
-            ];
+            return [dashboardItem, workLogsNav, peopleNav];
 
         case 'super_admin':
         default:
@@ -197,10 +193,7 @@ export function getMainNavItems(role?: string): NavItem[] {
                 workLogsNav,
                 {
                     ...peopleNav,
-                    items: [
-                        ...peopleItems,
-                        salaryItem,
-                    ],
+                    items: [...peopleItems, salaryItem],
                 },
             ];
     }

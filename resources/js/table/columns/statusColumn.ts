@@ -14,11 +14,7 @@ type StatusColumnOptions = {
     size?: number;
     getVariant?: (
         status: string,
-    ) =>
-        | 'default'
-        | 'secondary'
-        | 'destructive'
-        | 'outline';
+    ) => 'default' | 'secondary' | 'destructive' | 'outline';
 };
 
 /*
@@ -28,11 +24,11 @@ type StatusColumnOptions = {
 */
 
 export const createStatusColumn = ({
-                                       accessorKey = 'status',
-                                       header = 'Status',
-                                       size = 120,
-                                       getVariant,
-                                   }: StatusColumnOptions = {}) => ({
+    accessorKey = 'status',
+    header = 'Status',
+    size = 120,
+    getVariant,
+}: StatusColumnOptions = {}) => ({
     accessorKey,
 
     /*
@@ -51,16 +47,13 @@ export const createStatusColumn = ({
 
     cell: ({ row }: any) => {
         const status =
-            (row.getValue(accessorKey) as
-                | string
-                | null
-                | undefined) ?? '';
+            (row.getValue(accessorKey) as string | null | undefined) ?? '';
 
         const variant = getVariant
             ? getVariant(status)
             : status === 'active'
-                ? 'default'
-                : 'secondary';
+              ? 'default'
+              : 'secondary';
 
         return h(
             Badge,

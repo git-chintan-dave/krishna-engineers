@@ -33,10 +33,7 @@ const attrs = useAttrs();
 
 // Actions
 const handleInput = (event: Event) => {
-    emit(
-        'update:modelValue',
-        (event.target as HTMLInputElement).value,
-    );
+    emit('update:modelValue', (event.target as HTMLInputElement).value);
 };
 
 const handleSearch = () => {

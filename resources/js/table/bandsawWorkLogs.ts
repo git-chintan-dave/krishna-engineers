@@ -11,8 +11,7 @@ import { createSortableColumn } from '@/table/helpers/sortableColumn';
 
 import type { BandsawWorkLog } from '@/types/bandsawWorkLog';
 
-const columnHelper =
-    createColumnHelper<any, BandsawWorkLog>();
+const columnHelper = createColumnHelper<any, BandsawWorkLog>();
 
 export const createBandsawWorkLogColumns = (
     handleDelete: (uuid: string) => void,
@@ -21,11 +20,10 @@ export const createBandsawWorkLogColumns = (
     columnHelper.columns([
         ...(canManage
             ? [
-                createSelectColumn({
-                    resourceName:
-                        'bandsaw-work-logs',
-                }),
-            ]
+                  createSelectColumn({
+                      resourceName: 'bandsaw-work-logs',
+                  }),
+              ]
             : []),
 
         createDateColumn({
@@ -33,14 +31,16 @@ export const createBandsawWorkLogColumns = (
             header: 'Work Date',
         }),
 
-        ...(canManage ? [
-            createPrimaryColumn({
-                accessorKey: 'user.name',
-                header: 'Bandsaw',
-                size: 180,
-                sortable: false,
-            }),
-        ] : []),
+        ...(canManage
+            ? [
+                  createPrimaryColumn({
+                      accessorKey: 'user.name',
+                      header: 'Bandsaw',
+                      size: 180,
+                      sortable: false,
+                  }),
+              ]
+            : []),
 
         createPrimaryColumn({
             accessorKey: 'part.name',
@@ -71,13 +71,11 @@ export const createBandsawWorkLogColumns = (
 
         ...(canManage
             ? [
-                createActionsColumn({
-                    editUrl: (uuid) =>
-                        edit(uuid).url,
-                    resourceName:
-                        'bandsaw work log',
-                    handleDelete,
-                }),
-            ]
+                  createActionsColumn({
+                      editUrl: (uuid) => edit(uuid).url,
+                      resourceName: 'bandsaw work log',
+                      handleDelete,
+                  }),
+              ]
             : []),
     ]);

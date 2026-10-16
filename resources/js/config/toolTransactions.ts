@@ -63,8 +63,7 @@ export const toolTransactionPage = {
     form: {
         sectionTitle: 'Transaction Information',
 
-        sectionDescription:
-            'Enter the details for the tool transaction.',
+        sectionDescription: 'Enter the details for the tool transaction.',
 
         toolLabel: 'Tool',
         toolPlaceholder: 'Select tool',
@@ -94,11 +93,9 @@ export const toolTransactionPage = {
         returnScrapDescription:
             'Indicate whether the returned tool is being marked as scrap.',
 
-        returnScrapActiveText:
-            'The returned tool is marked as scrap.',
+        returnScrapActiveText: 'The returned tool is marked as scrap.',
 
-        returnScrapInactiveText:
-            'The returned tool is not marked as scrap.',
+        returnScrapInactiveText: 'The returned tool is not marked as scrap.',
 
         remarksLabel: 'Remarks',
         remarksPlaceholder: 'Enter remarks',

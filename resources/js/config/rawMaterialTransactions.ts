@@ -37,13 +37,11 @@ export const rawMaterialTransactionPage = {
         remarksPlaceholder: 'Enter remarks',
 
         createTitle: 'Create Raw Material Transaction',
-        createDescription:
-            'Add a new raw material stock transaction.',
+        createDescription: 'Add a new raw material stock transaction.',
         createSubmitLabel: 'Save Transaction',
 
         editTitle: 'Edit Raw Material Transaction',
-        editDescription:
-            'Update the raw material transaction.',
+        editDescription: 'Update the raw material transaction.',
         editSubmitLabel: 'Update Transaction',
 
         cancelLabel: 'Cancel',

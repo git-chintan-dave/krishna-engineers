@@ -1,6 +1,6 @@
 ﻿<script setup lang="ts">
-import {router} from '@inertiajs/vue3';
-import {ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 import ListingActions from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
@@ -8,13 +8,18 @@ import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import AppToolTypeSelect from '@/components/selects/AppToolTypeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {toolPage} from '@/config/tools';
-import {bulkDestroy, create, destroy, index as toolsRoute,} from '@/routes/tools';
-import {createToolColumns} from '@/table/tools';
-import type {Tool, ToolFilters, ToolSort, ToolsResponse,} from '@/types/tool';
-import type {StatusFilter} from '@/types/listing';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { toolPage } from '@/config/tools';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as toolsRoute,
+} from '@/routes/tools';
+import { createToolColumns } from '@/table/tools';
+import type { Tool, ToolFilters, ToolSort, ToolsResponse } from '@/types/tool';
+import type { StatusFilter } from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------
@@ -48,25 +53,16 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const filterType = ref<string | 'all'>(
-    props.filters.type,
-);
+const filterType = ref<string | 'all'>(props.filters.type);
 
-const filterStatus = ref<StatusFilter>(
-    props.filters.status,
-);
+const filterStatus = ref<StatusFilter>(props.filters.status);
 
-const handleTypeChange = (
-    value: string | null,
-) => {
+const handleTypeChange = (value: string | null) => {
     filterType.value = value ?? 'all';
 };
 
-const handleStatusChange = (
-    value: string | null,
-) => {
-    filterStatus.value =
-        (value as StatusFilter | null) ?? 'all';
+const handleStatusChange = (value: string | null) => {
+    filterStatus.value = (value as StatusFilter | null) ?? 'all';
 };
 
 const handleClearFilters = () => {
@@ -106,15 +102,9 @@ const {
     route: toolsRoute.url(),
 
     additionalFilters: () => ({
-        type:
-            filterType.value !== 'all'
-                ? filterType.value
-                : undefined,
+        type: filterType.value !== 'all' ? filterType.value : undefined,
 
-        status:
-            filterStatus.value !== 'all'
-                ? filterStatus.value
-                : undefined,
+        status: filterStatus.value !== 'all' ? filterStatus.value : undefined,
     }),
 });
 
@@ -130,10 +120,7 @@ const handleDeleteSelected = () => {
 </script>
 
 <template>
-    <ListingLayout
-        :title="toolPage.title"
-        :description="toolPage.description"
-    >
+    <ListingLayout :title="toolPage.title" :description="toolPage.description">
         <!-- Actions -->
         <template #actions>
             <ListingActions
@@ -149,15 +136,9 @@ const handleDeleteSelected = () => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
-                :search-placeholder="
-                    toolPage.searchPlaceholder
-                "
-                :search-button-label="
-                    toolPage.searchButtonLabel
-                "
-                :clear-button-label="
-                    toolPage.clearButtonLabel
-                "
+                :search-placeholder="toolPage.searchPlaceholder"
+                :search-button-label="toolPage.searchButtonLabel"
+                :clear-button-label="toolPage.clearButtonLabel"
                 :clear-disabled="
                     !searchQuery.trim() &&
                     filterType === 'all' &&
@@ -171,15 +152,11 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-40">
                         <AppToolTypeSelect
                             :model-value="
-                                filterType === 'all'
-                                    ? null
-                                    : filterType
+                                filterType === 'all' ? null : filterType
                             "
                             placeholder="All types"
                             clearable
-                            @update:model-value="
-                                handleTypeChange
-                            "
+                            @update:model-value="handleTypeChange"
                         />
                     </div>
 
@@ -187,15 +164,11 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-48">
                         <AppStatusSelect
                             :model-value="
-                                filterStatus === 'all'
-                                    ? null
-                                    : filterStatus
+                                filterStatus === 'all' ? null : filterStatus
                             "
                             placeholder="All statuses"
                             clearable
-                            @update:model-value="
-                                handleStatusChange
-                            "
+                            @update:model-value="handleStatusChange"
                         />
                     </div>
                 </template>
@@ -208,9 +181,7 @@ const handleDeleteSelected = () => {
                 :table="table"
                 :columns-count="columns.length"
                 :total="tools.meta.total"
-                :page-index="
-                    tools.meta.current_page - 1
-                "
+                :page-index="tools.meta.current_page - 1"
                 :page-size="tools.meta.per_page"
                 :selected-count="selectedCount"
                 :page-size-options="[10, 25, 50, 100]"

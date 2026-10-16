@@ -20,11 +20,11 @@ type ImageColumnOptions<TData> = {
 */
 
 export const createImageColumn = <TData>({
-                                             getImage,
-                                             getAlt = () => 'Image',
-                                             title = 'Image',
-                                             size = 100,
-                                         }: ImageColumnOptions<TData>) => ({
+    getImage,
+    getAlt = () => 'Image',
+    title = 'Image',
+    size = 100,
+}: ImageColumnOptions<TData>) => ({
     id: 'image',
 
     /*
@@ -59,11 +59,7 @@ export const createImageColumn = <TData>({
             src: image,
             alt: getAlt(data),
 
-            class: [
-                'size-10 shrink-0',
-                'rounded-md border',
-                'object-cover',
-            ],
+            class: ['size-10 shrink-0', 'rounded-md border', 'object-cover'],
 
             loading: 'lazy',
             decoding: 'async',

@@ -6,7 +6,6 @@ use App\Enums\ToolTransactionType;
 use App\Models\Part;
 use App\Models\Setup;
 use App\Models\Tool;
-use App\Models\ToolTransaction;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -51,7 +50,7 @@ class ToolTransactionRequest extends FormRequest
             ],
 
             'to_user_id' => [
-                'required_if:type,' . ToolTransactionType::ISSUE->value,
+                'required_if:type,'.ToolTransactionType::ISSUE->value,
                 'nullable',
                 'integer',
                 Rule::exists(User::class, 'id'),

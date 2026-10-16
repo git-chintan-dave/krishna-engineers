@@ -5,14 +5,8 @@ import FormLayout from '@/components/layouts/FormLayout.vue';
 import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
 import { setupPage } from '@/config/setups';
 import SetupForm from '@/pages/Setups/components/SetupForm.vue';
-import {
-    index as setups,
-    update as updateSetup,
-} from '@/routes/setups';
-import type {
-    Setup,
-    SetupFormData,
-} from '@/types/setup';
+import { index as setups, update as updateSetup } from '@/routes/setups';
+import type { Setup, SetupFormData } from '@/types/setup';
 
 /*
 |--------------------------------------------------------------------------
@@ -32,13 +26,10 @@ const props = defineProps<{
 
 defineOptions({
     layout: {
-        breadcrumbs: useCrudBreadcrumbs(
-            'edit',
-            {
-                resource: setupPage.title,
-                resourceUrl: setups().url,
-            },
-        ),
+        breadcrumbs: useCrudBreadcrumbs('edit', {
+            resource: setupPage.title,
+            resourceUrl: setups().url,
+        }),
     },
 });
 
@@ -60,16 +51,10 @@ const form = useForm<SetupFormData>({
 */
 
 const handleSubmit = () => {
-    form
-        .transform((data) => ({
-            ...data,
-            status: data.status
-                ? 'active'
-                : 'inactive',
-        }))
-        .put(
-            updateSetup(props.setup.uuid).url,
-        );
+    form.transform((data) => ({
+        ...data,
+        status: data.status ? 'active' : 'inactive',
+    })).put(updateSetup(props.setup.uuid).url);
 };
 
 const handleCancel = () => {
@@ -80,17 +65,13 @@ const handleCancel = () => {
 <template>
     <FormLayout
         :title="setupPage.form.editTitle"
-        :description="
-            setupPage.form.editDescription
-        "
+        :description="setupPage.form.editDescription"
     >
         <SetupForm
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                setupPage.form.editSubmitLabel
-            "
+            :submit-label="setupPage.form.editSubmitLabel"
             @submit="handleSubmit"
             @cancel="handleCancel"
         />

@@ -26,14 +26,8 @@ withDefaults(
         |--------------------------------------------------------------------------
         -->
 
-        <AppPageHeader
-            :title="title"
-            :description="description"
-        >
-            <template
-                v-if="$slots.actions"
-                #actions
-            >
+        <AppPageHeader :title="title" :description="description">
+            <template v-if="$slots.actions" #actions>
                 <slot name="actions" />
             </template>
         </AppPageHeader>
@@ -44,10 +38,7 @@ withDefaults(
         |--------------------------------------------------------------------------
         -->
 
-        <section
-            aria-label="Form"
-            class="min-w-0"
-        >
+        <section aria-label="Form" class="min-w-0">
             <slot />
         </section>
     </main>

@@ -20,11 +20,7 @@ export type MachineFormData = {
     status: boolean;
 };
 
-export type MachineSort =
-    | 'name'
-    | 'machine_number'
-    | 'status'
-    | 'created_at';
+export type MachineSort = 'name' | 'machine_number' | 'status' | 'created_at';
 
 export type MachineFilters = {
     search: string;

@@ -1,17 +1,14 @@
-import {createColumnHelper} from '@tanstack/vue-table';
+import { createColumnHelper } from '@tanstack/vue-table';
 
-import {edit} from '@/routes/raw-material-transactions';
-import {createActionsColumn} from '@/table/columns/actionsColumn';
-import {createDateColumn} from '@/table/columns/dateColumn';
-import {createSelectColumn} from '@/table/columns/selectColumn';
-import {createPrimaryColumn} from '@/table/helpers/primaryColumn';
-import {createSortableColumn} from '@/table/helpers/sortableColumn';
-import type {RawMaterialTransaction} from '@/types/rawMaterialTransaction';
+import { edit } from '@/routes/raw-material-transactions';
+import { createActionsColumn } from '@/table/columns/actionsColumn';
+import { createDateColumn } from '@/table/columns/dateColumn';
+import { createSelectColumn } from '@/table/columns/selectColumn';
+import { createPrimaryColumn } from '@/table/helpers/primaryColumn';
+import { createSortableColumn } from '@/table/helpers/sortableColumn';
+import type { RawMaterialTransaction } from '@/types/rawMaterialTransaction';
 
-const columnHelper = createColumnHelper<
-    any,
-    RawMaterialTransaction
->();
+const columnHelper = createColumnHelper<any, RawMaterialTransaction>();
 
 export const createRawMaterialTransactionColumns = (
     handleDelete: (uuid: string) => void,
@@ -21,10 +18,10 @@ export const createRawMaterialTransactionColumns = (
     columnHelper.columns([
         ...(canDelete
             ? [
-                createSelectColumn({
-                    resourceName: 'raw-material-transactions',
-                }),
-            ]
+                  createSelectColumn({
+                      resourceName: 'raw-material-transactions',
+                  }),
+              ]
             : []),
 
         createPrimaryColumn<RawMaterialTransaction>({
@@ -75,13 +72,13 @@ export const createRawMaterialTransactionColumns = (
 
         ...(canEdit || canDelete
             ? [
-                createActionsColumn({
-                    editUrl: (uuid) => edit(uuid).url,
-                    resourceName: 'raw material transaction',
-                    handleDelete,
-                    showEdit: () => canEdit,
-                    showDelete: () => canDelete,
-                }),
-            ]
+                  createActionsColumn({
+                      editUrl: (uuid) => edit(uuid).url,
+                      resourceName: 'raw material transaction',
+                      handleDelete,
+                      showEdit: () => canEdit,
+                      showDelete: () => canDelete,
+                  }),
+              ]
             : []),
     ]);

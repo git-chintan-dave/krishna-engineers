@@ -1,4 +1,4 @@
-import type {PaginatedResponse, SortDirection,} from '@/types/listing';
+import type { PaginatedResponse, SortDirection } from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------
@@ -6,11 +6,7 @@ import type {PaginatedResponse, SortDirection,} from '@/types/listing';
 |--------------------------------------------------------------------------
 */
 
-export type ToolType =
-    | 'endmill'
-    | 'drill'
-    | 'insert'
-    | 'special_tools';
+export type ToolType = 'endmill' | 'drill' | 'insert' | 'special_tools';
 
 export type Tool = {
     id: number;
@@ -38,12 +34,7 @@ export type ToolFormData = {
     status: boolean;
 };
 
-export type ToolSort =
-    | 'name'
-    | 'type'
-    | 'quantity'
-    | 'status'
-    | 'created_at';
+export type ToolSort = 'name' | 'type' | 'quantity' | 'status' | 'created_at';
 
 export type ToolFilters = {
     search: string;

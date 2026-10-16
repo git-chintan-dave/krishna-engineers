@@ -1,7 +1,15 @@
 <script setup lang="ts">
-import type {InertiaForm} from '@inertiajs/vue3';
-import {ArrowLeftRight, Box, Hash, MessageSquare, Settings2, User, Wrench,} from '@lucide/vue';
-import {computed, watch} from 'vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+import {
+    ArrowLeftRight,
+    Box,
+    Hash,
+    MessageSquare,
+    Settings2,
+    User,
+    Wrench,
+} from '@lucide/vue';
+import { computed, watch } from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -15,8 +23,8 @@ import AppSetupSelect from '@/components/selects/AppSetupSelect.vue';
 import AppToolSelect from '@/components/selects/AppToolSelect.vue';
 import AppToolTransactionTypeSelect from '@/components/selects/AppToolTransactionTypeSelect.vue';
 
-import {toolTransactionPage} from '@/config/toolTransactions';
-import type {ToolTransactionType} from '@/types/toolTransaction';
+import { toolTransactionPage } from '@/config/toolTransactions';
+import type { ToolTransactionType } from '@/types/toolTransaction';
 
 /*
 |--------------------------------------------------------------------------
@@ -68,9 +76,7 @@ const emit = defineEmits<{
 
 const isIssue = computed(() => props.form.type === 'issue');
 
-const isAdjustment = computed(
-    () => props.form.type === 'adjustment',
-);
+const isAdjustment = computed(() => props.form.type === 'adjustment');
 
 const showUsers = computed(() => isIssue.value);
 
@@ -78,9 +84,7 @@ const showPartAndSetup = computed(() => isIssue.value);
 
 const showReturnScrap = computed(() => isIssue.value);
 
-const quantityMin = computed(() =>
-    isAdjustment.value ? -2147483648 : 1,
-);
+const quantityMin = computed(() => (isAdjustment.value ? -2147483648 : 1));
 
 /*
 |--------------------------------------------------------------------------
@@ -105,17 +109,13 @@ watch(
 |--------------------------------------------------------------------------
 */
 
-const handleTypeChange = (
-    value: string | number | null,
-): void => {
+const handleTypeChange = (value: string | number | null): void => {
     if (props.isEditing || props.processing) {
         return;
     }
 
     const nextType =
-        typeof value === 'string'
-            ? (value as ToolTransactionType)
-            : '';
+        typeof value === 'string' ? (value as ToolTransactionType) : '';
 
     if (props.form.type === nextType) {
         return;
@@ -135,10 +135,7 @@ const handleTypeChange = (
 </script>
 
 <template>
-    <form
-        class="min-w-0 space-y-6"
-        @submit.prevent="emit('submit')"
-    >
+    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
         <!-- Transaction Details -->
         <FormSection
             :title="toolTransactionPage.form.sectionTitle"
@@ -198,7 +195,9 @@ const handleTypeChange = (
                         :min="quantityMin"
                         :max="2147483647"
                         step="1"
-                        :placeholder="toolTransactionPage.form.quantityPlaceholder"
+                        :placeholder="
+                            toolTransactionPage.form.quantityPlaceholder
+                        "
                         :disabled="props.processing"
                         :icon="Hash"
                         :error="props.errors.quantity"
@@ -215,7 +214,9 @@ const handleTypeChange = (
                     <AppEmployeeSelect
                         id="tool-transaction-from-user"
                         v-model="props.form.fromUserId"
-                        :placeholder="toolTransactionPage.form.fromUserPlaceholder"
+                        :placeholder="
+                            toolTransactionPage.form.fromUserPlaceholder
+                        "
                         :disabled="props.processing || props.isEditing"
                         :icon="User"
                         :error="props.errors.from_user_id"
@@ -235,7 +236,9 @@ const handleTypeChange = (
                     <AppEmployeeSelect
                         id="tool-transaction-to-user"
                         v-model="props.form.toUserId"
-                        :placeholder="toolTransactionPage.form.toUserPlaceholder"
+                        :placeholder="
+                            toolTransactionPage.form.toUserPlaceholder
+                        "
                         :disabled="props.processing || props.isEditing"
                         :icon="User"
                         :error="props.errors.to_user_id"
@@ -288,17 +291,20 @@ const handleTypeChange = (
                 </AppField>
 
                 <!-- Return / Scrap -->
-                <div
-                    v-if="showReturnScrap"
-                    class="md:col-span-2"
-                >
+                <div v-if="showReturnScrap" class="md:col-span-2">
                     <ToggleCardInput
                         v-model="props.form.returnScrap"
                         :title="toolTransactionPage.form.returnScrapTitle"
                         :label="toolTransactionPage.form.returnScrapLabel"
-                        :description="toolTransactionPage.form.returnScrapDescription"
-                        :active-text="toolTransactionPage.form.returnScrapActiveText"
-                        :inactive-text="toolTransactionPage.form.returnScrapInactiveText"
+                        :description="
+                            toolTransactionPage.form.returnScrapDescription
+                        "
+                        :active-text="
+                            toolTransactionPage.form.returnScrapActiveText
+                        "
+                        :inactive-text="
+                            toolTransactionPage.form.returnScrapInactiveText
+                        "
                         :error="props.errors.return_scrap"
                         :disabled="props.processing || props.isEditing"
                     />
@@ -320,7 +326,9 @@ const handleTypeChange = (
                     <AppInput
                         id="tool-transaction-remarks"
                         v-model="props.form.remarks"
-                        :placeholder="toolTransactionPage.form.remarksPlaceholder"
+                        :placeholder="
+                            toolTransactionPage.form.remarksPlaceholder
+                        "
                         :disabled="props.processing"
                         :icon="MessageSquare"
                         :error="props.errors.remarks"

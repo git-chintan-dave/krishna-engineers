@@ -3,7 +3,6 @@
 namespace App\Http\Requests\RawMaterialTransactions;
 
 use App\Enums\RawMaterialTransactionType;
-use App\Models\RawMaterialTransaction;
 use App\Models\SectionSize;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

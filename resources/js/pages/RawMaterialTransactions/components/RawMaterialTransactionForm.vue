@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import {computed, ref, watch} from 'vue';
-import type {InertiaForm} from '@inertiajs/vue3';
-import {ArrowLeftRight, Hash, MessageSquare,} from '@lucide/vue';
+import { computed, ref, watch } from 'vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+import { ArrowLeftRight, Hash, MessageSquare } from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -10,8 +10,11 @@ import FormSection from '@/components/form/FormSection.vue';
 import AppRawMaterialTransactionTypeSelect from '@/components/selects/AppRawMaterialTransactionTypeSelect.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppSectionSizeSelect from '@/components/selects/AppSectionSizeSelect.vue';
-import {rawMaterialTransactionPage} from '@/config/rawMaterialTransactions';
-import type {RawMaterialTransaction, RawMaterialTransactionFormData,} from '@/types/rawMaterialTransaction';
+import { rawMaterialTransactionPage } from '@/config/rawMaterialTransactions';
+import type {
+    RawMaterialTransaction,
+    RawMaterialTransactionFormData,
+} from '@/types/rawMaterialTransaction';
 
 /*
 |--------------------------------------------------------------------------
@@ -23,9 +26,7 @@ const props = withDefaults(
     defineProps<{
         form: InertiaForm<RawMaterialTransactionFormData>;
         transaction?: RawMaterialTransaction;
-        errors?: Partial<
-            Record<keyof RawMaterialTransactionFormData, string>
-        >;
+        errors?: Partial<Record<keyof RawMaterialTransactionFormData, string>>;
         processing?: boolean;
         submitLabel?: string;
     }>(),
@@ -76,15 +77,10 @@ watch(selectedSectionId, (newSectionId, oldSectionId) => {
 </script>
 
 <template>
-    <form
-        class="min-w-0 space-y-6"
-        @submit.prevent="emit('submit')"
-    >
+    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
         <FormSection
             :title="rawMaterialTransactionPage.form.sectionTitle"
-            :description="
-                rawMaterialTransactionPage.form.sectionDescription
-            "
+            :description="rawMaterialTransactionPage.form.sectionDescription"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Section -->
@@ -120,9 +116,7 @@ watch(selectedSectionId, (newSectionId, oldSectionId) => {
                                 .sectionSizePlaceholder
                         "
                         :disabled="
-                            props.processing ||
-                            isEdit ||
-                            !selectedSectionId
+                            props.processing || isEdit || !selectedSectionId
                         "
                         :error="props.errors.section_size_id"
                         searchable

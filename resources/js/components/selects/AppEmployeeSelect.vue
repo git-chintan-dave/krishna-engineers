@@ -17,11 +17,7 @@ type EmployeeRole =
     | 'bandsaw'
     | 'deburring_packaging';
 
-type AppSelectValue =
-    | string
-    | number
-    | null
-    | (string | number)[];
+type AppSelectValue = string | number | null | (string | number)[];
 
 /*
 |--------------------------------------------------------------------------
@@ -93,9 +89,7 @@ const fetchEmployees = async () => {
         );
 
         if (!response.ok) {
-            throw new Error(
-                'Failed to fetch employees.',
-            );
+            throw new Error('Failed to fetch employees.');
         }
 
         const data = await response.json();
@@ -103,13 +97,10 @@ const fetchEmployees = async () => {
         options.value = Array.isArray(data)
             ? data
             : Array.isArray(data.data)
-                ? data.data
-                : [];
+              ? data.data
+              : [];
     } catch (error) {
-        console.error(
-            'Failed to load employees:',
-            error,
-        );
+        console.error('Failed to load employees:', error);
 
         options.value = [];
     } finally {
@@ -123,13 +114,8 @@ const fetchEmployees = async () => {
 |--------------------------------------------------------------------------
 */
 
-const handleUpdate = (
-    value: AppSelectValue,
-) => {
-    if (
-        value === null ||
-        typeof value === 'number'
-    ) {
+const handleUpdate = (value: AppSelectValue) => {
+    if (value === null || typeof value === 'number') {
         emit('update:modelValue', value);
         emit('change', value);
     }
@@ -143,10 +129,7 @@ const handleUpdate = (
 
 onMounted(fetchEmployees);
 
-watch(
-    () => props.role,
-    fetchEmployees,
-);
+watch(() => props.role, fetchEmployees);
 </script>
 
 <template>

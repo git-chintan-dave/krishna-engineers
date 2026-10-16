@@ -28,14 +28,14 @@ withDefaults(
 
         <div class="min-w-0 flex-1">
             <h1
-                class="wrap-break-word text-2xl leading-tight font-semibold tracking-tight text-foreground"
+                class="text-2xl leading-tight font-semibold tracking-tight wrap-break-word text-foreground"
             >
                 {{ title }}
             </h1>
 
             <p
                 v-if="description"
-                class="mt-1 max-w-3xl wrap-break-word text-sm leading-5 text-muted-foreground"
+                class="mt-1 max-w-3xl text-sm leading-5 wrap-break-word text-muted-foreground"
             >
                 {{ description }}
             </p>

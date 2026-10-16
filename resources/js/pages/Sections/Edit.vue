@@ -33,12 +33,10 @@ const form = useForm<SectionFormData>({
 */
 
 const handleSubmit = () => {
-    form
-        .transform((data) => ({
-            ...data,
-            status: data.status ? 'active' : 'inactive',
-        }))
-        .put(updateSection(props.section.uuid).url);
+    form.transform((data) => ({
+        ...data,
+        status: data.status ? 'active' : 'inactive',
+    })).put(updateSection(props.section.uuid).url);
 };
 
 /*

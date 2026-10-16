@@ -1,12 +1,6 @@
 <script setup lang="ts">
 import { Link, type Href } from '@inertiajs/vue3';
-import {
-    Banknote,
-    Download,
-    FileUp,
-    Plus,
-    Trash2,
-} from '@lucide/vue';
+import { Banknote, Download, FileUp, Plus, Trash2 } from '@lucide/vue';
 
 import vConfirm from '@/directives/confirm';
 import { Button } from '@/components/ui/button';
@@ -79,9 +73,7 @@ const emit = defineEmits<{
             v-confirm="{
                 action: () => emit('deleteSelected'),
                 options: {
-                    title:
-                        deleteTitle ||
-                        `Delete selected ${resourceLabel}?`,
+                    title: deleteTitle || `Delete selected ${resourceLabel}?`,
                     description: deleteDescription,
                     confirmText: deleteConfirmLabel,
                 },
@@ -92,18 +84,12 @@ const emit = defineEmits<{
             class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
             :aria-label="`Delete ${selectedCount} selected ${resourceLabel}`"
         >
-            <Trash2
-                class="size-4"
-                aria-hidden="true"
-            />
+            <Trash2 class="size-4" aria-hidden="true" />
 
             <span class="whitespace-nowrap">
                 Delete selected
 
-                <span
-                    class="ml-1 opacity-80"
-                    aria-hidden="true"
-                >
+                <span class="ml-1 opacity-80" aria-hidden="true">
                     ({{ selectedCount }})
                 </span>
             </span>
@@ -117,14 +103,8 @@ const emit = defineEmits<{
             size="sm"
             class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
         >
-            <Link
-                :href="importUrl"
-                :aria-label="importLabel"
-            >
-                <FileUp
-                    class="size-4"
-                    aria-hidden="true"
-                />
+            <Link :href="importUrl" :aria-label="importLabel">
+                <FileUp class="size-4" aria-hidden="true" />
 
                 <span class="whitespace-nowrap">
                     {{ importLabel }}
@@ -140,14 +120,8 @@ const emit = defineEmits<{
             size="sm"
             class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
         >
-            <Link
-                :href="exportUrl"
-                :aria-label="exportLabel"
-            >
-                <Download
-                    class="size-4"
-                    aria-hidden="true"
-                />
+            <Link :href="exportUrl" :aria-label="exportLabel">
+                <Download class="size-4" aria-hidden="true" />
 
                 <span class="whitespace-nowrap">
                     {{ exportLabel }}
@@ -161,7 +135,7 @@ const emit = defineEmits<{
             as-child
             variant="outline"
             size="sm"
-            class="h-9 w-full shrink-0 sm:w-auto cursor-pointer"
+            class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
             :disabled="generateDisabled"
         >
             <Link
@@ -171,10 +145,7 @@ const emit = defineEmits<{
                 :aria-disabled="generateDisabled"
                 :tabindex="generateDisabled ? -1 : undefined"
             >
-                <Banknote
-                    class="size-4"
-                    aria-hidden="true"
-                />
+                <Banknote class="size-4" aria-hidden="true" />
 
                 <span class="whitespace-nowrap">
                     {{ generateLabel }}
@@ -189,14 +160,8 @@ const emit = defineEmits<{
             size="sm"
             class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
         >
-            <Link
-                :href="createUrl"
-                :aria-label="createLabel"
-            >
-                <Plus
-                    class="size-4"
-                    aria-hidden="true"
-                />
+            <Link :href="createUrl" :aria-label="createLabel">
+                <Plus class="size-4" aria-hidden="true" />
 
                 <span class="whitespace-nowrap">
                     {{ createLabel }}

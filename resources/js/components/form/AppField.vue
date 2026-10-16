@@ -59,10 +59,7 @@ withDefaults(
         |--------------------------------------------------------------------------
         -->
 
-        <p
-            v-if="description"
-            class="text-xs text-muted-foreground"
-        >
+        <p v-if="description" class="text-xs text-muted-foreground">
             {{ description }}
         </p>
     </div>

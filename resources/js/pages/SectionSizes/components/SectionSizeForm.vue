@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import type { InertiaForm } from '@inertiajs/vue3';
-import {
-    Layers3,
-    Ruler,
-    Scale,
-} from '@lucide/vue';
+import { Layers3, Ruler, Scale } from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -17,9 +13,7 @@ import type { SectionSizeFormData } from '@/types/sectionSize';
 // Props
 const props = defineProps<{
     form: InertiaForm<SectionSizeFormData>;
-    errors: Partial<
-        Record<keyof SectionSizeFormData, string>
-    >;
+    errors: Partial<Record<keyof SectionSizeFormData, string>>;
     processing: boolean;
     submitLabel: string;
 }>();
@@ -32,23 +26,16 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <form
-        class="min-w-0 space-y-6"
-        @submit.prevent="emit('submit')"
-    >
+    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
         <!-- Section Size Information -->
         <FormSection
             :title="sectionSizePage.form.sectionTitle"
-            :description="
-                sectionSizePage.form.sectionDescription
-            "
+            :description="sectionSizePage.form.sectionDescription"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Section -->
                 <AppField
-                    :label="
-                        sectionSizePage.form.sectionLabel
-                    "
+                    :label="sectionSizePage.form.sectionLabel"
                     input-id="section-size-section"
                     :error="props.errors.section_id"
                     required
@@ -56,10 +43,7 @@ const emit = defineEmits<{
                     <AppSectionSelect
                         id="section-size-section"
                         v-model="props.form.section_id"
-                        :placeholder="
-                            sectionSizePage.form
-                                .sectionPlaceholder
-                        "
+                        :placeholder="sectionSizePage.form.sectionPlaceholder"
                         :disabled="props.processing"
                         :icon="Layers3"
                         :error="props.errors.section_id"
@@ -78,10 +62,7 @@ const emit = defineEmits<{
                     <AppInput
                         id="section-size-size"
                         v-model="props.form.size"
-                        :placeholder="
-                            sectionSizePage.form
-                                .sizePlaceholder
-                        "
+                        :placeholder="sectionSizePage.form.sizePlaceholder"
                         :disabled="props.processing"
                         :icon="Ruler"
                         :error="props.errors.size"
@@ -92,9 +73,7 @@ const emit = defineEmits<{
 
                 <!-- Weight -->
                 <AppField
-                    :label="
-                        sectionSizePage.form.weightLabel
-                    "
+                    :label="sectionSizePage.form.weightLabel"
                     input-id="section-size-weight"
                     :error="props.errors.weight"
                     required
@@ -102,10 +81,7 @@ const emit = defineEmits<{
                     <AppInput
                         id="section-size-weight"
                         v-model="props.form.weight"
-                        :placeholder="
-                            sectionSizePage.form
-                                .weightPlaceholder
-                        "
+                        :placeholder="sectionSizePage.form.weightPlaceholder"
                         :disabled="props.processing"
                         :icon="Scale"
                         :error="props.errors.weight"
@@ -119,9 +95,7 @@ const emit = defineEmits<{
         <FormActions
             :processing="processing"
             :submit-label="submitLabel"
-            :cancel-label="
-                sectionSizePage.form.cancelLabel
-            "
+            :cancel-label="sectionSizePage.form.cancelLabel"
             @cancel="emit('cancel')"
         />
     </form>

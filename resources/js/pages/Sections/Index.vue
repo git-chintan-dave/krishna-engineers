@@ -57,15 +57,10 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const filterStatus = ref<StatusFilter>(
-    props.filters.status,
-);
+const filterStatus = ref<StatusFilter>(props.filters.status);
 
-const handleStatusChange = (
-    value: string | null,
-) => {
-    filterStatus.value =
-        (value as StatusFilter | null) ?? 'all';
+const handleStatusChange = (value: string | null) => {
+    filterStatus.value = (value as StatusFilter | null) ?? 'all';
 };
 
 const handleClearFilters = () => {
@@ -104,10 +99,7 @@ const {
     route: sectionsRoute.url(),
 
     additionalFilters: () => ({
-        status:
-            filterStatus.value !== 'all'
-                ? filterStatus.value
-                : undefined,
+        status: filterStatus.value !== 'all' ? filterStatus.value : undefined,
     }),
 });
 
@@ -142,19 +134,10 @@ const handleDeleteSelected = () => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
-                :search-placeholder="
-                    sectionPage.searchPlaceholder
-                "
-                :search-button-label="
-                    sectionPage.searchButtonLabel
-                "
-                :clear-button-label="
-                    sectionPage.clearButtonLabel
-                "
-                :clear-disabled="
-                    !searchQuery.trim() &&
-                    filterStatus === 'all'
-                "
+                :search-placeholder="sectionPage.searchPlaceholder"
+                :search-button-label="sectionPage.searchButtonLabel"
+                :clear-button-label="sectionPage.clearButtonLabel"
+                :clear-disabled="!searchQuery.trim() && filterStatus === 'all'"
                 @search="search"
                 @clear="handleClearFilters"
             >
@@ -162,15 +145,11 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-48">
                         <AppStatusSelect
                             :model-value="
-                                filterStatus === 'all'
-                                    ? null
-                                    : filterStatus
+                                filterStatus === 'all' ? null : filterStatus
                             "
                             placeholder="All statuses"
                             clearable
-                            @update:model-value="
-                                handleStatusChange
-                            "
+                            @update:model-value="handleStatusChange"
                         />
                     </div>
                 </template>
@@ -183,9 +162,7 @@ const handleDeleteSelected = () => {
                 :table="table"
                 :columns-count="columns.length"
                 :total="sections.meta.total"
-                :page-index="
-                    sections.meta.current_page - 1
-                "
+                :page-index="sections.meta.current_page - 1"
                 :page-size="sections.meta.per_page"
                 :selected-count="selectedCount"
                 :page-size-options="[10, 25, 50, 100]"

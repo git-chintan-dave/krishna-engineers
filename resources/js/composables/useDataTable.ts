@@ -29,17 +29,11 @@ type DataTableOptions<TData extends RowData> = {
     pageCount?: () => number;
     initialSorting?: SortingState;
 
-    enableRowSelection?: (
-        row: TData,
-    ) => boolean;
+    enableRowSelection?: (row: TData) => boolean;
 
-    onPaginationChange?: (
-        pagination: PaginationState,
-    ) => void;
+    onPaginationChange?: (pagination: PaginationState) => void;
 
-    onSortingChange?: (
-        sorting: SortingState,
-    ) => void;
+    onSortingChange?: (sorting: SortingState) => void;
 };
 
 /*
@@ -61,9 +55,7 @@ export function useDataTable<TData extends RowData>(
 
     const rowSelection = ref<RowSelectionState>({});
 
-    const sorting = ref<SortingState>(
-        options.initialSorting ?? [],
-    );
+    const sorting = ref<SortingState>(options.initialSorting ?? []);
 
     const pagination = ref<PaginationState>({
         pageIndex: 0,
@@ -118,8 +110,7 @@ export function useDataTable<TData extends RowData>(
             },
         },
 
-        manualPagination:
-            options.manualPagination ?? false,
+        manualPagination: options.manualPagination ?? false,
 
         get pageCount() {
             if (!options.manualPagination) {
@@ -129,8 +120,7 @@ export function useDataTable<TData extends RowData>(
             return options.pageCount?.() ?? -1;
         },
 
-        manualSorting:
-            options.manualSorting ?? false,
+        manualSorting: options.manualSorting ?? false,
 
         /*
         |--------------------------------------------------------------------------
@@ -139,10 +129,7 @@ export function useDataTable<TData extends RowData>(
         */
 
         enableRowSelection: options.enableRowSelection
-            ? (row) =>
-                  options.enableRowSelection?.(
-                      row.original,
-                  ) ?? true
+            ? (row) => options.enableRowSelection?.(row.original) ?? true
             : undefined,
 
         onRowSelectionChange: (updater) => {
@@ -164,9 +151,7 @@ export function useDataTable<TData extends RowData>(
                     ? updater(sorting.value)
                     : updater;
 
-            options.onSortingChange?.(
-                sorting.value,
-            );
+            options.onSortingChange?.(sorting.value);
         },
 
         /*
@@ -181,9 +166,7 @@ export function useDataTable<TData extends RowData>(
                     ? updater(pagination.value)
                     : updater;
 
-            options.onPaginationChange?.(
-                pagination.value,
-            );
+            options.onPaginationChange?.(pagination.value);
         },
     });
 
@@ -194,15 +177,10 @@ export function useDataTable<TData extends RowData>(
     */
 
     const selectedRows = computed(() =>
-        table
-            .getSelectedRowModel()
-            .rows
-            .map((row) => row.original),
+        table.getSelectedRowModel().rows.map((row) => row.original),
     );
 
-    const selectedCount = computed(
-        () => selectedRows.value.length,
-    );
+    const selectedCount = computed(() => selectedRows.value.length);
 
     const clearSelection = () => {
         rowSelection.value = {};

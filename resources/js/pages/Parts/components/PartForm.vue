@@ -25,9 +25,7 @@ import type { PartFormData } from '@/types/part';
 const props = withDefaults(
     defineProps<{
         form: InertiaForm<PartFormData>;
-        errors?: Partial<
-            Record<keyof PartFormData, string>
-        >;
+        errors?: Partial<Record<keyof PartFormData, string>>;
         processing?: boolean;
         submitLabel?: string;
         currentImage?: string | null;
@@ -57,16 +55,11 @@ const handleImageRemove = (): void => {
 </script>
 
 <template>
-    <form
-        class="min-w-0 space-y-6"
-        @submit.prevent="emit('submit')"
-    >
+    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
         <!-- Part Information -->
         <FormSection
             :title="partPage.form.sectionTitle"
-            :description="
-                partPage.form.sectionDescription
-            "
+            :description="partPage.form.sectionDescription"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Part Name -->
@@ -79,9 +72,7 @@ const handleImageRemove = (): void => {
                     <AppInput
                         id="part-name"
                         v-model="props.form.name"
-                        :placeholder="
-                            partPage.form.namePlaceholder
-                        "
+                        :placeholder="partPage.form.namePlaceholder"
                         :disabled="props.processing"
                         :icon="Box"
                         :error="props.errors.name"
@@ -91,24 +82,17 @@ const handleImageRemove = (): void => {
 
                 <!-- New Part Name -->
                 <AppField
-                    :label="
-                        partPage.form.newPartNameLabel
-                    "
+                    :label="partPage.form.newPartNameLabel"
                     input-id="part-new-part-name"
                     :error="props.errors.new_part_name"
                 >
                     <AppInput
                         id="part-new-part-name"
                         v-model="props.form.new_part_name"
-                        :placeholder="
-                            partPage.form
-                                .newPartNamePlaceholder
-                        "
+                        :placeholder="partPage.form.newPartNamePlaceholder"
                         :disabled="props.processing"
                         :icon="Settings2"
-                        :error="
-                            props.errors.new_part_name
-                        "
+                        :error="props.errors.new_part_name"
                     />
                 </AppField>
 
@@ -121,9 +105,7 @@ const handleImageRemove = (): void => {
                     <AppSectionSelect
                         id="part-section"
                         v-model="props.form.section_id"
-                        :placeholder="
-                            partPage.form.sectionPlaceholder
-                        "
+                        :placeholder="partPage.form.sectionPlaceholder"
                         :disabled="props.processing"
                         :icon="Layers3"
                         :error="props.errors.section_id"
@@ -134,19 +116,14 @@ const handleImageRemove = (): void => {
 
                 <!-- Cutting Size -->
                 <AppField
-                    :label="
-                        partPage.form.cuttingSizeLabel
-                    "
+                    :label="partPage.form.cuttingSizeLabel"
                     input-id="part-cutting-size"
                     :error="props.errors.cutting_size"
                 >
                     <AppInput
                         id="part-cutting-size"
                         v-model="props.form.cutting_size"
-                        :placeholder="
-                            partPage.form
-                                .cuttingSizePlaceholder
-                        "
+                        :placeholder="partPage.form.cuttingSizePlaceholder"
                         :disabled="props.processing"
                         :icon="Ruler"
                         :error="props.errors.cutting_size"
@@ -163,19 +140,14 @@ const handleImageRemove = (): void => {
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Part Weight -->
                 <AppField
-                    :label="
-                        partPage.form.partWeightLabel
-                    "
+                    :label="partPage.form.partWeightLabel"
                     input-id="part-part-weight"
                     :error="props.errors.part_weight"
                 >
                     <AppInput
                         id="part-part-weight"
                         v-model="props.form.part_weight"
-                        :placeholder="
-                            partPage.form
-                                .partWeightPlaceholder
-                        "
+                        :placeholder="partPage.form.partWeightPlaceholder"
                         :disabled="props.processing"
                         :icon="Scale"
                         :error="props.errors.part_weight"
@@ -184,28 +156,17 @@ const handleImageRemove = (): void => {
 
                 <!-- Raw Material Weight -->
                 <AppField
-                    :label="
-                        partPage.form.rawMaterialLabel
-                    "
+                    :label="partPage.form.rawMaterialLabel"
                     input-id="part-raw-material-weight"
-                    :error="
-                        props.errors.raw_material_weight
-                    "
+                    :error="props.errors.raw_material_weight"
                 >
                     <AppInput
                         id="part-raw-material-weight"
-                        v-model="
-                            props.form.raw_material_weight
-                        "
-                        :placeholder="
-                            partPage.form
-                                .rawMaterialPlaceholder
-                        "
+                        v-model="props.form.raw_material_weight"
+                        :placeholder="partPage.form.rawMaterialPlaceholder"
                         :disabled="props.processing"
                         :icon="Scale"
-                        :error="
-                            props.errors.raw_material_weight
-                        "
+                        :error="props.errors.raw_material_weight"
                     />
                 </AppField>
             </div>
@@ -228,9 +189,7 @@ const handleImageRemove = (): void => {
                         :current-image="props.currentImage"
                         :disabled="props.processing"
                         :error="props.errors.image"
-                        :placeholder="
-                            partPage.form.imagePlaceholder
-                        "
+                        :placeholder="partPage.form.imagePlaceholder"
                         @change="handleImageChange"
                         @remove="handleImageRemove"
                     />

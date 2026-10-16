@@ -348,8 +348,7 @@ class AttendanceRequest extends FormRequest
 
             usort(
                 $parsedBreaks,
-                fn (array $a, array $b): int =>
-                    $a['start_at']->getTimestamp()
+                fn (array $a, array $b): int => $a['start_at']->getTimestamp()
                     <=> $b['start_at']->getTimestamp(),
             );
 

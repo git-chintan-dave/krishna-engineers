@@ -1,12 +1,12 @@
 ﻿<script setup lang="ts">
-import {router, useForm} from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {toolPage} from '@/config/tools';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { toolPage } from '@/config/tools';
 import ToolForm from '@/pages/Tools/components/ToolForm.vue';
-import {index as tools, store} from '@/routes/tools';
-import type {ToolFormData,} from '@/types/tool';
+import { index as tools, store } from '@/routes/tools';
+import type { ToolFormData } from '@/types/tool';
 
 /*
 |--------------------------------------------------------------------------
@@ -44,12 +44,10 @@ const form = useForm<ToolFormData>({
 */
 
 const handleSubmit = () => {
-    form
-        .transform((data) => ({
-            ...data,
-            status: data.status ? 'active' : 'inactive',
-        }))
-        .post(store().url);
+    form.transform((data) => ({
+        ...data,
+        status: data.status ? 'active' : 'inactive',
+    })).post(store().url);
 };
 
 /*
@@ -66,17 +64,13 @@ const handleCancel = () => {
 <template>
     <FormLayout
         :title="toolPage.form.createTitle"
-        :description="
-            toolPage.form.createDescription
-        "
+        :description="toolPage.form.createDescription"
     >
         <ToolForm
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                toolPage.form.createSubmitLabel
-            "
+            :submit-label="toolPage.form.createSubmitLabel"
             @submit="handleSubmit"
             @cancel="handleCancel"
         />

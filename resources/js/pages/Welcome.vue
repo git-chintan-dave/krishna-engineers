@@ -1,7 +1,13 @@
 <script setup lang="ts">
-import {Head, Link} from '@inertiajs/vue3';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from '@/components/ui/card';
-import {login, dashboard} from '@/routes';
+import { Head, Link } from '@inertiajs/vue3';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { login, dashboard } from '@/routes';
 </script>
 
 <template>
@@ -28,24 +34,26 @@ import {login, dashboard} from '@/routes';
                         Krishna Engineers
                     </CardTitle>
 
-                    <CardDescription class="mx-auto mt-2 max-w-sm text-sm leading-6">
+                    <CardDescription
+                        class="mx-auto mt-2 max-w-sm text-sm leading-6"
+                    >
                         Manage production, track attendance, and streamline
                         daily operations — all in one place.
                     </CardDescription>
                 </CardHeader>
 
-                <CardContent class="px-8 pb-8 pt-4 sm:px-10">
+                <CardContent class="px-8 pt-4 pb-8 sm:px-10">
                     <Link
                         v-if="$page.props.auth.user"
                         :href="dashboard()"
-                        class="inline-flex w-full items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        class="inline-flex w-full items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                     >
                         Dashboard
                     </Link>
                     <Link
                         v-else
                         :href="login()"
-                        class="inline-flex w-full items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        class="inline-flex w-full items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                     >
                         Login
                     </Link>

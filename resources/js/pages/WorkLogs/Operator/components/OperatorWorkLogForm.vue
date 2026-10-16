@@ -78,19 +78,14 @@ const emit = defineEmits<{
 */
 
 const selectedPartSetup = computed(() => {
-    if (
-        !props.form.part_id ||
-        !props.form.setup_id
-    ) {
+    if (!props.form.part_id || !props.form.setup_id) {
         return undefined;
     }
 
     return props.partSetups.find(
         (partSetup) =>
-            partSetup.part_id ===
-            props.form.part_id &&
-            partSetup.setup_id ===
-            props.form.setup_id,
+            partSetup.part_id === props.form.part_id &&
+            partSetup.setup_id === props.form.setup_id,
     );
 });
 
@@ -104,17 +99,11 @@ const selectedPartSetup = computed(() => {
 */
 
 const productionTimeDisplay = computed(() => {
-    const quantity =
-        Number(props.form.quantity) || 0;
+    const quantity = Number(props.form.quantity) || 0;
 
-    const actualCycleTime =
-        Number(
-            props.form.actual_cycle_time,
-        ) || 0;
+    const actualCycleTime = Number(props.form.actual_cycle_time) || 0;
 
-    return formatDuration(
-        quantity * actualCycleTime,
-    );
+    return formatDuration(quantity * actualCycleTime);
 });
 
 /*
@@ -123,11 +112,7 @@ const productionTimeDisplay = computed(() => {
 |--------------------------------------------------------------------------
 */
 
-const actualCycleTimeInput = ref(
-    formatDuration(
-        props.form.actual_cycle_time,
-    ),
-);
+const actualCycleTimeInput = ref(formatDuration(props.form.actual_cycle_time));
 
 /*
 |--------------------------------------------------------------------------
@@ -136,28 +121,21 @@ const actualCycleTimeInput = ref(
 */
 
 const syncActualCycleTime = (): void => {
-    const seconds = parseDuration(
-        actualCycleTimeInput.value,
-    );
+    const seconds = parseDuration(actualCycleTimeInput.value);
 
     if (seconds === null) {
-        actualCycleTimeInput.value =
-            formatDuration(
-                props.form.actual_cycle_time,
-            );
+        actualCycleTimeInput.value = formatDuration(
+            props.form.actual_cycle_time,
+        );
 
         return;
     }
 
-    props.form.actual_cycle_time =
-        seconds;
+    props.form.actual_cycle_time = seconds;
 
-    actualCycleTimeInput.value =
-        formatDuration(seconds);
+    actualCycleTimeInput.value = formatDuration(seconds);
 
-    props.form.clearErrors(
-        'actual_cycle_time',
-    );
+    props.form.clearErrors('actual_cycle_time');
 };
 
 /*
@@ -166,67 +144,54 @@ const syncActualCycleTime = (): void => {
 |--------------------------------------------------------------------------
 */
 
-const applyPartSetupDefaults =
-    (): void => {
-        const partSetup =
-            selectedPartSetup.value;
+const applyPartSetupDefaults = (): void => {
+    const partSetup = selectedPartSetup.value;
+
+    /*
+     * No matching Part + Setup.
+     */
+    if (!partSetup) {
+        props.form.part_setup_id = null;
 
         /*
-         * No matching Part + Setup.
+         * Only reset cycle-time values when
+         * Part or Setup is actually missing.
+         *
+         * This prevents a temporary lookup state
+         * from unnecessarily destroying the value.
          */
-        if (!partSetup) {
-            props.form.part_setup_id =
-                null;
+        if (!props.form.part_id || !props.form.setup_id) {
+            props.form.machine_cycle_time = 0;
 
-            /*
-             * Only reset cycle-time values when
-             * Part or Setup is actually missing.
-             *
-             * This prevents a temporary lookup state
-             * from unnecessarily destroying the value.
-             */
-            if (
-                !props.form.part_id ||
-                !props.form.setup_id
-            ) {
-                props.form.machine_cycle_time =
-                    0;
+            props.form.actual_cycle_time = 0;
 
-                props.form.actual_cycle_time =
-                    0;
-
-                actualCycleTimeInput.value =
-                    '00:00:00';
-            }
-
-            return;
+            actualCycleTimeInput.value = '00:00:00';
         }
 
-        /*
-         * Store the PartSetup relation internally.
-         */
-        props.form.part_setup_id =
-            partSetup.id;
+        return;
+    }
 
-        /*
-         * Machine cycle time is required internally
-         * but is intentionally not displayed.
-         */
-        props.form.machine_cycle_time =
-            partSetup.machine_cycle_time_seconds;
+    /*
+     * Store the PartSetup relation internally.
+     */
+    props.form.part_setup_id = partSetup.id;
 
-        /*
-         * Actual cycle time defaults from PartSetup.
-         * User can edit this value afterward.
-         */
-        props.form.actual_cycle_time =
-            partSetup.actual_cycle_time_seconds;
+    /*
+     * Machine cycle time is required internally
+     * but is intentionally not displayed.
+     */
+    props.form.machine_cycle_time = partSetup.machine_cycle_time_seconds;
 
-        actualCycleTimeInput.value =
-            formatDuration(
-                partSetup.actual_cycle_time_seconds,
-            );
-    };
+    /*
+     * Actual cycle time defaults from PartSetup.
+     * User can edit this value afterward.
+     */
+    props.form.actual_cycle_time = partSetup.actual_cycle_time_seconds;
+
+    actualCycleTimeInput.value = formatDuration(
+        partSetup.actual_cycle_time_seconds,
+    );
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -234,9 +199,7 @@ const applyPartSetupDefaults =
 |--------------------------------------------------------------------------
 */
 
-const applyLastReport = (
-    userId: number | null,
-): void => {
+const applyLastReport = (userId: number | null): void => {
     if (!userId) {
         props.form.shift = null;
         props.form.machine_id = null;
@@ -248,8 +211,7 @@ const applyLastReport = (
         return;
     }
 
-    const lastReport =
-        props.lastReports[String(userId)];
+    const lastReport = props.lastReports[String(userId)];
 
     if (!lastReport) {
         props.form.shift = null;
@@ -266,17 +228,13 @@ const applyLastReport = (
      * Restore the operator's last production
      * context for a new work log.
      */
-    props.form.shift =
-        lastReport.shift;
+    props.form.shift = lastReport.shift;
 
-    props.form.machine_id =
-        lastReport.machine_id;
+    props.form.machine_id = lastReport.machine_id;
 
-    props.form.part_id =
-        lastReport.part_id;
+    props.form.part_id = lastReport.part_id;
 
-    props.form.setup_id =
-        lastReport.setup_id;
+    props.form.setup_id = lastReport.setup_id;
 
     /*
      * Part + Setup determine the cycle times.
@@ -291,18 +249,12 @@ const applyLastReport = (
 */
 
 watch(
-    () =>
-        props.form.actual_cycle_time,
+    () => props.form.actual_cycle_time,
     (seconds) => {
-        const formatted =
-            formatDuration(seconds);
+        const formatted = formatDuration(seconds);
 
-        if (
-            actualCycleTimeInput.value !==
-            formatted
-        ) {
-            actualCycleTimeInput.value =
-                formatted;
+        if (actualCycleTimeInput.value !== formatted) {
+            actualCycleTimeInput.value = formatted;
         }
     },
 );
@@ -315,10 +267,7 @@ watch(
 
 watch(
     () => props.form.user_id,
-    (
-        userId,
-        previousUserId,
-    ) => {
+    (userId, previousUserId) => {
         /*
          * Create mode:
          *
@@ -326,10 +275,7 @@ watch(
          * operator. This also handles an operator
          * login where the operator field is hidden.
          */
-        if (
-            props.isCreate &&
-            previousUserId === undefined
-        ) {
+        if (props.isCreate && previousUserId === undefined) {
             applyLastReport(userId);
 
             return;
@@ -359,15 +305,9 @@ watch(
 |--------------------------------------------------------------------------
 */
 
-watch(
-    [
-        () => props.form.part_id,
-        () => props.form.setup_id,
-    ],
-    () => {
-        applyPartSetupDefaults();
-    },
-);
+watch([() => props.form.part_id, () => props.form.setup_id], () => {
+    applyPartSetupDefaults();
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -375,84 +315,43 @@ watch(
 |--------------------------------------------------------------------------
 */
 
-function formatDuration(
-    totalSeconds:
-        | number
-        | null
-        | undefined,
-): string {
-    const seconds = Math.max(
-        0,
-        Math.floor(
-            Number(totalSeconds) || 0,
-        ),
-    );
+function formatDuration(totalSeconds: number | null | undefined): string {
+    const seconds = Math.max(0, Math.floor(Number(totalSeconds) || 0));
 
-    const hours =
-        Math.floor(
-            seconds / 3600,
-        );
+    const hours = Math.floor(seconds / 3600);
 
-    const minutes =
-        Math.floor(
-            (seconds % 3600) / 60,
-        );
+    const minutes = Math.floor((seconds % 3600) / 60);
 
-    const remainingSeconds =
-        seconds % 60;
+    const remainingSeconds = seconds % 60;
 
     return [
-        hours
-            .toString()
-            .padStart(2, '0'),
+        hours.toString().padStart(2, '0'),
 
-        minutes
-            .toString()
-            .padStart(2, '0'),
+        minutes.toString().padStart(2, '0'),
 
-        remainingSeconds
-            .toString()
-            .padStart(2, '0'),
+        remainingSeconds.toString().padStart(2, '0'),
     ].join(':');
 }
 
-function parseDuration(
-    value: string,
-): number | null {
-    const match = value
-        .trim()
-        .match(
-            /^(\d+):([0-5]\d):([0-5]\d)$/,
-        );
+function parseDuration(value: string): number | null {
+    const match = value.trim().match(/^(\d+):([0-5]\d):([0-5]\d)$/);
 
     if (!match) {
         return null;
     }
 
-    const hours =
-        Number(match[1]);
+    const hours = Number(match[1]);
 
-    const minutes =
-        Number(match[2]);
+    const minutes = Number(match[2]);
 
-    const seconds =
-        Number(match[3]);
+    const seconds = Number(match[3]);
 
-    return (
-        hours * 3600 +
-        minutes * 60 +
-        seconds
-    );
+    return hours * 3600 + minutes * 60 + seconds;
 }
 </script>
 
 <template>
-    <form
-        class="min-w-0 space-y-6"
-        @submit.prevent="
-            emit('submit')
-        "
-    >
+    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
         <!--
         |--------------------------------------------------------------------------
         | Production Work
@@ -460,45 +359,26 @@ function parseDuration(
         -->
 
         <FormSection
-            :title="
-                operatorWorkLogPage.form
-                    .sectionTitle
-            "
-            :description="
-                operatorWorkLogPage.form
-                    .sectionDescription
-            "
+            :title="operatorWorkLogPage.form.sectionTitle"
+            :description="operatorWorkLogPage.form.sectionDescription"
         >
-            <div
-                class="grid min-w-0 gap-5 md:grid-cols-2"
-            >
+            <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Operator -->
 
                 <AppField
                     v-if="canSelectOperator"
-                    :label="
-                        operatorWorkLogPage.form
-                            .operatorLabel
-                    "
+                    :label="operatorWorkLogPage.form.operatorLabel"
                     input-id="work-log-operator"
-                    :error="
-                        form.errors.user_id
-                    "
+                    :error="form.errors.user_id"
                     required
                 >
                     <AppEmployeeSelect
                         v-model="form.user_id"
                         :placeholder="
-                            operatorWorkLogPage.form
-                                .operatorPlaceholder
+                            operatorWorkLogPage.form.operatorPlaceholder
                         "
-                        :disabled="
-                            processing ||
-                            !isCreate
-                        "
-                        :error="
-                            form.errors.user_id
-                        "
+                        :disabled="processing || !isCreate"
+                        :error="form.errors.user_id"
                         :icon="User"
                         searchable
                         role="operator"
@@ -508,14 +388,9 @@ function parseDuration(
                 <!-- Work Date -->
 
                 <AppField
-                    :label="
-                        operatorWorkLogPage.form
-                            .workDateLabel
-                    "
+                    :label="operatorWorkLogPage.form.workDateLabel"
                     input-id="work-log-date"
-                    :error="
-                        form.errors.work_date
-                    "
+                    :error="form.errors.work_date"
                     required
                 >
                     <AppInput
@@ -523,16 +398,10 @@ function parseDuration(
                         v-model="form.work_date"
                         type="date"
                         :placeholder="
-                            operatorWorkLogPage.form
-                                .workDatePlaceholder
+                            operatorWorkLogPage.form.workDatePlaceholder
                         "
-                        :disabled="
-                            processing ||
-                            !isCreate
-                        "
-                        :error="
-                            form.errors.work_date
-                        "
+                        :disabled="processing || !isCreate"
+                        :error="form.errors.work_date"
                         :icon="CalendarDays"
                         required
                     />
@@ -541,29 +410,16 @@ function parseDuration(
                 <!-- Shift -->
 
                 <AppField
-                    :label="
-                        operatorWorkLogPage.form
-                            .shiftLabel
-                    "
+                    :label="operatorWorkLogPage.form.shiftLabel"
                     input-id="work-log-shift"
-                    :error="
-                        form.errors.shift
-                    "
+                    :error="form.errors.shift"
                     required
                 >
                     <AppUserShiftSelect
                         v-model="form.shift"
-                        :placeholder="
-                            operatorWorkLogPage.form
-                                .shiftPlaceholder
-                        "
-                        :disabled="
-                            processing ||
-                            !isCreate
-                        "
-                        :error="
-                            form.errors.shift
-                        "
+                        :placeholder="operatorWorkLogPage.form.shiftPlaceholder"
+                        :disabled="processing || !isCreate"
+                        :error="form.errors.shift"
                         :icon="Clock3"
                         clearable
                     />
@@ -572,29 +428,18 @@ function parseDuration(
                 <!-- Machine -->
 
                 <AppField
-                    :label="
-                        operatorWorkLogPage.form
-                            .machineLabel
-                    "
+                    :label="operatorWorkLogPage.form.machineLabel"
                     input-id="work-log-machine"
-                    :error="
-                        form.errors.machine_id
-                    "
+                    :error="form.errors.machine_id"
                     required
                 >
                     <AppMachineSelect
                         v-model="form.machine_id"
                         :placeholder="
-                            operatorWorkLogPage.form
-                                .machinePlaceholder
+                            operatorWorkLogPage.form.machinePlaceholder
                         "
-                        :disabled="
-                            processing ||
-                            !isCreate
-                        "
-                        :error="
-                            form.errors.machine_id
-                        "
+                        :disabled="processing || !isCreate"
+                        :error="form.errors.machine_id"
                         :icon="Cog"
                         searchable
                     />
@@ -603,29 +448,16 @@ function parseDuration(
                 <!-- Part -->
 
                 <AppField
-                    :label="
-                        operatorWorkLogPage.form
-                            .partLabel
-                    "
+                    :label="operatorWorkLogPage.form.partLabel"
                     input-id="work-log-part"
-                    :error="
-                        form.errors.part_id
-                    "
+                    :error="form.errors.part_id"
                     required
                 >
                     <AppPartSelect
                         v-model="form.part_id"
-                        :placeholder="
-                            operatorWorkLogPage.form
-                                .partPlaceholder
-                        "
-                        :disabled="
-                            processing ||
-                            !isCreate
-                        "
-                        :error="
-                            form.errors.part_id
-                        "
+                        :placeholder="operatorWorkLogPage.form.partPlaceholder"
+                        :disabled="processing || !isCreate"
+                        :error="form.errors.part_id"
                         :icon="Wrench"
                         searchable
                     />
@@ -634,30 +466,17 @@ function parseDuration(
                 <!-- Setup -->
 
                 <AppField
-                    :label="
-                        operatorWorkLogPage.form
-                            .setupLabel
-                    "
+                    :label="operatorWorkLogPage.form.setupLabel"
                     input-id="work-log-setup"
-                    :error="
-                        form.errors.setup_id
-                    "
+                    :error="form.errors.setup_id"
                     required
                 >
                     <AppSetupSelect
                         v-model="form.setup_id"
                         :part-id="form.part_id"
-                        :placeholder="
-                            operatorWorkLogPage.form
-                                .setupPlaceholder
-                        "
-                        :disabled="
-                            processing ||
-                            !isCreate
-                        "
-                        :error="
-                            form.errors.setup_id
-                        "
+                        :placeholder="operatorWorkLogPage.form.setupPlaceholder"
+                        :disabled="processing || !isCreate"
+                        :error="form.errors.setup_id"
                         :icon="Settings2"
                         searchable
                     />
@@ -666,72 +485,45 @@ function parseDuration(
                 <!-- Actual Cycle Time -->
 
                 <AppField
-                    :label="
-                        operatorWorkLogPage.form
-                            .actualCycleTimeLabel
-                    "
+                    :label="operatorWorkLogPage.form.actualCycleTimeLabel"
                     input-id="work-log-actual-cycle-time"
-                    :error="
-                        form.errors
-                            .actual_cycle_time
-                    "
+                    :error="form.errors.actual_cycle_time"
                     required
                 >
                     <AppInput
                         id="work-log-actual-cycle-time"
-                        v-model="
-                            actualCycleTimeInput
-                        "
+                        v-model="actualCycleTimeInput"
                         type="text"
                         :placeholder="
                             operatorWorkLogPage.form
-                                .actualCycleTimePlaceholder ??
-                            '00:00:00'
+                                .actualCycleTimePlaceholder ?? '00:00:00'
                         "
-                        :disabled="
-                            processing ||
-                            !selectedPartSetup
-                        "
-                        :error="
-                            form.errors
-                                .actual_cycle_time
-                        "
+                        :disabled="processing || !selectedPartSetup"
+                        :error="form.errors.actual_cycle_time"
                         :icon="Clock3"
                         required
-                        @blur="
-                            syncActualCycleTime
-                        "
+                        @blur="syncActualCycleTime"
                     />
                 </AppField>
 
                 <!-- Quantity -->
 
                 <AppField
-                    :label="
-                        operatorWorkLogPage.form
-                            .quantityLabel
-                    "
+                    :label="operatorWorkLogPage.form.quantityLabel"
                     input-id="work-log-quantity"
-                    :error="
-                        form.errors.quantity
-                    "
+                    :error="form.errors.quantity"
                     required
                 >
                     <AppInput
                         id="work-log-quantity"
-                        v-model.number="
-                            form.quantity
-                        "
+                        v-model.number="form.quantity"
                         type="number"
                         min="1"
                         :placeholder="
-                            operatorWorkLogPage.form
-                                .quantityPlaceholder
+                            operatorWorkLogPage.form.quantityPlaceholder
                         "
                         :disabled="processing"
-                        :error="
-                            form.errors.quantity
-                        "
+                        :error="form.errors.quantity"
                         :icon="Hash"
                         required
                     />
@@ -740,21 +532,13 @@ function parseDuration(
                 <!-- Rejection Quantity -->
 
                 <AppField
-                    :label="
-                        operatorWorkLogPage.form
-                            .rejectionQuantityLabel
-                    "
+                    :label="operatorWorkLogPage.form.rejectionQuantityLabel"
                     input-id="work-log-rejection-quantity"
-                    :error="
-                        form.errors
-                            .rejection_quantity
-                    "
+                    :error="form.errors.rejection_quantity"
                 >
                     <AppInput
                         id="work-log-rejection-quantity"
-                        v-model.number="
-                            form.rejection_quantity
-                        "
+                        v-model.number="form.rejection_quantity"
                         type="number"
                         min="0"
                         :placeholder="
@@ -762,10 +546,7 @@ function parseDuration(
                                 .rejectionQuantityPlaceholder
                         "
                         :disabled="processing"
-                        :error="
-                            form.errors
-                                .rejection_quantity
-                        "
+                        :error="form.errors.rejection_quantity"
                         :icon="Hash"
                     />
                 </AppField>
@@ -773,17 +554,12 @@ function parseDuration(
                 <!-- Production Time -->
 
                 <AppField
-                    :label="
-                        operatorWorkLogPage.form
-                            .productionTimeLabel
-                    "
+                    :label="operatorWorkLogPage.form.productionTimeLabel"
                     input-id="work-log-production-time"
                 >
                     <AppInput
                         id="work-log-production-time"
-                        :model-value="
-                            productionTimeDisplay
-                        "
+                        :model-value="productionTimeDisplay"
                         :icon="Clock3"
                         readonly
                         disabled
@@ -803,26 +579,16 @@ function parseDuration(
             description="Add any relevant remarks about this work."
         >
             <AppField
-                :label="
-                    operatorWorkLogPage.form
-                        .remarksLabel
-                "
+                :label="operatorWorkLogPage.form.remarksLabel"
                 input-id="work-log-remarks"
-                :error="
-                    form.errors.remarks
-                "
+                :error="form.errors.remarks"
             >
                 <AppInput
                     id="work-log-remarks"
                     v-model="form.remarks"
-                    :placeholder="
-                        operatorWorkLogPage.form
-                            .remarksPlaceholder
-                    "
+                    :placeholder="operatorWorkLogPage.form.remarksPlaceholder"
                     :disabled="processing"
-                    :error="
-                        form.errors.remarks
-                    "
+                    :error="form.errors.remarks"
                     :icon="MessageSquare"
                 />
             </AppField>
@@ -837,10 +603,7 @@ function parseDuration(
         <FormActions
             :submit-label="submitLabel"
             :processing="processing"
-            :cancel-label="
-                operatorWorkLogPage.form
-                    .cancelLabel
-            "
+            :cancel-label="operatorWorkLogPage.form.cancelLabel"
             @cancel="emit('cancel')"
         />
     </form>

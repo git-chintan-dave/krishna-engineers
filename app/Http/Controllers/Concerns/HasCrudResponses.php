@@ -14,9 +14,9 @@ trait HasCrudResponses
     ): RedirectResponse {
         return ResponseHelper::success(
             message: $message ?? FlashMessage::success(
-            $action,
-            self::MODULE_NAME,
-        ),
+                $action,
+                self::MODULE_NAME,
+            ),
             route: self::INDEX_ROUTE,
         );
     }
@@ -27,9 +27,9 @@ trait HasCrudResponses
     ): RedirectResponse {
         return ResponseHelper::error(
             message: $message ?? FlashMessage::error(
-            $action,
-            self::MODULE_NAME,
-        ),
+                $action,
+                self::MODULE_NAME,
+            ),
             route: self::INDEX_ROUTE,
         );
     }

@@ -29,12 +29,10 @@ const form = useForm<SectionFormData>({
 */
 
 const handleSubmit = () => {
-    form
-        .transform((data) => ({
-            ...data,
-            status: data.status ? 'active' : 'inactive',
-        }))
-        .post(store().url);
+    form.transform((data) => ({
+        ...data,
+        status: data.status ? 'active' : 'inactive',
+    })).post(store().url);
 };
 
 /*

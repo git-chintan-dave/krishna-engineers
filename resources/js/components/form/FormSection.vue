@@ -18,28 +18,21 @@ withDefaults(
 </script>
 
 <template>
-    <section class="w-full min-w-0 overflow-hidden rounded-lg border bg-background">
+    <section
+        class="w-full min-w-0 overflow-hidden rounded-lg border bg-background"
+    >
         <!--
         |--------------------------------------------------------------------------
         | Header
         |--------------------------------------------------------------------------
         -->
 
-        <div
-            v-if="title || description"
-            class="border-b px-4 py-4 md:px-6"
-        >
-            <h2
-                v-if="title"
-                class="text-sm font-semibold text-foreground"
-            >
+        <div v-if="title || description" class="border-b px-4 py-4 md:px-6">
+            <h2 v-if="title" class="text-sm font-semibold text-foreground">
                 {{ title }}
             </h2>
 
-            <p
-                v-if="description"
-                class="mt-1 text-sm text-muted-foreground"
-            >
+            <p v-if="description" class="mt-1 text-sm text-muted-foreground">
                 {{ description }}
             </p>
         </div>

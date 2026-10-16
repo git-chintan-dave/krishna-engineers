@@ -7,10 +7,7 @@ import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
 
 import { operatorWorkLogPage } from '@/config/operatorWorkLogs';
 
-import {
-    index as operatorWorkLogs,
-    store,
-} from '@/routes/operator';
+import { index as operatorWorkLogs, store } from '@/routes/operator';
 
 import OperatorWorkLogForm from '@/pages/WorkLogs/Operator/components/OperatorWorkLogForm.vue';
 
@@ -36,10 +33,7 @@ const props = defineProps<{
     partSetups: OperatorWorkLogPartSetupOption[];
     currentUserId: number;
     canSelectOperator: boolean;
-    lastReports: Record<
-        string,
-        LastReport
-    >;
+    lastReports: Record<string, LastReport>;
 }>();
 
 /*
@@ -52,8 +46,7 @@ defineOptions({
     layout: {
         breadcrumbs: useCrudBreadcrumbs('create', {
             resource: operatorWorkLogPage.title,
-            resourceUrl:
-            operatorWorkLogs().url,
+            resourceUrl: operatorWorkLogs().url,
         }),
     },
 });
@@ -64,32 +57,26 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const form =
-    useForm<OperatorWorkLogFormData>({
-        user_id:
-            props.canSelectOperator
-                ? null
-                : props.currentUserId,
+const form = useForm<OperatorWorkLogFormData>({
+    user_id: props.canSelectOperator ? null : props.currentUserId,
 
-        work_date: new Date()
-            .toISOString()
-            .slice(0, 10),
+    work_date: new Date().toISOString().slice(0, 10),
 
-        shift: null,
+    shift: null,
 
-        machine_id: null,
-        part_id: null,
-        setup_id: null,
-        part_setup_id: null,
+    machine_id: null,
+    part_id: null,
+    setup_id: null,
+    part_setup_id: null,
 
-        machine_cycle_time: 0,
-        actual_cycle_time: 0,
+    machine_cycle_time: 0,
+    actual_cycle_time: 0,
 
-        quantity: 1,
-        rejection_quantity: 0,
+    quantity: 1,
+    rejection_quantity: 0,
 
-        remarks: '',
-    });
+    remarks: '',
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -102,43 +89,24 @@ const handleSubmit = () => {
 };
 
 const handleCancel = () => {
-    router.visit(
-        operatorWorkLogs().url,
-    );
+    router.visit(operatorWorkLogs().url);
 };
 </script>
 
 <template>
     <FormLayout
-        :title="
-            operatorWorkLogPage.form
-                .createTitle
-        "
-        :description="
-            operatorWorkLogPage.form
-                .createDescription
-        "
+        :title="operatorWorkLogPage.form.createTitle"
+        :description="operatorWorkLogPage.form.createDescription"
     >
         <OperatorWorkLogForm
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                operatorWorkLogPage.form
-                    .createSubmitLabel
-            "
-            :part-setups="
-                props.partSetups
-            "
-            :current-user-id="
-                props.currentUserId
-            "
-            :can-select-operator="
-                props.canSelectOperator
-            "
-            :last-reports="
-                props.lastReports
-            "
+            :submit-label="operatorWorkLogPage.form.createSubmitLabel"
+            :part-setups="props.partSetups"
+            :current-user-id="props.currentUserId"
+            :can-select-operator="props.canSelectOperator"
+            :last-reports="props.lastReports"
             :is-create="true"
             @submit="handleSubmit"
             @cancel="handleCancel"

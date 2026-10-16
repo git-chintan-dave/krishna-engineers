@@ -8,7 +8,6 @@ use App\Services\AttendanceService;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
-use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
 
@@ -265,12 +264,12 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
         $value = trim((string) $value);
 
         foreach ([
-                     'd-m-Y',
-                     'd/m/Y',
-                     'Y-m-d',
-                     'm/d/Y',
-                     'd.m.Y',
-                 ] as $format) {
+            'd-m-Y',
+            'd/m/Y',
+            'Y-m-d',
+            'm/d/Y',
+            'd.m.Y',
+        ] as $format) {
             try {
                 return Carbon::createFromFormat(
                     $format,
@@ -342,11 +341,11 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
         }
 
         foreach ([
-                     'H:i:s',
-                     'H:i',
-                     'g:i A',
-                     'g:i:s A',
-                 ] as $format) {
+            'H:i:s',
+            'H:i',
+            'g:i A',
+            'g:i:s A',
+        ] as $format) {
             try {
                 return Carbon::createFromFormat(
                     $format,

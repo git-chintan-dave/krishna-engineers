@@ -64,12 +64,10 @@ const form = useForm<AttendanceFormData>({
     attendance_date: props.attendance.attendance_date,
     start_at: props.attendance.start_at,
     end_at: props.attendance.end_at,
-    breaks: props.attendance.breaks.map(
-        (attendanceBreak) => ({
-            start_at: attendanceBreak.start_at,
-            end_at: attendanceBreak.end_at ?? '',
-        }),
-    ),
+    breaks: props.attendance.breaks.map((attendanceBreak) => ({
+        start_at: attendanceBreak.start_at,
+        end_at: attendanceBreak.end_at ?? '',
+    })),
 });
 
 /*
@@ -79,9 +77,7 @@ const form = useForm<AttendanceFormData>({
 */
 
 const handleSubmit = () => {
-    form.put(
-        updateAttendance(props.attendance.uuid).url,
-    );
+    form.put(updateAttendance(props.attendance.uuid).url);
 };
 
 const handleCancel = () => {

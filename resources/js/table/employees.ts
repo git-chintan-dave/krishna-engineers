@@ -10,14 +10,11 @@ import type { Employee } from '@/types/employee';
 
 const columnHelper = createColumnHelper<any, Employee>();
 
-export const createEmployeeColumns = (
-    handleDelete: (uuid: string) => void,
-) =>
+export const createEmployeeColumns = (handleDelete: (uuid: string) => void) =>
     columnHelper.columns([
         createSelectColumn({
             resourceName: 'employees',
-            isSelectable: (row: Employee) =>
-                row.role !== 'super_admin',
+            isSelectable: (row: Employee) => row.role !== 'super_admin',
         }),
 
         createPrimaryColumn({
@@ -43,16 +40,14 @@ export const createEmployeeColumns = (
             accessorKey: 'role',
             header: 'Role',
             size: 170,
-            cell: ({ row }: any) =>
-                row.original.role_label ?? '—',
+            cell: ({ row }: any) => row.original.role_label ?? '—',
         }),
 
         createSortableColumn({
             accessorKey: 'shift',
             header: 'Shift',
             size: 120,
-            cell: ({ row }: any) =>
-                row.original.shift_label ?? '—',
+            cell: ({ row }: any) => row.original.shift_label ?? '—',
         }),
 
         createStatusColumn({
@@ -63,7 +58,6 @@ export const createEmployeeColumns = (
             editUrl: (uuid) => edit(uuid).url,
             resourceName: 'employee',
             handleDelete,
-            showDelete: (row: Employee) =>
-                row.role !== 'super_admin',
+            showDelete: (row: Employee) => row.role !== 'super_admin',
         }),
     ]);

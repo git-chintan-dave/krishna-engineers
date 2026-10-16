@@ -15,8 +15,7 @@ export const partPage = {
 
     form: {
         sectionTitle: 'Part Information',
-        sectionDescription:
-            'Enter the basic information for the part.',
+        sectionDescription: 'Enter the basic information for the part.',
 
         nameLabel: 'Part Name',
         namePlaceholder: 'Enter part name',
@@ -25,36 +24,29 @@ export const partPage = {
         sectionPlaceholder: 'Select section',
 
         newPartNameLabel: 'New Part Name',
-        newPartNamePlaceholder:
-            'Enter new part name',
+        newPartNamePlaceholder: 'Enter new part name',
 
         imageLabel: 'Image',
-        imagePlaceholder:
-            'Enter image path or filename',
+        imagePlaceholder: 'Enter image path or filename',
 
         cuttingSizeLabel: 'Cutting Size',
-        cuttingSizePlaceholder:
-            'Enter cutting size',
+        cuttingSizePlaceholder: 'Enter cutting size',
 
         partWeightLabel: 'Part Weight',
-        partWeightPlaceholder:
-            'Enter part weight',
+        partWeightPlaceholder: 'Enter part weight',
 
         rawMaterialLabel: 'Raw Material Weight',
-        rawMaterialPlaceholder:
-            'Enter raw material weight',
+        rawMaterialPlaceholder: 'Enter raw material weight',
 
         statusLabel: 'Status',
         statusPlaceholder: 'Select status',
 
         createTitle: 'Create Part',
-        createDescription:
-            'Add a new part to the system.',
+        createDescription: 'Add a new part to the system.',
         createSubmitLabel: 'Save Part',
 
         editTitle: 'Edit Part',
-        editDescription:
-            'Update the part information.',
+        editDescription: 'Update the part information.',
         editSubmitLabel: 'Update Part',
 
         cancelLabel: 'Cancel',

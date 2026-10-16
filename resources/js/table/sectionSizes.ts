@@ -20,8 +20,7 @@ export const createSectionSizeColumns = (
 
         createPrimaryColumn({
             id: 'section',
-            accessorFn: (row: SectionSize) =>
-                row.section?.name ?? '-',
+            accessorFn: (row: SectionSize) => row.section?.name ?? '-',
             header: 'Section',
             size: 260,
         }),

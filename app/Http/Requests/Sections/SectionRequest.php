@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Sections;
 
+use App\Enums\Status;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -27,7 +28,7 @@ class SectionRequest extends FormRequest
 
             'status' => [
                 'required',
-                Rule::enum(\App\Enums\Status::class),
+                Rule::enum(Status::class),
             ],
         ];
     }

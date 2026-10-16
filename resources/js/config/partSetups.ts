@@ -1,10 +1,8 @@
 export const partSetupPage = {
     title: 'Part Setups',
-    description:
-        'Manage machine setup configurations for parts.',
+    description: 'Manage machine setup configurations for parts.',
     createLabel: 'Add Part Setup',
-    searchPlaceholder:
-        'Search parts or setups...',
+    searchPlaceholder: 'Search parts or setups...',
     searchButtonLabel: 'Search',
     clearButtonLabel: 'Clear',
     partPlaceholder: 'All Parts',
@@ -15,8 +13,7 @@ export const partSetupPage = {
 
     form: {
         sectionTitle: 'Part Setup Information',
-        sectionDescription:
-            'Configure the setup and cycle times for a part.',
+        sectionDescription: 'Configure the setup and cycle times for a part.',
 
         partLabel: 'Part',
         partPlaceholder: 'Select part',
@@ -25,8 +22,7 @@ export const partSetupPage = {
         setupPlaceholder: 'Select setup',
 
         imageLabel: 'Image',
-        imagePlaceholder:
-            'Enter image path or filename',
+        imagePlaceholder: 'Enter image path or filename',
 
         machineCycleTimeLabel: 'Machine Cycle Time (Seconds)',
         machineCycleTimePlaceholder: 'Enter seconds',
@@ -41,13 +37,11 @@ export const partSetupPage = {
             'Enter the default actual cycle time in seconds. Example: 5130 seconds = 01:25:30. This value can be adjusted on individual employee reports without changing this master value.',
 
         createTitle: 'Create Part Setup',
-        createDescription:
-            'Add a setup configuration for a part.',
+        createDescription: 'Add a setup configuration for a part.',
         createSubmitLabel: 'Save Part Setup',
 
         editTitle: 'Edit Part Setup',
-        editDescription:
-            'Update the part setup configuration.',
+        editDescription: 'Update the part setup configuration.',
         editSubmitLabel: 'Update Part Setup',
 
         cancelLabel: 'Cancel',

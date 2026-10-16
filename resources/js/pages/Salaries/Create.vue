@@ -5,10 +5,7 @@ import FormLayout from '@/components/layouts/FormLayout.vue';
 import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
 import { salaryPage } from '@/config/salaries';
 import SalaryForm from '@/pages/Salaries/components/SalaryForm.vue';
-import {
-    index as salaries,
-    store,
-} from '@/routes/salaries';
+import { index as salaries, store } from '@/routes/salaries';
 import type { SalaryFormData } from '@/types/salary';
 
 defineOptions({
@@ -42,17 +39,13 @@ const handleCancel = (): void => {
 <template>
     <FormLayout
         :title="salaryPage.form.createTitle"
-        :description="
-            salaryPage.form.createDescription
-        "
+        :description="salaryPage.form.createDescription"
     >
         <SalaryForm
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                salaryPage.form.createSubmitLabel
-            "
+            :submit-label="salaryPage.form.createSubmitLabel"
             @submit="handleSubmit"
             @cancel="handleCancel"
         />

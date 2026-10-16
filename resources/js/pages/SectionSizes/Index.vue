@@ -56,13 +56,9 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const filterSectionId = ref<number | 'all'>(
-    props.filters.sectionId,
-);
+const filterSectionId = ref<number | 'all'>(props.filters.sectionId);
 
-const handleSectionChange = (
-    value: number | null,
-) => {
+const handleSectionChange = (value: number | null) => {
     filterSectionId.value = value ?? 'all';
 };
 
@@ -103,9 +99,7 @@ const {
 
     additionalFilters: () => ({
         section_id:
-            filterSectionId.value !== 'all'
-                ? filterSectionId.value
-                : undefined,
+            filterSectionId.value !== 'all' ? filterSectionId.value : undefined,
     }),
 });
 
@@ -140,18 +134,11 @@ const handleDeleteSelected = () => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
-                :search-placeholder="
-                    sectionSizePage.searchPlaceholder
-                "
-                :search-button-label="
-                    sectionSizePage.searchButtonLabel
-                "
-                :clear-button-label="
-                    sectionSizePage.clearButtonLabel
-                "
+                :search-placeholder="sectionSizePage.searchPlaceholder"
+                :search-button-label="sectionSizePage.searchButtonLabel"
+                :clear-button-label="sectionSizePage.clearButtonLabel"
                 :clear-disabled="
-                    !searchQuery.trim() &&
-                    filterSectionId === 'all'
+                    !searchQuery.trim() && filterSectionId === 'all'
                 "
                 @search="search"
                 @clear="handleClearFilters"
@@ -164,13 +151,9 @@ const handleDeleteSelected = () => {
                                     ? null
                                     : filterSectionId
                             "
-                            :placeholder="
-                                sectionSizePage.sectionPlaceholder
-                            "
+                            :placeholder="sectionSizePage.sectionPlaceholder"
                             clearable
-                            @update:model-value="
-                                handleSectionChange
-                            "
+                            @update:model-value="handleSectionChange"
                         />
                     </div>
                 </template>
@@ -183,9 +166,7 @@ const handleDeleteSelected = () => {
                 :table="table"
                 :columns-count="columns.length"
                 :total="sectionSizes.meta.total"
-                :page-index="
-                    sectionSizes.meta.current_page - 1
-                "
+                :page-index="sectionSizes.meta.current_page - 1"
                 :page-size="sectionSizes.meta.per_page"
                 :selected-count="selectedCount"
                 :page-size-options="[10, 25, 50, 100]"

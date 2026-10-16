@@ -1,7 +1,6 @@
 export const bandsawWorkLogPage = {
     title: 'Bandsaw Work Logs',
-    description:
-        'Manage and review work logs recorded by Bandsaw operators.',
+    description: 'Manage and review work logs recorded by Bandsaw operators.',
 
     createLabel: 'Add Work Log',
 
@@ -21,8 +20,7 @@ export const bandsawWorkLogPage = {
 
     form: {
         sectionTitle: 'Bandsaw Work',
-        sectionDescription:
-            'Enter the work completed by the Bandsaw operator.',
+        sectionDescription: 'Enter the work completed by the Bandsaw operator.',
 
         workDateLabel: 'Work Date',
         workDatePlaceholder: 'Select work date',
@@ -46,13 +44,11 @@ export const bandsawWorkLogPage = {
         remarksPlaceholder: 'Enter remarks',
 
         createTitle: 'Create Bandsaw Work Log',
-        createDescription:
-            'Add a new work log for a Bandsaw operator.',
+        createDescription: 'Add a new work log for a Bandsaw operator.',
         createSubmitLabel: 'Save Work Log',
 
         editTitle: 'Edit Bandsaw Work Log',
-        editDescription:
-            'Update the Bandsaw operator work log.',
+        editDescription: 'Update the Bandsaw operator work log.',
         editSubmitLabel: 'Update Work Log',
 
         cancelLabel: 'Cancel',

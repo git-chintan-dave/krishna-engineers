@@ -14,8 +14,7 @@
 
     form: {
         sectionTitle: 'Section Size Information',
-        sectionDescription:
-            'Enter the section size and available quantity.',
+        sectionDescription: 'Enter the section size and available quantity.',
 
         sectionLabel: 'Section',
         sectionPlaceholder: 'Select section',
@@ -30,13 +29,11 @@
         weightPlaceholder: 'Enter weight',
 
         createTitle: 'Create Section Size',
-        createDescription:
-            'Add a new size for a raw material section.',
+        createDescription: 'Add a new size for a raw material section.',
         createSubmitLabel: 'Save Section Size',
 
         editTitle: 'Edit Section Size',
-        editDescription:
-            'Update the section size information.',
+        editDescription: 'Update the section size information.',
         editSubmitLabel: 'Update Section Size',
 
         cancelLabel: 'Cancel',

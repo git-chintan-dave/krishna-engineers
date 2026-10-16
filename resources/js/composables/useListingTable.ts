@@ -1,16 +1,10 @@
 import { router } from '@inertiajs/vue3';
 import type { RequestPayload } from '@inertiajs/core';
-import type {
-    RowData,
-    SortingState,
-} from '@tanstack/vue-table';
+import type { RowData, SortingState } from '@tanstack/vue-table';
 import { ref } from 'vue';
 
 import { useDataTable } from '@/composables/useDataTable';
-import type {
-    PaginatedResponse,
-    SortDirection,
-} from '@/types/listing';
+import type { PaginatedResponse, SortDirection } from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------
@@ -41,9 +35,7 @@ type ListingOptions<
 
     additionalFilters?: () => Record<string, unknown>;
 
-    enableRowSelection?: (
-        row: TData,
-    ) => boolean;
+    enableRowSelection?: (row: TData) => boolean;
 };
 
 type VisitOptions<TSort extends string> = {
@@ -71,9 +63,7 @@ export function useListingTable<
     */
 
     const searchQuery = ref(
-        options.searchable === false
-            ? ''
-            : options.filters.search ?? '',
+        options.searchable === false ? '' : (options.filters.search ?? ''),
     );
 
     /*
@@ -94,9 +84,7 @@ export function useListingTable<
 
         return {
             sort: currentSorting.id as TSort,
-            direction: currentSorting.desc
-                ? 'desc'
-                : 'asc',
+            direction: currentSorting.desc ? 'desc' : 'asc',
         };
     };
 
@@ -107,25 +95,23 @@ export function useListingTable<
     */
 
     const visit = ({
-                       page = 1,
-                       perPage = options.data().meta.per_page,
-                       sort,
-                       direction,
-                       clearSorting = false,
-                   }: VisitOptions<TSort> = {}) => {
+        page = 1,
+        perPage = options.data().meta.per_page,
+        sort,
+        direction,
+        clearSorting = false,
+    }: VisitOptions<TSort> = {}) => {
         const currentSorting = getCurrentSorting();
 
         const sortingParams = clearSorting
             ? {
-                sort: undefined,
-                direction: undefined,
-            }
+                  sort: undefined,
+                  direction: undefined,
+              }
             : {
-                sort: sort ?? currentSorting.sort,
-                direction:
-                    direction ??
-                    currentSorting.direction,
-            };
+                  sort: sort ?? currentSorting.sort,
+                  direction: direction ?? currentSorting.direction,
+              };
 
         const params: RequestPayload = {
             per_page: perPage,
@@ -149,15 +135,11 @@ export function useListingTable<
             }
         }
 
-        router.get(
-            options.route,
-            params,
-            {
-                preserveState: true,
-                preserveScroll: true,
-                replace: true,
-            },
-        );
+        router.get(options.route, params, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
     };
 
     /*
@@ -169,8 +151,7 @@ export function useListingTable<
     const initialSorting: SortingState = [
         {
             id: options.filters.sort,
-            desc:
-                options.filters.direction === 'desc',
+            desc: options.filters.direction === 'desc',
         },
     ];
 
@@ -180,31 +161,18 @@ export function useListingTable<
     |--------------------------------------------------------------------------
     */
 
-    const {
-        table,
-        sorting,
-        selectedRows,
-        selectedCount,
-        clearSelection,
-    } = useDataTable<TData>(
-        () => options.data().data,
-        options.columns,
-        {
+    const { table, sorting, selectedRows, selectedCount, clearSelection } =
+        useDataTable<TData>(() => options.data().data, options.columns, {
             manualPagination: true,
             manualSorting: true,
 
-            pageCount: () =>
-                options.data().meta.last_page,
+            pageCount: () => options.data().meta.last_page,
 
             initialSorting,
 
-            enableRowSelection:
-                options.enableRowSelection,
+            enableRowSelection: options.enableRowSelection,
 
-            onPaginationChange: ({
-                pageIndex,
-                pageSize,
-            }) => {
+            onPaginationChange: ({ pageIndex, pageSize }) => {
                 const meta = options.data().meta;
                 const nextPage = pageIndex + 1;
 
@@ -222,8 +190,7 @@ export function useListingTable<
             },
 
             onSortingChange: (nextSorting) => {
-                const currentSorting =
-                    nextSorting[0];
+                const currentSorting = nextSorting[0];
 
                 /*
                 |--------------------------------------------------------------------------
@@ -247,14 +214,10 @@ export function useListingTable<
                 visit({
                     page: 1,
                     sort: currentSorting.id as TSort,
-                    direction:
-                        currentSorting.desc
-                            ? 'desc'
-                            : 'asc',
+                    direction: currentSorting.desc ? 'desc' : 'asc',
                 });
             },
-        },
-    );
+        });
 
     /*
     |--------------------------------------------------------------------------
@@ -282,13 +245,8 @@ export function useListingTable<
     |--------------------------------------------------------------------------
     */
 
-    const deleteSelected = (
-        bulkDeleteUrl: string,
-        onSuccess?: () => void,
-    ) => {
-        const ids = selectedRows.value.map(
-            (row) => row.id,
-        );
+    const deleteSelected = (bulkDeleteUrl: string, onSuccess?: () => void) => {
+        const ids = selectedRows.value.map((row) => row.id);
 
         if (!ids.length) {
             return;

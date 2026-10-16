@@ -161,8 +161,8 @@ class RawMaterialTransactionService
                  * Reverse each transaction.
                  */
                 $changes[$sectionSizeId] = (
-                        $changes[$sectionSizeId] ?? 0
-                    ) - $movement;
+                    $changes[$sectionSizeId] ?? 0
+                ) - $movement;
             }
 
             /*
@@ -189,7 +189,7 @@ class RawMaterialTransactionService
      * Positive values add stock.
      * Negative values remove stock.
      *
-     * @param array<int, int> $changes
+     * @param  array<int, int>  $changes
      */
     private function applyStockChanges(array $changes): void
     {

@@ -1,8 +1,5 @@
-import type {
-    PaginatedResponse,
-    SortDirection,
-} from '@/types/listing';
-import {Setup} from "@/types/setup";
+import type { PaginatedResponse, SortDirection } from '@/types/listing';
+import { Setup } from '@/types/setup';
 
 export type PartSetupPart = {
     id: number;
@@ -63,5 +60,4 @@ export type PartSetupFilters = {
     direction: SortDirection;
 };
 
-export type PartSetupsResponse =
-    PaginatedResponse<PartSetup>;
+export type PartSetupsResponse = PaginatedResponse<PartSetup>;

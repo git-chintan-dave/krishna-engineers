@@ -1,19 +1,29 @@
 ﻿<script setup lang="ts">
-import {router} from '@inertiajs/vue3';
-import {ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import ListingActions from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {setupPage} from '@/config/setups';
-import {bulkDestroy, create, destroy, index as setupsRoute,} from '@/routes/setups';
-import {createSetupColumns} from '@/table/setups';
-import type {Setup, SetupFilters, SetupSort, SetupsResponse,} from '@/types/setup';
-import type {StatusFilter} from '@/types/listing';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { setupPage } from '@/config/setups';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as setupsRoute,
+} from '@/routes/setups';
+import { createSetupColumns } from '@/table/setups';
+import type {
+    Setup,
+    SetupFilters,
+    SetupSort,
+    SetupsResponse,
+} from '@/types/setup';
+import type { StatusFilter } from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------
@@ -47,9 +57,7 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const filterStatus = ref<StatusFilter>(
-    props.filters.status,
-);
+const filterStatus = ref<StatusFilter>(props.filters.status);
 
 /*
 |--------------------------------------------------------------------------
@@ -81,10 +89,7 @@ const {
     route: setupsRoute.url(),
 
     additionalFilters: () => ({
-        status:
-            filterStatus.value !== 'all'
-                ? filterStatus.value
-                : undefined,
+        status: filterStatus.value !== 'all' ? filterStatus.value : undefined,
     }),
 });
 
@@ -94,11 +99,8 @@ const {
 |--------------------------------------------------------------------------
 */
 
-const handleStatusChange = (
-    value: string | null,
-) => {
-    filterStatus.value =
-        (value as StatusFilter | null) ?? 'all';
+const handleStatusChange = (value: string | null) => {
+    filterStatus.value = (value as StatusFilter | null) ?? 'all';
 };
 
 const handleClearFilters = () => {
@@ -114,9 +116,7 @@ const handleClearFilters = () => {
 */
 
 const handleDeleteSelected = () => {
-    deleteSelected(
-        bulkDestroy().url,
-    );
+    deleteSelected(bulkDestroy().url);
 };
 </script>
 
@@ -134,16 +134,10 @@ const handleDeleteSelected = () => {
         <template #actions>
             <ListingActions
                 :create-url="create()"
-                :create-label="
-                    setupPage.createLabel
-                "
+                :create-label="setupPage.createLabel"
                 :selected-count="selectedCount"
-                :resource-label="
-                    setupPage.resourceLabel
-                "
-                @delete-selected="
-                    handleDeleteSelected
-                "
+                :resource-label="setupPage.resourceLabel"
+                @delete-selected="handleDeleteSelected"
             />
         </template>
 
@@ -156,37 +150,22 @@ const handleDeleteSelected = () => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
-                :search-placeholder="
-                    setupPage.searchPlaceholder
-                "
-                :search-button-label="
-                    setupPage.searchButtonLabel
-                "
-                :clear-button-label="
-                    setupPage.clearButtonLabel
-                "
-                :clear-disabled="
-                    !searchQuery.trim() &&
-                    filterStatus === 'all'
-                "
+                :search-placeholder="setupPage.searchPlaceholder"
+                :search-button-label="setupPage.searchButtonLabel"
+                :clear-button-label="setupPage.clearButtonLabel"
+                :clear-disabled="!searchQuery.trim() && filterStatus === 'all'"
                 @search="search"
                 @clear="handleClearFilters"
             >
                 <template #filters>
-                    <div
-                        class="w-full shrink-0 sm:w-48"
-                    >
+                    <div class="w-full shrink-0 sm:w-48">
                         <AppStatusSelect
                             :model-value="
-                                filterStatus === 'all'
-                                    ? null
-                                    : filterStatus
+                                filterStatus === 'all' ? null : filterStatus
                             "
                             placeholder="All statuses"
                             clearable
-                            @update:model-value="
-                                handleStatusChange
-                            "
+                            @update:model-value="handleStatusChange"
                         />
                     </div>
                 </template>
@@ -204,22 +183,12 @@ const handleDeleteSelected = () => {
                 :table="table"
                 :columns-count="columns.length"
                 :total="setups.meta.total"
-                :page-index="
-                    setups.meta.current_page - 1
-                "
-                :page-size="
-                    setups.meta.per_page
-                "
+                :page-index="setups.meta.current_page - 1"
+                :page-size="setups.meta.per_page"
                 :selected-count="selectedCount"
-                :page-size-options="
-                    [10, 25, 50, 100]
-                "
-                :empty-text="
-                    setupPage.emptyText
-                "
-                :item-label="
-                    setupPage.itemLabel
-                "
+                :page-size-options="[10, 25, 50, 100]"
+                :empty-text="setupPage.emptyText"
+                :item-label="setupPage.itemLabel"
             />
         </template>
     </ListingLayout>

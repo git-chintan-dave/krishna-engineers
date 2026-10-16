@@ -18,8 +18,7 @@ export const setupPage = {
 
     form: {
         sectionTitle: 'Setup Information',
-        sectionDescription:
-            'Enter the basic information for the setup.',
+        sectionDescription: 'Enter the basic information for the setup.',
 
         nameLabel: 'Setup Name',
         namePlaceholder: 'Enter setup name',
@@ -28,13 +27,11 @@ export const setupPage = {
         statusPlaceholder: 'Select status',
 
         createTitle: 'Create Setup',
-        createDescription:
-            'Add a new setup to the system.',
+        createDescription: 'Add a new setup to the system.',
         createSubmitLabel: 'Save Setup',
 
         editTitle: 'Edit Setup',
-        editDescription:
-            'Update the setup information.',
+        editDescription: 'Update the setup information.',
         editSubmitLabel: 'Update Setup',
 
         cancelLabel: 'Cancel',

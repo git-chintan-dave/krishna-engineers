@@ -2,10 +2,7 @@ const CACHE_NAME = 'krishna-engineers-v1';
 
 const OFFLINE_URL = '/offline.html';
 
-const STATIC_ASSET_PREFIXES = [
-    '/build/',
-    '/icons/',
-];
+const STATIC_ASSET_PREFIXES = ['/build/', '/icons/'];
 
 const EXCLUDED_PATH_PREFIXES = [
     '/api/',
@@ -66,9 +63,7 @@ self.addEventListener('fetch', (event) => {
 
     // Never cache authentication or API requests.
     if (
-        EXCLUDED_PATH_PREFIXES.some((prefix) =>
-            url.pathname.startsWith(prefix),
-        )
+        EXCLUDED_PATH_PREFIXES.some((prefix) => url.pathname.startsWith(prefix))
     ) {
         return;
     }
@@ -169,9 +164,5 @@ async function networkFirst(request) {
 
 // Cacheable response
 function isCacheableResponse(response) {
-    return (
-        response &&
-        response.status === 200 &&
-        response.type === 'basic'
-    );
+    return response && response.status === 200 && response.type === 'basic';
 }

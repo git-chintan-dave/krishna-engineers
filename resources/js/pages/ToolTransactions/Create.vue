@@ -1,15 +1,15 @@
 ﻿<script setup lang="ts">
-import {router, useForm, usePage} from '@inertiajs/vue3';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
 import ToolTransactionForm from '@/pages/ToolTransactions/components/ToolTransactionForm.vue';
 
-import {toolTransactionPage} from '@/config/toolTransactions';
-import {dashboard} from '@/routes';
-import {index as toolTransactions, store,} from '@/routes/tool-transactions';
+import { toolTransactionPage } from '@/config/toolTransactions';
+import { dashboard } from '@/routes';
+import { index as toolTransactions, store } from '@/routes/tool-transactions';
 
-import type {ToolTransactionType} from '@/types/toolTransaction';
-import {computed} from "vue";
+import type { ToolTransactionType } from '@/types/toolTransaction';
+import { computed } from 'vue';
 
 defineOptions({
     layout: {

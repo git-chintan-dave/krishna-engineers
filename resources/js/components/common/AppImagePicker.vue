@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue';
-import {
-    Image,
-    Trash2,
-    Upload,
-    X,
-} from '@lucide/vue';
+import { Image, Trash2, Upload, X } from '@lucide/vue';
 
 // Props
 const props = withDefaults(
@@ -59,9 +54,7 @@ const previewUrl = computed(() => {
 
 const hasImage = computed(() => Boolean(previewUrl.value));
 
-const displayError = computed(
-    () => validationError.value || props.error,
-);
+const displayError = computed(() => validationError.value || props.error);
 
 // Actions
 const openPicker = () => {
@@ -208,9 +201,7 @@ onBeforeUnmount(() => {
                     {{ placeholder }}
                 </p>
 
-                <p class="text-xs text-muted-foreground">
-                    PNG, JPG or WebP
-                </p>
+                <p class="text-xs text-muted-foreground">PNG, JPG or WebP</p>
 
                 <p class="text-xs text-muted-foreground">
                     Max {{ maxSize }} MB
@@ -219,10 +210,7 @@ onBeforeUnmount(() => {
         </button>
 
         <!-- Image actions -->
-        <div
-            v-else-if="!disabled"
-            class="flex flex-wrap items-center gap-2"
-        >
+        <div v-else-if="!disabled" class="flex flex-wrap items-center gap-2">
             <button
                 type="button"
                 class="inline-flex min-h-9 items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
@@ -243,10 +231,7 @@ onBeforeUnmount(() => {
         </div>
 
         <!-- Error -->
-        <p
-            v-if="displayError"
-            class="text-sm text-destructive"
-        >
+        <p v-if="displayError" class="text-sm text-destructive">
             {{ displayError }}
         </p>
     </div>

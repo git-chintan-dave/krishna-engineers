@@ -279,7 +279,6 @@ Route::middleware('auth')->group(function () {
                 ->name('tools');
         });
 
-
 });
 
 require __DIR__.'/settings.php';

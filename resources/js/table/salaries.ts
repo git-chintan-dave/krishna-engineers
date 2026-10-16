@@ -11,9 +11,7 @@ import type { Salary } from '@/types/salary';
 
 const columnHelper = createColumnHelper<any, Salary>();
 
-export const createSalaryColumns = (
-    handleDelete: (uuid: string) => void,
-) =>
+export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
     columnHelper.columns([
         createSelectColumn({
             resourceName: 'salaries',
@@ -31,11 +29,9 @@ export const createSalaryColumns = (
             header: 'Salary Period',
             size: 205,
             cell: ({ row }) => {
-                const start =
-                    row.original.salary_period_start_formatted ?? '—';
+                const start = row.original.salary_period_start_formatted ?? '—';
 
-                const end =
-                    row.original.salary_period_end_formatted ?? '—';
+                const end = row.original.salary_period_end_formatted ?? '—';
 
                 return `${start} - ${end}`;
             },
@@ -78,9 +74,7 @@ export const createSalaryColumns = (
         createStatusColumn({
             header: 'Status',
             getVariant: (status) =>
-                status === 'paid'
-                    ? 'default'
-                    : 'secondary',
+                status === 'paid' ? 'default' : 'secondary',
         }),
 
         createActionsColumn({
@@ -94,13 +88,10 @@ export const createSalaryColumns = (
                 router.post(markAsPaid(uuid).url);
             },
 
-            showEdit: (row) =>
-                row.status === 'draft',
+            showEdit: (row) => row.status === 'draft',
 
-            showMarkAsPaid: (row) =>
-                row.status === 'draft',
+            showMarkAsPaid: (row) => row.status === 'draft',
 
-            showDelete: (row) =>
-                row.status === 'draft',
+            showDelete: (row) => row.status === 'draft',
         }),
     ]);

@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import type { InertiaForm } from '@inertiajs/vue3';
-import {
-    Layers3,
-    ToggleRight,
-} from '@lucide/vue';
+import { Layers3, ToggleRight } from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -17,9 +14,7 @@ import type { SectionFormData } from '@/types/section';
 const props = withDefaults(
     defineProps<{
         form: InertiaForm<SectionFormData>;
-        errors?: Partial<
-            Record<keyof SectionFormData, string>
-        >;
+        errors?: Partial<Record<keyof SectionFormData, string>>;
         processing?: boolean;
         submitLabel?: string;
     }>(),
@@ -38,16 +33,11 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <form
-        class="min-w-0 space-y-6"
-        @submit.prevent="emit('submit')"
-    >
+    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
         <!-- Section Information -->
         <FormSection
             :title="sectionPage.form.sectionTitle"
-            :description="
-                sectionPage.form.sectionDescription
-            "
+            :description="sectionPage.form.sectionDescription"
         >
             <div class="grid min-w-0 gap-5">
                 <!-- Section Name -->
@@ -60,9 +50,7 @@ const emit = defineEmits<{
                     <AppInput
                         id="section-name"
                         v-model="props.form.name"
-                        :placeholder="
-                            sectionPage.form.namePlaceholder
-                        "
+                        :placeholder="sectionPage.form.namePlaceholder"
                         :disabled="props.processing"
                         :icon="Layers3"
                         :error="props.errors.name"

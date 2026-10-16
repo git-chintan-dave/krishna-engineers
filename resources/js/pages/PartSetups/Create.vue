@@ -6,15 +6,9 @@ import FormLayout from '@/components/layouts/FormLayout.vue';
 import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
 import { partSetupPage } from '@/config/partSetups';
 import PartSetupForm from '@/pages/PartSetups/components/PartSetupForm.vue';
-import {
-    index as partSetups,
-    store,
-} from '@/routes/part-setups';
-import type {
-    PartSetupFormData,
-    PartSetupOption,
-} from '@/types/partSetup';
-import MachineForm from "@/pages/Machines/components/MachineForm.vue";
+import { index as partSetups, store } from '@/routes/part-setups';
+import type { PartSetupFormData, PartSetupOption } from '@/types/partSetup';
+import MachineForm from '@/pages/Machines/components/MachineForm.vue';
 
 defineOptions({
     layout: {
@@ -35,17 +29,11 @@ const form = useForm<PartSetupFormData>({
 });
 
 const handleSubmit = () => {
-    form
-        .transform((data) => ({
-            ...data,
-            part_id: data.part_id
-                ? Number(data.part_id)
-                : null,
-            setup_id: data.setup_id
-                ? Number(data.setup_id)
-                : null,
-        }))
-        .post(store().url);
+    form.transform((data) => ({
+        ...data,
+        part_id: data.part_id ? Number(data.part_id) : null,
+        setup_id: data.setup_id ? Number(data.setup_id) : null,
+    })).post(store().url);
 };
 
 const handleCancel = () => {
@@ -56,19 +44,13 @@ const handleCancel = () => {
 <template>
     <FormLayout
         :title="partSetupPage.form.createTitle"
-        :description="
-            partSetupPage.form
-                .createDescription
-        "
+        :description="partSetupPage.form.createDescription"
     >
         <PartSetupForm
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                partSetupPage.form
-                    .createSubmitLabel
-            "
+            :submit-label="partSetupPage.form.createSubmitLabel"
             @submit="handleSubmit"
             @cancel="handleCancel"
         />

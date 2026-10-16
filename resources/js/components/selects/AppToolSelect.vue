@@ -51,10 +51,7 @@ const emit = defineEmits<{
 
 const options = ref<SelectOption<number>[]>([]);
 
-const {
-    loading,
-    tools,
-} = useLookup();
+const { loading, tools } = useLookup();
 
 /*
 |--------------------------------------------------------------------------
@@ -65,9 +62,7 @@ const {
 const loadOptions = async () => {
     options.value = [];
 
-    options.value = await tools(
-        props.type,
-    );
+    options.value = await tools(props.type);
 };
 
 /*
@@ -104,17 +99,7 @@ watch(
         :disabled="disabled"
         :loading="loading"
         :error="error"
-        @update:model-value="
-            emit(
-                'update:modelValue',
-                $event as number | null,
-            )
-        "
-        @change="
-            emit(
-                'change',
-                $event as number | null,
-            )
-        "
+        @update:model-value="emit('update:modelValue', $event as number | null)"
+        @change="emit('change', $event as number | null)"
     />
 </template>

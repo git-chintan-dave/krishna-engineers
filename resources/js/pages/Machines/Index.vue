@@ -1,19 +1,29 @@
 ﻿<script setup lang="ts">
-import {router} from '@inertiajs/vue3';
-import {ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import ListingActions from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {machinePage} from '@/config/machines';
-import {bulkDestroy, create, destroy, index as machinesRoute,} from '@/routes/machines';
-import {createMachineColumns} from '@/table/machines';
-import type {Machine, MachineFilters, MachineSort, MachinesResponse,} from '@/types/machine';
-import type {StatusFilter} from '@/types/listing';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { machinePage } from '@/config/machines';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as machinesRoute,
+} from '@/routes/machines';
+import { createMachineColumns } from '@/table/machines';
+import type {
+    Machine,
+    MachineFilters,
+    MachineSort,
+    MachinesResponse,
+} from '@/types/machine';
+import type { StatusFilter } from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------
@@ -47,15 +57,10 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const filterStatus = ref<StatusFilter>(
-    props.filters.status,
-);
+const filterStatus = ref<StatusFilter>(props.filters.status);
 
-const handleStatusChange = (
-    value: string | null,
-) => {
-    filterStatus.value =
-        (value as StatusFilter | null) ?? 'all';
+const handleStatusChange = (value: string | null) => {
+    filterStatus.value = (value as StatusFilter | null) ?? 'all';
 };
 
 /*
@@ -88,10 +93,7 @@ const {
     route: machinesRoute.url(),
 
     additionalFilters: () => ({
-        status:
-            filterStatus.value !== 'all'
-                ? filterStatus.value
-                : undefined,
+        status: filterStatus.value !== 'all' ? filterStatus.value : undefined,
     }),
 });
 
@@ -148,19 +150,10 @@ const handleDeleteSelected = () => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
-                :search-placeholder="
-                    machinePage.searchPlaceholder
-                "
-                :search-button-label="
-                    machinePage.searchButtonLabel
-                "
-                :clear-button-label="
-                    machinePage.clearButtonLabel
-                "
-                :clear-disabled="
-                    !searchQuery.trim() &&
-                    filterStatus === 'all'
-                "
+                :search-placeholder="machinePage.searchPlaceholder"
+                :search-button-label="machinePage.searchButtonLabel"
+                :clear-button-label="machinePage.clearButtonLabel"
+                :clear-disabled="!searchQuery.trim() && filterStatus === 'all'"
                 @search="search"
                 @clear="handleClearFilters"
             >
@@ -168,15 +161,11 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-48">
                         <AppStatusSelect
                             :model-value="
-                                filterStatus === 'all'
-                                    ? null
-                                    : filterStatus
+                                filterStatus === 'all' ? null : filterStatus
                             "
                             placeholder="All statuses"
                             clearable
-                            @update:model-value="
-                                handleStatusChange
-                            "
+                            @update:model-value="handleStatusChange"
                         />
                     </div>
                 </template>
@@ -194,9 +183,7 @@ const handleDeleteSelected = () => {
                 :table="table"
                 :columns-count="columns.length"
                 :total="machines.meta.total"
-                :page-index="
-                    machines.meta.current_page - 1
-                "
+                :page-index="machines.meta.current_page - 1"
                 :page-size="machines.meta.per_page"
                 :selected-count="selectedCount"
                 :page-size-options="[10, 25, 50, 100]"

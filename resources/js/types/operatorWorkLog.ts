@@ -1,4 +1,4 @@
-import type {PaginatedResponse, SortDirection,} from '@/types/listing';
+import type { PaginatedResponse, SortDirection } from '@/types/listing';
 
 export type OperatorWorkLog = {
     id: number;
@@ -45,7 +45,6 @@ export type OperatorWorkLog = {
 
     created_at: string;
     updated_at: string;
-
 };
 
 export type OperatorWorkLogFormData = {
@@ -99,5 +98,4 @@ export type OperatorWorkLogFilters = {
     direction: SortDirection;
 };
 
-export type OperatorWorkLogsResponse =
-    PaginatedResponse<OperatorWorkLog>;
+export type OperatorWorkLogsResponse = PaginatedResponse<OperatorWorkLog>;

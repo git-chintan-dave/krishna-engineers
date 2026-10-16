@@ -59,9 +59,7 @@ const handleCancel = () => {
 <template>
     <FormLayout
         :title="rawMaterialTransactionPage.form.createTitle"
-        :description="
-            rawMaterialTransactionPage.form.createDescription
-        "
+        :description="rawMaterialTransactionPage.form.createDescription"
     >
         <RawMaterialTransactionForm
             :form="form"

@@ -1,6 +1,6 @@
 ﻿<script setup lang="ts">
-import {router} from '@inertiajs/vue3';
-import {computed, ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import ListingActions from '@/components/common/ListingActions.vue';
@@ -9,12 +9,23 @@ import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppSalaryStatusSelect from '@/components/selects/AppSalaryStatusSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {salaryPage} from '@/config/salaries';
-import {bulkDestroy, create, destroy, generateLastMonth, index as salariesRoute,} from '@/routes/salaries';
-import {createSalaryColumns} from '@/table/salaries';
-import type {Salary, SalaryFilters, SalaryResponse, SalarySort,} from '@/types/salary';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { salaryPage } from '@/config/salaries';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    generateLastMonth,
+    index as salariesRoute,
+} from '@/routes/salaries';
+import { createSalaryColumns } from '@/table/salaries';
+import type {
+    Salary,
+    SalaryFilters,
+    SalaryResponse,
+    SalarySort,
+} from '@/types/salary';
 
 /*
 |--------------------------------------------------------------------------
@@ -49,26 +60,18 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const filterEmployee = ref<number | 'all'>(
-    props.filters.user_id,
-);
+const filterEmployee = ref<number | 'all'>(props.filters.user_id);
 
-const filterStatus = ref<SalaryFilters['status']>(
-    props.filters.status,
-);
+const filterStatus = ref<SalaryFilters['status']>(props.filters.status);
 
-const filterStartDate = ref(
-    props.filters.start_date,
-);
+const filterStartDate = ref(props.filters.start_date);
 
 const filterEndDate = computed(() => {
     if (!filterStartDate.value) {
         return '';
     }
 
-    const date = new Date(
-        `${filterStartDate.value}T00:00:00`,
-    );
+    const date = new Date(`${filterStartDate.value}T00:00:00`);
 
     date.setMonth(date.getMonth() + 1);
     date.setDate(0);
@@ -80,15 +83,11 @@ const filterEndDate = computed(() => {
     ].join('-');
 });
 
-const handleEmployeeChange = (
-    value: number | null,
-): void => {
+const handleEmployeeChange = (value: number | null): void => {
     filterEmployee.value = value ?? 'all';
 };
 
-const handleStatusChange = (
-    value: string | null,
-): void => {
+const handleStatusChange = (value: string | null): void => {
     filterStatus.value = value ?? 'all';
 };
 
@@ -102,39 +101,30 @@ const columns = createSalaryColumns((uuid) => {
     router.delete(destroy(uuid).url);
 });
 
-const {
-    table,
-    selectedCount,
-    search,
-    clearFilters,
-    deleteSelected,
-} = useListingTable<Salary, SalarySort>({
-    data: () => props.salaries,
-    columns,
-    filters: {
-        sort: props.filters.sort,
-        direction: props.filters.direction,
-    },
-    route: salariesRoute.url(),
-    searchable: false,
-    additionalFilters: () => ({
-        user_id:
-            filterEmployee.value !== 'all'
-                ? filterEmployee.value
-                : undefined,
+const { table, selectedCount, search, clearFilters, deleteSelected } =
+    useListingTable<Salary, SalarySort>({
+        data: () => props.salaries,
+        columns,
+        filters: {
+            sort: props.filters.sort,
+            direction: props.filters.direction,
+        },
+        route: salariesRoute.url(),
+        searchable: false,
+        additionalFilters: () => ({
+            user_id:
+                filterEmployee.value !== 'all'
+                    ? filterEmployee.value
+                    : undefined,
 
-        status:
-            filterStatus.value !== 'all'
-                ? filterStatus.value
-                : undefined,
+            status:
+                filterStatus.value !== 'all' ? filterStatus.value : undefined,
 
-        start_date:
-            filterStartDate.value || undefined,
+            start_date: filterStartDate.value || undefined,
 
-        end_date:
-            filterEndDate.value || undefined,
-    }),
-});
+            end_date: filterEndDate.value || undefined,
+        }),
+    });
 
 /*
 |--------------------------------------------------------------------------
@@ -206,10 +196,8 @@ const generateButtonLabel = computed(() => {
                     <div class="w-full shrink-0 sm:w-48">
                         <AppEmployeeSelect
                             :model-value="
-                    filterEmployee === 'all'
-                        ? null
-                        : filterEmployee
-                "
+                                filterEmployee === 'all' ? null : filterEmployee
+                            "
                             :placeholder="salaryPage.employeePlaceholder"
                             clearable
                             searchable
@@ -237,10 +225,8 @@ const generateButtonLabel = computed(() => {
                     <div class="w-full shrink-0 sm:w-36">
                         <AppSalaryStatusSelect
                             :model-value="
-                    filterStatus === 'all'
-                        ? null
-                        : filterStatus
-                "
+                                filterStatus === 'all' ? null : filterStatus
+                            "
                             :placeholder="salaryPage.statusPlaceholder"
                             clearable
                             searchable
@@ -256,9 +242,7 @@ const generateButtonLabel = computed(() => {
                 :table="table"
                 :columns-count="columns.length"
                 :total="salaries.meta.total"
-                :page-index="
-                    salaries.meta.current_page - 1
-                "
+                :page-index="salaries.meta.current_page - 1"
                 :page-size="salaries.meta.per_page"
                 :selected-count="selectedCount"
                 :page-size-options="[10, 25, 50, 100]"

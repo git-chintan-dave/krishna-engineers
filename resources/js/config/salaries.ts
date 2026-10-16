@@ -50,8 +50,7 @@ export const salaryPage = {
         adjustmentPlaceholder: 'Enter adjustment amount',
 
         adjustmentReasonLabel: 'Adjustment Reason',
-        adjustmentReasonPlaceholder:
-            'Enter the reason for the adjustment',
+        adjustmentReasonPlaceholder: 'Enter the reason for the adjustment',
 
         finalPayableLabel: 'Final Payable',
 
@@ -64,8 +63,7 @@ export const salaryPage = {
         createSubmitLabel: 'Save Salary',
 
         editTitle: 'Edit Salary',
-        editDescription:
-            'Update the salary adjustments and payment details.',
+        editDescription: 'Update the salary adjustments and payment details.',
         editSubmitLabel: 'Update Salary',
 
         cancelLabel: 'Cancel',

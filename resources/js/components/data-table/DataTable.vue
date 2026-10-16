@@ -115,10 +115,8 @@ const paginationItems = computed<PaginationItem[]>(() => {
     }
 
     const items: PaginationItem[] = [];
-    const addPage = (page: number) =>
-        items.push({ type: 'page', page });
-    const addEllipsis = (key: string) =>
-        items.push({ type: 'ellipsis', key });
+    const addPage = (page: number) => items.push({ type: 'page', page });
+    const addEllipsis = (key: string) => items.push({ type: 'ellipsis', key });
 
     addPage(1);
 
@@ -152,8 +150,9 @@ const paginationItems = computed<PaginationItem[]>(() => {
 const loadingColumnIds = computed(() => {
     const headers = props.table.getHeaderGroups()[0]?.headers ?? [];
 
-    return Array.from({ length: props.columnsCount }, (_, index) =>
-        headers[index]?.column?.id ?? '',
+    return Array.from(
+        { length: props.columnsCount },
+        (_, index) => headers[index]?.column?.id ?? '',
     );
 });
 
@@ -163,8 +162,7 @@ const loadingColumnIds = computed(() => {
 |--------------------------------------------------------------------------
 */
 
-const getColumnClass = (columnId: string) =>
-    props.columnWidths[columnId] ?? '';
+const getColumnClass = (columnId: string) => props.columnWidths[columnId] ?? '';
 
 const getColumnAlign = (column: any): ColumnAlign => {
     const align = column?.columnDef?.meta?.align;
@@ -241,10 +239,12 @@ const handlePageSizeChange = (
                         <TableHead
                             v-for="header in headerGroup.headers"
                             :key="header.id"
-                            class="h-11 whitespace-nowrap px-4 text-xs font-medium tracking-wide text-muted-foreground"
+                            class="h-11 px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground"
                             :class="[
                                 getColumnClass(header.column.id),
-                                getAlignmentClass(getColumnAlign(header.column)),
+                                getAlignmentClass(
+                                    getColumnAlign(header.column),
+                                ),
                             ]"
                             :style="getColumnStyle(header.column)"
                         >
@@ -259,10 +259,7 @@ const handlePageSizeChange = (
                 <TableBody>
                     <!-- Loading -->
                     <template v-if="loading">
-                        <TableRow
-                            v-for="row in 5"
-                            :key="`loading-${row}`"
-                        >
+                        <TableRow v-for="row in 5" :key="`loading-${row}`">
                             <TableCell
                                 v-for="(columnId, index) in loadingColumnIds"
                                 :key="index"
@@ -271,11 +268,14 @@ const handlePageSizeChange = (
                             >
                                 <div
                                     class="flex"
-                                    :class="getPlaceholderAlignmentClass(
-                                        getColumnAlign(
-                                            table.getHeaderGroups()[0]?.headers[index]?.column,
-                                        ),
-                                    )"
+                                    :class="
+                                        getPlaceholderAlignmentClass(
+                                            getColumnAlign(
+                                                table.getHeaderGroups()[0]
+                                                    ?.headers[index]?.column,
+                                            ),
+                                        )
+                                    "
                                 >
                                     <div
                                         class="h-4 w-3/4 max-w-32 animate-pulse rounded bg-muted"
@@ -301,7 +301,9 @@ const handlePageSizeChange = (
                                 class="px-4 py-3 align-middle"
                                 :class="[
                                     getColumnClass(cell.column.id),
-                                    getAlignmentClass(getColumnAlign(cell.column)),
+                                    getAlignmentClass(
+                                        getColumnAlign(cell.column),
+                                    ),
                                 ]"
                                 :style="getColumnStyle(cell.column)"
                             >
@@ -330,7 +332,7 @@ const handlePageSizeChange = (
             <div class="flex flex-col gap-4">
                 <!-- Summary -->
                 <div class="min-w-0">
-                    <p class="break-words text-sm text-muted-foreground">
+                    <p class="text-sm break-words text-muted-foreground">
                         Showing
                         <span class="font-medium text-foreground">
                             {{ showingFrom }}–{{ showingTo }}
@@ -358,7 +360,7 @@ const handlePageSizeChange = (
                     <!-- Page Size -->
                     <div class="flex min-w-0 items-center gap-2">
                         <span
-                            class="shrink-0 whitespace-nowrap text-sm text-muted-foreground"
+                            class="shrink-0 text-sm whitespace-nowrap text-muted-foreground"
                         >
                             Rows per page
                         </span>
@@ -375,7 +377,7 @@ const handlePageSizeChange = (
                     </div>
 
                     <!-- Pages -->
-                    <div class="min-w-0 max-w-full overflow-x-auto pb-0.5">
+                    <div class="max-w-full min-w-0 overflow-x-auto pb-0.5">
                         <div
                             class="flex w-max items-center gap-1"
                             aria-label="Pagination"
@@ -399,9 +401,7 @@ const handlePageSizeChange = (
                             <template
                                 v-for="item in paginationItems"
                                 :key="
-                                    item.type === 'page'
-                                        ? item.page
-                                        : item.key
+                                    item.type === 'page' ? item.page : item.key
                                 "
                             >
                                 <Button

@@ -1,7 +1,4 @@
-﻿import type {
-    PaginatedResponse,
-    SortDirection,
-} from '@/types/listing';
+﻿import type { PaginatedResponse, SortDirection } from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------
@@ -56,11 +53,7 @@ export type SectionSizeFormData = {
 |--------------------------------------------------------------------------
 */
 
-export type SectionSizeSort =
-    | 'size'
-    | 'quantity'
-    | 'weight'
-    | 'created_at';
+export type SectionSizeSort = 'size' | 'quantity' | 'weight' | 'created_at';
 
 export type SectionSizeFilters = {
     search: string;
@@ -76,8 +69,6 @@ export type SectionSizeFilters = {
 |--------------------------------------------------------------------------
 */
 
-export type SectionSizesResponse =
-    PaginatedResponse<SectionSize>;
+export type SectionSizesResponse = PaginatedResponse<SectionSize>;
 
-export type SectionSizeSectionsResponse =
-    SectionSizeSection[];
+export type SectionSizeSectionsResponse = SectionSizeSection[];

@@ -70,14 +70,10 @@ const fetchSetups = async (): Promise<void> => {
             part_id: String(props.partId),
         });
 
-        const response = await fetch(
-            `/lookups/setups?${params.toString()}`,
-        );
+        const response = await fetch(`/lookups/setups?${params.toString()}`);
 
         if (!response.ok) {
-            throw new Error(
-                'Failed to fetch setups.',
-            );
+            throw new Error('Failed to fetch setups.');
         }
 
         const data = await response.json();
@@ -85,13 +81,10 @@ const fetchSetups = async (): Promise<void> => {
         options.value = Array.isArray(data)
             ? data
             : Array.isArray(data.data)
-                ? data.data
-                : [];
+              ? data.data
+              : [];
     } catch (error) {
-        console.error(
-            'Failed to load setups:',
-            error,
-        );
+        console.error('Failed to load setups:', error);
 
         options.value = [];
     } finally {
@@ -106,20 +99,10 @@ const fetchSetups = async (): Promise<void> => {
 */
 
 const handleUpdate = (
-    value:
-        | string
-        | number
-        | null
-        | (string | number)[],
+    value: string | number | null | (string | number)[],
 ): void => {
-    if (
-        value === null ||
-        typeof value === 'number'
-    ) {
-        emit(
-            'update:modelValue',
-            value,
-        );
+    if (value === null || typeof value === 'number') {
+        emit('update:modelValue', value);
 
         emit('change', value);
     }
@@ -160,15 +143,9 @@ watch(
         :placeholder="placeholder"
         :searchable="searchable"
         :clearable="clearable"
-        :disabled="
-            disabled ||
-            loading ||
-            !partId
-        "
+        :disabled="disabled || loading || !partId"
         :loading="loading"
         :error="error"
-        @update:model-value="
-            handleUpdate
-        "
+        @update:model-value="handleUpdate"
     />
 </template>

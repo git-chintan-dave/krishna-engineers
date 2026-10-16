@@ -1,7 +1,7 @@
-import {h} from 'vue';
+import { h } from 'vue';
 
-import {createSortableHeader} from '@/table/helpers/sortableHeader';
-import type {ColumnAlign} from '@/table/types';
+import { createSortableHeader } from '@/table/helpers/sortableHeader';
+import type { ColumnAlign } from '@/table/types';
 
 /*
 |--------------------------------------------------------------------------
@@ -50,13 +50,13 @@ const formatCellValue = (value: unknown): string => {
 */
 
 export const createSortableColumn = ({
-                                         accessorKey,
-                                         sortKey,
-                                         header,
-                                         size,
-                                         align = 'left',
-                                         cell,
-                                     }: SortableColumnOptions) => ({
+    accessorKey,
+    sortKey,
+    header,
+    size,
+    align = 'left',
+    cell,
+}: SortableColumnOptions) => ({
     accessorKey,
 
     /*
@@ -109,9 +109,9 @@ export const createSortableColumn = ({
 
     ...(size !== undefined
         ? {
-            size,
-            minSize: size,
-            maxSize: size,
-        }
+              size,
+              minSize: size,
+              maxSize: size,
+          }
         : {}),
 });

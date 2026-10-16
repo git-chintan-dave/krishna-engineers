@@ -26,8 +26,7 @@ export const dashboardPage = {
     ],
 
     machinePerformanceTitle: 'Machine Performance',
-    machinePerformanceDescription:
-        "Today's production activity by machine.",
+    machinePerformanceDescription: "Today's production activity by machine.",
 
     machineViewAllLabel: 'View all',
 

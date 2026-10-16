@@ -1,6 +1,6 @@
 ﻿<script setup lang="ts">
-import {router} from '@inertiajs/vue3';
-import {ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppPartSelect from '@/components/selects/AppPartSelect.vue';
@@ -12,16 +12,24 @@ import ListingFilters from '@/components/common/ListingFilters.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
 
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
 
-import {toolTransactionPage} from '@/config/toolTransactions';
+import { toolTransactionPage } from '@/config/toolTransactions';
 
-import {bulkDestroy, create, destroy, index as toolTransactionsRoute,} from '@/routes/tool-transactions';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as toolTransactionsRoute,
+} from '@/routes/tool-transactions';
 
-import {createToolTransactionColumns} from '@/table/toolTransactions';
+import { createToolTransactionColumns } from '@/table/toolTransactions';
 
-import type {ToolTransaction, ToolTransactionType,} from '@/types/toolTransaction';
+import type {
+    ToolTransaction,
+    ToolTransactionType,
+} from '@/types/toolTransaction';
 
 /*
 |--------------------------------------------------------------------------
@@ -81,29 +89,19 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const filterToolId = ref<number | 'all'>(
-    props.filters.toolId ?? 'all',
-);
+const filterToolId = ref<number | 'all'>(props.filters.toolId ?? 'all');
 
 const filterType = ref<ToolTransactionType | 'all'>(
     props.filters.type ?? 'all',
 );
 
-const filterFromUserId = ref<number | 'all'>(
-    props.filters.fromUserId ?? 'all',
-);
+const filterFromUserId = ref<number | 'all'>(props.filters.fromUserId ?? 'all');
 
-const filterToUserId = ref<number | 'all'>(
-    props.filters.toUserId ?? 'all',
-);
+const filterToUserId = ref<number | 'all'>(props.filters.toUserId ?? 'all');
 
-const filterPartId = ref<number | 'all'>(
-    props.filters.partId ?? 'all',
-);
+const filterPartId = ref<number | 'all'>(props.filters.partId ?? 'all');
 
-const filterSetupId = ref<number | 'all'>(
-    props.filters.setupId ?? 'all',
-);
+const filterSetupId = ref<number | 'all'>(props.filters.setupId ?? 'all');
 
 const handleToolChange = (value: number | null) => {
     filterToolId.value = value ?? 'all';
@@ -111,9 +109,7 @@ const handleToolChange = (value: number | null) => {
 
 const handleTypeChange = (value: string | number | null) => {
     filterType.value =
-        typeof value === 'string'
-            ? (value as ToolTransactionType)
-            : 'all';
+        typeof value === 'string' ? (value as ToolTransactionType) : 'all';
 };
 
 const handleFromUserChange = (value: number | null) => {
@@ -158,17 +154,11 @@ const {
         direction: props.filters.direction,
     },
     route: toolTransactionsRoute.url(),
-    searchable:false,
+    searchable: false,
     additionalFilters: () => ({
-        tool_id:
-            filterToolId.value === 'all'
-                ? undefined
-                : filterToolId.value,
+        tool_id: filterToolId.value === 'all' ? undefined : filterToolId.value,
 
-        type:
-            filterType.value === 'all'
-                ? undefined
-                : filterType.value,
+        type: filterType.value === 'all' ? undefined : filterType.value,
 
         from_user_id:
             filterFromUserId.value === 'all'
@@ -176,19 +166,12 @@ const {
                 : filterFromUserId.value,
 
         to_user_id:
-            filterToUserId.value === 'all'
-                ? undefined
-                : filterToUserId.value,
+            filterToUserId.value === 'all' ? undefined : filterToUserId.value,
 
-        part_id:
-            filterPartId.value === 'all'
-                ? undefined
-                : filterPartId.value,
+        part_id: filterPartId.value === 'all' ? undefined : filterPartId.value,
 
         setup_id:
-            filterSetupId.value === 'all'
-                ? undefined
-                : filterSetupId.value,
+            filterSetupId.value === 'all' ? undefined : filterSetupId.value,
     }),
 });
 
@@ -244,9 +227,7 @@ const handleDeleteSelected = () => {
                 :search-placeholder="toolTransactionPage.searchPlaceholder"
                 :search-button-label="toolTransactionPage.searchButtonLabel"
                 :clear-button-label="toolTransactionPage.clearButtonLabel"
-                :clear-disabled="
-        !searchQuery.trim() && !hasAdditionalFilters()
-    "
+                :clear-disabled="!searchQuery.trim() && !hasAdditionalFilters()"
                 @search="search"
                 @clear="handleClearFilters"
             >
@@ -254,10 +235,8 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-48">
                         <AppToolSelect
                             :model-value="
-                    filterToolId === 'all'
-                        ? null
-                        : filterToolId
-                "
+                                filterToolId === 'all' ? null : filterToolId
+                            "
                             :placeholder="toolTransactionPage.toolPlaceholder"
                             searchable
                             clearable
@@ -268,10 +247,8 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-48">
                         <AppToolTransactionTypeSelect
                             :model-value="
-                    filterType === 'all'
-                        ? null
-                        : filterType
-                "
+                                filterType === 'all' ? null : filterType
+                            "
                             :placeholder="toolTransactionPage.typePlaceholder"
                             searchable
                             clearable
@@ -282,11 +259,13 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-48">
                         <AppEmployeeSelect
                             :model-value="
-                    filterFromUserId === 'all'
-                        ? null
-                        : filterFromUserId
-                "
-                            :placeholder="toolTransactionPage.fromUserPlaceholder"
+                                filterFromUserId === 'all'
+                                    ? null
+                                    : filterFromUserId
+                            "
+                            :placeholder="
+                                toolTransactionPage.fromUserPlaceholder
+                            "
                             searchable
                             clearable
                             @update:model-value="handleFromUserChange"
@@ -296,10 +275,8 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-48">
                         <AppEmployeeSelect
                             :model-value="
-                    filterToUserId === 'all'
-                        ? null
-                        : filterToUserId
-                "
+                                filterToUserId === 'all' ? null : filterToUserId
+                            "
                             :placeholder="toolTransactionPage.toUserPlaceholder"
                             searchable
                             clearable
@@ -310,10 +287,8 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-48">
                         <AppPartSelect
                             :model-value="
-                    filterPartId === 'all'
-                        ? null
-                        : filterPartId
-                "
+                                filterPartId === 'all' ? null : filterPartId
+                            "
                             :placeholder="toolTransactionPage.partPlaceholder"
                             searchable
                             clearable
@@ -324,15 +299,11 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-48">
                         <AppSetupSelect
                             :model-value="
-                    filterSetupId === 'all'
-                        ? null
-                        : filterSetupId
-                "
+                                filterSetupId === 'all' ? null : filterSetupId
+                            "
                             :part-id="
-                    filterPartId === 'all'
-                        ? null
-                        : filterPartId
-                "
+                                filterPartId === 'all' ? null : filterPartId
+                            "
                             :placeholder="toolTransactionPage.setupPlaceholder"
                             searchable
                             clearable

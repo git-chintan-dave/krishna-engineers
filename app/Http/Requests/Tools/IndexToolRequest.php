@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Tools;
 
+use App\Enums\Status;
 use App\Enums\ToolType;
 use App\Http\Requests\Concerns\IndexQueryRules;
 use Illuminate\Foundation\Http\FormRequest;
@@ -46,7 +47,7 @@ class IndexToolRequest extends FormRequest
 
             'status' => [
                 'nullable',
-                Rule::enum(\App\Enums\Status::class),
+                Rule::enum(Status::class),
             ],
         ];
     }

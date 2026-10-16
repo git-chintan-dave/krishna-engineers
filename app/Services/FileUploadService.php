@@ -20,7 +20,7 @@ class FileUploadService
         $extension = $file->getClientOriginalExtension();
 
         $filename = Str::uuid()
-                ->toString()
+            ->toString()
             .'.'
             .$extension;
 

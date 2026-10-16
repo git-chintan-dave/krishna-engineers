@@ -1,15 +1,21 @@
 <script setup lang="ts">
-import {Head, useForm} from '@inertiajs/vue3';
-import {CheckCircle2, FileSpreadsheet, Loader2, UploadCloud, X,} from '@lucide/vue';
-import {computed, ref} from 'vue';
+import { Head, useForm } from '@inertiajs/vue3';
+import {
+    CheckCircle2,
+    FileSpreadsheet,
+    Loader2,
+    UploadCloud,
+    X,
+} from '@lucide/vue';
+import { computed, ref } from 'vue';
 
 import AppPageHeader from '@/components/common/AppPageHeader.vue';
-import {Card, CardContent} from '@/components/ui/card';
-import {Button} from '@/components/ui/button';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {attendancePage} from '@/config/attendances';
-import {index as attendances} from '@/routes/attendances';
-import {store as submitImport} from '@/routes/attendances/import';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { attendancePage } from '@/config/attendances';
+import { index as attendances } from '@/routes/attendances';
+import { store as submitImport } from '@/routes/attendances/import';
 
 /*
 |--------------------------------------------------------------------------
@@ -75,16 +81,12 @@ const form = useForm({
 |--------------------------------------------------------------------------
 */
 
-const selectedFileName = computed(
-    () => form.file?.name ?? '',
-);
+const selectedFileName = computed(() => form.file?.name ?? '');
 
 const acceptedFileLabels = computed(() =>
     props.acceptedFiles
         .split(',')
-        .map((extension) =>
-            extension.trim().replace('.', '').toUpperCase(),
-        )
+        .map((extension) => extension.trim().replace('.', '').toUpperCase())
         .join(', '),
 );
 
@@ -165,10 +167,7 @@ const submit = () => {
         |--------------------------------------------------------------------------
         -->
 
-        <AppPageHeader
-            :title="props.title"
-            :description="props.description"
-        />
+        <AppPageHeader :title="props.title" :description="props.description" />
 
         <!--
         |--------------------------------------------------------------------------
@@ -178,10 +177,7 @@ const submit = () => {
 
         <Card>
             <CardContent class="space-y-6 p-6">
-                <form
-                    class="space-y-6"
-                    @submit.prevent="submit"
-                >
+                <form class="space-y-6" @submit.prevent="submit">
                     <!--
                     |--------------------------------------------------------------------------
                     | Upload Area
@@ -193,19 +189,15 @@ const submit = () => {
                             isDragging
                                 ? 'border-primary bg-primary/5'
                                 : 'border-border bg-muted/20 hover:border-primary/40',
-                            form.errors.file
-                                ? 'border-destructive'
-                                : '',
+                            form.errors.file ? 'border-destructive' : '',
                         ]"
                         class="relative flex min-h-72 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 transition-colors"
                         @click="openFilePicker"
                         @dragenter.prevent="
-                            !form.processing &&
-                            (isDragging = true)
+                            !form.processing && (isDragging = true)
                         "
                         @dragover.prevent="
-                            !form.processing &&
-                            (isDragging = true)
+                            !form.processing && (isDragging = true)
                         "
                         @dragleave.prevent="isDragging = false"
                         @drop.prevent="onDrop"
@@ -237,13 +229,11 @@ const submit = () => {
                             <p
                                 class="mt-2 text-center text-sm text-muted-foreground"
                             >
-                                Drag and drop your attendance spreadsheet
-                                here, or click to browse.
+                                Drag and drop your attendance spreadsheet here,
+                                or click to browse.
                             </p>
 
-                            <p
-                                class="mt-2 text-xs text-muted-foreground"
-                            >
+                            <p class="mt-2 text-xs text-muted-foreground">
                                 {{ acceptedFileLabels }}
                                 &bull;
                                 {{ props.maxFileSizeText }}
@@ -263,9 +253,7 @@ const submit = () => {
                                     />
                                 </div>
 
-                                <div
-                                    class="flex max-w-full items-center gap-2"
-                                >
+                                <div class="flex max-w-full items-center gap-2">
                                     <FileSpreadsheet
                                         class="size-4 shrink-0 text-muted-foreground"
                                         aria-hidden="true"
@@ -286,10 +274,7 @@ const submit = () => {
                                     :disabled="form.processing"
                                     @click.stop="removeFile"
                                 >
-                                    <X
-                                        class="size-4"
-                                        aria-hidden="true"
-                                    />
+                                    <X class="size-4" aria-hidden="true" />
 
                                     <span>Remove file</span>
                                 </Button>
@@ -331,8 +316,8 @@ const submit = () => {
                             </li>
 
                             <li>
-                                Make sure the employee code matches an
-                                employee in the system.
+                                Make sure the employee code matches an employee
+                                in the system.
                             </li>
 
                             <li>
@@ -341,8 +326,8 @@ const submit = () => {
                             </li>
 
                             <li>
-                                Importing an attendance that already exists
-                                will show an error.
+                                Importing an attendance that already exists will
+                                show an error.
                             </li>
 
                             <li>

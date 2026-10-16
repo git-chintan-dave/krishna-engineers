@@ -36,10 +36,7 @@ export type SetupFormData = {
 |--------------------------------------------------------------------------
 */
 
-export type SetupSort =
-    | 'name'
-    | 'status'
-    | 'created_at';
+export type SetupSort = 'name' | 'status' | 'created_at';
 
 /*
 |--------------------------------------------------------------------------
@@ -61,5 +58,4 @@ export type SetupFilters = {
 |--------------------------------------------------------------------------
 */
 
-export type SetupsResponse =
-    PaginatedResponse<Setup>;
+export type SetupsResponse = PaginatedResponse<Setup>;

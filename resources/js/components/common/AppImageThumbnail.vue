@@ -35,11 +35,7 @@ const openViewer = () => {
         <button
             type="button"
             class="group relative block overflow-hidden rounded-md border bg-muted/20 transition hover:border-primary/40 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-            :class="
-                size === 'sm'
-                    ? 'size-12'
-                    : 'size-16'
-            "
+            :class="size === 'sm' ? 'size-12' : 'size-16'"
             :aria-label="`View ${alt}`"
             :title="`View ${alt}`"
             @click="openViewer"
@@ -58,11 +54,7 @@ const openViewer = () => {
             />
         </button>
 
-        <AppImageViewer
-            v-model:open="viewerOpen"
-            :src="src"
-            :alt="alt"
-        />
+        <AppImageViewer v-model:open="viewerOpen" :src="src" :alt="alt" />
     </template>
 
     <span

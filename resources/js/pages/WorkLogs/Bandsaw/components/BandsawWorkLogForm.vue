@@ -37,10 +37,7 @@ const props = defineProps<{
     processing: boolean;
     submitLabel: string;
     canSelectBandsaw: boolean;
-    lastReports: Record<
-        string,
-        BandsawWorkLogLastReport
-    >;
+    lastReports: Record<string, BandsawWorkLogLastReport>;
     isCreate: boolean;
 }>();
 
@@ -65,15 +62,12 @@ const restoringLastReport = ref(false);
 |--------------------------------------------------------------------------
 */
 
-const handlePartChange = (
-    part: SelectedPart | null,
-): void => {
+const handlePartChange = (part: SelectedPart | null): void => {
     /*
      * Cutting Size always comes directly from
      * the selected Part.
      */
-    cuttingSize.value =
-        part?.cutting_size ?? '';
+    cuttingSize.value = part?.cutting_size ?? '';
 
     /*
      * Never change dependent fields while editing.
@@ -96,8 +90,7 @@ const handlePartChange = (
      * Section comes from the Part.
      * Section Size must be selected again.
      */
-    props.form.section_id =
-        part?.section_id ?? null;
+    props.form.section_id = part?.section_id ?? null;
 
     props.form.section_size_id = null;
 };
@@ -108,9 +101,7 @@ const handlePartChange = (
 |--------------------------------------------------------------------------
 */
 
-const handleSectionChange = (
-    value: number | null,
-): void => {
+const handleSectionChange = (value: number | null): void => {
     if (!props.isCreate) {
         return;
     }
@@ -130,17 +121,12 @@ const handleSectionChange = (
 |--------------------------------------------------------------------------
 */
 
-const applyLastReport = async (
-    userId: number | null,
-): Promise<void> => {
+const applyLastReport = async (userId: number | null): Promise<void> => {
     if (!userId) {
         return;
     }
 
-    const lastReport =
-        props.lastReports[
-            String(userId)
-            ];
+    const lastReport = props.lastReports[String(userId)];
 
     if (!lastReport) {
         return;
@@ -156,11 +142,9 @@ const applyLastReport = async (
     /*
      * Set dependent values first.
      */
-    props.form.section_id =
-        lastReport.section_id;
+    props.form.section_id = lastReport.section_id;
 
-    props.form.section_size_id =
-        lastReport.section_size_id;
+    props.form.section_size_id = lastReport.section_size_id;
 
     /*
      * Set Part last.
@@ -169,8 +153,7 @@ const applyLastReport = async (
      * lookup options and emit the complete Part,
      * which populates Cutting Size.
      */
-    props.form.part_id =
-        lastReport.part_id;
+    props.form.part_id = lastReport.part_id;
 
     /*
      * Give AppPartSelect's watcher time to resolve
@@ -196,10 +179,7 @@ const applyLastReport = async (
 
 watch(
     () => props.form.user_id,
-    async (
-        userId,
-        previousUserId,
-    ) => {
+    async (userId, previousUserId) => {
         if (!userId) {
             cuttingSize.value = '';
 
@@ -214,10 +194,7 @@ watch(
          *
          * Edit fields are populated from the record itself.
          */
-        if (
-            !props.isCreate &&
-            previousUserId === undefined
-        ) {
+        if (!props.isCreate && previousUserId === undefined) {
             return;
         }
 
@@ -228,10 +205,7 @@ watch(
          */
         if (
             props.isCreate &&
-            (
-                previousUserId === undefined ||
-                userId !== previousUserId
-            )
+            (previousUserId === undefined || userId !== previousUserId)
         ) {
             await applyLastReport(userId);
 
@@ -242,10 +216,7 @@ watch(
          * Manager selecting a different Bandsaw operator
          * while creating/editing.
          */
-        if (
-            props.canSelectBandsaw &&
-            userId !== previousUserId
-        ) {
+        if (props.canSelectBandsaw && userId !== previousUserId) {
             await applyLastReport(userId);
         }
     },
@@ -256,51 +227,27 @@ watch(
 </script>
 
 <template>
-    <form
-        class="min-w-0 space-y-6"
-        @submit.prevent="
-            emit('submit')
-        "
-    >
+    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
         <FormSection
-            :title="
-                bandsawWorkLogPage.form
-                    .sectionTitle
-            "
-            :description="
-                bandsawWorkLogPage.form
-                    .sectionDescription
-            "
+            :title="bandsawWorkLogPage.form.sectionTitle"
+            :description="bandsawWorkLogPage.form.sectionDescription"
         >
-            <div
-                class="grid min-w-0 gap-5 md:grid-cols-2"
-            >
+            <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Bandsaw Operator -->
                 <AppField
                     v-if="canSelectBandsaw"
-                    :label="
-                        bandsawWorkLogPage.form
-                            .bandsawLabel
-                    "
+                    :label="bandsawWorkLogPage.form.bandsawLabel"
                     input-id="bandsaw-work-log-employee"
-                    :error="
-                        form.errors.user_id
-                    "
+                    :error="form.errors.user_id"
                     required
                 >
                     <AppEmployeeSelect
                         v-model="form.user_id"
                         :placeholder="
-                            bandsawWorkLogPage.form
-                                .bandsawPlaceholder
+                            bandsawWorkLogPage.form.bandsawPlaceholder
                         "
-                        :disabled="
-                            processing ||
-                            !isCreate
-                        "
-                        :error="
-                            form.errors.user_id
-                        "
+                        :disabled="processing || !isCreate"
+                        :error="form.errors.user_id"
                         :icon="User"
                         searchable
                         role="bandsaw"
@@ -309,27 +256,17 @@ watch(
 
                 <!-- Work Date -->
                 <AppField
-                    :label="
-                        bandsawWorkLogPage.form
-                            .workDateLabel
-                    "
+                    :label="bandsawWorkLogPage.form.workDateLabel"
                     input-id="bandsaw-work-log-date"
-                    :error="
-                        form.errors.work_date
-                    "
+                    :error="form.errors.work_date"
                     required
                 >
                     <AppInput
                         id="bandsaw-work-log-date"
                         v-model="form.work_date"
                         type="date"
-                        :disabled="
-                            processing ||
-                            !isCreate
-                        "
-                        :error="
-                            form.errors.work_date
-                        "
+                        :disabled="processing || !isCreate"
+                        :error="form.errors.work_date"
                         :icon="CalendarDays"
                         required
                     />
@@ -337,34 +274,19 @@ watch(
 
                 <!-- Part -->
                 <AppField
-                    :label="
-                        bandsawWorkLogPage.form
-                            .partLabel
-                    "
+                    :label="bandsawWorkLogPage.form.partLabel"
                     input-id="bandsaw-work-log-part"
-                    :error="
-                        form.errors.part_id
-                    "
+                    :error="form.errors.part_id"
                     required
                 >
                     <AppPartSelect
                         v-model="form.part_id"
-                        :placeholder="
-                            bandsawWorkLogPage.form
-                                .partPlaceholder
-                        "
-                        :disabled="
-                            processing ||
-                            !isCreate
-                        "
-                        :error="
-                            form.errors.part_id
-                        "
+                        :placeholder="bandsawWorkLogPage.form.partPlaceholder"
+                        :disabled="processing || !isCreate"
+                        :error="form.errors.part_id"
                         :icon="Wrench"
                         searchable
-                        @part="
-                            handlePartChange
-                        "
+                        @part="handlePartChange"
                     />
                 </AppField>
 
@@ -375,9 +297,7 @@ watch(
                 >
                     <AppInput
                         id="bandsaw-work-log-cutting-size"
-                        :model-value="
-                            cuttingSize
-                        "
+                        :model-value="cuttingSize"
                         placeholder="—"
                         disabled
                         :icon="Ruler"
@@ -386,69 +306,39 @@ watch(
 
                 <!-- Section -->
                 <AppField
-                    :label="
-                        bandsawWorkLogPage.form
-                            .sectionLabel
-                    "
+                    :label="bandsawWorkLogPage.form.sectionLabel"
                     input-id="bandsaw-work-log-section"
-                    :error="
-                        form.errors.section_id
-                    "
+                    :error="form.errors.section_id"
                     required
                 >
                     <AppSectionSelect
-                        :model-value="
-                            form.section_id
-                        "
+                        :model-value="form.section_id"
                         :placeholder="
-                            bandsawWorkLogPage.form
-                                .sectionPlaceholder
+                            bandsawWorkLogPage.form.sectionPlaceholder
                         "
-                        :disabled="
-                            processing ||
-                            !isCreate
-                        "
-                        :error="
-                            form.errors.section_id
-                        "
+                        :disabled="processing || !isCreate"
+                        :error="form.errors.section_id"
                         :icon="Layers3"
                         searchable
-                        @update:model-value="
-                            handleSectionChange
-                        "
+                        @update:model-value="handleSectionChange"
                     />
                 </AppField>
 
                 <!-- Section Size -->
                 <AppField
-                    :label="
-                        bandsawWorkLogPage.form
-                            .sectionSizeLabel
-                    "
+                    :label="bandsawWorkLogPage.form.sectionSizeLabel"
                     input-id="bandsaw-work-log-section-size"
-                    :error="
-                        form.errors.section_size_id
-                    "
+                    :error="form.errors.section_size_id"
                     required
                 >
                     <AppSectionSizeSelect
-                        v-model="
-                            form.section_size_id
-                        "
-                        :section-id="
-                            form.section_id
-                        "
+                        v-model="form.section_size_id"
+                        :section-id="form.section_id"
                         :placeholder="
-                            bandsawWorkLogPage.form
-                                .sectionSizePlaceholder
+                            bandsawWorkLogPage.form.sectionSizePlaceholder
                         "
-                        :disabled="
-                            processing ||
-                            !isCreate
-                        "
-                        :error="
-                            form.errors.section_size_id
-                        "
+                        :disabled="processing || !isCreate"
+                        :error="form.errors.section_size_id"
                         :icon="Ruler"
                         searchable
                     />
@@ -456,32 +346,22 @@ watch(
 
                 <!-- Quantity -->
                 <AppField
-                    :label="
-                        bandsawWorkLogPage.form
-                            .quantityLabel
-                    "
+                    :label="bandsawWorkLogPage.form.quantityLabel"
                     input-id="bandsaw-work-log-quantity"
-                    :error="
-                        form.errors.quantity
-                    "
+                    :error="form.errors.quantity"
                     required
                 >
                     <AppInput
                         id="bandsaw-work-log-quantity"
-                        v-model.number="
-                            form.quantity
-                        "
+                        v-model.number="form.quantity"
                         type="number"
                         min="1"
                         step="1"
                         :placeholder="
-                            bandsawWorkLogPage.form
-                                .quantityPlaceholder
+                            bandsawWorkLogPage.form.quantityPlaceholder
                         "
                         :disabled="processing"
-                        :error="
-                            form.errors.quantity
-                        "
+                        :error="form.errors.quantity"
                         :icon="Hash"
                         required
                     />
@@ -494,26 +374,16 @@ watch(
             description="Add any relevant remarks about this work."
         >
             <AppField
-                :label="
-                    bandsawWorkLogPage.form
-                        .remarksLabel
-                "
+                :label="bandsawWorkLogPage.form.remarksLabel"
                 input-id="bandsaw-work-log-remarks"
-                :error="
-                    form.errors.remarks
-                "
+                :error="form.errors.remarks"
             >
                 <AppInput
                     id="bandsaw-work-log-remarks"
                     v-model="form.remarks"
-                    :placeholder="
-                        bandsawWorkLogPage.form
-                            .remarksPlaceholder
-                    "
+                    :placeholder="bandsawWorkLogPage.form.remarksPlaceholder"
                     :disabled="processing"
-                    :error="
-                        form.errors.remarks
-                    "
+                    :error="form.errors.remarks"
                     :icon="MessageSquare"
                 />
             </AppField>
@@ -522,13 +392,8 @@ watch(
         <FormActions
             :submit-label="submitLabel"
             :processing="processing"
-            :cancel-label="
-                bandsawWorkLogPage.form
-                    .cancelLabel
-            "
-            @cancel="
-                emit('cancel')
-            "
+            :cancel-label="bandsawWorkLogPage.form.cancelLabel"
+            @cancel="emit('cancel')"
         />
     </form>
 </template>

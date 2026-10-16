@@ -1,9 +1,8 @@
-﻿import {statusOptions} from '@/config/status';
+﻿import { statusOptions } from '@/config/status';
 
 export const employeePage = {
     title: 'Employees',
-    description:
-        'Manage employees, roles, shifts, and salary configuration.',
+    description: 'Manage employees, roles, shifts, and salary configuration.',
 
     createLabel: 'Add Employee',
 
@@ -28,46 +27,34 @@ export const employeePage = {
         namePlaceholder: 'Enter employee name',
 
         employeeCodeLabel: 'Employee Code',
-        employeeCodePlaceholder:
-            'Enter employee code',
+        employeeCodePlaceholder: 'Enter employee code',
 
         joiningDateLabel: 'Joining Date',
-        joiningDatePlaceholder:
-            'Select joining date',
+        joiningDatePlaceholder: 'Select joining date',
 
         phoneNumberLabel: 'Phone Number',
-        phoneNumberPlaceholder:
-            'Enter phone number',
+        phoneNumberPlaceholder: 'Enter phone number',
 
-        alternatePhoneNumberLabel:
-            'Alternate Phone Number',
-        alternatePhoneNumberPlaceholder:
-            'Enter alternate phone number',
+        alternatePhoneNumberLabel: 'Alternate Phone Number',
+        alternatePhoneNumberPlaceholder: 'Enter alternate phone number',
 
         emailLabel: 'Email',
-        emailPlaceholder:
-            'Enter email address',
+        emailPlaceholder: 'Enter email address',
 
         aadharNumberLabel: 'Aadhaar Number',
-        aadharNumberPlaceholder:
-            'Enter Aadhaar number',
+        aadharNumberPlaceholder: 'Enter Aadhaar number',
 
-        authenticationSectionTitle:
-            'Authentication',
+        authenticationSectionTitle: 'Authentication',
         authenticationSectionDescription:
             'Configure the employee login credentials.',
 
         passwordLabel: 'Password',
-        passwordPlaceholder:
-            'Enter password',
+        passwordPlaceholder: 'Enter password',
 
-        passwordConfirmationLabel:
-            'Confirm Password',
-        passwordConfirmationPlaceholder:
-            'Confirm password',
+        passwordConfirmationLabel: 'Confirm Password',
+        passwordConfirmationPlaceholder: 'Confirm password',
 
-        configurationSectionTitle:
-            'Employee Configuration',
+        configurationSectionTitle: 'Employee Configuration',
         configurationSectionDescription:
             'Configure the employee role and work shift.',
 
@@ -77,26 +64,20 @@ export const employeePage = {
         shiftLabel: 'Shift',
         shiftPlaceholder: 'Select shift',
 
-        salarySectionTitle:
-            'Salary Configuration',
+        salarySectionTitle: 'Salary Configuration',
         salarySectionDescription:
             'Configure the employee salary and daily adjustments.',
 
         salaryLabel: 'Salary',
         salaryPlaceholder: 'Enter salary',
 
-        incentivePerDayLabel:
-            'Incentive Per Day',
-        incentivePerDayPlaceholder:
-            'Enter incentive per day',
+        incentivePerDayLabel: 'Incentive Per Day',
+        incentivePerDayPlaceholder: 'Enter incentive per day',
 
-        deductionPerDayLabel:
-            'Deduction Per Day',
-        deductionPerDayPlaceholder:
-            'Enter deduction per day',
+        deductionPerDayLabel: 'Deduction Per Day',
+        deductionPerDayPlaceholder: 'Enter deduction per day',
 
-        accountSectionTitle:
-            'Account Status',
+        accountSectionTitle: 'Account Status',
         accountSectionDescription:
             'Control whether the employee account is active.',
 
@@ -104,13 +85,11 @@ export const employeePage = {
         statusPlaceholder: 'Select status',
 
         createTitle: 'Create Employee',
-        createDescription:
-            'Add a new employee to the system.',
+        createDescription: 'Add a new employee to the system.',
         createSubmitLabel: 'Save Employee',
 
         editTitle: 'Edit Employee',
-        editDescription:
-            'Update the employee information.',
+        editDescription: 'Update the employee information.',
         editSubmitLabel: 'Update Employee',
 
         cancelLabel: 'Cancel',

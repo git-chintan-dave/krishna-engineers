@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ToolTransactionType;
+use App\Enums\UserRole;
 use App\Http\Controllers\Concerns\HasCrudResponses;
 use App\Http\Requests\ToolTransactions\IndexToolTransactionRequest;
 use App\Http\Requests\ToolTransactions\ToolTransactionRequest;
@@ -253,7 +254,7 @@ class ToolTransactionController extends Controller
         $query = ToolTransaction::query()
             ->whereIn('id', $validated['ids']);
 
-        if ($user->role !== \App\Enums\UserRole::SUPER_ADMIN) {
+        if ($user->role !== UserRole::SUPER_ADMIN) {
             $query->where('created_by_user_id', $user->id);
         }
 

@@ -5,10 +5,7 @@ import FormLayout from '@/components/layouts/FormLayout.vue';
 import BandsawWorkLogForm from '@/pages/WorkLogs/Bandsaw/components/BandsawWorkLogForm.vue';
 import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
 import { bandsawWorkLogPage } from '@/config/bandsawWorkLogs';
-import {
-    index as bandsawWorkLogs,
-    store,
-} from '@/routes/bandsaw';
+import { index as bandsawWorkLogs, store } from '@/routes/bandsaw';
 import type {
     BandsawWorkLogFormData,
     BandsawWorkLogLastReport,
@@ -23,10 +20,7 @@ import type {
 const props = defineProps<{
     currentUserId: number;
     canSelectBandsaw: boolean;
-    lastReports: Record<
-        string,
-        BandsawWorkLogLastReport
-    >;
+    lastReports: Record<string, BandsawWorkLogLastReport>;
 }>();
 
 /*
@@ -50,24 +44,19 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const form =
-    useForm<BandsawWorkLogFormData>({
-        user_id: props.canSelectBandsaw
-            ? null
-            : props.currentUserId,
+const form = useForm<BandsawWorkLogFormData>({
+    user_id: props.canSelectBandsaw ? null : props.currentUserId,
 
-        work_date: new Date()
-            .toISOString()
-            .slice(0, 10),
+    work_date: new Date().toISOString().slice(0, 10),
 
-        part_id: null,
-        section_id: null,
-        section_size_id: null,
+    part_id: null,
+    section_id: null,
+    section_size_id: null,
 
-        quantity: 1,
+    quantity: 1,
 
-        remarks: '',
-    });
+    remarks: '',
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -80,34 +69,22 @@ const handleSubmit = (): void => {
 };
 
 const handleCancel = (): void => {
-    router.visit(
-        bandsawWorkLogs().url,
-    );
+    router.visit(bandsawWorkLogs().url);
 };
 </script>
 
 <template>
     <FormLayout
-        :title="
-            bandsawWorkLogPage.form.createTitle
-        "
-        :description="
-            bandsawWorkLogPage.form.createDescription
-        "
+        :title="bandsawWorkLogPage.form.createTitle"
+        :description="bandsawWorkLogPage.form.createDescription"
     >
         <BandsawWorkLogForm
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                bandsawWorkLogPage.form.createSubmitLabel
-            "
-            :can-select-bandsaw="
-                props.canSelectBandsaw
-            "
-            :last-reports="
-                props.lastReports
-            "
+            :submit-label="bandsawWorkLogPage.form.createSubmitLabel"
+            :can-select-bandsaw="props.canSelectBandsaw"
+            :last-reports="props.lastReports"
             :is-create="true"
             @submit="handleSubmit"
             @cancel="handleCancel"

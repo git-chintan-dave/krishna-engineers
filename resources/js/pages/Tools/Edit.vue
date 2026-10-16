@@ -1,12 +1,12 @@
 ﻿<script setup lang="ts">
-import {router, useForm} from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {toolPage} from '@/config/tools';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { toolPage } from '@/config/tools';
 import ToolForm from '@/pages/Tools/components/ToolForm.vue';
-import {index as tools, update as updateTool,} from '@/routes/tools';
-import type {Tool, ToolFormData,} from '@/types/tool';
+import { index as tools, update as updateTool } from '@/routes/tools';
+import type { Tool, ToolFormData } from '@/types/tool';
 
 /*
 |--------------------------------------------------------------------------
@@ -54,12 +54,10 @@ const form = useForm<ToolFormData>({
 */
 
 const handleSubmit = () => {
-    form
-        .transform((data) => ({
-            ...data,
-            status: data.status ? 'active' : 'inactive',
-        }))
-        .put(updateTool(props.tool.uuid).url);
+    form.transform((data) => ({
+        ...data,
+        status: data.status ? 'active' : 'inactive',
+    })).put(updateTool(props.tool.uuid).url);
 };
 
 /*
@@ -76,17 +74,13 @@ const handleCancel = () => {
 <template>
     <FormLayout
         :title="toolPage.form.editTitle"
-        :description="
-            toolPage.form.editDescription
-        "
+        :description="toolPage.form.editDescription"
     >
         <ToolForm
             :form="form"
             :errors="form.errors"
             :processing="form.processing"
-            :submit-label="
-                toolPage.form.editSubmitLabel
-            "
+            :submit-label="toolPage.form.editSubmitLabel"
             :current-image="props.tool.image"
             @submit="handleSubmit"
             @cancel="handleCancel"

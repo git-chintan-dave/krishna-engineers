@@ -59,9 +59,7 @@ const errorId = `${id}-error`;
 */
 
 const stateText = computed(() =>
-    props.modelValue
-        ? props.activeText
-        : props.inactiveText,
+    props.modelValue ? props.activeText : props.inactiveText,
 );
 
 const describedBy = computed(() => {
@@ -75,9 +73,7 @@ const describedBy = computed(() => {
         ids.push(errorId);
     }
 
-    return ids.length
-        ? ids.join(' ')
-        : undefined;
+    return ids.length ? ids.join(' ') : undefined;
 });
 
 /*
@@ -107,10 +103,7 @@ const handleUpdate = (value: boolean | 'indeterminate') => {
             |--------------------------------------------------------------------------
             -->
 
-            <div
-                v-if="title || description"
-                class="min-w-0 space-y-1"
-            >
+            <div v-if="title || description" class="min-w-0 space-y-1">
                 <h3
                     v-if="title"
                     class="text-sm leading-5 font-medium text-foreground"
@@ -136,13 +129,13 @@ const handleUpdate = (value: boolean | 'indeterminate') => {
             <div class="flex min-w-0 items-center justify-between gap-4">
                 <div class="min-w-0 flex-1 space-y-1">
                     <p
-                        class="break-words text-sm leading-5 font-medium text-foreground"
+                        class="text-sm leading-5 font-medium break-words text-foreground"
                     >
                         {{ label }}
                     </p>
 
                     <p
-                        class="break-words text-xs leading-4 text-muted-foreground"
+                        class="text-xs leading-4 break-words text-muted-foreground"
                     >
                         {{ stateText }}
                     </p>
