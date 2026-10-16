@@ -17,11 +17,7 @@ export const createAttendanceColumns = (
 ) =>
     columnHelper.columns([
         ...(canDelete
-            ? [
-                createSelectColumn({
-                    resourceName: 'attendances',
-                }),
-            ]
+            ? [createSelectColumn({ resourceName: 'attendances' })]
             : []),
 
         ...(canShowUserColumn
@@ -39,7 +35,8 @@ export const createAttendanceColumns = (
             header: 'Attendance Date',
             size: 160,
             align: 'center',
-            cell: ({row}) => row.original.attendance_date_formatted ?? '—',
+            cell: ({ row }) =>
+                row.original.attendance_date_formatted ?? '—',
         }),
 
         createSortableColumn({
@@ -47,7 +44,7 @@ export const createAttendanceColumns = (
             header: 'Clock In',
             size: 150,
             align: 'center',
-            cell: ({row}) => row.original.start_at_formatted ?? '—',
+            cell: ({ row }) => row.original.start_at_formatted ?? '—',
         }),
 
         createSortableColumn({
@@ -55,15 +52,24 @@ export const createAttendanceColumns = (
             header: 'Clock Out',
             size: 150,
             align: 'center',
-            cell: ({row}) => row.original.end_at_formatted ?? '—',
+            cell: ({ row }) => row.original.end_at_formatted ?? '—',
         }),
 
         createSortableColumn({
-            accessorKey: 'effective_working_seconds_formatted',
+            accessorKey: 'break_seconds',
+            header: 'Break Time',
+            size: 140,
+            align: 'center',
+            cell: ({ row }) =>
+                row.original.break_seconds_formatted ?? '—',
+        }),
+
+        createSortableColumn({
+            accessorKey: 'effective_working_seconds',
             header: 'Effective Hours',
             size: 160,
             align: 'center',
-            cell: ({row}) =>
+            cell: ({ row }) =>
                 row.original.effective_working_seconds_formatted ?? '—',
         }),
 
@@ -73,17 +79,6 @@ export const createAttendanceColumns = (
                     editUrl: (uuid) => edit(uuid).url,
                     resourceName: 'attendance',
                     handleDelete,
-
-                    /*
-                  |--------------------------------------------------------------------------
-                  | Salary Lock
-                  |--------------------------------------------------------------------------
-                  |
-                  | Attendance belonging to a paid salary period is read-only.
-                  | The backend service still enforces this rule.
-                  |
-                  */
-
                     showEdit: (row) => canEdit && !row.is_locked,
                     showDelete: (row) => canDelete && !row.is_locked,
                 }),

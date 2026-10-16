@@ -24,9 +24,15 @@ export type Attendance = {
     is_locked: boolean;
 
     total_working_seconds: number;
+    total_working_seconds_formatted: string;
     break_seconds: number;
+    break_seconds_formatted: string;
     effective_working_seconds: number;
     effective_working_seconds_formatted: string;
+
+    production_seconds: number;
+    production_seconds_formatted: string;
+    production_efficiency: number | null;
 
     breaks: AttendanceBreak[];
 

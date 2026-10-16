@@ -30,11 +30,7 @@ class AttendanceController extends Controller
 
     private const string INDEX_ROUTE = 'attendances.index';
 
-    public function __construct(
-        private readonly AttendanceService $attendanceService,
-    )
-    {
-    }
+    public function __construct(private readonly AttendanceService $attendanceService) {}
 
     /*
     |--------------------------------------------------------------------------
@@ -44,8 +40,7 @@ class AttendanceController extends Controller
 
     public function index(
         IndexAttendanceRequest $request,
-    ): Response
-    {
+    ): Response {
         Gate::authorize(
             'viewAny',
             Attendance::class,
@@ -68,13 +63,16 @@ class AttendanceController extends Controller
             $query,
             $filters,
         )
-            ->when($filters['user_id'] ?? null,
+            ->when(
+                $filters['user_id'] ?? null,
                 fn(Builder $query, int $userId): Builder => $query->where('user_id', $userId),
             )
-            ->when($filters['start_date'] ?? null,
+            ->when(
+                $filters['start_date'] ?? null,
                 fn(Builder $query, string $date): Builder => $query->whereDate('attendance_date', '>=', $date),
             )
-            ->when($filters['end_date'] ?? null,
+            ->when(
+                $filters['end_date'] ?? null,
                 fn(Builder $query, string $date): Builder => $query->whereDate('attendance_date', '<=', $date),
             )
             ->paginate(
@@ -106,8 +104,7 @@ class AttendanceController extends Controller
 
     public function edit(
         Attendance $attendance,
-    ): Response
-    {
+    ): Response {
         Gate::authorize(
             'view',
             $attendance,
@@ -133,8 +130,7 @@ class AttendanceController extends Controller
 
     public function store(
         AttendanceRequest $request,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         Gate::authorize(
             'create',
             Attendance::class,
@@ -186,8 +182,7 @@ class AttendanceController extends Controller
     public function update(
         AttendanceRequest $request,
         Attendance        $attendance,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         Gate::authorize(
             'update',
             $attendance,
@@ -223,8 +218,7 @@ class AttendanceController extends Controller
 
     public function destroy(
         Attendance $attendance,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         Gate::authorize(
             'delete',
             $attendance,
@@ -250,8 +244,7 @@ class AttendanceController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         Gate::authorize(
             'deleteAny',
             Attendance::class,
@@ -292,8 +285,7 @@ class AttendanceController extends Controller
 
     public function import(
         AttendanceImportRequest $request,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         Gate::authorize(
             'import',
             Attendance::class,

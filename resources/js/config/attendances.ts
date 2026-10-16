@@ -14,6 +14,16 @@ export const attendancePage = {
     itemLabel: 'attendance records',
     resourceLabel: 'attendance records',
 
+    table: {
+        employeeLabel: 'Employee',
+        attendanceDateLabel: 'Date',
+        clockInLabel: 'Clock In',
+        clockOutLabel: 'Clock Out',
+        effectiveHoursLabel: 'Effective Hours',
+        productionLabel: 'Production',
+        efficiencyLabel: 'Efficiency',
+    },
+
     form: {
         sectionTitle: 'Attendance Information',
         sectionDescription:
