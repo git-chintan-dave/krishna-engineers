@@ -1,5 +1,5 @@
-```vue
 <script lang="ts" setup>
+import {ref, watch} from "vue";
 import type {InertiaForm} from '@inertiajs/vue3';
 import {Hash, Settings2, ToggleRight} from '@lucide/vue';
 
@@ -10,6 +10,7 @@ import FormSection from '@/components/form/FormSection.vue';
 import ToggleCardInput from '@/components/form/ToggleCardInput.vue';
 import {machinePage} from '@/config/machines';
 import type {MachineFormData} from '@/types/machine';
+import {machineSchema} from "@/schemas/machineSchema";
 
 // Props
 const props = withDefaults(
@@ -26,6 +27,51 @@ const props = withDefaults(
     },
 );
 
+const frontendErrors = ref<Partial<Record<keyof MachineFormData, string>>>(
+    {},
+);
+
+const validate = () => {
+    const result = machineSchema.safeParse({
+        name: props.form.name,
+        machine_number: props.form.machine_number,
+        status: props.form.status,
+    });
+
+    frontendErrors.value = {};
+
+    if (result.success) {
+        return true;
+    }
+
+    for (const issue of result.error.issues) {
+        const field = issue.path[0] as keyof MachineFormData;
+
+        frontendErrors.value[field] ??= issue.message;
+    }
+
+    return false;
+};
+
+const handleSubmit = () => {
+    if (validate()) {
+        emit('submit');
+    }
+};
+
+watch(
+    () => [
+        props.form.name,
+        props.form.machine_number,
+        props.form.status,
+    ],
+    () => {
+        if (Object.keys(frontendErrors.value).length > 0) {
+            validate();
+        }
+    },
+);
+
 // Emits
 const emit = defineEmits<{
     submit: [];
@@ -34,7 +80,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
+    <form class="min-w-0 space-y-6" @submit.prevent="handleSubmit">
         <!-- Machine Information -->
         <FormSection
             :description="machinePage.form.sectionDescription"
@@ -52,10 +98,9 @@ const emit = defineEmits<{
                         id="machine-name"
                         v-model="props.form.name"
                         :disabled="props.processing"
-                        :error="props.errors.name"
+                        :error="frontendErrors.name ?? props.errors.name"
                         :icon="Settings2"
                         :placeholder="machinePage.form.namePlaceholder"
-                        required
                     />
                 </AppField>
 
@@ -69,7 +114,7 @@ const emit = defineEmits<{
                         id="machine-machine-number"
                         v-model="props.form.machine_number"
                         :disabled="props.processing"
-                        :error="props.errors.machine_number"
+                        :error="frontendErrors.machine_number ?? props.errors.machine_number"
                         :icon="Hash"
                         :placeholder="machinePage.form.machineNumberPlaceholder"
                     />
@@ -80,7 +125,7 @@ const emit = defineEmits<{
                     <ToggleCardInput
                         v-model="props.form.status"
                         :disabled="props.processing"
-                        :error="props.errors.status"
+                        :error="frontendErrors.status ?? props.errors.status"
                         :icon="ToggleRight"
                         active-text="Machine is currently active."
                         inactive-text="Machine is currently inactive."
@@ -100,4 +145,3 @@ const emit = defineEmits<{
         />
     </form>
 </template>
-```
