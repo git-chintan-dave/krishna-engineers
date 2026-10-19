@@ -18,11 +18,11 @@ import {dashboard, login} from '@/routes';
         <div class="w-full max-w-md">
             <Card class="rounded-xl shadow-lg">
                 <CardHeader class="px-8 pt-8 text-center sm:px-10">
-                    <img
+<!--                    <img
                         alt="Krishna Engineers"
                         class="mx-auto mb-4 h-20 w-auto max-w-56 object-contain"
                         src="/logo.svg"
-                    />
+                    />-->
 
                     <CardTitle class="text-2xl font-bold tracking-tight">
                         Krishna Engineers

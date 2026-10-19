@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Status;
+use App\Traits\HasFilter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -15,7 +16,28 @@ use Illuminate\Database\Eloquent\Model;
 ])]
 class Machine extends Model
 {
-    use HasUuids;
+    use HasFilter, HasUuids;
+
+    protected array $searchable = [
+        'name',
+        'machine_number',
+    ];
+
+    protected array $filterable = [
+        'status',
+    ];
+
+    protected array $sortable = [
+        'id',
+        'name',
+        'machine_number',
+        'status',
+        'created_at',
+    ];
+
+    protected string $defaultSort = 'id';
+
+    protected string $defaultDirection = 'desc';
 
     public function uniqueIds(): array
     {

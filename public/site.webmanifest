@@ -1,6 +1,6 @@
 {
     "name": "Krishna Engineers",
-    "short_name": "Krishna ",
+    "short_name": "KE",
     "icons": [
         {
             "src": "/web-app-manifest-192x192.png",
@@ -15,7 +15,7 @@
             "purpose": "maskable"
         }
     ],
-    "theme_color": "#000000",
-    "background_color": "#ffffff",
+    "theme_color": "#fafafa",
+    "background_color": "#171717",
     "display": "standalone"
 }

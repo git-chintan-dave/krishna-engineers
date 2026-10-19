@@ -9,7 +9,6 @@ use App\Http\Requests\Machines\IndexMachineRequest;
 use App\Http\Requests\Machines\MachineRequest;
 use App\Http\Resources\MachineResource;
 use App\Models\Machine;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -29,18 +28,8 @@ class MachineController extends Controller
 
         $filters = $request->validated();
 
-        $machines = $this->applyIndexFilters(
-            Machine::query(),
-            $filters,
-            ['name', 'machine_number'],
-        )
-            ->when(
-                $filters['status'] ?? null,
-                fn(Builder $query, string $status): Builder => $query->where(
-                    'status',
-                    $status,
-                ),
-            )
+        $machines = Machine::query()
+            ->filterQuery($filters)
             ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();
 
@@ -83,9 +72,8 @@ class MachineController extends Controller
 
     public function update(
         MachineRequest $request,
-        Machine        $machine,
-    ): RedirectResponse
-    {
+        Machine $machine,
+    ): RedirectResponse {
         Gate::authorize('update', $machine);
 
         $machine->update($request->validated());
@@ -104,8 +92,7 @@ class MachineController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         Gate::authorize('deleteAny', Machine::class);
 
         Machine::query()
