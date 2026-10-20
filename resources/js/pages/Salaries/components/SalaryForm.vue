@@ -309,7 +309,6 @@ const formatAmount = (amount: number): string =>
                         :placeholder="
                             salaryPage.form.salaryPeriodStartPlaceholder
                         "
-                        required
                         type="date"
                     />
                 </AppField>
@@ -328,7 +327,6 @@ const formatAmount = (amount: number): string =>
                         :placeholder="
                             salaryPage.form.salaryPeriodEndPlaceholder
                         "
-                        required
                         type="date"
                     />
                 </AppField>
@@ -412,7 +410,6 @@ const formatAmount = (amount: number): string =>
                         :icon="IndianRupee"
                         :placeholder="salaryPage.form.upadPlaceholder"
                         min="0"
-                        required
                         step="0.01"
                         type="number"
                     />
@@ -431,7 +428,6 @@ const formatAmount = (amount: number): string =>
                         :icon="IndianRupee"
                         :placeholder="salaryPage.form.paidLoanPlaceholder"
                         min="0"
-                        required
                         step="0.01"
                         type="number"
                     />
@@ -449,7 +445,6 @@ const formatAmount = (amount: number): string =>
                         :error="getError('adjustment')"
                         :icon="IndianRupee"
                         :placeholder="salaryPage.form.adjustmentPlaceholder"
-                        required
                         step="0.01"
                         type="number"
                     />
