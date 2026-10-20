@@ -22,8 +22,8 @@ const form = useForm<PartSetupFormData>({
     setup_id: null,
     image: null,
     remove_image: false,
-    machine_cycle_time: '',
-    actual_cycle_time: '',
+    machine_cycle_time: null,
+    actual_cycle_time: null,
 });
 
 const handleSubmit = () => {

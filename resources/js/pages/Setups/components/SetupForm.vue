@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type {InertiaForm} from '@inertiajs/vue3';
+import {ref, watch} from 'vue';
 import {Settings2, ToggleRight} from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
@@ -8,6 +9,7 @@ import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import ToggleCardInput from '@/components/form/ToggleCardInput.vue';
 import {setupPage} from '@/config/setups';
+import {setupSchema} from '@/schemas/setupSchema';
 import type {SetupFormData} from '@/types/setup';
 
 // Props
@@ -30,10 +32,51 @@ const emit = defineEmits<{
     submit: [];
     cancel: [];
 }>();
+
+// Frontend validation
+const frontendErrors = ref<
+    Partial<Record<keyof SetupFormData, string>>
+>({});
+
+const validate = (): boolean => {
+    const result = setupSchema.safeParse({
+        name: props.form.name,
+        status: props.form.status,
+    });
+
+    frontendErrors.value = {};
+
+    if (result.success) {
+        return true;
+    }
+
+    for (const issue of result.error.issues) {
+        const field = issue.path[0] as keyof SetupFormData;
+
+        frontendErrors.value[field] ??= issue.message;
+    }
+
+    return false;
+};
+
+const handleSubmit = () => {
+    if (validate()) {
+        emit('submit');
+    }
+};
+
+watch(
+    () => [props.form.name, props.form.status],
+    () => {
+        if (Object.keys(frontendErrors.value).length > 0) {
+            validate();
+        }
+    },
+);
 </script>
 
 <template>
-    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
+    <form class="min-w-0 space-y-6" @submit.prevent="handleSubmit">
         <!-- Setup Information -->
         <FormSection
             :description="setupPage.form.sectionDescription"
@@ -42,7 +85,7 @@ const emit = defineEmits<{
             <div class="grid min-w-0 gap-5">
                 <!-- Setup Name -->
                 <AppField
-                    :error="props.errors.name"
+                    :error="frontendErrors.name ?? props.errors.name"
                     :label="setupPage.form.nameLabel"
                     input-id="setup-name"
                     required
@@ -51,10 +94,9 @@ const emit = defineEmits<{
                         id="setup-name"
                         v-model="props.form.name"
                         :disabled="props.processing"
-                        :error="props.errors.name"
+                        :error="frontendErrors.name ?? props.errors.name"
                         :icon="Settings2"
                         :placeholder="setupPage.form.namePlaceholder"
-                        required
                     />
                 </AppField>
 
@@ -62,7 +104,7 @@ const emit = defineEmits<{
                 <ToggleCardInput
                     v-model="props.form.status"
                     :disabled="props.processing"
-                    :error="props.errors.status"
+                    :error="frontendErrors.status ?? props.errors.status"
                     :icon="ToggleRight"
                     active-text="Setup is currently active."
                     inactive-text="Setup is currently inactive."

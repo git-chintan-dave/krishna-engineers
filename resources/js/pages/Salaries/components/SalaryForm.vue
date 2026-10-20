@@ -11,6 +11,7 @@ import FormSection from '@/components/form/FormSection.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import {salaryPage} from '@/config/salaries';
 import {preview as previewSalary} from '@/routes/salaries';
+import {salarySchema} from '@/schemas/salarySchema';
 import type {Salary, SalaryFormData} from '@/types/salary';
 
 type SalaryPreview = {
@@ -23,11 +24,13 @@ type SalaryPreview = {
     final_payable: string;
 };
 
+type SalaryField = keyof SalaryFormData;
+
 const props = withDefaults(
     defineProps<{
         form: InertiaForm<SalaryFormData>;
         salary?: Salary;
-        errors?: Partial<Record<keyof SalaryFormData, string>>;
+        errors?: Partial<Record<SalaryField, string>>;
         processing?: boolean;
         submitLabel?: string;
     }>(),
@@ -47,31 +50,56 @@ const emit = defineEmits<{
 const previewData = ref<SalaryPreview | null>(null);
 const previewLoading = ref(false);
 
+const hasSubmitted = ref(false);
+
+const frontendErrors = ref<
+    Partial<Record<SalaryField, string>>
+>({});
+
 let previewRequestId = 0;
 
 const isEdit = computed(() => Boolean(props.salary));
 
 const baseSalary = computed(() =>
-    Number(props.salary?.base_salary ?? previewData.value?.base_salary ?? 0),
+    Number(
+        props.salary?.base_salary ??
+        previewData.value?.base_salary ??
+        0,
+    ),
 );
 
 const workingDays = computed(
-    () => props.salary?.working_days ?? previewData.value?.working_days ?? 0,
+    () =>
+        props.salary?.working_days ??
+        previewData.value?.working_days ??
+        0,
 );
 
 const incentive = computed(() =>
-    Number(props.salary?.incentive ?? previewData.value?.incentive ?? 0),
+    Number(
+        props.salary?.incentive ??
+        previewData.value?.incentive ??
+        0,
+    ),
 );
 
 const deduction = computed(() =>
-    Number(props.salary?.deduction ?? previewData.value?.deduction ?? 0),
+    Number(
+        props.salary?.deduction ??
+        previewData.value?.deduction ??
+        0,
+    ),
 );
 
 const upad = computed(() => Number(props.form.upad || 0));
 
-const paidLoan = computed(() => Number(props.form.paid_loan || 0));
+const paidLoan = computed(() =>
+    Number(props.form.paid_loan || 0),
+);
 
-const adjustment = computed(() => Number(props.form.adjustment || 0));
+const adjustment = computed(() =>
+    Number(props.form.adjustment || 0),
+);
 
 const finalPayable = computed(() =>
     (
@@ -84,7 +112,67 @@ const finalPayable = computed(() =>
     ).toFixed(2),
 );
 
-const hasAdjustment = computed(() => adjustment.value !== 0);
+const hasAdjustment = computed(
+    () => adjustment.value > 0,
+);
+
+const getError = (field: SalaryField): string | undefined =>
+    frontendErrors.value[field] ?? props.errors[field];
+
+const validateForm = (): boolean => {
+    const result = salarySchema.safeParse({
+        user_id: props.form.user_id,
+        salary_period_start: props.form.salary_period_start,
+        salary_period_end: props.form.salary_period_end,
+        upad: props.form.upad,
+        paid_loan: props.form.paid_loan,
+        adjustment: props.form.adjustment,
+        adjustment_reason: props.form.adjustment_reason,
+    });
+
+    const errors: Partial<Record<SalaryField, string>> = {};
+
+    if (!result.success) {
+        for (const issue of result.error.issues) {
+            const field = issue.path[0] as SalaryField;
+
+            if (issue.path.length > 0 && !errors[field]) {
+                errors[field] = issue.message;
+            }
+        }
+    }
+
+    frontendErrors.value = errors;
+
+    return result.success;
+};
+
+const handleSubmit = (): void => {
+    hasSubmitted.value = true;
+
+    if (!validateForm()) {
+        return;
+    }
+
+    emit('submit');
+};
+
+watch(
+    [
+        () => props.form.user_id,
+        () => props.form.salary_period_start,
+        () => props.form.salary_period_end,
+        () => props.form.upad,
+        () => props.form.paid_loan,
+        () => props.form.adjustment,
+        () => props.form.adjustment_reason,
+    ],
+    () => {
+        if (hasSubmitted.value) {
+            validateForm();
+        }
+    },
+);
 
 const loadPreview = async (): Promise<void> => {
     if (
@@ -93,6 +181,7 @@ const loadPreview = async (): Promise<void> => {
         !props.form.salary_period_start ||
         !props.form.salary_period_end
     ) {
+        previewRequestId++;
         previewData.value = null;
         previewLoading.value = false;
 
@@ -107,8 +196,10 @@ const loadPreview = async (): Promise<void> => {
         const response = await axios.get(previewSalary().url, {
             params: {
                 user_id: props.form.user_id,
-                salary_period_start: props.form.salary_period_start,
-                salary_period_end: props.form.salary_period_end,
+                salary_period_start:
+                props.form.salary_period_start,
+                salary_period_end:
+                props.form.salary_period_end,
             },
             headers: {
                 Accept: 'application/json',
@@ -136,7 +227,9 @@ const setPeriodEndFromStart = (): void => {
         return;
     }
 
-    const startDate = new Date(`${props.form.salary_period_start}T00:00:00`);
+    const startDate = new Date(
+        `${props.form.salary_period_start}T00:00:00`,
+    );
 
     if (Number.isNaN(startDate.getTime())) {
         return;
@@ -155,7 +248,10 @@ const setPeriodEndFromStart = (): void => {
     props.form.salary_period_end = `${year}-${month}-${day}`;
 };
 
-watch(() => props.form.salary_period_start, setPeriodEndFromStart);
+watch(
+    () => props.form.salary_period_start,
+    setPeriodEndFromStart,
+);
 
 watch(
     [
@@ -164,15 +260,19 @@ watch(
         () => props.form.salary_period_end,
     ],
     loadPreview,
+    { immediate: true },
 );
 
-const formatAmount = (amount: number): string => {
-    return `₹${amount.toFixed(2)}`;
-};
+const formatAmount = (amount: number): string =>
+    `₹${amount.toFixed(2)}`;
 </script>
 
 <template>
-    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
+    <form
+        class="min-w-0 space-y-6"
+        novalidate
+        @submit.prevent="handleSubmit"
+    >
         <FormSection
             :description="salaryPage.form.sectionDescription"
             :title="salaryPage.form.sectionTitle"
@@ -186,9 +286,11 @@ const formatAmount = (amount: number): string => {
                     <AppEmployeeSelect
                         v-model="props.form.user_id"
                         :disabled="processing || isEdit"
-                        :error="props.errors.user_id"
+                        :error="getError('user_id')"
                         :icon="User"
-                        :placeholder="salaryPage.form.employeePlaceholder"
+                        :placeholder="
+                            salaryPage.form.employeePlaceholder
+                        "
                         searchable
                     />
                 </AppField>
@@ -202,7 +304,7 @@ const formatAmount = (amount: number): string => {
                         id="salary-period-start"
                         v-model="props.form.salary_period_start"
                         :disabled="processing || isEdit"
-                        :error="props.errors.salary_period_start"
+                        :error="getError('salary_period_start')"
                         :icon="CalendarDays"
                         :placeholder="
                             salaryPage.form.salaryPeriodStartPlaceholder
@@ -221,7 +323,7 @@ const formatAmount = (amount: number): string => {
                         id="salary-period-end"
                         v-model="props.form.salary_period_end"
                         :disabled="processing || isEdit"
-                        :error="props.errors.salary_period_end"
+                        :error="getError('salary_period_end')"
                         :icon="CalendarDays"
                         :placeholder="
                             salaryPage.form.salaryPeriodEndPlaceholder
@@ -287,7 +389,7 @@ const formatAmount = (amount: number): string => {
                         class="size-4 animate-pulse"
                     />
 
-                    <span> Loading salary details... </span>
+                    <span>Loading salary details...</span>
                 </div>
             </div>
         </FormSection>
@@ -306,7 +408,7 @@ const formatAmount = (amount: number): string => {
                         id="salary-upad"
                         v-model="props.form.upad"
                         :disabled="processing"
-                        :error="props.errors.upad"
+                        :error="getError('upad')"
                         :icon="IndianRupee"
                         :placeholder="salaryPage.form.upadPlaceholder"
                         min="0"
@@ -325,7 +427,7 @@ const formatAmount = (amount: number): string => {
                         id="salary-paid-loan"
                         v-model="props.form.paid_loan"
                         :disabled="processing"
-                        :error="props.errors.paid_loan"
+                        :error="getError('paid_loan')"
                         :icon="IndianRupee"
                         :placeholder="salaryPage.form.paidLoanPlaceholder"
                         min="0"
@@ -344,7 +446,7 @@ const formatAmount = (amount: number): string => {
                         id="salary-adjustment"
                         v-model="props.form.adjustment"
                         :disabled="processing"
-                        :error="props.errors.adjustment"
+                        :error="getError('adjustment')"
                         :icon="IndianRupee"
                         :placeholder="salaryPage.form.adjustmentPlaceholder"
                         required
@@ -362,7 +464,7 @@ const formatAmount = (amount: number): string => {
                         id="salary-adjustment-reason"
                         v-model="props.form.adjustment_reason"
                         :disabled="processing"
-                        :error="props.errors.adjustment_reason"
+                        :error="getError('adjustment_reason')"
                         :placeholder="
                             salaryPage.form.adjustmentReasonPlaceholder
                         "
@@ -385,8 +487,8 @@ const formatAmount = (amount: number): string => {
                         </p>
 
                         <p class="mt-1 text-sm text-muted-foreground">
-                            Base salary + incentive + adjustment − upad − paid
-                            loan − deduction.
+                            Base salary + incentive + adjustment − upad −
+                            paid loan − deduction.
                         </p>
                     </div>
 

@@ -155,6 +155,7 @@ const handleDeleteSelected = () => {
                     <div class="w-full shrink-0 sm:w-40">
                         <AppSetupSelect
                             v-model="filterSetup"
+                            :part-id="filterPart"
                             :placeholder="partSetupPage.setupPlaceholder"
                             clearable
                         />

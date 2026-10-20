@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import {Badge, CalendarDays, CreditCard, IndianRupee, LockKeyhole, Mail, Phone, User,} from '@lucide/vue';
+import {ref, watch} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -9,9 +10,9 @@ import ToggleCardInput from '@/components/form/ToggleCardInput.vue';
 import AppUserRoleSelect from '@/components/selects/AppUserRoleSelect.vue';
 import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
 import {employeePage} from '@/config/employees';
+import {createEmployeeSchema, editEmployeeSchema,} from '@/schemas/employeeSchema';
 import type {EmployeeFormData} from '@/types/employee';
 
-// Props
 const props = withDefaults(
     defineProps<{
         form: EmployeeFormData;
@@ -28,15 +29,77 @@ const props = withDefaults(
     },
 );
 
-// Events
 const emit = defineEmits<{
     submit: [];
     cancel: [];
 }>();
+
+const frontendErrors = ref<Record<string, string>>({});
+const hasSubmitted = ref(false);
+
+const schema = () =>
+    props.isEdit ? editEmployeeSchema : createEmployeeSchema;
+
+const validateForm = () => {
+    const result = schema().safeParse(props.form);
+    const errors: Record<string, string> = {};
+
+    if (!result.success) {
+        for (const issue of result.error.issues) {
+            const field = issue.path.join('.');
+
+            if (field && !errors[field]) {
+                errors[field] = issue.message;
+            }
+        }
+    }
+
+    frontendErrors.value = errors;
+
+    return result.success;
+};
+
+const getError = (field: keyof EmployeeFormData) =>
+    frontendErrors.value[field] ?? props.errors[field];
+
+const handleSubmit = () => {
+    hasSubmitted.value = true;
+
+    if (!validateForm()) {
+        return;
+    }
+
+    emit('submit');
+};
+
+watch(
+    () => [
+        props.form.name,
+        props.form.employee_code,
+        props.form.phone_number,
+        props.form.alternate_phone_number,
+        props.form.email,
+        props.form.joining_date,
+        props.form.aadhar_number,
+        props.form.password,
+        props.form.password_confirmation,
+        props.form.role,
+        props.form.shift,
+        props.form.salary,
+        props.form.incentive_per_day,
+        props.form.deduction_per_day,
+        props.form.status,
+    ],
+    () => {
+        if (hasSubmitted.value) {
+            validateForm();
+        }
+    },
+);
 </script>
 
 <template>
-    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
+    <form class="min-w-0 space-y-6" @submit.prevent="handleSubmit">
         <!-- Employee Information -->
         <FormSection
             :description="employeePage.form.employeeSectionDescription"
@@ -53,10 +116,9 @@ const emit = defineEmits<{
                         id="employee-name"
                         v-model="props.form.name"
                         :disabled="processing"
-                        :error="errors.name"
+                        :error="getError('name')"
                         :icon="User"
                         :placeholder="employeePage.form.namePlaceholder"
-                        required
                     />
                 </AppField>
 
@@ -70,10 +132,11 @@ const emit = defineEmits<{
                         id="employee-code"
                         v-model="props.form.employee_code"
                         :disabled="processing"
-                        :error="errors.employee_code"
+                        :error="getError('employee_code')"
                         :icon="Badge"
-                        :placeholder="employeePage.form.employeeCodePlaceholder"
-                        required
+                        :placeholder="
+                            employeePage.form.employeeCodePlaceholder
+                        "
                     />
                 </AppField>
 
@@ -86,7 +149,7 @@ const emit = defineEmits<{
                         id="employee-joining-date"
                         v-model="props.form.joining_date"
                         :disabled="processing"
-                        :error="errors.joining_date"
+                        :error="getError('joining_date')"
                         :icon="CalendarDays"
                         type="date"
                     />
@@ -101,9 +164,11 @@ const emit = defineEmits<{
                         id="employee-phone-number"
                         v-model="props.form.phone_number"
                         :disabled="processing"
-                        :error="errors.phone_number"
+                        :error="getError('phone_number')"
                         :icon="Phone"
-                        :placeholder="employeePage.form.phoneNumberPlaceholder"
+                        :placeholder="
+                            employeePage.form.phoneNumberPlaceholder
+                        "
                         inputmode="numeric"
                         maxlength="10"
                         type="tel"
@@ -119,7 +184,7 @@ const emit = defineEmits<{
                         id="employee-alternate-phone-number"
                         v-model="props.form.alternate_phone_number"
                         :disabled="processing"
-                        :error="errors.alternate_phone_number"
+                        :error="getError('alternate_phone_number')"
                         :icon="Phone"
                         :placeholder="
                             employeePage.form.alternatePhoneNumberPlaceholder
@@ -139,7 +204,7 @@ const emit = defineEmits<{
                         id="employee-email"
                         v-model="props.form.email"
                         :disabled="processing"
-                        :error="errors.email"
+                        :error="getError('email')"
                         :icon="Mail"
                         :placeholder="employeePage.form.emailPlaceholder"
                         type="email"
@@ -155,7 +220,7 @@ const emit = defineEmits<{
                         id="employee-aadhar-number"
                         v-model="props.form.aadhar_number"
                         :disabled="processing"
-                        :error="errors.aadhar_number"
+                        :error="getError('aadhar_number')"
                         :icon="CreditCard"
                         :placeholder="employeePage.form.aadharNumberPlaceholder"
                         inputmode="numeric"
@@ -183,10 +248,9 @@ const emit = defineEmits<{
                         id="employee-password"
                         v-model="props.form.password"
                         :disabled="processing"
-                        :error="errors.password"
+                        :error="getError('password')"
                         :icon="LockKeyhole"
                         :placeholder="employeePage.form.passwordPlaceholder"
-                        required
                         type="password"
                     />
                 </AppField>
@@ -201,12 +265,11 @@ const emit = defineEmits<{
                         id="employee-password-confirmation"
                         v-model="props.form.password_confirmation"
                         :disabled="processing"
-                        :error="errors.password_confirmation"
+                        :error="getError('password_confirmation')"
                         :icon="LockKeyhole"
                         :placeholder="
                             employeePage.form.passwordConfirmationPlaceholder
                         "
-                        required
                         type="password"
                     />
                 </AppField>
@@ -228,7 +291,7 @@ const emit = defineEmits<{
                     <AppUserRoleSelect
                         v-model="props.form.role"
                         :disabled="processing"
-                        :error="errors.role"
+                        :error="getError('role')"
                         :placeholder="employeePage.form.rolePlaceholder"
                         searchable
                     />
@@ -242,7 +305,7 @@ const emit = defineEmits<{
                     <AppUserShiftSelect
                         v-model="props.form.shift"
                         :disabled="processing"
-                        :error="errors.shift"
+                        :error="getError('shift')"
                         :placeholder="employeePage.form.shiftPlaceholder"
                         searchable
                     />
@@ -266,11 +329,10 @@ const emit = defineEmits<{
                         id="employee-salary"
                         v-model="props.form.salary"
                         :disabled="processing"
-                        :error="errors.salary"
+                        :error="getError('salary')"
                         :icon="IndianRupee"
                         :placeholder="employeePage.form.salaryPlaceholder"
                         min="0"
-                        required
                         step="0.01"
                         type="number"
                     />
@@ -286,13 +348,12 @@ const emit = defineEmits<{
                         id="employee-incentive-per-day"
                         v-model="props.form.incentive_per_day"
                         :disabled="processing"
-                        :error="errors.incentive_per_day"
+                        :error="getError('incentive_per_day')"
                         :icon="IndianRupee"
                         :placeholder="
                             employeePage.form.incentivePerDayPlaceholder
                         "
                         min="0"
-                        required
                         step="0.01"
                         type="number"
                     />
@@ -308,13 +369,12 @@ const emit = defineEmits<{
                         id="employee-deduction-per-day"
                         v-model="props.form.deduction_per_day"
                         :disabled="processing"
-                        :error="errors.deduction_per_day"
+                        :error="getError('deduction_per_day')"
                         :icon="IndianRupee"
                         :placeholder="
                             employeePage.form.deductionPerDayPlaceholder
                         "
                         min="0"
-                        required
                         step="0.01"
                         type="number"
                     />
@@ -330,7 +390,7 @@ const emit = defineEmits<{
             <ToggleCardInput
                 v-model="props.form.status"
                 :disabled="processing"
-                :error="errors.status"
+                :error="getError('status')"
                 active-text="Employee account is currently active."
                 inactive-text="Employee account is currently inactive."
                 label="Status"

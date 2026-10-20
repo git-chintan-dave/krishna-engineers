@@ -1,4 +1,6 @@
+
 <script lang="ts" setup>
+import {ref, watch} from 'vue';
 import type {InertiaForm} from '@inertiajs/vue3';
 import {Image, Settings2, ToggleRight, Wrench} from '@lucide/vue';
 
@@ -10,6 +12,7 @@ import FormSection from '@/components/form/FormSection.vue';
 import ToggleCardInput from '@/components/form/ToggleCardInput.vue';
 import AppToolTypeSelect from '@/components/selects/AppToolTypeSelect.vue';
 import {toolPage} from '@/config/tools';
+import {toolSchema} from '@/schemas/toolSchema';
 import type {ToolFormData} from '@/types/tool';
 
 // Props
@@ -35,18 +38,78 @@ const emit = defineEmits<{
     cancel: [];
 }>();
 
+// Validation
+const frontendErrors = ref<
+    Partial<Record<keyof ToolFormData, string>>
+>({});
+const hasSubmitted = ref(false);
+
+const validateForm = (): boolean => {
+    const result = toolSchema.safeParse(props.form);
+    const errors: Partial<Record<keyof ToolFormData, string>> = {};
+
+    if (!result.success) {
+        for (const issue of result.error.issues) {
+            const field = issue.path[0] as keyof ToolFormData;
+
+            if (field && !errors[field]) {
+                errors[field] = issue.message;
+            }
+        }
+    }
+
+    frontendErrors.value = errors;
+
+    return result.success;
+};
+
+const getError = (field: keyof ToolFormData): string | undefined =>
+    frontendErrors.value[field] ?? props.errors[field];
+
+const handleSubmit = (): void => {
+    hasSubmitted.value = true;
+
+    if (!validateForm()) {
+        return;
+    }
+
+    emit('submit');
+};
+
+watch(
+    () => [
+        props.form.type,
+        props.form.name,
+        props.form.image,
+        props.form.status,
+    ],
+    () => {
+        if (hasSubmitted.value) {
+            validateForm();
+        }
+    },
+);
+
 // Image
 const handleImageChange = (): void => {
     props.form.remove_image = false;
+
+    if (hasSubmitted.value) {
+        validateForm();
+    }
 };
 
 const handleImageRemove = (): void => {
     props.form.remove_image = true;
+
+    if (hasSubmitted.value) {
+        validateForm();
+    }
 };
 </script>
 
 <template>
-    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
+    <form class="min-w-0 space-y-6" @submit.prevent="handleSubmit">
         <!-- Tool Information -->
         <FormSection
             :description="toolPage.form.toolDescription"
@@ -55,7 +118,7 @@ const handleImageRemove = (): void => {
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Type -->
                 <AppField
-                    :error="props.errors.type"
+                    :error="getError('type')"
                     :label="toolPage.form.typeLabel"
                     input-id="tool-type"
                     required
@@ -64,17 +127,16 @@ const handleImageRemove = (): void => {
                         id="tool-type"
                         v-model="props.form.type"
                         :disabled="props.processing"
-                        :error="props.errors.type"
+                        :error="getError('type')"
                         :icon="Wrench"
                         :placeholder="toolPage.form.typePlaceholder"
-                        required
                         searchable
                     />
                 </AppField>
 
                 <!-- Name -->
                 <AppField
-                    :error="props.errors.name"
+                    :error="getError('name')"
                     :label="toolPage.form.nameLabel"
                     input-id="tool-name"
                     required
@@ -83,11 +145,10 @@ const handleImageRemove = (): void => {
                         id="tool-name"
                         v-model="props.form.name"
                         :disabled="props.processing"
-                        :error="props.errors.name"
+                        :error="getError('name')"
                         :icon="Settings2"
                         :placeholder="toolPage.form.namePlaceholder"
                         autocomplete="off"
-                        required
                     />
                 </AppField>
             </div>
@@ -104,6 +165,7 @@ const handleImageRemove = (): void => {
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Image -->
                 <AppField
+                    :error="getError('image')"
                     :label="toolPage.form.imageLabel"
                     class="md:col-span-2"
                     input-id="tool-image"
@@ -112,7 +174,7 @@ const handleImageRemove = (): void => {
                         v-model="props.form.image"
                         :current-image="props.currentImage"
                         :disabled="props.processing"
-                        :error="props.errors.image"
+                        :error="getError('image')"
                         :icon="Image"
                         :placeholder="toolPage.form.imagePlaceholder"
                         @change="handleImageChange"
@@ -122,6 +184,7 @@ const handleImageRemove = (): void => {
 
                 <!-- Status -->
                 <AppField
+                    :error="getError('status')"
                     :label="toolPage.form.statusLabel"
                     class="md:col-span-2"
                     input-id="tool-status"
@@ -129,12 +192,10 @@ const handleImageRemove = (): void => {
                     <ToggleCardInput
                         v-model="props.form.status"
                         :disabled="props.processing"
-                        :error="props.errors.status"
+                        :error="getError('status')"
                         :icon="ToggleRight"
                         active-text="Tool is currently active."
-                        inactive-text="
-                            Tool is currently inactive.
-                        "
+                        inactive-text="Tool is currently inactive."
                         label="Status"
                         title="Tool Status"
                     />

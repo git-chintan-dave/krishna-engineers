@@ -1,10 +1,11 @@
+
 <script lang="ts" setup>
 import {computed, useAttrs} from 'vue';
 import {Check, ChevronsUpDown, X} from '@lucide/vue';
 
 import {Button} from '@/components/ui/button';
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,} from '@/components/ui/command';
-import {Popover, PopoverContent, PopoverTrigger,} from '@/components/ui/popover';
+import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover';
 
 import type {SelectOption as CommonSelectOption} from '@/types/common';
 
@@ -188,13 +189,25 @@ const nativeSelectValue = computed(() => {
 
 /*
 |--------------------------------------------------------------------------
+| Styling
+|--------------------------------------------------------------------------
+*/
+
+const triggerClasses = computed(() => [
+    'h-9 w-full min-w-0 justify-between font-normal',
+    props.error
+        ? '!border-destructive focus-visible:!border-destructive focus-visible:!ring-destructive/20'
+        : '',
+]);
+
+/*
+|--------------------------------------------------------------------------
 | Actions
 |--------------------------------------------------------------------------
 */
 
 const emitValue = (value: ModelValue) => {
     emit('update:modelValue', value);
-
     emit('change', value);
 };
 
@@ -229,14 +242,7 @@ const clearSelection = () => {
 
 <template>
     <div class="w-full min-w-0">
-        <!--
-            Native select is used only for browser
-            form validation.
-
-        The visible select is a custom Popover,
-        therefore native required validation cannot
-        be applied directly to the Button.
-    -->
+        <!-- Native validation -->
         <select
             v-if="required"
             :disabled="disabled || loading"
@@ -264,19 +270,16 @@ const clearSelection = () => {
         <Popover v-model:open="open">
             <PopoverTrigger as-child>
                 <Button
+                    v-bind="attrs"
                     :aria-expanded="open"
                     :aria-invalid="!!error"
                     :aria-required="required"
-                    :class="
-                        error &&
-                        'border-destructive focus-visible:ring-destructive'
-                    "
+                    :class="triggerClasses"
                     :disabled="disabled || loading"
                     :name="undefined"
                     class="h-9 w-full min-w-0 justify-between font-normal"
                     role="combobox"
                     type="button"
-                    v-bind="attrs"
                     variant="outline"
                 >
                     <!-- Selected Value -->
@@ -284,10 +287,10 @@ const clearSelection = () => {
                         :class="[!hasSelection && 'text-muted-foreground']"
                         class="min-w-0 flex-1 truncate text-left"
                     >
-                        <!-- Loading -->
-                        <template v-if="loading"> Loading... </template>
+                        <template v-if="loading">
+                            Loading...
+                        </template>
 
-                        <!-- Multiple -->
                         <template
                             v-else-if="multiple && selectedOptions.length"
                         >
@@ -303,7 +306,6 @@ const clearSelection = () => {
                             </span>
                         </template>
 
-                        <!-- Single / Empty -->
                         <template v-else>
                             {{ selectedLabel || placeholder }}
                         </template>
@@ -311,7 +313,6 @@ const clearSelection = () => {
 
                     <!-- Actions -->
                     <span class="ml-2 flex shrink-0 items-center gap-1">
-                        <!-- Clear -->
                         <span
                             v-if="clearable && hasSelection && !loading"
                             aria-label="Clear selection"
@@ -322,10 +323,9 @@ const clearSelection = () => {
                             @keydown.enter.stop="clearSelection"
                             @keydown.space.prevent.stop="clearSelection"
                         >
-                            <X aria-hidden="true" class="size-3.5"/>
+                            <X aria-hidden="true" class="size-3.5" />
                         </span>
 
-                        <!-- Dropdown Indicator -->
                         <ChevronsUpDown
                             aria-hidden="true"
                             class="size-4 shrink-0 text-muted-foreground opacity-70"
@@ -339,7 +339,6 @@ const clearSelection = () => {
                 class="w-(--reka-popover-trigger-width) max-w-[calc(100vw-2rem)] min-w-0 p-0"
             >
                 <Command class="w-full min-w-0">
-                    <!-- Search -->
                     <CommandInput
                         v-if="searchable"
                         :placeholder="searchPlaceholder"
@@ -347,21 +346,17 @@ const clearSelection = () => {
                     />
 
                     <CommandList class="max-h-60 overflow-x-hidden">
-                        <!-- Empty -->
                         <CommandEmpty>
                             {{ emptyText }}
                         </CommandEmpty>
 
-                        <!-- Options -->
                         <CommandGroup>
                             <CommandItem
                                 v-for="option in normalizedOptions"
                                 :key="String(option.value)"
                                 :value="option.label"
                                 class="min-w-0 cursor-pointer"
-                                @select="
-                                    selectOption(option.value as Primitive)
-                                "
+                                @select="selectOption(option.value as Primitive)"
                             >
                                 <span class="min-w-0 flex-1 truncate">
                                     {{ option.label }}

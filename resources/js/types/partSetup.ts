@@ -42,8 +42,8 @@ export type PartSetupFormData = {
     setup_id: number | null;
     image: File | null;
     remove_image: boolean;
-    machine_cycle_time: string | number;
-    actual_cycle_time: string | number;
+    machine_cycle_time: string | number | null;
+    actual_cycle_time: string | number | null;
 };
 
 export type PartSetupSort =

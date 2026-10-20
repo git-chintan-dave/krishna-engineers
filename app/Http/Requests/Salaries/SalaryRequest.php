@@ -54,7 +54,7 @@ class SalaryRequest extends FormRequest
                 'string',
                 'max:5000',
                 Rule::requiredIf(
-                    fn() => (float)$this->input('adjustment') > 0,
+                    fn () => (float) $this->input('adjustment') > 0,
                 ),
             ],
         ];

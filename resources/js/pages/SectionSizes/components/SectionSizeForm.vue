@@ -1,4 +1,6 @@
+
 <script lang="ts" setup>
+import {ref, watch} from 'vue';
 import type {InertiaForm} from '@inertiajs/vue3';
 import {Layers3, Ruler, Scale} from '@lucide/vue';
 
@@ -8,6 +10,7 @@ import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import {sectionSizePage} from '@/config/sectionSizes';
+import {sectionSizeSchema} from '@/schemas/sectionSizeSchema';
 import type {SectionSizeFormData} from '@/types/sectionSize';
 
 // Props
@@ -23,10 +26,62 @@ const emit = defineEmits<{
     submit: [];
     cancel: [];
 }>();
+
+// Validation
+const frontendErrors = ref<
+    Partial<Record<keyof SectionSizeFormData, string>>
+>({});
+const hasSubmitted = ref(false);
+
+const validateForm = (): boolean => {
+    const result = sectionSizeSchema.safeParse(props.form);
+    const errors: Partial<Record<keyof SectionSizeFormData, string>> = {};
+
+    if (!result.success) {
+        for (const issue of result.error.issues) {
+            const field = issue.path[0] as keyof SectionSizeFormData;
+
+            if (field && !errors[field]) {
+                errors[field] = issue.message;
+            }
+        }
+    }
+
+    frontendErrors.value = errors;
+
+    return result.success;
+};
+
+const getError = (
+    field: keyof SectionSizeFormData,
+): string | undefined => frontendErrors.value[field] ?? props.errors[field];
+
+const handleSubmit = (): void => {
+    hasSubmitted.value = true;
+
+    if (!validateForm()) {
+        return;
+    }
+
+    emit('submit');
+};
+
+watch(
+    () => [
+        props.form.section_id,
+        props.form.size,
+        props.form.weight,
+    ],
+    () => {
+        if (hasSubmitted.value) {
+            validateForm();
+        }
+    },
+);
 </script>
 
 <template>
-    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
+    <form class="min-w-0 space-y-6" @submit.prevent="handleSubmit">
         <!-- Section Size Information -->
         <FormSection
             :description="sectionSizePage.form.sectionDescription"
@@ -35,7 +90,7 @@ const emit = defineEmits<{
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Section -->
                 <AppField
-                    :error="props.errors.section_id"
+                    :error="getError('section_id')"
                     :label="sectionSizePage.form.sectionLabel"
                     input-id="section-size-section"
                     required
@@ -44,7 +99,7 @@ const emit = defineEmits<{
                         id="section-size-section"
                         v-model="props.form.section_id"
                         :disabled="props.processing"
-                        :error="props.errors.section_id"
+                        :error="getError('section_id')"
                         :icon="Layers3"
                         :placeholder="sectionSizePage.form.sectionPlaceholder"
                         clearable
@@ -54,7 +109,7 @@ const emit = defineEmits<{
 
                 <!-- Size -->
                 <AppField
-                    :error="props.errors.size"
+                    :error="getError('size')"
                     :label="sectionSizePage.form.sizeLabel"
                     input-id="section-size-size"
                     required
@@ -63,17 +118,16 @@ const emit = defineEmits<{
                         id="section-size-size"
                         v-model="props.form.size"
                         :disabled="props.processing"
-                        :error="props.errors.size"
+                        :error="getError('size')"
                         :icon="Ruler"
                         :placeholder="sectionSizePage.form.sizePlaceholder"
                         autocomplete="off"
-                        required
                     />
                 </AppField>
 
                 <!-- Weight -->
                 <AppField
-                    :error="props.errors.weight"
+                    :error="getError('weight')"
                     :label="sectionSizePage.form.weightLabel"
                     input-id="section-size-weight"
                     required
@@ -82,10 +136,9 @@ const emit = defineEmits<{
                         id="section-size-weight"
                         v-model="props.form.weight"
                         :disabled="props.processing"
-                        :error="props.errors.weight"
+                        :error="getError('weight')"
                         :icon="Scale"
                         :placeholder="sectionSizePage.form.weightPlaceholder"
-                        required
                     />
                 </AppField>
             </div>
