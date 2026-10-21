@@ -1,5 +1,6 @@
 ﻿import type {PaginatedResponse, SortDirection, Status, StatusFilter,} from '@/types/listing';
 import {Section} from '@/types/section';
+import {PartSchemaData} from "@/schemas/partSchema";
 
 export type Part = {
     id: number;
@@ -16,17 +17,7 @@ export type Part = {
     created_at: string;
 };
 
-export type PartFormData = {
-    name: string;
-    new_part_name: string;
-    section_id: number | null;
-    image: File | null;
-    remove_image: boolean;
-    cutting_size: string;
-    part_weight: string;
-    raw_material_weight: string;
-    status: boolean;
-};
+export type PartFormData = PartSchemaData;
 
 export type PartSort =
     | 'name'

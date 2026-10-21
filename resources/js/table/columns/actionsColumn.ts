@@ -4,6 +4,7 @@ import {h, withDirectives} from 'vue';
 
 import {Button} from '@/components/ui/button';
 import vConfirm from '@/directives/confirm';
+import {COLUMN_WIDTHS} from '@/table/constants/columnWidths';
 
 /*
 |--------------------------------------------------------------------------
@@ -43,19 +44,27 @@ export const createActionsColumn = ({
     const hasDetails = Boolean(detailsUrl);
     const hasMarkAsPaid = Boolean(markAsPaidUrl && handleMarkAsPaid);
 
+    // Edit and Delete are the two default actions.
+    const actionCount =
+        2 +
+        Number(hasDetails) +
+        Number(hasMarkAsPaid);
+
     const columnSize =
-        68 +
-        (hasDetails ? 32 : 0) +
-        (hasMarkAsPaid ? 32 : 0) +
-        (showDelete ? 32 : 0);
+        actionCount * COLUMN_WIDTHS.actionButton +
+        (actionCount - 1) * COLUMN_WIDTHS.actionGap;
 
     return {
         id: 'actions',
-        size: columnSize,
-        minSize: columnSize,
-        maxSize: columnSize,
-
-        cell: ({ row }: any) => {
+        header: 'Actions',
+        size: COLUMN_WIDTHS.actions,
+        minSize: COLUMN_WIDTHS.actions,
+        maxSize: COLUMN_WIDTHS.actions,
+        meta: {
+            align: 'center',
+        },
+        enableSorting: false,
+        cell: ({row}: any) => {
             const uuid = row.original.uuid;
             const name =
                 row.original.name ?? row.original.user?.name ?? 'record';
@@ -87,7 +96,7 @@ export const createActionsColumn = ({
                         () =>
                             h(
                                 Link,
-                                { href: detailsUrl(uuid) },
+                                {href: detailsUrl(uuid)},
                                 () => [
                                     h(Eye, {
                                         class: 'size-3.5',
@@ -95,7 +104,7 @@ export const createActionsColumn = ({
                                     }),
                                     h(
                                         'span',
-                                        { class: 'sr-only' },
+                                        {class: 'sr-only'},
                                         `View ${name}`,
                                     ),
                                 ],
@@ -124,7 +133,7 @@ export const createActionsColumn = ({
                         () =>
                             h(
                                 Link,
-                                { href: editUrl(uuid) },
+                                {href: editUrl(uuid)},
                                 () => [
                                     h(Pencil, {
                                         class: 'size-3.5',
@@ -132,7 +141,7 @@ export const createActionsColumn = ({
                                     }),
                                     h(
                                         'span',
-                                        { class: 'sr-only' },
+                                        {class: 'sr-only'},
                                         `Edit ${name}`,
                                     ),
                                 ],
@@ -165,7 +174,7 @@ export const createActionsColumn = ({
                                 }),
                                 h(
                                     'span',
-                                    { class: 'sr-only' },
+                                    {class: 'sr-only'},
                                     `Mark ${name} as paid`,
                                 ),
                             ],
@@ -212,7 +221,7 @@ export const createActionsColumn = ({
                                 }),
                                 h(
                                     'span',
-                                    { class: 'sr-only' },
+                                    {class: 'sr-only'},
                                     `Delete ${name}`,
                                 ),
                             ],
@@ -240,7 +249,7 @@ export const createActionsColumn = ({
                 'div',
                 {
                     class: [
-                        'flex items-center justify-end',
+                        'flex items-center justify-center',
                         'gap-1 whitespace-nowrap text-sm',
                     ],
                 },

@@ -1,6 +1,5 @@
 
 <script lang="ts" setup>
-import {ref, watch} from 'vue';
 import type {InertiaForm} from '@inertiajs/vue3';
 import {Clock3, Settings2, Wrench} from '@lucide/vue';
 
@@ -14,6 +13,7 @@ import AppSetupSelect from '@/components/selects/AppSetupSelect.vue';
 import {partSetupPage} from '@/config/partSetups';
 import {partSetupSchema} from '@/schemas/partSetupSchema';
 import type {PartSetupFormData} from '@/types/partSetup';
+import {useZodFormValidation} from "@/composables/useZodFormValidation";
 
 // Props
 const props = withDefaults(
@@ -38,74 +38,28 @@ const emit = defineEmits<{
     cancel: [];
 }>();
 
-// Validation
-const frontendErrors = ref<
-    Partial<Record<keyof PartSetupFormData, string>>
->({});
-const hasSubmitted = ref(false);
-
-const validateForm = (): boolean => {
-    const result = partSetupSchema.safeParse(props.form);
-    const errors: Partial<Record<keyof PartSetupFormData, string>> = {};
-
-    if (!result.success) {
-        for (const issue of result.error.issues) {
-            const field = issue.path[0] as keyof PartSetupFormData;
-
-            if (field && !errors[field]) {
-                errors[field] = issue.message;
-            }
-        }
-    }
-
-    frontendErrors.value = errors;
-
-    return result.success;
-};
-
-const getError = (field: keyof PartSetupFormData): string | undefined =>
-    frontendErrors.value[field] ?? props.errors[field];
-
-const handleSubmit = (): void => {
-    hasSubmitted.value = true;
-
-    if (!validateForm()) {
-        return;
-    }
-
-    emit('submit');
-};
-
-watch(
-    () => [
-        props.form.part_id,
-        props.form.setup_id,
-        props.form.machine_cycle_time,
-        props.form.actual_cycle_time,
-        props.form.image,
-    ],
-    () => {
-        if (hasSubmitted.value) {
-            validateForm();
-        }
-    },
+// Frontend validation
+const {
+    errors: frontendErrors,
+    validate,
+} = useZodFormValidation(
+    partSetupSchema,
+    () => props.form,
 );
+
+const handleSubmit = () => {
+    if (validate()) {
+        emit('submit');
+    }
+};
 
 // Image
 const handleImageChange = (): void => {
     props.form.remove_image = false;
-
-    if (hasSubmitted.value) {
-        validateForm();
-    }
 };
 
 const handleImageRemove = (): void => {
     props.form.remove_image = true;
-
-    if (hasSubmitted.value) {
-        validateForm();
-    }
 };
 </script>
 
@@ -119,7 +73,6 @@ const handleImageRemove = (): void => {
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Part -->
                 <AppField
-                    :error="getError('part_id')"
                     :label="partSetupPage.form.partLabel"
                     input-id="part-setup-part"
                     required
@@ -128,7 +81,7 @@ const handleImageRemove = (): void => {
                         id="part-setup-part"
                         v-model="props.form.part_id"
                         :disabled="props.processing"
-                        :error="getError('part_id')"
+                        :error="frontendErrors.part_id ?? props.errors.part_id"
                         :icon="Wrench"
                         :placeholder="partSetupPage.form.partPlaceholder"
                         clearable
@@ -138,7 +91,6 @@ const handleImageRemove = (): void => {
 
                 <!-- Setup -->
                 <AppField
-                    :error="getError('setup_id')"
                     :label="partSetupPage.form.setupLabel"
                     input-id="part-setup-setup"
                     required
@@ -148,7 +100,7 @@ const handleImageRemove = (): void => {
                         v-model="props.form.setup_id"
                         :part-id="props.form.part_id"
                         :disabled="props.processing"
-                        :error="getError('setup_id')"
+                        :error="frontendErrors.setup_id ?? props.errors.setup_id"
                         :icon="Settings2"
                         :placeholder="partSetupPage.form.setupPlaceholder"
                         clearable
@@ -166,7 +118,6 @@ const handleImageRemove = (): void => {
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Machine Cycle Time -->
                 <AppField
-                    :error="getError('machine_cycle_time')"
                     :label="partSetupPage.form.machineCycleTimeLabel"
                     input-id="part-setup-machine-cycle-time"
                     required
@@ -175,13 +126,11 @@ const handleImageRemove = (): void => {
                         id="part-setup-machine-cycle-time"
                         v-model="props.form.machine_cycle_time"
                         :disabled="props.processing"
-                        :error="getError('machine_cycle_time')"
+                        :error="frontendErrors.machine_cycle_time ?? props.errors.machine_cycle_time"
                         :icon="Clock3"
                         :placeholder="
                             partSetupPage.form.machineCycleTimePlaceholder
                         "
-                        min="0"
-                        step="1"
                         type="number"
                     />
 
@@ -192,7 +141,6 @@ const handleImageRemove = (): void => {
 
                 <!-- Actual Cycle Time -->
                 <AppField
-                    :error="getError('actual_cycle_time')"
                     :label="partSetupPage.form.actualCycleTimeLabel"
                     input-id="part-setup-actual-cycle-time"
                     required
@@ -201,13 +149,11 @@ const handleImageRemove = (): void => {
                         id="part-setup-actual-cycle-time"
                         v-model="props.form.actual_cycle_time"
                         :disabled="props.processing"
-                        :error="getError('actual_cycle_time')"
+                        :error="frontendErrors.actual_cycle_time ?? props.errors.actual_cycle_time"
                         :icon="Clock3"
                         :placeholder="
                             partSetupPage.form.actualCycleTimePlaceholder
                         "
-                        min="0"
-                        step="1"
                         type="number"
                     />
 
@@ -224,7 +170,6 @@ const handleImageRemove = (): void => {
             title="Setup Image"
         >
             <AppField
-                :error="getError('image')"
                 :label="partSetupPage.form.imageLabel"
                 input-id="part-setup-image"
             >
@@ -232,7 +177,6 @@ const handleImageRemove = (): void => {
                     v-model="props.form.image"
                     :current-image="props.currentImage"
                     :disabled="props.processing"
-                    :error="getError('image')"
                     :placeholder="partSetupPage.form.imagePlaceholder"
                     @change="handleImageChange"
                     @remove="handleImageRemove"

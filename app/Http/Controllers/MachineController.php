@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\HasCrudResponses;
-use App\Http\Queries\Concerns\AppliesIndexFilters;
 use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\Machines\IndexMachineRequest;
 use App\Http\Requests\Machines\MachineRequest;
@@ -16,7 +15,7 @@ use Inertia\Response;
 
 class MachineController extends Controller
 {
-    use AppliesIndexFilters, HasCrudResponses;
+    use HasCrudResponses;
 
     private const string MODULE_NAME = 'Machine';
 

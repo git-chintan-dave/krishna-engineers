@@ -20,8 +20,10 @@ class IndexSectionSizeRequest extends FormRequest
         return [
             ...$this->indexQueryRules([
                 'size',
-                'stock_quantity',
+                'weight',
+                'quantity',
                 'created_at',
+                'section.name',
             ]),
 
             'section_id' => [

@@ -1,7 +1,6 @@
 
 <script lang="ts" setup>
 import type {InertiaForm} from '@inertiajs/vue3';
-import {ref, watch} from 'vue';
 import {Box, Layers3, Ruler, Scale, Settings2, ToggleRight} from '@lucide/vue';
 
 import AppImagePicker from '@/components/common/AppImagePicker.vue';
@@ -14,6 +13,7 @@ import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import {partPage} from '@/config/parts';
 import {partSchema} from '@/schemas/partSchema';
 import type {PartFormData} from '@/types/part';
+import {useZodFormValidation} from "@/composables/useZodFormValidation";
 
 // Props
 const props = withDefaults(
@@ -38,60 +38,20 @@ const emit = defineEmits<{
     cancel: [];
 }>();
 
-// Validation
-const frontendErrors = ref<Partial<Record<keyof PartFormData, string>>>({});
-const hasSubmitted = ref(false);
+// Frontend validation
+const {
+    errors: frontendErrors,
+    validate,
+} = useZodFormValidation(
+    partSchema,
+    () => props.form,
+);
 
-const validateForm = (): boolean => {
-    const result = partSchema.safeParse(props.form);
-
-    frontendErrors.value = {};
-
-    if (result.success) {
-        return true;
-    }
-
-    for (const issue of result.error.issues) {
-        const field = issue.path[0] as keyof PartFormData;
-
-        if (frontendErrors.value[field] === undefined) {
-            frontendErrors.value[field] = issue.message;
-        }
-    }
-
-    return false;
-};
-
-const getError = (field: keyof PartFormData): string | undefined =>
-    frontendErrors.value[field] ?? props.errors[field];
-
-const handleSubmit = (): void => {
-    hasSubmitted.value = true;
-
-    if (validateForm()) {
+const handleSubmit = () => {
+    if (validate()) {
         emit('submit');
     }
 };
-
-// Revalidate after the user changes values following a failed submission.
-watch(
-    () => [
-        props.form.name,
-        props.form.new_part_name,
-        props.form.section_id,
-        props.form.cutting_size,
-        props.form.part_weight,
-        props.form.raw_material_weight,
-        props.form.image,
-        props.form.remove_image,
-        props.form.status,
-    ],
-    () => {
-        if (hasSubmitted.value) {
-            validateForm();
-        }
-    },
-);
 
 // Image
 const handleImageChange = (): void => {
@@ -111,42 +71,8 @@ const handleImageRemove = (): void => {
             :title="partPage.form.sectionTitle"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
-                <!-- Part Name -->
-                <AppField
-                    :error="getError('name')"
-                    :label="partPage.form.nameLabel"
-                    input-id="part-name"
-                    required
-                >
-                    <AppInput
-                        id="part-name"
-                        v-model="props.form.name"
-                        :disabled="props.processing"
-                        :error="getError('name')"
-                        :icon="Box"
-                        :placeholder="partPage.form.namePlaceholder"
-                    />
-                </AppField>
-
-                <!-- New Part Name -->
-                <AppField
-                    :error="getError('new_part_name')"
-                    :label="partPage.form.newPartNameLabel"
-                    input-id="part-new-part-name"
-                >
-                    <AppInput
-                        id="part-new-part-name"
-                        v-model="props.form.new_part_name"
-                        :disabled="props.processing"
-                        :error="getError('new_part_name')"
-                        :icon="Settings2"
-                        :placeholder="partPage.form.newPartNamePlaceholder"
-                    />
-                </AppField>
-
                 <!-- Section -->
                 <AppField
-                    :error="getError('section_id')"
                     :label="partPage.form.sectionLabel"
                     input-id="part-section"
                     required
@@ -155,7 +81,7 @@ const handleImageRemove = (): void => {
                         id="part-section"
                         v-model="props.form.section_id"
                         :disabled="props.processing"
-                        :error="getError('section_id')"
+                        :error="frontendErrors.section_id ?? props.errors.section_id"
                         :icon="Layers3"
                         :placeholder="partPage.form.sectionPlaceholder"
                         clearable
@@ -163,9 +89,39 @@ const handleImageRemove = (): void => {
                     />
                 </AppField>
 
+                <!-- Part Name -->
+                <AppField
+                    :label="partPage.form.nameLabel"
+                    input-id="part-name"
+                    required
+                >
+                    <AppInput
+                        id="part-name"
+                        v-model="props.form.name"
+                        :disabled="props.processing"
+                        :error="frontendErrors.name ?? props.errors.name"
+                        :icon="Box"
+                        :placeholder="partPage.form.namePlaceholder"
+                    />
+                </AppField>
+
+                <!-- New Part Name -->
+                <AppField
+                    :label="partPage.form.newPartNameLabel"
+                    input-id="part-new-part-name"
+                >
+                    <AppInput
+                        id="part-new-part-name"
+                        v-model="props.form.new_part_name"
+                        :disabled="props.processing"
+                        :error="frontendErrors.new_part_name ?? props.errors.new_part_name"
+                        :icon="Settings2"
+                        :placeholder="partPage.form.newPartNamePlaceholder"
+                    />
+                </AppField>
+
                 <!-- Cutting Size -->
                 <AppField
-                    :error="getError('cutting_size')"
                     :label="partPage.form.cuttingSizeLabel"
                     input-id="part-cutting-size"
                 >
@@ -173,7 +129,7 @@ const handleImageRemove = (): void => {
                         id="part-cutting-size"
                         v-model="props.form.cutting_size"
                         :disabled="props.processing"
-                        :error="getError('cutting_size')"
+                        :error="frontendErrors.cutting_size ?? props.errors.cutting_size"
                         :icon="Ruler"
                         :placeholder="partPage.form.cuttingSizePlaceholder"
                     />
@@ -189,7 +145,6 @@ const handleImageRemove = (): void => {
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Part Weight -->
                 <AppField
-                    :error="getError('part_weight')"
                     :label="partPage.form.partWeightLabel"
                     input-id="part-part-weight"
                 >
@@ -197,7 +152,7 @@ const handleImageRemove = (): void => {
                         id="part-part-weight"
                         v-model="props.form.part_weight"
                         :disabled="props.processing"
-                        :error="getError('part_weight')"
+                        :error="frontendErrors.part_weight ?? props.errors.part_weight"
                         :icon="Scale"
                         :placeholder="partPage.form.partWeightPlaceholder"
                     />
@@ -205,7 +160,6 @@ const handleImageRemove = (): void => {
 
                 <!-- Raw Material Weight -->
                 <AppField
-                    :error="getError('raw_material_weight')"
                     :label="partPage.form.rawMaterialLabel"
                     input-id="part-raw-material-weight"
                 >
@@ -213,7 +167,7 @@ const handleImageRemove = (): void => {
                         id="part-raw-material-weight"
                         v-model="props.form.raw_material_weight"
                         :disabled="props.processing"
-                        :error="getError('raw_material_weight')"
+                        :error="frontendErrors.raw_material_weight ?? props.errors.raw_material_weight"
                         :icon="Scale"
                         :placeholder="partPage.form.rawMaterialPlaceholder"
                     />
@@ -229,7 +183,6 @@ const handleImageRemove = (): void => {
             <div class="grid min-w-0 gap-5">
                 <!-- Image -->
                 <AppField
-                    :error="getError('image')"
                     :label="partPage.form.imageLabel"
                     input-id="part-image"
                 >
@@ -237,7 +190,7 @@ const handleImageRemove = (): void => {
                         v-model="props.form.image"
                         :current-image="props.currentImage"
                         :disabled="props.processing"
-                        :error="getError('image')"
+                        :error="frontendErrors.image ?? props.errors.image"
                         :placeholder="partPage.form.imagePlaceholder"
                         @change="handleImageChange"
                         @remove="handleImageRemove"
@@ -253,7 +206,6 @@ const handleImageRemove = (): void => {
                             : 'Part is inactive and unavailable for production.'
                     "
                     :disabled="props.processing"
-                    :error="getError('status')"
                     :icon="ToggleRight"
                     :label="partPage.form.statusLabel"
                     title="Part Status"

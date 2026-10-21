@@ -3,14 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\HasCrudResponses;
-use App\Http\Queries\Concerns\AppliesIndexFilters;
 use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\Parts\IndexPartRequest;
 use App\Http\Requests\Parts\PartRequest;
 use App\Http\Resources\PartResource;
 use App\Models\Part;
 use App\Services\FileUploadService;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -18,7 +16,7 @@ use Inertia\Response;
 
 class PartController extends Controller
 {
-    use AppliesIndexFilters, HasCrudResponses;
+    use HasCrudResponses;
 
     private const string MODULE_NAME = 'Part';
 
@@ -36,29 +34,9 @@ class PartController extends Controller
 
         $filters = $request->validated();
 
-        $parts = $this->applyIndexFilters(
-            Part::query(),
-            $filters,
-            ['name', 'new_part_name', 'cutting_size', 'part_weight', 'raw_material_weight'],
-        )
+        $parts = Part::query()
             ->with('section')
-            ->when(
-                $filters['section_id'] ?? null,
-                fn(Builder $query, int $sectionId): Builder => $query->where(
-                    'section_id',
-                    $sectionId,
-                ),
-            )
-            ->when(
-                $filters['status'] ?? null,
-                fn(
-                    Builder $query,
-                    string  $status,
-                ): Builder => $query->where(
-                    'status',
-                    $status,
-                ),
-            )
+            ->filterQuery($filters)
             ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();
 

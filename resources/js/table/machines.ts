@@ -23,7 +23,6 @@ export const createMachineColumns = (
             header: 'Name',
             size: 300,
             sortable: true,
-            primary: true,
         }),
 
         createColumn({

@@ -21,9 +21,13 @@ class IndexPartRequest extends FormRequest
         return [
             ...$this->indexQueryRules([
                 'name',
-                'reference_name',
+                'new_part_name',
+                'cutting_size',
+                'part_weight',
+                'raw_material_weight',
                 'status',
                 'created_at',
+                'section.name',
             ]),
 
             'section_id' => [

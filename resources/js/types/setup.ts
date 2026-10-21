@@ -1,10 +1,5 @@
 ﻿import type {PaginatedResponse, SortDirection, Status, StatusFilter,} from '@/types/listing';
-
-/*
-|--------------------------------------------------------------------------
-| Setup
-|--------------------------------------------------------------------------
-*/
+import {SetupSchemaData} from "@/schemas/setupSchema";
 
 export type Setup = {
     id: number;
@@ -14,30 +9,13 @@ export type Setup = {
     created_at: string;
 };
 
-/*
-|--------------------------------------------------------------------------
-| Form
-|--------------------------------------------------------------------------
-*/
+export type SetupFormData = SetupSchemaData;
 
-export type SetupFormData = {
-    name: string;
-    status: boolean;
-};
-
-/*
-|--------------------------------------------------------------------------
-| Sorting
-|--------------------------------------------------------------------------
-*/
-
-export type SetupSort = 'name' | 'status' | 'created_at';
-
-/*
-|--------------------------------------------------------------------------
-| Filters
-|--------------------------------------------------------------------------
-*/
+export type SetupSort =
+    | 'id'
+    | 'name'
+    | 'status'
+    | 'created_at';
 
 export type SetupFilters = {
     search: string;
@@ -46,11 +24,5 @@ export type SetupFilters = {
     sort: SetupSort;
     direction: SortDirection;
 };
-
-/*
-|--------------------------------------------------------------------------
-| Response
-|--------------------------------------------------------------------------
-*/
 
 export type SetupsResponse = PaginatedResponse<Setup>;

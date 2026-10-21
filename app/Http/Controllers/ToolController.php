@@ -10,7 +10,6 @@ use App\Http\Requests\Tools\ToolRequest;
 use App\Http\Resources\ToolResource;
 use App\Models\Tool;
 use App\Services\FileUploadService;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -48,25 +47,8 @@ class ToolController extends Controller
 
         $filters = $request->validated();
 
-        $tools = $this->applyIndexFilters(
-            Tool::query(),
-            $filters,
-            ['name', 'quantity'],
-        )
-            ->when(
-                $filters['type'] ?? null,
-                fn(Builder $query, string $type): Builder => $query->where(
-                    'type',
-                    $type,
-                ),
-            )
-            ->when(
-                $filters['status'] ?? null,
-                fn(Builder $query, string $status): Builder => $query->where(
-                    'status',
-                    $status,
-                ),
-            )
+        $tools = Tool::query()
+            ->filterQuery($filters)
             ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();
 

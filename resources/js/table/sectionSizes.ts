@@ -17,12 +17,12 @@ export const createSectionSizeColumns = (
             resourceName: 'section-sizes',
         }),
 
-        createColumn<SectionSize, string>({
-            id: 'section',
-            accessorFn: (row) => row.section?.name ?? '—',
+        createColumn({
+            accessorKey: 'section.name',
+            sortKey: 'section.name',
             header: 'Section',
-            size: 260,
-            primary: true,
+            size: 160,
+            sortable: true,
         }),
 
         createColumn({
@@ -33,15 +33,15 @@ export const createSectionSizeColumns = (
         }),
 
         createColumn({
-            accessorKey: 'weight',
-            header: 'Weight',
+            accessorKey: 'quantity',
+            header: 'Quantity',
             size: 160,
             sortable: true,
         }),
 
         createColumn({
-            accessorKey: 'quantity',
-            header: 'Quantity',
+            accessorKey: 'weight',
+            header: 'Weight',
             size: 160,
             sortable: true,
         }),

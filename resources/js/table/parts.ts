@@ -21,59 +21,61 @@ export const createPartColumns = (handleDelete: (uuid: string) => void) =>
             header: 'Part Name',
             size: 260,
             sortable: true,
-            primary: true,
-        }),
-
-        createColumn({
-            accessorKey: 'new_part_name',
-            header: 'New Part Name',
-            size: 220,
-            sortable: true,
         }),
 
         createColumn({
             accessorKey: 'section.name',
+            sortKey: 'section.name',
             header: 'Section',
             size: 160,
             sortable: true,
         }),
 
         createColumn({
-            accessorKey: 'cutting_size',
-            header: 'Cutting Size',
-            size: 180,
+            accessorKey: 'new_part_name',
+            sortKey: 'new_part_name',
+            header: 'New Part Name',
+            size: 220,
             sortable: true,
         }),
 
-        createColumn({
-            accessorKey: 'part_weight',
-            header: 'Part Weight',
-            size: 160,
-            sortable: true,
-        }),
-
-        createColumn({
-            accessorKey: 'raw_material_weight',
-            header: 'Raw Material Weight',
-            size: 190,
-            sortable: true,
-        }),
-
-        createImageColumn<Part>({
-            getImage: (part) => part.image,
-            getAlt: (part) => part.name,
-            size: 100,
-        }),
+        // createColumn({
+        //     accessorKey: 'cutting_size',
+        //     sortKey: 'cutting_size',
+        //     header: 'Cutting Size',
+        //     size: 180,
+        //     sortable: true,
+        // }),
+        //
+        // createColumn({
+        //     accessorKey: 'part_weight',
+        //     sortKey: 'part_weight',
+        //     header: 'Part Weight',
+        //     size: 160,
+        //     sortable: true,
+        // }),
+        //
+        // createColumn({
+        //     accessorKey: 'raw_material_weight',
+        //     sortKey: 'raw_material_weight',
+        //     header: 'Raw Material Weight',
+        //     size: 190,
+        //     sortable: true,
+        // }),
+        //
+        // createImageColumn<Part>({
+        //     getImage: (part) => part.image,
+        //     getAlt: (part) => part.name,
+        //     size: 100,
+        // }),
 
         createStatusColumn({
             header: 'Status',
-            size: 120,
         }),
 
         createDateColumn({
             accessorKey: 'created_at',
             header: 'Created',
-            size: 150,
         }),
 
         createActionsColumn({

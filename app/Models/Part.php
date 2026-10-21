@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Status;
+use App\Traits\HasFilter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -21,7 +22,33 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 ])]
 class Part extends Model
 {
-    use HasUuids;
+    use HasFilter, HasUuids;
+
+    protected array $searchable = [
+        'name',
+        'new_part_name',
+    ];
+
+    protected array $filterable = [
+        'section_id',
+        'status',
+    ];
+
+    protected array $sortable = [
+        'id',
+        'name',
+        'new_part_name',
+        'cutting_size',
+        'part_weight',
+        'raw_material_weight',
+        'status',
+        'created_at',
+        'section.name',
+    ];
+
+    protected string $defaultSort = 'id';
+
+    protected string $defaultDirection = 'desc';
 
     public function uniqueIds(): array
     {

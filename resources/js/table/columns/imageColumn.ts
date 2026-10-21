@@ -32,13 +32,13 @@ export const createImageColumn = <TData>({
         accessorFn: (row) => getImage(row),
         header: title,
         size,
-        cell: ({ getValue, row }) => {
+        cell: ({getValue, row}) => {
             const image = getValue();
 
             if (!image) {
                 return h(
                     'span',
-                    { class: 'text-sm font-normal text-muted-foreground' },
+                    {class: 'text-sm font-normal text-muted-foreground'},
                     'N/A',
                 );
             }

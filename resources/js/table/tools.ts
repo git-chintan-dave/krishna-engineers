@@ -22,11 +22,11 @@ export const createToolColumns = (handleDelete: (uuid: string) => void) =>
             header: 'Name',
             size: 260,
             sortable: true,
-            primary: true,
         }),
 
         createColumn({
             accessorKey: 'type_label',
+            sortKey: 'type',
             header: 'Type',
             size: 160,
             sortable: true,
@@ -39,11 +39,11 @@ export const createToolColumns = (handleDelete: (uuid: string) => void) =>
             sortable: true,
         }),
 
-        createImageColumn<Tool>({
-            getImage: (tool) => tool.image,
-            getAlt: (tool) => tool.name,
-            size: 80,
-        }),
+        // createImageColumn<Tool>({
+        //     getImage: (tool) => tool.image,
+        //     getAlt: (tool) => tool.name,
+        //     size: 80,
+        // }),
 
         createStatusColumn({
             header: 'Status',

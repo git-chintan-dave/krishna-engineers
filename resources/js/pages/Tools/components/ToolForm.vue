@@ -1,6 +1,5 @@
 
 <script lang="ts" setup>
-import {ref, watch} from 'vue';
 import type {InertiaForm} from '@inertiajs/vue3';
 import {Image, Settings2, ToggleRight, Wrench} from '@lucide/vue';
 
@@ -14,6 +13,7 @@ import AppToolTypeSelect from '@/components/selects/AppToolTypeSelect.vue';
 import {toolPage} from '@/config/tools';
 import {toolSchema} from '@/schemas/toolSchema';
 import type {ToolFormData} from '@/types/tool';
+import {useZodFormValidation} from "@/composables/useZodFormValidation";
 
 // Props
 const props = withDefaults(
@@ -38,73 +38,28 @@ const emit = defineEmits<{
     cancel: [];
 }>();
 
-// Validation
-const frontendErrors = ref<
-    Partial<Record<keyof ToolFormData, string>>
->({});
-const hasSubmitted = ref(false);
-
-const validateForm = (): boolean => {
-    const result = toolSchema.safeParse(props.form);
-    const errors: Partial<Record<keyof ToolFormData, string>> = {};
-
-    if (!result.success) {
-        for (const issue of result.error.issues) {
-            const field = issue.path[0] as keyof ToolFormData;
-
-            if (field && !errors[field]) {
-                errors[field] = issue.message;
-            }
-        }
-    }
-
-    frontendErrors.value = errors;
-
-    return result.success;
-};
-
-const getError = (field: keyof ToolFormData): string | undefined =>
-    frontendErrors.value[field] ?? props.errors[field];
-
-const handleSubmit = (): void => {
-    hasSubmitted.value = true;
-
-    if (!validateForm()) {
-        return;
-    }
-
-    emit('submit');
-};
-
-watch(
-    () => [
-        props.form.type,
-        props.form.name,
-        props.form.image,
-        props.form.status,
-    ],
-    () => {
-        if (hasSubmitted.value) {
-            validateForm();
-        }
-    },
+// Frontend validation
+const {
+    errors: frontendErrors,
+    validate,
+} = useZodFormValidation(
+    toolSchema,
+    () => props.form,
 );
+
+const handleSubmit = () => {
+    if (validate()) {
+        emit('submit');
+    }
+};
 
 // Image
 const handleImageChange = (): void => {
     props.form.remove_image = false;
-
-    if (hasSubmitted.value) {
-        validateForm();
-    }
 };
 
 const handleImageRemove = (): void => {
     props.form.remove_image = true;
-
-    if (hasSubmitted.value) {
-        validateForm();
-    }
 };
 </script>
 
@@ -118,7 +73,6 @@ const handleImageRemove = (): void => {
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Type -->
                 <AppField
-                    :error="getError('type')"
                     :label="toolPage.form.typeLabel"
                     input-id="tool-type"
                     required
@@ -127,7 +81,7 @@ const handleImageRemove = (): void => {
                         id="tool-type"
                         v-model="props.form.type"
                         :disabled="props.processing"
-                        :error="getError('type')"
+                        :error="frontendErrors.type ?? props.errors.type"
                         :icon="Wrench"
                         :placeholder="toolPage.form.typePlaceholder"
                         searchable
@@ -136,7 +90,6 @@ const handleImageRemove = (): void => {
 
                 <!-- Name -->
                 <AppField
-                    :error="getError('name')"
                     :label="toolPage.form.nameLabel"
                     input-id="tool-name"
                     required
@@ -145,7 +98,7 @@ const handleImageRemove = (): void => {
                         id="tool-name"
                         v-model="props.form.name"
                         :disabled="props.processing"
-                        :error="getError('name')"
+                        :error="frontendErrors.name ?? props.errors.name"
                         :icon="Settings2"
                         :placeholder="toolPage.form.namePlaceholder"
                         autocomplete="off"
@@ -156,16 +109,12 @@ const handleImageRemove = (): void => {
 
         <!-- Image & Status -->
         <FormSection
-            :description="
-                toolPage.form.detailsDescription ??
-                'Manage the tool image and status.'
-            "
-            :title="toolPage.form.detailsTitle ?? 'Tool Details'"
+            :description="toolPage.form.detailsDescription"
+            :title="toolPage.form.detailsTitle"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Image -->
                 <AppField
-                    :error="getError('image')"
                     :label="toolPage.form.imageLabel"
                     class="md:col-span-2"
                     input-id="tool-image"
@@ -174,7 +123,7 @@ const handleImageRemove = (): void => {
                         v-model="props.form.image"
                         :current-image="props.currentImage"
                         :disabled="props.processing"
-                        :error="getError('image')"
+                        :error="frontendErrors.image ?? props.errors.image"
                         :icon="Image"
                         :placeholder="toolPage.form.imagePlaceholder"
                         @change="handleImageChange"
@@ -184,7 +133,6 @@ const handleImageRemove = (): void => {
 
                 <!-- Status -->
                 <AppField
-                    :error="getError('status')"
                     :label="toolPage.form.statusLabel"
                     class="md:col-span-2"
                     input-id="tool-status"
@@ -192,7 +140,6 @@ const handleImageRemove = (): void => {
                     <ToggleCardInput
                         v-model="props.form.status"
                         :disabled="props.processing"
-                        :error="getError('status')"
                         :icon="ToggleRight"
                         active-text="Tool is currently active."
                         inactive-text="Tool is currently inactive."

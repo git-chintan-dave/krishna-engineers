@@ -21,7 +21,6 @@ export const createSetupColumns = (handleDelete: (uuid: string) => void) =>
             header: 'Name',
             size: 300,
             sortable: true,
-            primary: true,
         }),
 
         createStatusColumn({

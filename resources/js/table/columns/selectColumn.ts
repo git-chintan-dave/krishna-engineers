@@ -1,6 +1,7 @@
 import {h} from 'vue';
 
 import {Checkbox} from '@/components/ui/checkbox';
+import {COLUMN_WIDTHS} from '@/table/constants/columnWidths';
 
 /*
 |--------------------------------------------------------------------------
@@ -25,11 +26,11 @@ export const createSelectColumn = <TData = any>({
                                                 }: SelectColumnOptions<TData>) => ({
     id: 'select',
 
-    size: 48,
-    minSize: 48,
-    maxSize: 48,
+    size: COLUMN_WIDTHS.select,
+    minSize: COLUMN_WIDTHS.select,
+    maxSize: COLUMN_WIDTHS.select,
 
-    header: ({ table }: any) =>
+    header: ({table}: any) =>
         h(Checkbox, {
             modelValue:
                 table.getIsAllPageRowsSelected() ||
@@ -43,7 +44,7 @@ export const createSelectColumn = <TData = any>({
             class: 'cursor-pointer',
         }),
 
-    cell: ({ row }: any) => {
+    cell: ({row}: any) => {
         const selectable = isSelectable?.(row.original) ?? true;
 
         if (!selectable) {

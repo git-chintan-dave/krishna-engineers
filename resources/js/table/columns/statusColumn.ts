@@ -1,8 +1,8 @@
+import {h} from 'vue';
 
-import { h } from 'vue';
-
-import { Badge } from '@/components/ui/badge';
-import { createColumn } from '@/table/helpers/createColumn';
+import {Badge} from '@/components/ui/badge';
+import {COLUMN_WIDTHS} from '@/table/constants/columnWidths';
+import {createColumn} from '@/table/helpers/createColumn';
 
 /*
 |--------------------------------------------------------------------------
@@ -13,7 +13,6 @@ import { createColumn } from '@/table/helpers/createColumn';
 type StatusColumnOptions = {
     accessorKey?: string;
     header?: string;
-    size?: number;
     getVariant?: (
         status: string,
     ) => 'default' | 'secondary' | 'destructive' | 'outline';
@@ -28,15 +27,17 @@ type StatusColumnOptions = {
 export const createStatusColumn = ({
                                        accessorKey = 'status',
                                        header = 'Status',
-                                       size = 120,
                                        getVariant,
                                    }: StatusColumnOptions = {}) =>
     createColumn({
         accessorKey,
         header,
-        size,
-        enableSorting: false,
-        cell: ({ getValue }) => {
+        size: COLUMN_WIDTHS.status,
+        minSize: COLUMN_WIDTHS.status,
+        maxSize: COLUMN_WIDTHS.status,
+        align: 'center',
+        sortable: true,
+        cell: ({getValue}) => {
             const status = (getValue() as string | null | undefined) ?? '';
 
             const variant = getVariant

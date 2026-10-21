@@ -1,4 +1,5 @@
 import type {PaginatedResponse, SortDirection} from '@/types/listing';
+import {ToolSchemaData} from "@/schemas/toolSchema";
 
 /*
 |--------------------------------------------------------------------------
@@ -25,14 +26,7 @@ export type ToolOption = {
     label: string;
 };
 
-export type ToolFormData = {
-    name: string;
-    type: ToolType | null;
-    image: File | null;
-    remove_image: boolean;
-    quantity?: number | null;
-    status: boolean;
-};
+export type ToolFormData = ToolSchemaData;
 
 export type ToolSort = 'name' | 'type' | 'quantity' | 'status' | 'created_at';
 

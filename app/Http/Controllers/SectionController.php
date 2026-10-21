@@ -3,13 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\HasCrudResponses;
-use App\Http\Queries\Concerns\AppliesIndexFilters;
 use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\Sections\IndexSectionRequest;
 use App\Http\Requests\Sections\SectionRequest;
 use App\Http\Resources\SectionResource;
 use App\Models\Section;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -17,7 +15,7 @@ use Inertia\Response;
 
 class SectionController extends Controller
 {
-    use AppliesIndexFilters, HasCrudResponses;
+    use HasCrudResponses;
 
     private const string MODULE_NAME = 'Section';
 
@@ -37,31 +35,13 @@ class SectionController extends Controller
 
         $filters = $request->validated();
 
-        $sections = $this->applyIndexFilters(
-            Section::query(),
-            $filters,
-            [
-                'name',
-                'status',
-            ],
-        )
-            ->when(
-                $filters['status'] ?? null,
-                fn(
-                    Builder $query,
-                    string  $status,
-                ): Builder => $query->where(
-                    'status',
-                    $status,
-                ),
-            )
+        $sections = Section::query()
+            ->filterQuery($filters)
             ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();
 
         return Inertia::render('Sections/Index', [
-            'sections' => SectionResource::collection(
-                $sections,
-            ),
+            'sections' => SectionResource::collection($sections),
             'filters' => [
                 'search' => $filters['search'] ?? '',
                 'status' => $filters['status'] ?? 'all',

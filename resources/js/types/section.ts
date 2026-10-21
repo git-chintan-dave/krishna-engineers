@@ -1,4 +1,5 @@
 ﻿import type {PaginatedResponse, SortDirection, Status, StatusFilter,} from '@/types/listing';
+import {SectionSchemaData} from "@/schemas/sectionSchema";
 
 export type Section = {
     id: number;
@@ -9,10 +10,7 @@ export type Section = {
     updated_at: string | null;
 };
 
-export type SectionFormData = {
-    name: string;
-    status: boolean;
-};
+export type SectionFormData = SectionSchemaData;
 
 export type SectionFilters = {
     search: string;

@@ -25,6 +25,8 @@ class IndexPartSetupRequest extends FormRequest
                 'machine_cycle_time_seconds',
                 'actual_cycle_time_seconds',
                 'created_at',
+                'part.name',
+                'setup.name',
             ]),
 
             'part_id' => [

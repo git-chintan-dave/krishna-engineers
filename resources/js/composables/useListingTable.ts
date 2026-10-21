@@ -72,6 +72,15 @@ export function useListingTable<
     |--------------------------------------------------------------------------
     */
 
+    const getSortKey = (columnId: string): TSort => {
+        const column = table.getColumn(columnId);
+
+        return (
+            (column?.columnDef.meta as { sortKey?: TSort } | undefined)?.sortKey
+            ?? columnId
+        ) as TSort;
+    };
+
     const getCurrentSorting = () => {
         const currentSorting = sorting.value[0];
 
@@ -83,7 +92,7 @@ export function useListingTable<
         }
 
         return {
-            sort: currentSorting.id as TSort,
+            sort: getSortKey(currentSorting.id),
             direction: currentSorting.desc ? 'desc' : 'asc',
         };
     };
@@ -192,16 +201,6 @@ export function useListingTable<
             onSortingChange: (nextSorting) => {
                 const currentSorting = nextSorting[0];
 
-                /*
-                |--------------------------------------------------------------------------
-                | Clear Sorting
-                |--------------------------------------------------------------------------
-                |
-                | An empty sorting state means:
-                | use the backend's default ordering.
-                |
-                */
-
                 if (!currentSorting) {
                     visit({
                         page: 1,
@@ -213,7 +212,7 @@ export function useListingTable<
 
                 visit({
                     page: 1,
-                    sort: currentSorting.id as TSort,
+                    sort: getSortKey(currentSorting.id),
                     direction: currentSorting.desc ? 'desc' : 'asc',
                 });
             },

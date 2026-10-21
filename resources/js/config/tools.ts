@@ -50,6 +50,9 @@ export const toolPage = {
         editSubmitLabel: 'Update Tool',
 
         cancelLabel: 'Cancel',
+
+        detailsDescription: 'Manage the tool image and status.',
+        detailsTitle: 'Tool Details',
     },
 
     statusOptions,

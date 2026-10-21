@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import type {InertiaForm} from '@inertiajs/vue3';
-import {ref, watch} from 'vue';
 import {Settings2, ToggleRight} from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
@@ -8,6 +7,7 @@ import AppField from '@/components/form/AppField.vue';
 import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import ToggleCardInput from '@/components/form/ToggleCardInput.vue';
+import {useZodFormValidation} from "@/composables/useZodFormValidation";
 import {setupPage} from '@/config/setups';
 import {setupSchema} from '@/schemas/setupSchema';
 import type {SetupFormData} from '@/types/setup';
@@ -34,45 +34,19 @@ const emit = defineEmits<{
 }>();
 
 // Frontend validation
-const frontendErrors = ref<
-    Partial<Record<keyof SetupFormData, string>>
->({});
-
-const validate = (): boolean => {
-    const result = setupSchema.safeParse({
-        name: props.form.name,
-        status: props.form.status,
-    });
-
-    frontendErrors.value = {};
-
-    if (result.success) {
-        return true;
-    }
-
-    for (const issue of result.error.issues) {
-        const field = issue.path[0] as keyof SetupFormData;
-
-        frontendErrors.value[field] ??= issue.message;
-    }
-
-    return false;
-};
+const {
+    errors: frontendErrors,
+    validate,
+} = useZodFormValidation(
+    setupSchema,
+    () => props.form,
+);
 
 const handleSubmit = () => {
     if (validate()) {
         emit('submit');
     }
 };
-
-watch(
-    () => [props.form.name, props.form.status],
-    () => {
-        if (Object.keys(frontendErrors.value).length > 0) {
-            validate();
-        }
-    },
-);
 </script>
 
 <template>
@@ -85,7 +59,6 @@ watch(
             <div class="grid min-w-0 gap-5">
                 <!-- Setup Name -->
                 <AppField
-                    :error="frontendErrors.name ?? props.errors.name"
                     :label="setupPage.form.nameLabel"
                     input-id="setup-name"
                     required

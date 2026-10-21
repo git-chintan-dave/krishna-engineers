@@ -1,4 +1,5 @@
 ﻿import type {PaginatedResponse, SortDirection} from '@/types/listing';
+import {SectionSizeSchemaData} from "@/schemas/sectionSizeSchema";
 
 /*
 |--------------------------------------------------------------------------
@@ -40,12 +41,7 @@ export type SectionSizeOption = {
     label: string;
 };
 
-export type SectionSizeFormData = {
-    section_id: number | null;
-    size: string;
-    quantity?: number | null;
-    weight?: string;
-};
+export type SectionSizeFormData = SectionSizeSchemaData;
 
 /*
 |--------------------------------------------------------------------------

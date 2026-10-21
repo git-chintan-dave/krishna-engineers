@@ -181,16 +181,41 @@ const getPlaceholderAlignmentClass = (align: ColumnAlign) => ({
 |--------------------------------------------------------------------------
 */
 
+const FIXED_COLUMN_IDS = [
+    'select',
+    'status',
+    'created_at',
+    'actions',
+];
+
 const getColumnStyle = (column: any) => {
-    if (typeof column?.getSize !== 'function') {
+    const columnId = column?.id;
+    const columnDef = column?.columnDef;
+
+    if (!columnDef) {
         return undefined;
     }
 
-    const size = column.getSize();
+    const size = columnDef.size;
+
+    if (FIXED_COLUMN_IDS.includes(columnId) && typeof size === 'number') {
+        return {
+            width: `${size}px`,
+            minWidth: `${size}px`,
+            maxWidth: `${size}px`,
+        };
+    }
+
+    if (typeof size !== 'number') {
+        return undefined;
+    }
 
     return {
         width: `${size}px`,
-        minWidth: `${size}px`,
+        minWidth: `${columnDef.minSize ?? 20}px`,
+        ...(typeof columnDef.maxSize === 'number'
+            ? { maxWidth: `${columnDef.maxSize}px` }
+            : {}),
     };
 };
 
@@ -222,7 +247,7 @@ const handlePageSizeChange = (
     <div class="w-full min-w-0 overflow-hidden rounded-lg border bg-background">
         <!-- Table -->
         <div class="w-full min-w-0 overflow-x-auto overscroll-x-contain">
-            <UiTable class="w-max min-w-full table-auto">
+            <UiTable class="w-full table-fixed">
                 <TableHeader>
                     <TableRow
                         v-for="headerGroup in table.getHeaderGroups()"

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasFilter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -17,7 +18,30 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class PartSetup extends Model
 {
-    use HasUuids;
+    use HasFilter, HasUuids;
+
+    protected array $searchable = [
+        'machine_cycle_time_seconds',
+        'actual_cycle_time_seconds',
+    ];
+
+    protected array $filterable = [
+        'part_id',
+        'setup_id',
+    ];
+
+    protected array $sortable = [
+        'id',
+        'part.name',
+        'setup.name',
+        'machine_cycle_time_seconds',
+        'actual_cycle_time_seconds',
+        'created_at',
+    ];
+
+    protected string $defaultSort = 'id';
+
+    protected string $defaultDirection = 'desc';
 
     public function uniqueIds(): array
     {

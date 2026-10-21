@@ -49,7 +49,7 @@ trait HasFilter
                         fn (Builder $relationQuery) => $relationQuery->where(
                             $column,
                             'like',
-                            "{$search}%"
+                            "%{$search}%"
                         )
                     );
 
@@ -59,7 +59,7 @@ trait HasFilter
                 $searchQuery->orWhere(
                     $this->qualifyColumn($field),
                     'like',
-                    "{$search}%"
+                    "%{$search}%"
                 );
             }
         });

@@ -35,7 +35,7 @@ class IndexToolRequest extends FormRequest
             ...$this->indexQueryRules([
                 'name',
                 'type',
-                'total_quantity',
+                'quantity',
                 'status',
                 'created_at',
             ]),

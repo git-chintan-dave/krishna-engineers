@@ -1,5 +1,6 @@
 import type {PaginatedResponse, SortDirection} from '@/types/listing';
 import {Setup} from '@/types/setup';
+import {PartSetupSchemaData} from "@/schemas/partSetupSchema";
 
 export type PartSetupPart = {
     id: number;
@@ -37,14 +38,7 @@ export type PartSetup = {
     created_at: string;
 };
 
-export type PartSetupFormData = {
-    part_id: number | null;
-    setup_id: number | null;
-    image: File | null;
-    remove_image: boolean;
-    machine_cycle_time: string | number | null;
-    actual_cycle_time: string | number | null;
-};
+export type PartSetupFormData = PartSetupSchemaData;
 
 export type PartSetupSort =
     | 'machine_cycle_time_seconds'

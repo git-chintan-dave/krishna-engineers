@@ -23,21 +23,19 @@ export const createPartSetupColumns = (handleDelete: (uuid: string) => void) =>
         }),
 
         createColumn({
-            id: 'part',
-            accessorFn: (row: PartSetup) => row.part?.name ?? '—',
+            accessorKey: 'part.name',
+            sortKey: 'part.name',
             header: 'Part',
-            size: 260,
+            size: 160,
             sortable: true,
-            primary: true,
         }),
 
         createColumn({
-            id: 'setup',
-            accessorFn: (row: PartSetup) => row.setup?.name ?? '—',
+            accessorKey: 'setup.name',
+            sortKey: 'setup.name',
             header: 'Setup',
-            size: 180,
+            size: 160,
             sortable: true,
-            primary: true,
         }),
 
         createColumn({

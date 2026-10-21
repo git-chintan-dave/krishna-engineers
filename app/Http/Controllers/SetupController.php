@@ -3,13 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\HasCrudResponses;
-use App\Http\Queries\Concerns\AppliesIndexFilters;
 use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\Setups\IndexSetupRequest;
 use App\Http\Requests\Setups\SetupRequest;
 use App\Http\Resources\SetupResource;
 use App\Models\Setup;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -17,7 +15,7 @@ use Inertia\Response;
 
 class SetupController extends Controller
 {
-    use AppliesIndexFilters, HasCrudResponses;
+    use HasCrudResponses;
 
     private const string MODULE_NAME = 'Setup';
 
@@ -29,18 +27,8 @@ class SetupController extends Controller
 
         $filters = $request->validated();
 
-        $setups = $this->applyIndexFilters(
-            Setup::query(),
-            $filters,
-            ['name'],
-        )
-            ->when(
-                $filters['status'] ?? null,
-                fn(Builder $query, string $status): Builder => $query->where(
-                    'status',
-                    $status,
-                ),
-            )
+        $setups = Setup::query()
+            ->filterQuery($filters)
             ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();
 
