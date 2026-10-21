@@ -1,6 +1,5 @@
-
 <script lang="ts" setup>
-import {computed, reactive, ref, watch} from 'vue';
+import {computed, reactive} from 'vue';
 import type {InertiaForm} from '@inertiajs/vue3';
 import {CalendarDays, Clock3, Plus, Trash2, User} from '@lucide/vue';
 
@@ -10,16 +9,12 @@ import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import {Button} from '@/components/ui/button';
+import {useZodFormValidation} from '@/composables/useZodFormValidation';
 import {attendancePage} from '@/config/attendances';
-import {createAttendanceSchema, editAttendanceSchema} from '@/schemas/attendanceSchema';
+import {createAttendanceSchema, editAttendanceSchema,} from '@/schemas/attendanceSchema';
 import type {Attendance, AttendanceFormBreak, AttendanceFormData,} from '@/types/attendance';
 
-/*
-|--------------------------------------------------------------------------
-| Props
-|--------------------------------------------------------------------------
-*/
-
+// Props
 const props = withDefaults(
     defineProps<{
         form: InertiaForm<AttendanceFormData>;
@@ -40,6 +35,7 @@ const props = withDefaults(
     },
 );
 
+// Emits
 const emit = defineEmits<{
     submit: [];
     cancel: [];
@@ -47,49 +43,26 @@ const emit = defineEmits<{
 
 const isEdit = computed(() => Boolean(props.attendance));
 
-/*
-|--------------------------------------------------------------------------
-| Frontend Validation
-|--------------------------------------------------------------------------
-*/
+// Frontend validation
+const attendanceSchema = isEdit.value
+    ? editAttendanceSchema
+    : createAttendanceSchema;
 
-const frontendErrors = ref<Record<string, string>>({});
-const hasSubmitted = ref(false);
-
-const validateForm = (): boolean => {
-    const schema = isEdit.value
-        ? editAttendanceSchema
-        : createAttendanceSchema;
-
-    const result = schema.safeParse(props.form);
-    const errors: Record<string, string> = {};
-
-    if (!result.success) {
-        for (const issue of result.error.issues) {
-            const field = issue.path.join('.');
-
-            if (field && !errors[field]) {
-                errors[field] = issue.message;
-            }
-        }
-    }
-
-    frontendErrors.value = errors;
-
-    return result.success;
-};
+const {
+    errors: frontendErrors,
+    validate,
+} = useZodFormValidation(
+    attendanceSchema,
+    () => props.form,
+);
 
 const getError = (field: string): string | undefined =>
     frontendErrors.value[field] ?? props.errors[field];
 
 const handleSubmit = (): void => {
-    hasSubmitted.value = true;
-
-    if (!validateForm()) {
-        return;
+    if (validate()) {
+        emit('submit');
     }
-
-    emit('submit');
 };
 
 /*
@@ -235,7 +208,10 @@ const startTime = computed({
 
         const existingEndTime = getTimePart(props.form.end_at);
 
-        props.form.start_at = combineDateTime(attendanceDate.value, value);
+        props.form.start_at = combineDateTime(
+            attendanceDate.value,
+            value,
+        );
 
         if (existingEndTime) {
             const endDate = resolveAttendanceEndDate(
@@ -244,7 +220,10 @@ const startTime = computed({
                 existingEndTime,
             );
 
-            props.form.end_at = combineDateTime(endDate, existingEndTime);
+            props.form.end_at = combineDateTime(
+                endDate,
+                existingEndTime,
+            );
         }
 
         rebuildAllBreaks();
@@ -376,7 +355,11 @@ const resolveBreakStartDate = (time: string): string => {
     const attendanceEndDate = getDatePart(props.form.end_at);
     const attendanceStartTime = getTimePart(props.form.start_at);
 
-    if (!attendanceStartDate || !attendanceEndDate || !attendanceStartTime) {
+    if (
+        !attendanceStartDate ||
+        !attendanceEndDate ||
+        !attendanceStartTime
+    ) {
         return '';
     }
 
@@ -465,7 +448,10 @@ const rebuildBreak = (
         state.end_at,
     );
 
-    attendanceBreak.end_at = combineDateTime(breakEndDate, state.end_at);
+    attendanceBreak.end_at = combineDateTime(
+        breakEndDate,
+        state.end_at,
+    );
 };
 
 /*
@@ -625,7 +611,10 @@ const addBreak = (): void => {
 
     props.form.breaks.push(attendanceBreak);
 
-    ensureBreakTimeState(attendanceBreak, props.form.breaks.length - 1);
+    ensureBreakTimeState(
+        attendanceBreak,
+        props.form.breaks.length - 1,
+    );
 };
 
 const removeBreak = (index: number): void => {
@@ -647,44 +636,17 @@ const removeBreak = (index: number): void => {
 props.form.breaks.forEach((attendanceBreak, index) => {
     ensureBreakTimeState(attendanceBreak, index);
 });
-
-/*
-|--------------------------------------------------------------------------
-| Revalidate After First Submission
-|--------------------------------------------------------------------------
-*/
-
-watch(
-    () => [
-        props.form.user_id,
-        props.form.attendance_date,
-        props.form.start_at,
-        props.form.end_at,
-        ...props.form.breaks.flatMap((attendanceBreak) => [
-            attendanceBreak.uuid ?? '',
-            attendanceBreak.start_at,
-            attendanceBreak.end_at,
-        ]),
-    ],
-    () => {
-        if (hasSubmitted.value) {
-            validateForm();
-        }
-    },
-);
 </script>
 
 <template>
     <form class="min-w-0 space-y-6" @submit.prevent="handleSubmit">
         <!-- Attendance Information -->
-
         <FormSection
             :description="attendancePage.form.sectionDescription"
             :title="attendancePage.form.sectionTitle"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Employee -->
-
                 <AppField
                     :label="attendancePage.form.employeeLabel"
                     input-id="attendance-employee"
@@ -701,7 +663,6 @@ watch(
                 </AppField>
 
                 <!-- Attendance Date -->
-
                 <AppField
                     :label="attendancePage.form.attendanceDateLabel"
                     input-id="attendance-date"
@@ -724,7 +685,6 @@ watch(
                 </AppField>
 
                 <!-- Clock In -->
-
                 <AppField
                     :label="attendancePage.form.startAtLabel"
                     input-id="attendance-start-at"
@@ -748,7 +708,6 @@ watch(
                 </AppField>
 
                 <!-- Clock Out -->
-
                 <AppField
                     :label="attendancePage.form.endAtLabel"
                     input-id="attendance-end-at"
@@ -777,14 +736,12 @@ watch(
         </FormSection>
 
         <!-- Attendance Breaks -->
-
         <FormSection
             description="Break times must stay completely within the clock-in and clock-out period."
             title="Attendance Breaks"
         >
             <div class="space-y-4">
                 <!-- Empty State -->
-
                 <div
                     v-if="!props.form.breaks.length"
                     class="flex flex-col items-center justify-center rounded-xl border border-dashed px-6 py-8 text-center"
@@ -808,7 +765,6 @@ watch(
                 </div>
 
                 <!-- Break List -->
-
                 <div
                     v-for="(attendanceBreak, index) in props.form.breaks"
                     :key="attendanceBreak.uuid ?? index"
@@ -849,7 +805,6 @@ watch(
 
                     <div class="grid min-w-0 gap-5 md:grid-cols-2">
                         <!-- Break Start -->
-
                         <AppField
                             :input-id="`break-${index}-start`"
                             label="Start Time"
@@ -877,7 +832,6 @@ watch(
                         </AppField>
 
                         <!-- Break End -->
-
                         <AppField
                             :input-id="`break-${index}-end`"
                             label="End Time"
@@ -887,7 +841,10 @@ watch(
                                 :id="`break-${index}-end`"
                                 :disabled="
                                     processing ||
-                                    !getBreakStartTime(attendanceBreak, index)
+                                    !getBreakStartTime(
+                                        attendanceBreak,
+                                        index,
+                                    )
                                 "
                                 :error="breakError(index, 'end_at')"
                                 :model-value="
@@ -909,10 +866,10 @@ watch(
                     </div>
 
                     <!-- Break Dates -->
-
                     <p
                         v-if="
-                            attendanceBreak.start_at && attendanceBreak.end_at
+                            attendanceBreak.start_at &&
+                            attendanceBreak.end_at
                         "
                         class="mt-3 text-xs text-muted-foreground"
                     >
@@ -923,7 +880,6 @@ watch(
                 </div>
 
                 <!-- Add Break -->
-
                 <Button
                     :disabled="processing || !canAddBreak"
                     class="w-full cursor-pointer sm:w-auto"
@@ -938,7 +894,6 @@ watch(
         </FormSection>
 
         <!-- Form Actions -->
-
         <FormActions
             :cancel-label="attendancePage.form.cancelLabel"
             :processing="processing"

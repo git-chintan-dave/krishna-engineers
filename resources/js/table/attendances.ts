@@ -25,7 +25,7 @@ export const createAttendanceColumns = (
                     accessorKey: 'user.name',
                     header: 'Employee',
                     size: 240,
-                    primary: true,
+                    sortable: true
                 }),
             ]
             : []),

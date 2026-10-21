@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests\Attendances;
 
+use App\Http\Requests\Concerns\IndexQueryRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class IndexAttendanceRequest extends FormRequest
 {
+    use IndexQueryRules;
+
     public function authorize(): bool
     {
         return true;
@@ -15,6 +18,14 @@ class IndexAttendanceRequest extends FormRequest
     public function rules(): array
     {
         return [
+            ...$this->indexQueryRules([
+                'attendance_date',
+                'start_at',
+                'end_at',
+                'break_seconds',
+                'effective_working_seconds',
+            ]),
+
             'user_id' => [
                 'nullable',
                 'integer',
@@ -37,23 +48,6 @@ class IndexAttendanceRequest extends FormRequest
                 'nullable',
                 'date',
                 'after_or_equal:start_date',
-            ],
-
-            'sort' => [
-                'nullable',
-                'string',
-            ],
-
-            'direction' => [
-                'nullable',
-                'in:asc,desc',
-            ],
-
-            'per_page' => [
-                'nullable',
-                'integer',
-                'min:1',
-                'max:100',
             ],
         ];
     }

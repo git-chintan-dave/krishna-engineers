@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasFilter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +20,27 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 ])]
 class Attendance extends Model
 {
-    use HasUuids;
+    use HasFilter, HasUuids;
+
+    protected array $searchable = [];
+
+    protected array $filterable = [
+        'user_id',
+        'attendance_date',
+    ];
+
+    protected array $sortable = [
+        'id',
+        'attendance_date',
+        'start_at',
+        'end_at',
+        'break_seconds',
+        'effective_working_seconds',
+    ];
+
+    protected string $defaultSort = 'id';
+
+    protected string $defaultDirection = 'desc';
 
     public function uniqueIds(): array
     {
