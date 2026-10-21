@@ -1,4 +1,5 @@
 import type {PaginatedResponse, SortDirection, Status, StatusFilter,} from '@/types/listing';
+import type {MachineSchemaData} from '@/schemas/machineSchema';
 
 export type Machine = {
     id: number;
@@ -9,13 +10,14 @@ export type Machine = {
     created_at: string;
 };
 
-export type MachineFormData = {
-    name: string;
-    machine_number: string;
-    status: boolean;
-};
+export type MachineFormData = MachineSchemaData;
 
-export type MachineSort = 'name' | 'machine_number' | 'status' | 'created_at';
+export type MachineSort =
+    | 'id'
+    | 'name'
+    | 'machine_number'
+    | 'status'
+    | 'created_at';
 
 export type MachineFilters = {
     search: string;
