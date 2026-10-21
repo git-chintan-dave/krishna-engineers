@@ -11,6 +11,8 @@ import AppRawMaterialTransactionTypeSelect from '@/components/selects/AppRawMate
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppSectionSizeSelect from '@/components/selects/AppSectionSizeSelect.vue';
 import {rawMaterialTransactionPage} from '@/config/rawMaterialTransactions';
+import type {RawMaterialTransactionValidationField} from '@/schemas/rawMaterialTransactionSchema';
+import {rawMaterialTransactionSchema} from '@/schemas/rawMaterialTransactionSchema';
 import type {RawMaterialTransaction, RawMaterialTransactionFormData,} from '@/types/rawMaterialTransaction';
 
 /*
@@ -56,6 +58,89 @@ const isEdit = computed(() => !!props.transaction);
 
 /*
 |--------------------------------------------------------------------------
+| Frontend Validation
+|--------------------------------------------------------------------------
+*/
+
+const hasSubmitted = ref(false);
+
+const frontendErrors = ref<
+    Partial<Record<RawMaterialTransactionValidationField, string>>
+>({});
+
+const validateForm = (): boolean => {
+    const result = rawMaterialTransactionSchema.safeParse({
+        section_id: selectedSectionId.value,
+        section_size_id: props.form.section_size_id,
+        type: props.form.type,
+        quantity: props.form.quantity,
+        remarks: props.form.remarks,
+    });
+
+    if (result.success) {
+        frontendErrors.value = {};
+
+        return true;
+    }
+
+    const errors: Partial<
+        Record<RawMaterialTransactionValidationField, string>
+    > = {};
+
+    for (const issue of result.error.issues) {
+        const field = issue.path[0];
+
+        if (
+            typeof field === 'string' &&
+            [
+                'section_id',
+                'section_size_id',
+                'type',
+                'quantity',
+                'remarks',
+            ].includes(field) &&
+            !errors[field as RawMaterialTransactionValidationField]
+        ) {
+            errors[field as RawMaterialTransactionValidationField] =
+                issue.message;
+        }
+    }
+
+    frontendErrors.value = errors;
+
+    return false;
+};
+
+const getError = (
+    field: RawMaterialTransactionValidationField,
+): string | undefined => {
+    const frontendError = frontendErrors.value[field];
+
+    if (frontendError) {
+        return frontendError;
+    }
+
+    if (field === 'section_id') {
+        return undefined;
+    }
+
+    return props.errors[
+        field as keyof RawMaterialTransactionFormData
+        ];
+};
+
+const handleSubmit = () => {
+    hasSubmitted.value = true;
+
+    if (!validateForm()) {
+        return;
+    }
+
+    emit('submit');
+};
+
+/*
+|--------------------------------------------------------------------------
 | Section
 |--------------------------------------------------------------------------
 */
@@ -65,16 +150,42 @@ const selectedSectionId = ref<number | null>(
 );
 
 watch(selectedSectionId, (newSectionId, oldSectionId) => {
-    if (isEdit.value || newSectionId === oldSectionId) {
-        return;
+    if (!isEdit.value && newSectionId !== oldSectionId) {
+        props.form.section_size_id = null;
     }
 
-    props.form.section_size_id = null;
+    if (hasSubmitted.value) {
+        validateForm();
+    }
 });
+
+/*
+|--------------------------------------------------------------------------
+| Revalidate When Form Values Change
+|--------------------------------------------------------------------------
+*/
+
+watch(
+    () => [
+        props.form.section_size_id,
+        props.form.type,
+        props.form.quantity,
+        props.form.remarks,
+    ],
+    () => {
+        if (hasSubmitted.value) {
+            validateForm();
+        }
+    },
+);
 </script>
 
 <template>
-    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
+    <form
+        class="min-w-0 space-y-6"
+        novalidate
+        @submit.prevent="handleSubmit"
+    >
         <FormSection
             :description="rawMaterialTransactionPage.form.sectionDescription"
             :title="rawMaterialTransactionPage.form.sectionTitle"
@@ -91,6 +202,7 @@ watch(selectedSectionId, (newSectionId, oldSectionId) => {
                         id="raw-material-section"
                         v-model="selectedSectionId"
                         :disabled="props.processing || isEdit"
+                        :error="getError('section_id')"
                         clearable
                         placeholder="Select section"
                         searchable
@@ -110,7 +222,7 @@ watch(selectedSectionId, (newSectionId, oldSectionId) => {
                         :disabled="
                             props.processing || isEdit || !selectedSectionId
                         "
-                        :error="props.errors.section_size_id"
+                        :error="getError('section_size_id')"
                         :placeholder="
                             rawMaterialTransactionPage.form
                                 .sectionSizePlaceholder
@@ -132,7 +244,7 @@ watch(selectedSectionId, (newSectionId, oldSectionId) => {
                         id="raw-material-transaction-type"
                         v-model="props.form.type"
                         :disabled="props.processing || isEdit"
-                        :error="props.errors.type"
+                        :error="getError('type')"
                         :icon="ArrowLeftRight"
                         :placeholder="
                             rawMaterialTransactionPage.form.typePlaceholder
@@ -153,7 +265,7 @@ watch(selectedSectionId, (newSectionId, oldSectionId) => {
                         id="raw-material-quantity"
                         v-model.number="props.form.quantity"
                         :disabled="props.processing"
-                        :error="props.errors.quantity"
+                        :error="getError('quantity')"
                         :icon="Hash"
                         :placeholder="
                             rawMaterialTransactionPage.form.quantityPlaceholder
@@ -183,7 +295,7 @@ watch(selectedSectionId, (newSectionId, oldSectionId) => {
                         id="raw-material-remarks"
                         v-model="props.form.remarks"
                         :disabled="props.processing"
-                        :error="props.errors.remarks"
+                        :error="getError('remarks')"
                         :icon="MessageSquare"
                         :placeholder="
                             rawMaterialTransactionPage.form.remarksPlaceholder

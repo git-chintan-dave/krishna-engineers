@@ -14,6 +14,64 @@ export const requiredText = (label: string) =>
 
 export const statusSchema = z.boolean().default(true);
 
+export const requiredInteger = (label: string) =>
+    z.preprocess(
+        (value) => {
+            if (
+                value === null ||
+                value === undefined ||
+                (typeof value === 'string' && value.trim() === '')
+            ) {
+                return undefined;
+            }
+
+            return typeof value === 'string'
+                ? Number(value)
+                : value;
+        },
+        z
+            .number({
+                error: (issue) =>
+                    issue.input === undefined
+                        ? `${label} is required.`
+                        : `${label} must be a valid number.`,
+            })
+            .int(`${label} must be a whole number.`)
+            .finite(`${label} must be a valid number.`),
+    );
+
+export const requiredIntegerInRange = (
+    label: string,
+    min: number,
+    max: number,
+) =>
+    z.preprocess(
+        (value) => {
+            if (
+                value === null ||
+                value === undefined ||
+                (typeof value === 'string' && value.trim() === '')
+            ) {
+                return undefined;
+            }
+
+            return typeof value === 'string'
+                ? Number(value)
+                : value;
+        },
+        z
+            .number({
+                error: (issue) =>
+                    issue.input === undefined
+                        ? `${label} is required.`
+                        : `${label} must be a valid number.`,
+            })
+            .int(`${label} must be a whole number.`)
+            .finite(`${label} must be a valid number.`)
+            .min(min, `${label} must be at least ${min}.`)
+            .max(max, `${label} must not exceed ${max}.`),
+    );
+
 export const requiredDropdown = (label: string) =>
     z.number({
         error: `Please select ${label}.`,

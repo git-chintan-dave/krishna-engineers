@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type {InertiaForm} from '@inertiajs/vue3';
 import {ArrowLeftRight, Box, Hash, MessageSquare, Settings2, User, Wrench,} from '@lucide/vue';
-import {computed, watch} from 'vue';
+import {computed, ref, watch} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -16,7 +16,9 @@ import AppToolSelect from '@/components/selects/AppToolSelect.vue';
 import AppToolTransactionTypeSelect from '@/components/selects/AppToolTransactionTypeSelect.vue';
 
 import {toolTransactionPage} from '@/config/toolTransactions';
-import type {ToolTransactionType} from '@/types/toolTransaction';
+import type {ToolTransactionValidationField,} from '@/schemas/toolTransactionSchema';
+import {toolTransactionSchema} from '@/schemas/toolTransactionSchema';
+import type {ToolTransactionType,} from '@/types/toolTransaction';
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +37,17 @@ export type ToolTransactionFormData = {
     returnScrap: boolean | null;
     remarks: string;
 };
+
+type BackendErrorField =
+    | 'tool_id'
+    | 'type'
+    | 'quantity'
+    | 'from_user_id'
+    | 'to_user_id'
+    | 'part_id'
+    | 'setup_id'
+    | 'return_scrap'
+    | 'remarks';
 
 /*
 |--------------------------------------------------------------------------
@@ -78,6 +91,94 @@ const showReturnScrap = computed(() => isIssue.value);
 
 const quantityMin = computed(() => (isAdjustment.value ? -2147483648 : 1));
 
+const quantityMax = 4294967295;
+
+/*
+|--------------------------------------------------------------------------
+| Frontend Validation
+|--------------------------------------------------------------------------
+*/
+
+const hasSubmitted = ref(false);
+
+const frontendErrors = ref<
+    Partial<Record<ToolTransactionValidationField, string>>
+>({});
+
+const validateForm = (): boolean => {
+    const result = toolTransactionSchema.safeParse({
+        toolId: props.form.toolId,
+        type: props.form.type,
+        quantity: props.form.quantity,
+        fromUserId: props.form.fromUserId,
+        toUserId: props.form.toUserId,
+        partId: props.form.partId,
+        setupId: props.form.setupId,
+        returnScrap: props.form.returnScrap,
+        remarks: props.form.remarks,
+    });
+
+    if (result.success) {
+        frontendErrors.value = {};
+
+        return true;
+    }
+
+    const errors: Partial<
+        Record<ToolTransactionValidationField, string>
+    > = {};
+
+    for (const issue of result.error.issues) {
+        const field = issue.path[0];
+
+        if (
+            typeof field === 'string' &&
+            field in props.form &&
+            !errors[field as ToolTransactionValidationField]
+        ) {
+            errors[field as ToolTransactionValidationField] = issue.message;
+        }
+    }
+
+    frontendErrors.value = errors;
+
+    return false;
+};
+
+const backendErrorFieldMap: Record<
+    ToolTransactionValidationField,
+    BackendErrorField
+> = {
+    toolId: 'tool_id',
+    type: 'type',
+    quantity: 'quantity',
+    fromUserId: 'from_user_id',
+    toUserId: 'to_user_id',
+    partId: 'part_id',
+    setupId: 'setup_id',
+    returnScrap: 'return_scrap',
+    remarks: 'remarks',
+};
+
+const getError = (
+    field: ToolTransactionValidationField,
+): string | undefined => {
+    return (
+        frontendErrors.value[field] ??
+        props.errors[backendErrorFieldMap[field]]
+    );
+};
+
+const handleSubmit = (): void => {
+    hasSubmitted.value = true;
+
+    if (!validateForm()) {
+        return;
+    }
+
+    emit('submit');
+};
+
 /*
 |--------------------------------------------------------------------------
 | Watchers
@@ -91,6 +192,26 @@ watch(
     (newPartId, oldPartId) => {
         if (newPartId !== oldPartId) {
             props.form.setupId = null;
+        }
+    },
+);
+
+// Revalidate after the first submit when form values change.
+watch(
+    () => [
+        props.form.toolId,
+        props.form.type,
+        props.form.quantity,
+        props.form.fromUserId,
+        props.form.toUserId,
+        props.form.partId,
+        props.form.setupId,
+        props.form.returnScrap,
+        props.form.remarks,
+    ],
+    () => {
+        if (hasSubmitted.value) {
+            validateForm();
         }
     },
 );
@@ -127,16 +248,22 @@ const handleTypeChange = (value: string | number | null): void => {
 </script>
 
 <template>
-    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
+    <form
+        class="min-w-0 space-y-6"
+        novalidate
+        @submit.prevent="handleSubmit"
+    >
         <!-- Transaction Details -->
+
         <FormSection
             :description="toolTransactionPage.form.sectionDescription"
             :title="toolTransactionPage.form.sectionTitle"
         >
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
                 <!-- Transaction Type -->
+
                 <AppField
-                    :error="props.errors.type"
+                    :error="getError('type')"
                     :label="toolTransactionPage.form.typeLabel"
                     input-id="tool-transaction-type"
                     required
@@ -145,7 +272,7 @@ const handleTypeChange = (value: string | number | null): void => {
                         id="tool-transaction-type"
                         :clearable="!props.isEditing"
                         :disabled="props.processing || props.isEditing"
-                        :error="props.errors.type"
+                        :error="getError('type')"
                         :icon="ArrowLeftRight"
                         :model-value="props.form.type || null"
                         :placeholder="toolTransactionPage.form.typePlaceholder"
@@ -155,8 +282,9 @@ const handleTypeChange = (value: string | number | null): void => {
                 </AppField>
 
                 <!-- Tool -->
+
                 <AppField
-                    :error="props.errors.tool_id"
+                    :error="getError('toolId')"
                     :label="toolTransactionPage.form.toolLabel"
                     input-id="tool-transaction-tool"
                     required
@@ -166,7 +294,7 @@ const handleTypeChange = (value: string | number | null): void => {
                         v-model="props.form.toolId"
                         :clearable="!props.isEditing"
                         :disabled="props.processing || props.isEditing"
-                        :error="props.errors.tool_id"
+                        :error="getError('toolId')"
                         :icon="Wrench"
                         :placeholder="toolTransactionPage.form.toolPlaceholder"
                         searchable
@@ -174,8 +302,9 @@ const handleTypeChange = (value: string | number | null): void => {
                 </AppField>
 
                 <!-- Quantity -->
+
                 <AppField
-                    :error="props.errors.quantity"
+                    :error="getError('quantity')"
                     :label="toolTransactionPage.form.quantityLabel"
                     input-id="tool-transaction-quantity"
                     required
@@ -184,9 +313,9 @@ const handleTypeChange = (value: string | number | null): void => {
                         id="tool-transaction-quantity"
                         v-model.number="props.form.quantity"
                         :disabled="props.processing"
-                        :error="props.errors.quantity"
+                        :error="getError('quantity')"
                         :icon="Hash"
-                        :max="2147483647"
+                        :max="quantityMax"
                         :min="quantityMin"
                         :placeholder="
                             toolTransactionPage.form.quantityPlaceholder
@@ -197,9 +326,10 @@ const handleTypeChange = (value: string | number | null): void => {
                 </AppField>
 
                 <!-- From User -->
+
                 <AppField
                     v-if="showUsers"
-                    :error="props.errors.from_user_id"
+                    :error="getError('fromUserId')"
                     :label="toolTransactionPage.form.fromUserLabel"
                     input-id="tool-transaction-from-user"
                 >
@@ -207,7 +337,7 @@ const handleTypeChange = (value: string | number | null): void => {
                         id="tool-transaction-from-user"
                         v-model="props.form.fromUserId"
                         :disabled="props.processing || props.isEditing"
-                        :error="props.errors.from_user_id"
+                        :error="getError('fromUserId')"
                         :icon="User"
                         :placeholder="
                             toolTransactionPage.form.fromUserPlaceholder
@@ -218,9 +348,10 @@ const handleTypeChange = (value: string | number | null): void => {
                 </AppField>
 
                 <!-- To User -->
+
                 <AppField
                     v-if="showUsers"
-                    :error="props.errors.to_user_id"
+                    :error="getError('toUserId')"
                     :label="toolTransactionPage.form.toUserLabel"
                     input-id="tool-transaction-to-user"
                     required
@@ -229,7 +360,7 @@ const handleTypeChange = (value: string | number | null): void => {
                         id="tool-transaction-to-user"
                         v-model="props.form.toUserId"
                         :disabled="props.processing || props.isEditing"
-                        :error="props.errors.to_user_id"
+                        :error="getError('toUserId')"
                         :icon="User"
                         :placeholder="
                             toolTransactionPage.form.toUserPlaceholder
@@ -240,9 +371,10 @@ const handleTypeChange = (value: string | number | null): void => {
                 </AppField>
 
                 <!-- Part -->
+
                 <AppField
                     v-if="showPartAndSetup"
-                    :error="props.errors.part_id"
+                    :error="getError('partId')"
                     :label="toolTransactionPage.form.partLabel"
                     input-id="tool-transaction-part"
                 >
@@ -250,7 +382,7 @@ const handleTypeChange = (value: string | number | null): void => {
                         id="tool-transaction-part"
                         v-model="props.form.partId"
                         :disabled="props.processing || props.isEditing"
-                        :error="props.errors.part_id"
+                        :error="getError('partId')"
                         :icon="Box"
                         :placeholder="toolTransactionPage.form.partPlaceholder"
                         clearable
@@ -259,9 +391,10 @@ const handleTypeChange = (value: string | number | null): void => {
                 </AppField>
 
                 <!-- Setup -->
+
                 <AppField
                     v-if="showPartAndSetup"
-                    :error="props.errors.setup_id"
+                    :error="getError('setupId')"
                     :label="toolTransactionPage.form.setupLabel"
                     input-id="tool-transaction-setup"
                 >
@@ -273,7 +406,7 @@ const handleTypeChange = (value: string | number | null): void => {
                             props.isEditing ||
                             !props.form.partId
                         "
-                        :error="props.errors.setup_id"
+                        :error="getError('setupId')"
                         :icon="Settings2"
                         :part-id="props.form.partId"
                         :placeholder="toolTransactionPage.form.setupPlaceholder"
@@ -283,6 +416,7 @@ const handleTypeChange = (value: string | number | null): void => {
                 </AppField>
 
                 <!-- Return / Scrap -->
+
                 <div v-if="showReturnScrap" class="md:col-span-2">
                     <ToggleCardInput
                         v-model="props.form.returnScrap"
@@ -293,7 +427,7 @@ const handleTypeChange = (value: string | number | null): void => {
                             toolTransactionPage.form.returnScrapDescription
                         "
                         :disabled="props.processing || props.isEditing"
-                        :error="props.errors.return_scrap"
+                        :error="getError('returnScrap')"
                         :inactive-text="
                             toolTransactionPage.form.returnScrapInactiveText
                         "
@@ -305,13 +439,14 @@ const handleTypeChange = (value: string | number | null): void => {
         </FormSection>
 
         <!-- Additional Information -->
+
         <FormSection
             description="Add an optional note for this tool transaction."
             title="Additional Information"
         >
             <div class="grid min-w-0 gap-5">
                 <AppField
-                    :error="props.errors.remarks"
+                    :error="getError('remarks')"
                     :label="toolTransactionPage.form.remarksLabel"
                     input-id="tool-transaction-remarks"
                 >
@@ -319,7 +454,7 @@ const handleTypeChange = (value: string | number | null): void => {
                         id="tool-transaction-remarks"
                         v-model="props.form.remarks"
                         :disabled="props.processing"
-                        :error="props.errors.remarks"
+                        :error="getError('remarks')"
                         :icon="MessageSquare"
                         :placeholder="
                             toolTransactionPage.form.remarksPlaceholder
@@ -330,6 +465,7 @@ const handleTypeChange = (value: string | number | null): void => {
         </FormSection>
 
         <!-- Actions -->
+
         <FormActions
             :cancel-label="toolTransactionPage.form.cancelLabel"
             :processing="props.processing"
