@@ -21,7 +21,7 @@ class IndexMachineRequest extends FormRequest
         return [
             ...$this->indexQueryRules([
                 'name',
-                'reference_name',
+                'machine_number',
                 'status',
                 'created_at',
             ]),
