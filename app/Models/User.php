@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\Status;
 use App\Enums\UserRole;
 use App\Enums\UserShift;
+use App\Traits\HasFilter;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -38,7 +39,34 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 ])]
 class User extends Authenticatable
 {
-    use HasUuids, TwoFactorAuthenticatable;
+    use HasFilter, HasUuids, TwoFactorAuthenticatable;
+
+    protected array $searchable = [
+        'name',
+        'employee_code',
+        'phone_number',
+    ];
+
+    protected array $filterable = [
+        'role',
+        'shift',
+        'status',
+    ];
+
+    protected array $sortable = [
+        'id',
+        'name',
+        'employee_code',
+        'phone_number',
+        'role',
+        'shift',
+        'status',
+        'created_at',
+    ];
+
+    protected string $defaultSort = 'id';
+
+    protected string $defaultDirection = 'desc';
 
     public function uniqueIds(): array
     {

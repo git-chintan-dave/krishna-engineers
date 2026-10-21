@@ -10,7 +10,6 @@ use App\Http\Requests\Users\IndexUserRequest;
 use App\Http\Requests\Users\UserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -25,15 +24,14 @@ class EmployeeController extends Controller
     private const string INDEX_ROUTE = 'employees.index';
 
     // Index
-    public function index(
-        IndexUserRequest $request,
-    ): Response
+    public function index(IndexUserRequest $request): Response
     {
         Gate::authorize('viewAny', User::class);
 
         $filters = $request->validated();
 
-        $employees = $this->employeeQuery($filters)
+        $employees = User::query()
+            ->filterQuery($filters)
             ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();
 
@@ -52,33 +50,14 @@ class EmployeeController extends Controller
     }
 
     // Create
-
-    private function employeeQuery(array $filters): Builder
+    public function create(): Response
     {
-        return $this->applyIndexFilters(
-            User::query(),
-            $filters,
-            [
-                'name',
-                'employee_code',
-            ],
-        )
-            ->when(
-                $filters['role'] ?? null,
-                fn(Builder $query, string $role): Builder => $query->where('role', $role),
-            )
-            ->when(
-                $filters['shift'] ?? null,
-                fn(Builder $query, string $shift): Builder => $query->where('shift', $shift),
-            )
-            ->when(
-                $filters['status'] ?? null,
-                fn(Builder $query, string $status): Builder => $query->where('status', $status),
-            );
+        Gate::authorize('create', User::class);
+
+        return Inertia::render('Employees/Create', []);
     }
 
     // Store
-
     public function store(
         UserRequest $request,
     ): RedirectResponse
@@ -91,19 +70,7 @@ class EmployeeController extends Controller
     }
 
     // Edit
-
-    public function create(): Response
-    {
-        Gate::authorize('create', User::class);
-
-        return Inertia::render('Employees/Create', []);
-    }
-
-    // Update
-
-    public function edit(
-        User $employee,
-    ): Response
+    public function edit(User $employee): Response
     {
         Gate::authorize('view', $employee);
 
@@ -112,12 +79,8 @@ class EmployeeController extends Controller
         ]);
     }
 
-    // Destroy
-
-    public function update(
-        UserRequest $request,
-        User        $employee,
-    ): RedirectResponse
+    // Update
+    public function update(UserRequest $request, User $employee): RedirectResponse
     {
         Gate::authorize('update', $employee);
 
@@ -132,11 +95,8 @@ class EmployeeController extends Controller
         return $this->successResponse('updated');
     }
 
-    // Bulk Destroy
-
-    public function destroy(
-        User $employee,
-    ): RedirectResponse
+    // Destroy
+    public function destroy(User $employee): RedirectResponse
     {
         Gate::authorize('delete', $employee);
 
@@ -145,11 +105,8 @@ class EmployeeController extends Controller
         return $this->successResponse('deleted');
     }
 
-    // Helpers
-
-    public function bulkDestroy(
-        BulkDestroyRequest $request,
-    ): RedirectResponse
+    // Bulk Destroy
+    public function bulkDestroy(BulkDestroyRequest $request): RedirectResponse
     {
         Gate::authorize('deleteAny', User::class);
 

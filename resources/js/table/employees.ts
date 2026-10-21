@@ -21,7 +21,6 @@ export const createEmployeeColumns = (handleDelete: (uuid: string) => void) =>
             header: 'Name',
             size: 260,
             sortable: true,
-            primary: true,
         }),
 
         createColumn({

@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import {Badge, CalendarDays, CreditCard, IndianRupee, LockKeyhole, Mail, Phone, User,} from '@lucide/vue';
-import {ref, watch} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -12,6 +11,7 @@ import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
 import {employeePage} from '@/config/employees';
 import {createEmployeeSchema, editEmployeeSchema,} from '@/schemas/employeeSchema';
 import type {EmployeeFormData} from '@/types/employee';
+import {useZodFormValidation} from "@/composables/useZodFormValidation";
 
 const props = withDefaults(
     defineProps<{
@@ -34,68 +34,20 @@ const emit = defineEmits<{
     cancel: [];
 }>();
 
-const frontendErrors = ref<Record<string, string>>({});
-const hasSubmitted = ref(false);
-
-const schema = () =>
-    props.isEdit ? editEmployeeSchema : createEmployeeSchema;
-
-const validateForm = () => {
-    const result = schema().safeParse(props.form);
-    const errors: Record<string, string> = {};
-
-    if (!result.success) {
-        for (const issue of result.error.issues) {
-            const field = issue.path.join('.');
-
-            if (field && !errors[field]) {
-                errors[field] = issue.message;
-            }
-        }
-    }
-
-    frontendErrors.value = errors;
-
-    return result.success;
-};
-
-const getError = (field: keyof EmployeeFormData) =>
-    frontendErrors.value[field] ?? props.errors[field];
+// Frontend validation
+const {
+    errors: frontendErrors,
+    validate,
+} = useZodFormValidation(
+    props.isEdit ? editEmployeeSchema : createEmployeeSchema,
+    () => props.form,
+);
 
 const handleSubmit = () => {
-    hasSubmitted.value = true;
-
-    if (!validateForm()) {
-        return;
+    if (validate()) {
+        emit('submit');
     }
-
-    emit('submit');
 };
-
-watch(
-    () => [
-        props.form.name,
-        props.form.employee_code,
-        props.form.phone_number,
-        props.form.alternate_phone_number,
-        props.form.email,
-        props.form.joining_date,
-        props.form.aadhar_number,
-        props.form.password,
-        props.form.password_confirmation,
-        props.form.role,
-        props.form.shift,
-        props.form.salary,
-        props.form.incentive_per_day,
-        props.form.deduction_per_day,
-        props.form.status,
-    ],
-    () => {
-        if (hasSubmitted.value) {
-            validateForm();
-        }
-    },
-);
 </script>
 
 <template>
@@ -116,7 +68,7 @@ watch(
                         id="employee-name"
                         v-model="props.form.name"
                         :disabled="processing"
-                        :error="getError('name')"
+                        :error="frontendErrors.name ?? props.errors.name"
                         :icon="User"
                         :placeholder="employeePage.form.namePlaceholder"
                     />
@@ -132,7 +84,7 @@ watch(
                         id="employee-code"
                         v-model="props.form.employee_code"
                         :disabled="processing"
-                        :error="getError('employee_code')"
+                        :error="frontendErrors.employee_code ?? props.errors.employee_code"
                         :icon="Badge"
                         :placeholder="
                             employeePage.form.employeeCodePlaceholder
@@ -149,7 +101,7 @@ watch(
                         id="employee-joining-date"
                         v-model="props.form.joining_date"
                         :disabled="processing"
-                        :error="getError('joining_date')"
+                        :error="frontendErrors.joining_date ?? props.errors.joining_date"
                         :icon="CalendarDays"
                         type="date"
                     />
@@ -164,7 +116,7 @@ watch(
                         id="employee-phone-number"
                         v-model="props.form.phone_number"
                         :disabled="processing"
-                        :error="getError('phone_number')"
+                        :error="frontendErrors.phone_number ?? props.errors.phone_number"
                         :icon="Phone"
                         :placeholder="
                             employeePage.form.phoneNumberPlaceholder
@@ -184,7 +136,7 @@ watch(
                         id="employee-alternate-phone-number"
                         v-model="props.form.alternate_phone_number"
                         :disabled="processing"
-                        :error="getError('alternate_phone_number')"
+                        :error="frontendErrors.alternate_phone_number ?? props.errors.alternate_phone_number"
                         :icon="Phone"
                         :placeholder="
                             employeePage.form.alternatePhoneNumberPlaceholder
@@ -204,7 +156,7 @@ watch(
                         id="employee-email"
                         v-model="props.form.email"
                         :disabled="processing"
-                        :error="getError('email')"
+                        :error="frontendErrors.email ?? props.errors.email"
                         :icon="Mail"
                         :placeholder="employeePage.form.emailPlaceholder"
                         type="email"
@@ -220,7 +172,7 @@ watch(
                         id="employee-aadhar-number"
                         v-model="props.form.aadhar_number"
                         :disabled="processing"
-                        :error="getError('aadhar_number')"
+                        :error="frontendErrors.aadhar_number ?? props.errors.aadhar_number"
                         :icon="CreditCard"
                         :placeholder="employeePage.form.aadharNumberPlaceholder"
                         inputmode="numeric"
@@ -248,7 +200,7 @@ watch(
                         id="employee-password"
                         v-model="props.form.password"
                         :disabled="processing"
-                        :error="getError('password')"
+                        :error="frontendErrors.password ?? props.errors.password"
                         :icon="LockKeyhole"
                         :placeholder="employeePage.form.passwordPlaceholder"
                         type="password"
@@ -265,7 +217,7 @@ watch(
                         id="employee-password-confirmation"
                         v-model="props.form.password_confirmation"
                         :disabled="processing"
-                        :error="getError('password_confirmation')"
+                        :error="frontendErrors.password_confirmation ?? props.errors.password_confirmation"
                         :icon="LockKeyhole"
                         :placeholder="
                             employeePage.form.passwordConfirmationPlaceholder
@@ -291,7 +243,7 @@ watch(
                     <AppUserRoleSelect
                         v-model="props.form.role"
                         :disabled="processing"
-                        :error="getError('role')"
+                        :error="frontendErrors.role ?? props.errors.role"
                         :placeholder="employeePage.form.rolePlaceholder"
                         searchable
                     />
@@ -305,7 +257,7 @@ watch(
                     <AppUserShiftSelect
                         v-model="props.form.shift"
                         :disabled="processing"
-                        :error="getError('shift')"
+                        :error="frontendErrors.shift ?? props.errors.shift"
                         :placeholder="employeePage.form.shiftPlaceholder"
                         searchable
                     />
@@ -329,7 +281,7 @@ watch(
                         id="employee-salary"
                         v-model="props.form.salary"
                         :disabled="processing"
-                        :error="getError('salary')"
+                        :error="frontendErrors.salary ?? props.errors.salary"
                         :icon="IndianRupee"
                         :placeholder="employeePage.form.salaryPlaceholder"
                         min="0"
@@ -348,7 +300,7 @@ watch(
                         id="employee-incentive-per-day"
                         v-model="props.form.incentive_per_day"
                         :disabled="processing"
-                        :error="getError('incentive_per_day')"
+                        :error="frontendErrors.incentive_per_day ?? props.errors.incentive_per_day"
                         :icon="IndianRupee"
                         :placeholder="
                             employeePage.form.incentivePerDayPlaceholder
@@ -369,7 +321,7 @@ watch(
                         id="employee-deduction-per-day"
                         v-model="props.form.deduction_per_day"
                         :disabled="processing"
-                        :error="getError('deduction_per_day')"
+                        :error="frontendErrors.deduction_per_day ?? props.errors.deduction_per_day"
                         :icon="IndianRupee"
                         :placeholder="
                             employeePage.form.deductionPerDayPlaceholder
@@ -390,7 +342,6 @@ watch(
             <ToggleCardInput
                 v-model="props.form.status"
                 :disabled="processing"
-                :error="getError('status')"
                 active-text="Employee account is currently active."
                 inactive-text="Employee account is currently inactive."
                 label="Status"

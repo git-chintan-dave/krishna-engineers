@@ -137,7 +137,7 @@ const handleDeleteSelected = () => {
                 @search="search"
             >
                 <template #filters>
-                    <div class="w-full shrink-0 sm:w-40">
+                    <div class="w-full shrink-0 sm:w-52">
                         <AppUserRoleSelect
                             :model-value="
                                 filterRole === 'all' ? null : filterRole
