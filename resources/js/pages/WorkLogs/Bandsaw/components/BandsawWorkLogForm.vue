@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type {InertiaForm} from '@inertiajs/vue3';
-import {CalendarDays, Hash, Layers3, MessageSquare, Ruler, User, Wrench,} from '@lucide/vue';
+import {CalendarDays, Hash, Layers3, MessageSquare, Ruler, User, Wrench} from '@lucide/vue';
 import {nextTick, ref, watch} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
@@ -12,6 +12,7 @@ import AppPartSelect from '@/components/selects/AppPartSelect.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppSectionSizeSelect from '@/components/selects/AppSectionSizeSelect.vue';
 import {bandsawWorkLogPage} from '@/config/bandsawWorkLogs';
+import {bandsawWorkLogSchema} from '@/schemas/bandsawWorkLogSchema';
 import type {BandsawWorkLogFormData, BandsawWorkLogLastReport,} from '@/types/bandsawWorkLog';
 
 type SelectedPart = {
@@ -34,6 +35,67 @@ const emit = defineEmits<{
     submit: [];
     cancel: [];
 }>();
+
+/*
+|--------------------------------------------------------------------------
+| Validation
+|--------------------------------------------------------------------------
+*/
+
+const validationFields = [
+    'user_id',
+    'work_date',
+    'part_id',
+    'section_size_id',
+    'quantity',
+    'remarks',
+] as const;
+
+type ValidationField = (typeof validationFields)[number];
+
+const handleSubmit = (): void => {
+    props.form.clearErrors(...validationFields);
+
+    const result = bandsawWorkLogSchema.safeParse({
+        user_id: props.form.user_id,
+        work_date: props.form.work_date,
+        part_id: props.form.part_id,
+        section_size_id: props.form.section_size_id,
+        quantity: props.form.quantity,
+        remarks: props.form.remarks,
+    });
+
+    if (!result.success) {
+        for (const issue of result.error.issues) {
+            const field = issue.path[0] as ValidationField;
+
+            if (validationFields.includes(field)) {
+                // Preserve the first validation message for each field.
+                if (!props.form.errors[field]) {
+                    props.form.setError(field, issue.message);
+                }
+            }
+        }
+
+        return;
+    }
+
+    /*
+     * A manager must select a Bandsaw operator.
+     * The logged-in Bandsaw operator does not need
+     * to select their own employee record.
+     */
+    if (props.canSelectBandsaw && !props.form.user_id) {
+        props.form.setError(
+            'user_id',
+            'Please select a Bandsaw operator.',
+        );
+
+        return;
+    }
+
+    emit('submit');
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -216,7 +278,7 @@ watch(
 </script>
 
 <template>
-    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
+    <form class="min-w-0 space-y-6" @submit.prevent="handleSubmit">
         <FormSection
             :description="bandsawWorkLogPage.form.sectionDescription"
             :title="bandsawWorkLogPage.form.sectionTitle"

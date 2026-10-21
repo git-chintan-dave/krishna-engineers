@@ -131,6 +131,12 @@ export const requiredNonNegativeNumber = (label: string) =>
             .min(0, `${label} must be at least 0.`),
     );
 
+export const timeSchema = (message = 'Invalid time format. Expected HH:MM:SS') =>
+    z.string().time({
+        precision: 0,
+        message,
+    });
+
 export const optionalImage = z
     .file()
     .max(5 * 1024 * 1024, 'Image must not exceed 5 MB.')
