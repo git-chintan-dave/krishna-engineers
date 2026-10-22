@@ -153,6 +153,9 @@ const emit = defineEmits<{
             </Link>
         </Button>
 
+        <!-- Sync -->
+        <slot name="sync" />
+
         <!-- Create -->
         <Button
             v-if="createUrl"

@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'etimeoffice' => [
+        'base_url' => env('ETIMEOFFICE_BASE_URL'),
+        'corporate_id' => env('ETIMEOFFICE_CORPORATE_ID'),
+        'username' => env('ETIMEOFFICE_USERNAME'),
+        'password' => env('ETIMEOFFICE_PASSWORD'),
+    ],
 ];

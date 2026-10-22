@@ -52,6 +52,7 @@ defineOptions({
 */
 
 const form = useForm<OperatorWorkLogFormData>({
+    id: props.operatorWorkLog.id,
     user_id: props.operatorWorkLog.user.id,
     work_date: props.operatorWorkLog.work_date,
     shift: props.operatorWorkLog.shift,

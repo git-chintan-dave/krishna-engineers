@@ -17,6 +17,8 @@ import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
 import {operatorWorkLogPage} from '@/config/operatorWorkLogs';
 
 import type {OperatorWorkLogFormData, OperatorWorkLogPartSetupOption,} from '@/types/operatorWorkLog';
+import {operatorWorkLogSchema} from "@/schemas/operatorWorkLogSchema";
+import {useZodFormValidation} from "@/composables/useZodFormValidation";
 
 /*
 |--------------------------------------------------------------------------
@@ -37,16 +39,21 @@ type LastReport = {
 |--------------------------------------------------------------------------
 */
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     form: InertiaForm<OperatorWorkLogFormData>;
-    submitLabel: string;
-    processing: boolean;
+    errors?: Partial<Record<keyof OperatorWorkLogFormData, string>>;
+    processing?: boolean;
+    submitLabel?: string;
     isCreate: boolean;
     partSetups: OperatorWorkLogPartSetupOption[];
     currentUserId: number;
     canSelectOperator: boolean;
     lastReports: Record<string, LastReport>;
-}>();
+}>(), {
+    errors: () => ({}),
+    processing: false,
+    submitLabel: 'Save Work Log',
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -303,7 +310,7 @@ watch([() => props.form.part_id, () => props.form.setup_id], () => {
 |--------------------------------------------------------------------------
 */
 
-function formatDuration(totalSeconds: number | null | undefined): string {
+function formatDuration(totalSeconds: string | number | null | undefined): string {
     const seconds = Math.max(0, Math.floor(Number(totalSeconds) || 0));
 
     const hours = Math.floor(seconds / 3600);
@@ -336,10 +343,25 @@ function parseDuration(value: string): number | null {
 
     return hours * 3600 + minutes * 60 + seconds;
 }
+
+// Frontend validation
+const {
+    errors: frontendErrors,
+    validate,
+} = useZodFormValidation(
+    operatorWorkLogSchema,
+    () => props.form,
+);
+
+const handleSubmit = () => {
+    if (validate()) {
+        emit('submit');
+    }
+};
 </script>
 
 <template>
-    <form class="min-w-0 space-y-6" @submit.prevent="emit('submit')">
+    <form class="min-w-0 space-y-6" @submit.prevent="handleSubmit">
         <!--
         |--------------------------------------------------------------------------
         | Production Work
@@ -355,7 +377,6 @@ function parseDuration(value: string): number | null {
 
                 <AppField
                     v-if="canSelectOperator"
-                    :error="form.errors.user_id"
                     :label="operatorWorkLogPage.form.operatorLabel"
                     input-id="work-log-operator"
                     required
@@ -363,7 +384,7 @@ function parseDuration(value: string): number | null {
                     <AppEmployeeSelect
                         v-model="form.user_id"
                         :disabled="processing || !isCreate"
-                        :error="form.errors.user_id"
+                        :error="frontendErrors.user_id ?? props.errors.user_id"
                         :icon="User"
                         :placeholder="
                             operatorWorkLogPage.form.operatorPlaceholder
@@ -376,7 +397,6 @@ function parseDuration(value: string): number | null {
                 <!-- Work Date -->
 
                 <AppField
-                    :error="form.errors.work_date"
                     :label="operatorWorkLogPage.form.workDateLabel"
                     input-id="work-log-date"
                     required
@@ -385,12 +405,11 @@ function parseDuration(value: string): number | null {
                         id="work-log-date"
                         v-model="form.work_date"
                         :disabled="processing || !isCreate"
-                        :error="form.errors.work_date"
+                        :error="frontendErrors.work_date ?? props.errors.work_date"
                         :icon="CalendarDays"
                         :placeholder="
                             operatorWorkLogPage.form.workDatePlaceholder
                         "
-                        required
                         type="date"
                     />
                 </AppField>
@@ -398,7 +417,6 @@ function parseDuration(value: string): number | null {
                 <!-- Shift -->
 
                 <AppField
-                    :error="form.errors.shift"
                     :label="operatorWorkLogPage.form.shiftLabel"
                     input-id="work-log-shift"
                     required
@@ -406,7 +424,7 @@ function parseDuration(value: string): number | null {
                     <AppUserShiftSelect
                         v-model="form.shift"
                         :disabled="processing || !isCreate"
-                        :error="form.errors.shift"
+                        :error="frontendErrors.shift ?? props.errors.shift"
                         :icon="Clock3"
                         :placeholder="operatorWorkLogPage.form.shiftPlaceholder"
                         clearable
@@ -416,7 +434,6 @@ function parseDuration(value: string): number | null {
                 <!-- Machine -->
 
                 <AppField
-                    :error="form.errors.machine_id"
                     :label="operatorWorkLogPage.form.machineLabel"
                     input-id="work-log-machine"
                     required
@@ -424,7 +441,7 @@ function parseDuration(value: string): number | null {
                     <AppMachineSelect
                         v-model="form.machine_id"
                         :disabled="processing || !isCreate"
-                        :error="form.errors.machine_id"
+                        :error="frontendErrors.machine_id ?? props.errors.machine_id"
                         :icon="Cog"
                         :placeholder="
                             operatorWorkLogPage.form.machinePlaceholder
@@ -436,7 +453,6 @@ function parseDuration(value: string): number | null {
                 <!-- Part -->
 
                 <AppField
-                    :error="form.errors.part_id"
                     :label="operatorWorkLogPage.form.partLabel"
                     input-id="work-log-part"
                     required
@@ -444,7 +460,7 @@ function parseDuration(value: string): number | null {
                     <AppPartSelect
                         v-model="form.part_id"
                         :disabled="processing || !isCreate"
-                        :error="form.errors.part_id"
+                        :error="frontendErrors.part_id ?? props.errors.part_id"
                         :icon="Wrench"
                         :placeholder="operatorWorkLogPage.form.partPlaceholder"
                         searchable
@@ -454,7 +470,6 @@ function parseDuration(value: string): number | null {
                 <!-- Setup -->
 
                 <AppField
-                    :error="form.errors.setup_id"
                     :label="operatorWorkLogPage.form.setupLabel"
                     input-id="work-log-setup"
                     required
@@ -462,7 +477,7 @@ function parseDuration(value: string): number | null {
                     <AppSetupSelect
                         v-model="form.setup_id"
                         :disabled="processing || !isCreate"
-                        :error="form.errors.setup_id"
+                        :error="frontendErrors.setup_id ?? props.errors.setup_id"
                         :icon="Settings2"
                         :part-id="form.part_id"
                         :placeholder="operatorWorkLogPage.form.setupPlaceholder"
@@ -473,7 +488,6 @@ function parseDuration(value: string): number | null {
                 <!-- Actual Cycle Time -->
 
                 <AppField
-                    :error="form.errors.actual_cycle_time"
                     :label="operatorWorkLogPage.form.actualCycleTimeLabel"
                     input-id="work-log-actual-cycle-time"
                     required
@@ -482,13 +496,12 @@ function parseDuration(value: string): number | null {
                         id="work-log-actual-cycle-time"
                         v-model="actualCycleTimeInput"
                         :disabled="processing || !selectedPartSetup"
-                        :error="form.errors.actual_cycle_time"
+                        :error="frontendErrors.actual_cycle_time ?? props.errors.actual_cycle_time"
                         :icon="Clock3"
                         :placeholder="
                             operatorWorkLogPage.form
                                 .actualCycleTimePlaceholder ?? '00:00:00'
                         "
-                        required
                         type="text"
                         @blur="syncActualCycleTime"
                     />
@@ -497,7 +510,6 @@ function parseDuration(value: string): number | null {
                 <!-- Quantity -->
 
                 <AppField
-                    :error="form.errors.quantity"
                     :label="operatorWorkLogPage.form.quantityLabel"
                     input-id="work-log-quantity"
                     required
@@ -506,13 +518,12 @@ function parseDuration(value: string): number | null {
                         id="work-log-quantity"
                         v-model.number="form.quantity"
                         :disabled="processing"
-                        :error="form.errors.quantity"
+                        :error="frontendErrors.quantity ?? props.errors.quantity"
                         :icon="Hash"
                         :placeholder="
                             operatorWorkLogPage.form.quantityPlaceholder
                         "
                         min="1"
-                        required
                         type="number"
                     />
                 </AppField>
@@ -520,7 +531,6 @@ function parseDuration(value: string): number | null {
                 <!-- Rejection Quantity -->
 
                 <AppField
-                    :error="form.errors.rejection_quantity"
                     :label="operatorWorkLogPage.form.rejectionQuantityLabel"
                     input-id="work-log-rejection-quantity"
                 >
@@ -528,7 +538,7 @@ function parseDuration(value: string): number | null {
                         id="work-log-rejection-quantity"
                         v-model.number="form.rejection_quantity"
                         :disabled="processing"
-                        :error="form.errors.rejection_quantity"
+                        :error="frontendErrors.rejection_quantity ?? props.errors.rejection_quantity"
                         :icon="Hash"
                         :placeholder="
                             operatorWorkLogPage.form
@@ -567,7 +577,6 @@ function parseDuration(value: string): number | null {
             title="Additional Information"
         >
             <AppField
-                :error="form.errors.remarks"
                 :label="operatorWorkLogPage.form.remarksLabel"
                 input-id="work-log-remarks"
             >
@@ -575,7 +584,7 @@ function parseDuration(value: string): number | null {
                     id="work-log-remarks"
                     v-model="form.remarks"
                     :disabled="processing"
-                    :error="form.errors.remarks"
+                    :error="frontendErrors.remarks ?? props.errors.remarks"
                     :icon="MessageSquare"
                     :placeholder="operatorWorkLogPage.form.remarksPlaceholder"
                 />

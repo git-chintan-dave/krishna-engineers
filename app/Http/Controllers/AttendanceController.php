@@ -12,13 +12,19 @@ use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Resources\AttendanceResource;
 use App\Imports\AttendanceImport;
 use App\Models\Attendance;
+use App\Models\User;
 use App\Services\AttendanceService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Maatwebsite\Excel\Facades\Excel;
 use RuntimeException;
+use Symfony\Component\Console\Command\Command;
 use Throwable;
 
 class AttendanceController extends Controller
@@ -154,7 +160,7 @@ class AttendanceController extends Controller
 
     public function update(
         AttendanceRequest $request,
-        Attendance        $attendance,
+        Attendance $attendance,
     ): RedirectResponse {
         Gate::authorize(
             'update',
@@ -284,5 +290,78 @@ class AttendanceController extends Controller
         }
 
         return $this->successResponse('imported');
+    }
+
+    public function sync(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'from' => ['required', 'date_format:Y-m-d'],
+            'to' => [
+                'required',
+                'date_format:Y-m-d',
+                'after_or_equal:from',
+            ],
+        ]);
+
+        $arguments = [
+            '--from' => Carbon::createFromFormat(
+                '!Y-m-d',
+                $validated['from'],
+            )->format('d/m/Y'),
+
+            '--to' => Carbon::createFromFormat(
+                '!Y-m-d',
+                $validated['to'],
+            )->format('d/m/Y'),
+        ];
+
+        if (! empty($validated['user_id'])) {
+            $user = User::query()
+                ->findOrFail($validated['user_id']);
+
+            if (blank($user->employee_code)) {
+                throw ValidationException::withMessages([
+                    'user_id' => 'The selected employee has no eTimeOffice employee code.',
+                ]);
+            }
+
+            $arguments['--empcode'] = $user->employee_code;
+        }
+
+        try {
+            $exitCode = Artisan::call(
+                'etimeoffice:sync',
+                $arguments,
+            );
+
+            $output = trim(Artisan::output());
+
+            if ($exitCode !== Command::SUCCESS) {
+                logger()->error('eTimeOffice attendance sync failed.', [
+                    'arguments' => $arguments,
+                    'output' => $output,
+                ]);
+
+                return back()->with(
+                    'error',
+                    'Attendance sync failed. Please check the application logs.',
+                );
+            }
+
+            return back()->with(
+                'success',
+                $output !== ''
+                    ? $output
+                    : 'Attendance sync completed successfully.',
+            );
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return back()->with(
+                'error',
+                'Unable to sync attendance. Please try again or check the application logs.',
+            );
+        }
     }
 }

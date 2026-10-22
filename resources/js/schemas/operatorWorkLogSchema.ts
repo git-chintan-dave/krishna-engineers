@@ -1,6 +1,12 @@
 import {z} from 'zod';
 
-import {requiredDropdown, requiredNonNegativeNumber, requiredStringDropdown, timeSchema,} from '@/schemas/commonSchema';
+import {
+    durationSecondsSchema,
+    requiredDropdown,
+    requiredNonNegativeNumber,
+    requiredStringDropdown,
+    timeSchema,
+} from '@/schemas/commonSchema';
 
 export const operatorWorkLogSchema = z.object({
     user_id: requiredDropdown('a operator'),
@@ -11,8 +17,9 @@ export const operatorWorkLogSchema = z.object({
     part_id: requiredDropdown('a part'),
     setup_id: requiredDropdown('a setup'),
     part_setup_id: requiredDropdown('a setup'),
-    machine_cycle_time: timeSchema('Please enter a valid cycle time in HH:MM:SS format.'),
-    actual_cycle_time: timeSchema('Please enter a valid cycle time in HH:MM:SS format.'),
+    actual_cycle_time: durationSecondsSchema(
+        'Please enter a valid cycle time.',
+    ),
     quantity: requiredNonNegativeNumber('Quantity'),
     rejection_quantity: requiredNonNegativeNumber('Rejection quantity'),
     remarks: z.string()
@@ -31,3 +38,5 @@ export const operatorWorkLogSchema = z.object({
         });
     }
 });
+
+export type OperatorWorkLogSchemaData = z.infer<typeof operatorWorkLogSchema>;

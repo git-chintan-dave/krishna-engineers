@@ -34,7 +34,6 @@ export const createOperatorWorkLogColumns = (
                     header: 'Operator',
                     size: 180,
                     align: 'center',
-                    primary: true,
                 }),
             ]
             : []),
@@ -44,7 +43,6 @@ export const createOperatorWorkLogColumns = (
             header: 'Shift',
             size: 100,
             align: 'center',
-            primary: true,
         }),
 
         createColumn({
@@ -52,7 +50,6 @@ export const createOperatorWorkLogColumns = (
             header: 'Machine',
             size: 160,
             align: 'center',
-            primary: true,
         }),
 
         createColumn({
@@ -60,7 +57,6 @@ export const createOperatorWorkLogColumns = (
             header: 'Part',
             size: 160,
             align: 'center',
-            primary: true,
         }),
 
         createColumn({
@@ -68,13 +64,12 @@ export const createOperatorWorkLogColumns = (
             header: 'Setup',
             size: 100,
             align: 'center',
-            primary: true,
         }),
 
         createColumn({
             accessorKey: 'quantity',
             header: 'Quantity',
-            size: 100,
+            size: 120,
             align: 'center',
             sortable: true,
         }),
@@ -82,7 +77,7 @@ export const createOperatorWorkLogColumns = (
         createColumn({
             accessorKey: 'rejection_quantity',
             header: 'Rejected',
-            size: 100,
+            size: 120,
             align: 'center',
             sortable: true,
         }),
@@ -90,7 +85,7 @@ export const createOperatorWorkLogColumns = (
         createColumn<OperatorWorkLog, number | null>({
             accessorKey: 'production_seconds',
             header: 'Production Time',
-            size: 140,
+            size: 180,
             align: 'center',
             sortable: true,
             cell: ({ row }) =>
@@ -101,6 +96,7 @@ export const createOperatorWorkLogColumns = (
             accessorKey: 'production_efficiency',
             header: 'Daily Efficiency',
             align: 'center',
+            size: 140,
             cell: ({ getValue }) => {
                 const efficiency = getValue();
 

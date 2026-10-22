@@ -137,6 +137,15 @@ export const timeSchema = (message = 'Invalid time format. Expected HH:MM:SS') =
         message,
     });
 
+export const durationSecondsSchema = (
+    message = 'Invalid duration.',
+) =>
+    z.number({
+        message,
+    }).int().positive({
+        message,
+    });
+
 export const optionalImage = z
     .file()
     .max(5 * 1024 * 1024, 'Image must not exceed 5 MB.')

@@ -175,6 +175,11 @@ Route::middleware('auth')->group(function () {
             [AttendanceController::class, 'import'],
         )->name('attendances.import.store');
 
+        Route::post(
+            'attendances/sync',
+            [AttendanceController::class, 'sync'],
+        )->name('attendances.sync');
+
         Route::delete(
             'attendances/bulk-delete',
             [AttendanceController::class, 'bulkDestroy'],

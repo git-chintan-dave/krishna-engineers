@@ -1,5 +1,5 @@
-
-import type { PaginatedResponse, SortDirection } from '@/types/listing';
+import type {PaginatedResponse, SortDirection} from '@/types/listing';
+import {OperatorWorkLogSchemaData} from "@/schemas/operatorWorkLogSchema";
 
 export type OperatorWorkLog = {
     id: number;
@@ -55,6 +55,7 @@ export type OperatorWorkLog = {
 };
 
 export type OperatorWorkLogFormData = {
+    id?: number | null;
     user_id: number | null;
 
     work_date: string;
@@ -65,8 +66,8 @@ export type OperatorWorkLogFormData = {
     setup_id: number | null;
     part_setup_id: number | null;
 
-    machine_cycle_time: number;
-    actual_cycle_time: number;
+    machine_cycle_time: number | string;
+    actual_cycle_time: number | string;
 
     quantity: number;
     rejection_quantity: number;
