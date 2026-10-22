@@ -3,6 +3,7 @@
 namespace App\Http\Requests\ToolTransactions;
 
 use App\Enums\ToolTransactionType;
+use App\Http\Requests\Concerns\IndexQueryRules;
 use App\Models\Tool;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
@@ -10,6 +11,8 @@ use Illuminate\Validation\Rule;
 
 class IndexToolTransactionRequest extends FormRequest
 {
+    use IndexQueryRules;
+
     public function authorize(): bool
     {
         return true;
@@ -18,11 +21,18 @@ class IndexToolTransactionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'search' => [
-                'nullable',
-                'string',
-                'max:255',
-            ],
+            ...$this->indexQueryRules([
+                'id',
+                'tool.name',
+                'type',
+                'quantity',
+                'fromUser.name',
+                'toUser.name',
+                'part.name',
+                'setup.name',
+                'return_scrap',
+                'created_at',
+            ]),
 
             'tool_id' => [
                 'nullable',
@@ -68,31 +78,6 @@ class IndexToolTransactionRequest extends FormRequest
                 'nullable',
                 'date',
                 'after_or_equal:from_date',
-            ],
-
-            'sort' => [
-                'nullable',
-                'string',
-                Rule::in([
-                    'created_at',
-                    'quantity',
-                    'type',
-                ]),
-            ],
-
-            'direction' => [
-                'nullable',
-                Rule::in([
-                    'asc',
-                    'desc',
-                ]),
-            ],
-
-            'per_page' => [
-                'nullable',
-                'integer',
-                'min:1',
-                'max:100',
             ],
         ];
     }

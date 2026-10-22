@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type {InertiaForm} from '@inertiajs/vue3';
 import {ArrowLeftRight, Box, Hash, MessageSquare, Settings2, User, Wrench,} from '@lucide/vue';
-import {computed, ref, watch} from 'vue';
+import {computed, watch} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -15,10 +15,10 @@ import AppSetupSelect from '@/components/selects/AppSetupSelect.vue';
 import AppToolSelect from '@/components/selects/AppToolSelect.vue';
 import AppToolTransactionTypeSelect from '@/components/selects/AppToolTransactionTypeSelect.vue';
 
+import {useZodFormValidation} from '@/composables/useZodFormValidation';
 import {toolTransactionPage} from '@/config/toolTransactions';
-import type {ToolTransactionValidationField,} from '@/schemas/toolTransactionSchema';
-import {toolTransactionSchema} from '@/schemas/toolTransactionSchema';
-import type {ToolTransactionType,} from '@/types/toolTransaction';
+import {toolTransactionSchema, type ToolTransactionValidationField,} from '@/schemas/toolTransactionSchema';
+import type {ToolTransactionType} from '@/types/toolTransaction';
 
 /*
 |--------------------------------------------------------------------------
@@ -58,13 +58,14 @@ type BackendErrorField =
 const props = withDefaults(
     defineProps<{
         form: InertiaForm<ToolTransactionFormData>;
-        errors: Record<string, string>;
+        errors?: Partial<Record<BackendErrorField, string>>;
         processing: boolean;
         submitLabel: string;
         isEditing?: boolean;
     }>(),
     {
         isEditing: false,
+        errors: () => ({}),
     },
 );
 
@@ -89,7 +90,9 @@ const showPartAndSetup = computed(() => isIssue.value);
 
 const showReturnScrap = computed(() => isIssue.value);
 
-const quantityMin = computed(() => (isAdjustment.value ? -2147483648 : 1));
+const quantityMin = computed(() =>
+    isAdjustment.value ? -2147483648 : 1,
+);
 
 const quantityMax = 4294967295;
 
@@ -99,51 +102,13 @@ const quantityMax = 4294967295;
 |--------------------------------------------------------------------------
 */
 
-const hasSubmitted = ref(false);
-
-const frontendErrors = ref<
-    Partial<Record<ToolTransactionValidationField, string>>
->({});
-
-const validateForm = (): boolean => {
-    const result = toolTransactionSchema.safeParse({
-        toolId: props.form.toolId,
-        type: props.form.type,
-        quantity: props.form.quantity,
-        fromUserId: props.form.fromUserId,
-        toUserId: props.form.toUserId,
-        partId: props.form.partId,
-        setupId: props.form.setupId,
-        returnScrap: props.form.returnScrap,
-        remarks: props.form.remarks,
-    });
-
-    if (result.success) {
-        frontendErrors.value = {};
-
-        return true;
-    }
-
-    const errors: Partial<
-        Record<ToolTransactionValidationField, string>
-    > = {};
-
-    for (const issue of result.error.issues) {
-        const field = issue.path[0];
-
-        if (
-            typeof field === 'string' &&
-            field in props.form &&
-            !errors[field as ToolTransactionValidationField]
-        ) {
-            errors[field as ToolTransactionValidationField] = issue.message;
-        }
-    }
-
-    frontendErrors.value = errors;
-
-    return false;
-};
+const {
+    errors: frontendErrors,
+    validate,
+} = useZodFormValidation(
+    toolTransactionSchema,
+    () => props.form,
+);
 
 const backendErrorFieldMap: Record<
     ToolTransactionValidationField,
@@ -170,13 +135,9 @@ const getError = (
 };
 
 const handleSubmit = (): void => {
-    hasSubmitted.value = true;
-
-    if (!validateForm()) {
-        return;
+    if (validate()) {
+        emit('submit');
     }
-
-    emit('submit');
 };
 
 /*
@@ -196,26 +157,6 @@ watch(
     },
 );
 
-// Revalidate after the first submit when form values change.
-watch(
-    () => [
-        props.form.toolId,
-        props.form.type,
-        props.form.quantity,
-        props.form.fromUserId,
-        props.form.toUserId,
-        props.form.partId,
-        props.form.setupId,
-        props.form.returnScrap,
-        props.form.remarks,
-    ],
-    () => {
-        if (hasSubmitted.value) {
-            validateForm();
-        }
-    },
-);
-
 /*
 |--------------------------------------------------------------------------
 | Actions
@@ -228,7 +169,9 @@ const handleTypeChange = (value: string | number | null): void => {
     }
 
     const nextType =
-        typeof value === 'string' ? (value as ToolTransactionType) : '';
+        typeof value === 'string'
+            ? (value as ToolTransactionType)
+            : '';
 
     if (props.form.type === nextType) {
         return;
@@ -409,7 +352,9 @@ const handleTypeChange = (value: string | number | null): void => {
                         :error="getError('setupId')"
                         :icon="Settings2"
                         :part-id="props.form.partId"
-                        :placeholder="toolTransactionPage.form.setupPlaceholder"
+                        :placeholder="
+                            toolTransactionPage.form.setupPlaceholder
+                        "
                         clearable
                         searchable
                     />
@@ -417,7 +362,10 @@ const handleTypeChange = (value: string | number | null): void => {
 
                 <!-- Return / Scrap -->
 
-                <div v-if="showReturnScrap" class="md:col-span-2">
+                <div
+                    v-if="showReturnScrap"
+                    class="md:col-span-2"
+                >
                     <ToggleCardInput
                         v-model="props.form.returnScrap"
                         :active-text="

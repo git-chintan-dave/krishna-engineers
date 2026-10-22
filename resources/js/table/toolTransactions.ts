@@ -48,21 +48,10 @@ export const createToolTransactionColumns = (
 
         createColumn<ToolTransaction, string>({
             accessorKey: 'tool.name',
+            sortKey: 'tool.name',
             header: 'Tool',
             size: 240,
             sortable: true,
-            cell: ({ row }) => {
-                const value = row.original.tool?.name ?? '—';
-
-                return h(
-                    'div',
-                    {
-                        class: 'truncate',
-                        title: value !== '—' ? value : undefined,
-                    },
-                    value,
-                );
-            },
         }),
 
         createColumn<ToolTransaction, string>({
@@ -97,7 +86,7 @@ export const createToolTransactionColumns = (
         createColumn<ToolTransaction, number>({
             accessorKey: 'quantity',
             header: 'Quantity',
-            size: 100,
+            size: 120,
             sortable: true,
             cell: ({ row }) => {
                 const quantity = row.original.quantity;
@@ -117,76 +106,40 @@ export const createToolTransactionColumns = (
 
         createColumn<ToolTransaction, string>({
             accessorKey: 'from_user.name',
+            sortKey: 'fromUser.name',
             header: 'From User',
             size: 180,
             sortable: true,
-            cell: ({ row }) => {
-                const user = row.original.from_user;
-
-                if (!user?.name) {
-                    return '—';
-                }
-
-                const value = user.employee_code
-                    ? `${user.name} (${user.employee_code})`
-                    : user.name;
-
-                return h('div', { class: 'truncate', title: value }, value);
-            },
         }),
 
         createColumn<ToolTransaction, string>({
             accessorKey: 'to_user.name',
+            sortKey: 'toUser.name',
             header: 'To User',
             size: 180,
             sortable: true,
-            cell: ({ row }) => {
-                const user = row.original.to_user;
-
-                if (!user?.name) {
-                    return '—';
-                }
-
-                const value = user.employee_code
-                    ? `${user.name} (${user.employee_code})`
-                    : user.name;
-
-                return h('div', { class: 'truncate', title: value }, value);
-            },
         }),
 
         createColumn<ToolTransaction, string>({
-            accessorKey: 'part.reference_name',
+            accessorKey: 'part.name',
+            sortKey: 'part.name',
             header: 'Part',
-            size: 200,
+            size: 120,
             sortable: true,
-            cell: ({ row }) => {
-                const part = row.original.part;
-
-                if (!part?.name) {
-                    return '—';
-                }
-
-                const value = part.new_part_name
-                    ? `${part.name} (${part.new_part_name})`
-                    : part.name;
-
-                return h('div', { class: 'truncate', title: value }, value);
-            },
         }),
 
         createColumn<ToolTransaction, string>({
             accessorKey: 'setup.name',
+            sortKey: 'setup.name',
             header: 'Setup',
-            size: 130,
+            size: 120,
             sortable: true,
-            cell: ({ row }) => row.original.setup?.name ?? '—',
         }),
 
         createColumn<ToolTransaction, boolean | null>({
             accessorKey: 'return_scrap',
             header: 'Return / Scrap',
-            size: 130,
+            size: 120,
             sortable: true,
             cell: ({ row }) => {
                 const value = row.original.return_scrap;
@@ -195,46 +148,7 @@ export const createToolTransactionColumns = (
                     return '—';
                 }
 
-                return value ? 'Scrap' : 'Not Scrap';
-            },
-        }),
-
-        createColumn<ToolTransaction, string>({
-            accessorKey: 'created_by.name',
-            header: 'Created By',
-            size: 180,
-            sortable: true,
-            cell: ({ row }) => {
-                const user = row.original.created_by;
-
-                if (!user?.name) {
-                    return '—';
-                }
-
-                const value = user.employee_code
-                    ? `${user.name} (${user.employee_code})`
-                    : user.name;
-
-                return h('div', { class: 'truncate', title: value }, value);
-            },
-        }),
-
-        createColumn<ToolTransaction, string | null>({
-            accessorKey: 'remarks',
-            header: 'Remarks',
-            size: 240,
-            sortable: true,
-            cell: ({ row }) => {
-                const value = row.original.remarks ?? '—';
-
-                return h(
-                    'div',
-                    {
-                        class: 'truncate',
-                        title: value !== '—' ? value : undefined,
-                    },
-                    value,
-                );
+                return value ? 'Yes' : 'No';
             },
         }),
 

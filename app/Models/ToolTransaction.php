@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ToolTransactionType;
+use App\Traits\HasFilter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -22,7 +23,35 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class ToolTransaction extends Model
 {
-    use HasUuids;
+    use HasFilter, HasUuids;
+
+    protected array $searchable = [];
+
+    protected array $filterable = [
+        'tool_id',
+        'type',
+        'from_user_id',
+        'to_user_id',
+        'part_id',
+        'setup_id',
+    ];
+
+    protected array $sortable = [
+        'id',
+        'tool.name',
+        'type',
+        'quantity',
+        'fromUser.name',
+        'toUser.name',
+        'part.name',
+        'setup.name',
+        'return_scrap',
+        'created_at',
+    ];
+
+    protected string $defaultSort = 'id';
+
+    protected string $defaultDirection = 'desc';
 
     public function uniqueIds(): array
     {

@@ -37,97 +37,36 @@ class ToolTransactionController extends Controller
     {
         Gate::authorize('viewAny', ToolTransaction::class);
 
-        $validated = $request->validated();
+        $filters = $request->validated();
 
-        $query = ToolTransaction::query()->with([
-            'tool',
-            'fromUser',
-            'toUser',
-            'part',
-            'setup',
-            'createdBy',
-        ]);
-
-        $query->when($validated['search'] ?? null, function ($query, $search) {
-            $query->where(function ($query) use ($search) {
-                $query
-                    ->whereHas(
-                        'tool',
-                        fn($query) => $query->where('name', 'like', "%{$search}%"),
-                    )
-                    ->orWhereHas('fromUser', function ($query) use ($search) {
-                        $query->where('name', 'like', "%{$search}%")
-                            ->orWhere('employee_code', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('toUser', function ($query) use ($search) {
-                        $query->where('name', 'like', "%{$search}%")
-                            ->orWhere('employee_code', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('part', function ($query) use ($search) {
-                        $query->where('name', 'like', "%{$search}%")
-                            ->orWhere('reference_name', 'like', "%{$search}%");
-                    })
-                    ->orWhere('remarks', 'like', "%{$search}%");
-            });
-        });
-
-        $query
-            ->when(
-                $validated['tool_id'] ?? null,
-                fn($query, $id) => $query->where('tool_id', $id),
-            )
-            ->when(
-                $validated['type'] ?? null,
-                fn($query, $type) => $query->where('type', $type),
-            )
-            ->when(
-                $validated['from_user_id'] ?? null,
-                fn($query, $id) => $query->where('from_user_id', $id),
-            )
-            ->when(
-                $validated['to_user_id'] ?? null,
-                fn($query, $id) => $query->where('to_user_id', $id),
-            )
-            ->when(
-                $validated['part_id'] ?? null,
-                fn($query, $id) => $query->where('part_id', $id),
-            )
-            ->when(
-                $validated['setup_id'] ?? null,
-                fn($query, $id) => $query->where('setup_id', $id),
-            )
-            ->when(
-                $validated['from_date'] ?? null,
-                fn($query, $date) => $query->whereDate('created_at', '>=', $date),
-            )
-            ->when(
-                $validated['to_date'] ?? null,
-                fn($query, $date) => $query->whereDate('created_at', '<=', $date),
-            );
-
-        $transactions = $query
-            ->orderBy(
-                $validated['sort'] ?? 'created_at',
-                $validated['direction'] ?? 'desc',
-            )
-            ->paginate($validated['per_page'] ?? 15)
+        $transactions = ToolTransaction::query()
+            ->with([
+                'tool',
+                'fromUser',
+                'toUser',
+                'part',
+                'setup',
+                'createdBy',
+            ])
+            ->filterQuery($filters)
+            ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();
 
         return Inertia::render('ToolTransactions/Index', [
             'transactions' => ToolTransactionResource::collection($transactions),
             'filters' => [
-                'search' => $validated['search'] ?? '',
-                'toolId' => $validated['tool_id'] ?? null,
-                'type' => $validated['type'] ?? null,
-                'fromUserId' => $validated['from_user_id'] ?? null,
-                'toUserId' => $validated['to_user_id'] ?? null,
-                'partId' => $validated['part_id'] ?? null,
-                'setupId' => $validated['setup_id'] ?? null,
-                'fromDate' => $validated['from_date'] ?? null,
-                'toDate' => $validated['to_date'] ?? null,
-                'sort' => $validated['sort'] ?? 'created_at',
-                'direction' => $validated['direction'] ?? 'desc',
-                'perPage' => $validated['per_page'] ?? 15,
+                'search' => $filters['search'] ?? '',
+                'toolId' => $filters['tool_id'] ?? null,
+                'type' => $filters['type'] ?? null,
+                'fromUserId' => $filters['from_user_id'] ?? null,
+                'toUserId' => $filters['to_user_id'] ?? null,
+                'partId' => $filters['part_id'] ?? null,
+                'setupId' => $filters['setup_id'] ?? null,
+                'fromDate' => $filters['from_date'] ?? null,
+                'toDate' => $filters['to_date'] ?? null,
+                'sort' => $filters['sort'] ?? 'created_at',
+                'direction' => $filters['direction'] ?? 'desc',
+                'perPage' => $filters['per_page'] ?? 10,
             ],
         ]);
     }
