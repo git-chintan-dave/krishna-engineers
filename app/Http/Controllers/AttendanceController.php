@@ -13,7 +13,6 @@ use App\Http\Resources\AttendanceResource;
 use App\Imports\AttendanceImport;
 use App\Models\Attendance;
 use App\Services\AttendanceService;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -48,43 +47,17 @@ class AttendanceController extends Controller
 
         $filters = $request->validated();
 
-        $query = Attendance::query()->with([
-            'user:id,name,employee_code',
-            'breaks',
-        ]);
-
-        $user = auth()->user();
-
-        if (in_array($user->role?->value ?? $user->role, ['operator', 'bandsaw'], true)) {
-            $query->where('user_id', $user->id);
-        }
-
-        $attendances = $this->applyIndexFilters(
-            $query,
-            $filters,
-        )
-            ->when(
-                $filters['user_id'] ?? null,
-                fn(Builder $query, int $userId): Builder => $query->where('user_id', $userId),
-            )
-            ->when(
-                $filters['start_date'] ?? null,
-                fn(Builder $query, string $date): Builder => $query->whereDate('attendance_date', '>=', $date),
-            )
-            ->when(
-                $filters['end_date'] ?? null,
-                fn(Builder $query, string $date): Builder => $query->whereDate('attendance_date', '<=', $date),
-            )
-            ->paginate(
-                $filters['per_page'] ?? 10,
-            )
+        $attendances = Attendance::query()
+            ->with([
+                'user:id,name,employee_code',
+                'breaks',
+            ])
+            ->filterQuery($filters)
+            ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();
 
         return Inertia::render('Attendances/Index', [
-            'attendances' => AttendanceResource::collection(
-                $attendances,
-            ),
-
+            'attendances' => AttendanceResource::collection($attendances),
             'filters' => [
                 'user_id' => $filters['user_id'] ?? 'all',
                 'start_date' => $filters['start_date'] ?? '',

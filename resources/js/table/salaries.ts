@@ -18,16 +18,19 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
 
         createColumn({
             accessorKey: 'user.name',
+            sortKey: 'user.name',
             header: 'Employee',
             size: 240,
-            primary: true,
+            sortable: true,
         }),
 
         createColumn<Salary, string>({
             accessorKey: 'salary_period_start',
+            sortKey: 'salary_period_start',
             header: 'Salary Period',
             size: 205,
             sortable: true,
+            align: 'center',
             cell: ({ row }) => {
                 const start =
                     row.original.salary_period_start_formatted ?? '—';
@@ -40,40 +43,50 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
 
         createColumn({
             accessorKey: 'working_days',
+            sortKey: 'working_days',
             header: 'Days',
-            size: 80,
+            size: 120,
             sortable: true,
+            align: 'center'
         }),
 
         createColumn({
             accessorKey: 'base_salary_formatted',
+            sortKey: 'base_salary',
             header: 'Base Salary',
-            size: 125,
+            size: 140,
             sortable: true,
+            align: 'center',
             cell: (info) => `${info.getValue()}`,
         }),
 
         createColumn({
             accessorKey: 'incentive_formatted',
+            sortKey: 'incentive',
             header: 'Incentive',
-            size: 110,
+            size: 140,
             sortable: true,
+            align: 'center',
             cell: (info) => `${info.getValue()}`,
         }),
 
         createColumn({
             accessorKey: 'deduction_formatted',
+            sortKey: 'deduction',
             header: 'Deduction',
-            size: 110,
+            size: 140,
             sortable: true,
+            align: 'center',
             cell: (info) => `${info.getValue()}`,
         }),
 
         createColumn({
             accessorKey: 'final_payable_formatted',
+            sortKey: 'final_payable',
             header: 'Final Payable',
-            size: 135,
+            size: 160,
             sortable: true,
+            align: 'center',
             cell: (info) => `${info.getValue()}`,
         }),
 

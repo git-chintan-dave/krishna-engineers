@@ -1,4 +1,5 @@
 import type {PaginatedResponse, SortDirection} from '@/types/listing';
+import {SalarySchemaData} from "@/schemas/salarySchema";
 
 export type SalaryStatus = 'draft' | 'paid';
 
@@ -54,18 +55,7 @@ export type Salary = {
     created_at: string;
 };
 
-export type SalaryFormData = {
-    user_id: number | string;
-
-    salary_period_start: string;
-    salary_period_end: string;
-
-    upad: number | string;
-    paid_loan: number | string;
-
-    adjustment: number | string;
-    adjustment_reason: string;
-};
+export type SalaryFormData = SalarySchemaData;
 
 export type SalarySort =
     | 'salary_period_start'

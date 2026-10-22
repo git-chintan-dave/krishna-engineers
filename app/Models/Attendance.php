@@ -29,6 +29,10 @@ class Attendance extends Model
         'attendance_date',
     ];
 
+    protected string $startDateFilterColumn = 'attendance_date';
+
+    protected string $endDateFilterColumn = 'attendance_date';
+
     protected array $sortable = [
         'id',
         'attendance_date',

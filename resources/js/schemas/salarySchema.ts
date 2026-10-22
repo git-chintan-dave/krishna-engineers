@@ -1,6 +1,7 @@
 import {z} from 'zod';
 
 import {requiredDropdown, requiredNonNegativeNumber,} from '@/schemas/commonSchema';
+import {MachineSchemaData} from "@/schemas/machineSchema";
 
 const requiredDate = (label: string) =>
     z
@@ -48,17 +49,11 @@ const requiredNumber = (label: string) =>
 export const salarySchema = z
     .object({
         user_id: requiredDropdown('an employee'),
-
         salary_period_start: requiredDate('Salary period start date'),
-
         salary_period_end: requiredDate('Salary period end date'),
-
         upad: requiredNonNegativeNumber('UPAD'),
-
         paid_loan: requiredNonNegativeNumber('Paid loan'),
-
         adjustment: requiredNumber('Adjustment'),
-
         adjustment_reason: z
             .string()
             .max(5000, 'Adjustment reason must not exceed 5000 characters.')
@@ -100,4 +95,4 @@ export const salarySchema = z
         }
     });
 
-export type SalaryFormData = z.infer<typeof salarySchema>;
+export type SalarySchemaData = z.infer<typeof salarySchema>;

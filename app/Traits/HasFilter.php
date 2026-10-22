@@ -67,9 +67,13 @@ trait HasFilter
 
     protected function applyDateFilter(Builder $query, array $filters): void
     {
-        $dateColumn = property_exists($this, 'dateFilterColumn')
-            ? $this->dateFilterColumn
+        $startDateColumn = property_exists($this, 'startDateFilterColumn')
+            ? $this->startDateFilterColumn
             : 'created_at';
+
+        $endDateColumn = property_exists($this, 'endDateFilterColumn')
+            ? $this->endDateFilterColumn
+            : $startDateColumn;
 
         $startDate = $filters['start_date'] ?? null;
         $endDate = $filters['end_date'] ?? null;
@@ -78,7 +82,7 @@ trait HasFilter
             ->when(
                 filled($startDate),
                 fn (Builder $q) => $q->whereDate(
-                    $this->qualifyColumn($dateColumn),
+                    $this->qualifyColumn($startDateColumn),
                     '>=',
                     $startDate
                 )
@@ -86,7 +90,7 @@ trait HasFilter
             ->when(
                 filled($endDate),
                 fn (Builder $q) => $q->whereDate(
-                    $this->qualifyColumn($dateColumn),
+                    $this->qualifyColumn($endDateColumn),
                     '<=',
                     $endDate
                 )

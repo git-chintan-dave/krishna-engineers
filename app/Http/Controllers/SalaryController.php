@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Enums\SalaryStatus;
 use App\Http\Controllers\Concerns\HasCrudResponses;
-use App\Http\Queries\Concerns\AppliesIndexFilters;
 use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\Salaries\IndexSalaryRequest;
 use App\Http\Requests\Salaries\SalaryPreviewRequest;
@@ -13,7 +12,6 @@ use App\Http\Resources\SalaryResource;
 use App\Models\Salary;
 use App\Models\User;
 use App\Services\SalaryService;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
@@ -25,17 +23,13 @@ use Throwable;
 
 class SalaryController extends Controller
 {
-    use AppliesIndexFilters, HasCrudResponses;
+    use HasCrudResponses;
 
     private const string MODULE_NAME = 'Salary';
 
     private const string INDEX_ROUTE = 'salaries.index';
 
-    public function __construct(
-        private readonly SalaryService $salaryService,
-    )
-    {
-    }
+    public function __construct(private readonly SalaryService $salaryService) {}
 
     public function index(IndexSalaryRequest $request): Response
     {
@@ -43,42 +37,11 @@ class SalaryController extends Controller
 
         $filters = $request->validated();
 
-        $salaries = $this->applyIndexFilters(
-            Salary::query()->with([
+        $salaries = Salary::query()
+            ->with([
                 'user:id,name,employee_code',
-            ]),
-            $filters
-        )
-            ->when(
-                $filters['user_id'] ?? null,
-                fn(Builder $query, int $userId): Builder => $query->where(
-                    'user_id',
-                    $userId,
-                ),
-            )
-            ->when(
-                $filters['status'] ?? null,
-                fn(Builder $query, string $status): Builder => $query->where(
-                    'status',
-                    $status,
-                ),
-            )
-            ->when(
-                $filters['start_date'] ?? null,
-                fn(Builder $query, string $date): Builder => $query->whereDate(
-                    'salary_period_start',
-                    '>=',
-                    $date,
-                ),
-            )
-            ->when(
-                $filters['end_date'] ?? null,
-                fn(Builder $query, string $date): Builder => $query->whereDate(
-                    'salary_period_end',
-                    '<=',
-                    $date,
-                ),
-            )
+            ])
+            ->filterQuery($filters)
             ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();
 
@@ -86,7 +49,7 @@ class SalaryController extends Controller
         $periodStart = $now->clone()->startOfMonth()->toDateString();
         $periodEnd = $now->clone()->endOfMonth()->toDateString();
 
-        $canGenerateLastMonth = !Salary::query()
+        $canGenerateLastMonth = ! Salary::query()
             ->whereDate('salary_period_start', $periodStart)
             ->whereDate('salary_period_end', $periodEnd)
             ->exists();
@@ -125,9 +88,9 @@ class SalaryController extends Controller
             user: $user,
             periodStart: Carbon::parse($data['salary_period_start']),
             periodEnd: Carbon::parse($data['salary_period_end']),
-            upad: (float)$data['upad'],
-            paidLoan: (float)$data['paid_loan'],
-            adjustment: (float)$data['adjustment'],
+            upad: (float) $data['upad'],
+            paidLoan: (float) $data['paid_loan'],
+            adjustment: (float) $data['adjustment'],
             adjustmentReason: $data['adjustment_reason'] ?? null,
         );
 
@@ -160,10 +123,7 @@ class SalaryController extends Controller
         ]);
     }
 
-    public function update(
-        SalaryRequest $request,
-        Salary        $salary,
-    ): RedirectResponse
+    public function update(SalaryRequest $request, Salary $salary): RedirectResponse
     {
         Gate::authorize('update', $salary);
 
@@ -171,9 +131,9 @@ class SalaryController extends Controller
 
         $this->salaryService->recalculate(
             salary: $salary,
-            upad: (float)$data['upad'],
-            paidLoan: (float)$data['paid_loan'],
-            adjustment: (float)$data['adjustment'],
+            upad: (float) $data['upad'],
+            paidLoan: (float) $data['paid_loan'],
+            adjustment: (float) $data['adjustment'],
             adjustmentReason: $data['adjustment_reason'] ?? null,
         );
 
@@ -198,9 +158,7 @@ class SalaryController extends Controller
         return $this->successResponse('deleted');
     }
 
-    public function bulkDestroy(
-        BulkDestroyRequest $request,
-    ): RedirectResponse
+    public function bulkDestroy(BulkDestroyRequest $request): RedirectResponse
     {
         Gate::authorize('deleteAny', Salary::class);
 
@@ -214,9 +172,7 @@ class SalaryController extends Controller
         return $this->successResponse('bulk_deleted');
     }
 
-    public function preview(
-        SalaryPreviewRequest $request,
-    ): JsonResponse
+    public function preview(SalaryPreviewRequest $request): JsonResponse
     {
         Gate::authorize('create', Salary::class);
 
@@ -239,9 +195,7 @@ class SalaryController extends Controller
         return response()->json($preview);
     }
 
-    public function generateLastMonth(
-        SalaryService $salaryService,
-    ): RedirectResponse
+    public function generateLastMonth(SalaryService $salaryService): RedirectResponse
     {
         try {
             $result = $salaryService->generateForAllEmployees();

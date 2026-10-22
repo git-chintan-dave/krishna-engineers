@@ -13,6 +13,7 @@ import {salaryPage} from '@/config/salaries';
 import {preview as previewSalary} from '@/routes/salaries';
 import {salarySchema} from '@/schemas/salarySchema';
 import type {Salary, SalaryFormData} from '@/types/salary';
+import {useZodFormValidation} from "@/composables/useZodFormValidation";
 
 type SalaryPreview = {
     base_salary: string;
@@ -49,12 +50,6 @@ const emit = defineEmits<{
 
 const previewData = ref<SalaryPreview | null>(null);
 const previewLoading = ref(false);
-
-const hasSubmitted = ref(false);
-
-const frontendErrors = ref<
-    Partial<Record<SalaryField, string>>
->({});
 
 let previewRequestId = 0;
 
@@ -116,63 +111,20 @@ const hasAdjustment = computed(
     () => adjustment.value > 0,
 );
 
-const getError = (field: SalaryField): string | undefined =>
-    frontendErrors.value[field] ?? props.errors[field];
-
-const validateForm = (): boolean => {
-    const result = salarySchema.safeParse({
-        user_id: props.form.user_id,
-        salary_period_start: props.form.salary_period_start,
-        salary_period_end: props.form.salary_period_end,
-        upad: props.form.upad,
-        paid_loan: props.form.paid_loan,
-        adjustment: props.form.adjustment,
-        adjustment_reason: props.form.adjustment_reason,
-    });
-
-    const errors: Partial<Record<SalaryField, string>> = {};
-
-    if (!result.success) {
-        for (const issue of result.error.issues) {
-            const field = issue.path[0] as SalaryField;
-
-            if (issue.path.length > 0 && !errors[field]) {
-                errors[field] = issue.message;
-            }
-        }
-    }
-
-    frontendErrors.value = errors;
-
-    return result.success;
-};
-
-const handleSubmit = (): void => {
-    hasSubmitted.value = true;
-
-    if (!validateForm()) {
-        return;
-    }
-
-    emit('submit');
-};
-
-watch(
-    [
-        () => props.form.user_id,
-        () => props.form.salary_period_start,
-        () => props.form.salary_period_end,
-        () => props.form.upad,
-        () => props.form.paid_loan,
-        () => props.form.adjustment,
-        () => props.form.adjustment_reason,
-    ],
-    () => {
-        if (hasSubmitted.value) {
-            validateForm();
-        }
-    },
+// Frontend validation
+const {
+    errors: frontendErrors,
+    validate,
+} = useZodFormValidation(
+    salarySchema,
+    () => props.form,
 );
+
+const handleSubmit = () => {
+    if (validate()) {
+        emit('submit');
+    }
+};
 
 const loadPreview = async (): Promise<void> => {
     if (
@@ -262,9 +214,6 @@ watch(
     loadPreview,
     { immediate: true },
 );
-
-const formatAmount = (amount: number): string =>
-    `₹${amount.toFixed(2)}`;
 </script>
 
 <template>
@@ -286,7 +235,7 @@ const formatAmount = (amount: number): string =>
                     <AppEmployeeSelect
                         v-model="props.form.user_id"
                         :disabled="processing || isEdit"
-                        :error="getError('user_id')"
+                        :error="frontendErrors.user_id ?? props.errors.user_id"
                         :icon="User"
                         :placeholder="
                             salaryPage.form.employeePlaceholder
@@ -304,7 +253,7 @@ const formatAmount = (amount: number): string =>
                         id="salary-period-start"
                         v-model="props.form.salary_period_start"
                         :disabled="processing || isEdit"
-                        :error="getError('salary_period_start')"
+                        :error="frontendErrors.salary_period_start ?? props.errors.salary_period_start"
                         :icon="CalendarDays"
                         :placeholder="
                             salaryPage.form.salaryPeriodStartPlaceholder
@@ -322,7 +271,7 @@ const formatAmount = (amount: number): string =>
                         id="salary-period-end"
                         v-model="props.form.salary_period_end"
                         :disabled="processing || isEdit"
-                        :error="getError('salary_period_end')"
+                        :error="frontendErrors.salary_period_end ?? props.errors.salary_period_end"
                         :icon="CalendarDays"
                         :placeholder="
                             salaryPage.form.salaryPeriodEndPlaceholder
@@ -338,7 +287,7 @@ const formatAmount = (amount: number): string =>
                     <AppInput
                         id="salary-base-salary"
                         :icon="IndianRupee"
-                        :model-value="formatAmount(baseSalary)"
+                        :model-value="baseSalary"
                         disabled
                     />
                 </AppField>
@@ -361,7 +310,7 @@ const formatAmount = (amount: number): string =>
                     <AppInput
                         id="salary-incentive"
                         :icon="IndianRupee"
-                        :model-value="formatAmount(incentive)"
+                        :model-value="incentive"
                         disabled
                     />
                 </AppField>
@@ -373,7 +322,7 @@ const formatAmount = (amount: number): string =>
                     <AppInput
                         id="salary-deduction"
                         :icon="IndianRupee"
-                        :model-value="formatAmount(deduction)"
+                        :model-value="deduction"
                         disabled
                     />
                 </AppField>
@@ -406,7 +355,7 @@ const formatAmount = (amount: number): string =>
                         id="salary-upad"
                         v-model="props.form.upad"
                         :disabled="processing"
-                        :error="getError('upad')"
+                        :error="frontendErrors.upad ?? props.errors.upad"
                         :icon="IndianRupee"
                         :placeholder="salaryPage.form.upadPlaceholder"
                         min="0"
@@ -424,7 +373,7 @@ const formatAmount = (amount: number): string =>
                         id="salary-paid-loan"
                         v-model="props.form.paid_loan"
                         :disabled="processing"
-                        :error="getError('paid_loan')"
+                        :error="frontendErrors.paid_loan ?? props.errors.paid_loan"
                         :icon="IndianRupee"
                         :placeholder="salaryPage.form.paidLoanPlaceholder"
                         min="0"
@@ -442,7 +391,7 @@ const formatAmount = (amount: number): string =>
                         id="salary-adjustment"
                         v-model="props.form.adjustment"
                         :disabled="processing"
-                        :error="getError('adjustment')"
+                        :error="frontendErrors.adjustment ?? props.errors.adjustment"
                         :icon="IndianRupee"
                         :placeholder="salaryPage.form.adjustmentPlaceholder"
                         step="0.01"
@@ -459,7 +408,7 @@ const formatAmount = (amount: number): string =>
                         id="salary-adjustment-reason"
                         v-model="props.form.adjustment_reason"
                         :disabled="processing"
-                        :error="getError('adjustment_reason')"
+                        :error="frontendErrors.adjustment_reason ?? props.errors.adjustment_reason"
                         :placeholder="
                             salaryPage.form.adjustmentReasonPlaceholder
                         "
