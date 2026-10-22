@@ -28,6 +28,10 @@ class IndexBandsawWorkLogRequest extends FormRequest
                 'section_size_id',
                 'quantity',
                 'created_at',
+                'user.name',
+                'part.name',
+                'section.name',
+                'section_size.size',
             ]),
 
             'work_date' => [

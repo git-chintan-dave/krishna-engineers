@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type {InertiaForm} from '@inertiajs/vue3';
-import {CalendarDays, Hash, Layers3, MessageSquare, Ruler, User, Wrench} from '@lucide/vue';
+import {CalendarDays, Hash, Layers3, MessageSquare, Ruler, User, Wrench,} from '@lucide/vue';
 import {nextTick, ref, watch} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
@@ -11,9 +11,18 @@ import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppPartSelect from '@/components/selects/AppPartSelect.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppSectionSizeSelect from '@/components/selects/AppSectionSizeSelect.vue';
+
 import {bandsawWorkLogPage} from '@/config/bandsawWorkLogs';
+import {useZodFormValidation} from '@/composables/useZodFormValidation';
 import {bandsawWorkLogSchema} from '@/schemas/bandsawWorkLogSchema';
+
 import type {BandsawWorkLogFormData, BandsawWorkLogLastReport,} from '@/types/bandsawWorkLog';
+
+/*
+|--------------------------------------------------------------------------
+| Types
+|--------------------------------------------------------------------------
+*/
 
 type SelectedPart = {
     value: number;
@@ -21,6 +30,12 @@ type SelectedPart = {
     section_id: number | null;
     cutting_size: string | null;
 };
+
+/*
+|--------------------------------------------------------------------------
+| Props
+|--------------------------------------------------------------------------
+*/
 
 const props = defineProps<{
     form: InertiaForm<BandsawWorkLogFormData>;
@@ -30,6 +45,12 @@ const props = defineProps<{
     lastReports: Record<string, BandsawWorkLogLastReport>;
     isCreate: boolean;
 }>();
+
+/*
+|--------------------------------------------------------------------------
+| Emits
+|--------------------------------------------------------------------------
+*/
 
 const emit = defineEmits<{
     submit: [];
@@ -42,64 +63,23 @@ const emit = defineEmits<{
 |--------------------------------------------------------------------------
 */
 
-const validationFields = [
-    'user_id',
-    'work_date',
-    'part_id',
-    'section_size_id',
-    'quantity',
-    'remarks',
-] as const;
-
-type ValidationField = (typeof validationFields)[number];
+const {
+    errors: frontendErrors,
+    validate,
+} = useZodFormValidation(
+    bandsawWorkLogSchema,
+    () => props.form,
+);
 
 const handleSubmit = (): void => {
-    props.form.clearErrors(...validationFields);
-
-    const result = bandsawWorkLogSchema.safeParse({
-        user_id: props.form.user_id,
-        work_date: props.form.work_date,
-        part_id: props.form.part_id,
-        section_size_id: props.form.section_size_id,
-        quantity: props.form.quantity,
-        remarks: props.form.remarks,
-    });
-
-    if (!result.success) {
-        for (const issue of result.error.issues) {
-            const field = issue.path[0] as ValidationField;
-
-            if (validationFields.includes(field)) {
-                // Preserve the first validation message for each field.
-                if (!props.form.errors[field]) {
-                    props.form.setError(field, issue.message);
-                }
-            }
-        }
-
-        return;
+    if (validate()) {
+        emit('submit');
     }
-
-    /*
-     * A manager must select a Bandsaw operator.
-     * The logged-in Bandsaw operator does not need
-     * to select their own employee record.
-     */
-    if (props.canSelectBandsaw && !props.form.user_id) {
-        props.form.setError(
-            'user_id',
-            'Please select a Bandsaw operator.',
-        );
-
-        return;
-    }
-
-    emit('submit');
 };
 
 /*
 |--------------------------------------------------------------------------
-| Local state
+| Local State
 |--------------------------------------------------------------------------
 */
 
@@ -128,9 +108,8 @@ const handlePartChange = (part: SelectedPart | null): void => {
     }
 
     /*
-     * When restoring a last report, the last report
-     * already contains the correct Section and
-     * Section Size. Do not overwrite/clear them.
+     * When restoring a last report, preserve
+     * the restored Section and Section Size.
      */
     if (restoringLastReport.value) {
         return;
@@ -142,7 +121,6 @@ const handlePartChange = (part: SelectedPart | null): void => {
      * Section Size must be selected again.
      */
     props.form.section_id = part?.section_id ?? null;
-
     props.form.section_size_id = null;
 };
 
@@ -172,7 +150,9 @@ const handleSectionChange = (value: number | null): void => {
 |--------------------------------------------------------------------------
 */
 
-const applyLastReport = async (userId: number | null): Promise<void> => {
+const applyLastReport = async (
+    userId: number | null,
+): Promise<void> => {
     if (!userId) {
         return;
     }
@@ -184,9 +164,8 @@ const applyLastReport = async (userId: number | null): Promise<void> => {
     }
 
     /*
-     * Tell handlePartChange that this Part change
-     * is programmatic and must not clear the
-     * saved Section Size.
+     * Tell handlePartChange this Part change
+     * is programmatic.
      */
     restoringLastReport.value = true;
 
@@ -194,29 +173,15 @@ const applyLastReport = async (userId: number | null): Promise<void> => {
      * Set dependent values first.
      */
     props.form.section_id = lastReport.section_id;
-
     props.form.section_size_id = lastReport.section_size_id;
 
     /*
-     * Set Part last.
-     *
-     * AppPartSelect will resolve this ID from its
-     * lookup options and emit the complete Part,
-     * which populates Cutting Size.
+     * Set Part last so AppPartSelect can resolve
+     * the selected Part and emit its details.
      */
     props.form.part_id = lastReport.part_id;
 
-    /*
-     * Give AppPartSelect's watcher time to resolve
-     * the selected Part and emit it.
-     */
     await nextTick();
-
-    /*
-     * Keep this flag active through the current
-     * reactive cycle so handlePartChange cannot
-     * clear section_size_id.
-     */
     await nextTick();
 
     restoringLastReport.value = false;
@@ -224,7 +189,7 @@ const applyLastReport = async (userId: number | null): Promise<void> => {
 
 /*
 |--------------------------------------------------------------------------
-| Employee watcher
+| Employee Watcher
 |--------------------------------------------------------------------------
 */
 
@@ -238,36 +203,24 @@ watch(
         }
 
         /*
-         * Edit:
-         *
-         * Never apply another employee's last report
-         * when the existing form is initialized.
-         *
-         * Edit fields are populated from the record itself.
+         * Edit initialization:
+         * Preserve values from the existing record.
          */
         if (!props.isCreate && previousUserId === undefined) {
             return;
         }
 
         /*
-         * Create:
-         *
-         * Apply the selected employee's last report.
+         * Create initialization or operator change:
+         * Apply that operator's last report.
          */
         if (
             props.isCreate &&
-            (previousUserId === undefined || userId !== previousUserId)
+            (
+                previousUserId === undefined ||
+                userId !== previousUserId
+            )
         ) {
-            await applyLastReport(userId);
-
-            return;
-        }
-
-        /*
-         * Manager selecting a different Bandsaw operator
-         * while creating/editing.
-         */
-        if (props.canSelectBandsaw && userId !== previousUserId) {
             await applyLastReport(userId);
         }
     },
@@ -278,7 +231,10 @@ watch(
 </script>
 
 <template>
-    <form class="min-w-0 space-y-6" @submit.prevent="handleSubmit">
+    <form
+        class="min-w-0 space-y-6"
+        @submit.prevent="handleSubmit"
+    >
         <FormSection
             :description="bandsawWorkLogPage.form.sectionDescription"
             :title="bandsawWorkLogPage.form.sectionTitle"
@@ -287,7 +243,7 @@ watch(
                 <!-- Bandsaw Operator -->
                 <AppField
                     v-if="canSelectBandsaw"
-                    :error="form.errors.user_id"
+                    :error="frontendErrors.user_id ?? form.errors.user_id"
                     :label="bandsawWorkLogPage.form.bandsawLabel"
                     input-id="bandsaw-work-log-employee"
                     required
@@ -295,7 +251,7 @@ watch(
                     <AppEmployeeSelect
                         v-model="form.user_id"
                         :disabled="processing || !isCreate"
-                        :error="form.errors.user_id"
+                        :error="frontendErrors.user_id ?? form.errors.user_id"
                         :icon="User"
                         :placeholder="
                             bandsawWorkLogPage.form.bandsawPlaceholder
@@ -307,7 +263,7 @@ watch(
 
                 <!-- Work Date -->
                 <AppField
-                    :error="form.errors.work_date"
+                    :error="frontendErrors.work_date ?? form.errors.work_date"
                     :label="bandsawWorkLogPage.form.workDateLabel"
                     input-id="bandsaw-work-log-date"
                     required
@@ -316,7 +272,7 @@ watch(
                         id="bandsaw-work-log-date"
                         v-model="form.work_date"
                         :disabled="processing || !isCreate"
-                        :error="form.errors.work_date"
+                        :error="frontendErrors.work_date ?? form.errors.work_date"
                         :icon="CalendarDays"
                         required
                         type="date"
@@ -325,7 +281,7 @@ watch(
 
                 <!-- Part -->
                 <AppField
-                    :error="form.errors.part_id"
+                    :error="frontendErrors.part_id ?? form.errors.part_id"
                     :label="bandsawWorkLogPage.form.partLabel"
                     input-id="bandsaw-work-log-part"
                     required
@@ -333,7 +289,7 @@ watch(
                     <AppPartSelect
                         v-model="form.part_id"
                         :disabled="processing || !isCreate"
-                        :error="form.errors.part_id"
+                        :error="frontendErrors.part_id ?? form.errors.part_id"
                         :icon="Wrench"
                         :placeholder="bandsawWorkLogPage.form.partPlaceholder"
                         searchable
@@ -357,14 +313,14 @@ watch(
 
                 <!-- Section -->
                 <AppField
-                    :error="form.errors.section_id"
+                    :error="frontendErrors.section_id ?? form.errors.section_id"
                     :label="bandsawWorkLogPage.form.sectionLabel"
                     input-id="bandsaw-work-log-section"
                     required
                 >
                     <AppSectionSelect
                         :disabled="processing || !isCreate"
-                        :error="form.errors.section_id"
+                        :error="frontendErrors.section_id ?? form.errors.section_id"
                         :icon="Layers3"
                         :model-value="form.section_id"
                         :placeholder="
@@ -377,7 +333,10 @@ watch(
 
                 <!-- Section Size -->
                 <AppField
-                    :error="form.errors.section_size_id"
+                    :error="
+                        frontendErrors.section_size_id ??
+                        form.errors.section_size_id
+                    "
                     :label="bandsawWorkLogPage.form.sectionSizeLabel"
                     input-id="bandsaw-work-log-section-size"
                     required
@@ -385,7 +344,10 @@ watch(
                     <AppSectionSizeSelect
                         v-model="form.section_size_id"
                         :disabled="processing || !isCreate"
-                        :error="form.errors.section_size_id"
+                        :error="
+                            frontendErrors.section_size_id ??
+                            form.errors.section_size_id
+                        "
                         :icon="Ruler"
                         :placeholder="
                             bandsawWorkLogPage.form.sectionSizePlaceholder
@@ -397,7 +359,7 @@ watch(
 
                 <!-- Quantity -->
                 <AppField
-                    :error="form.errors.quantity"
+                    :error="frontendErrors.quantity ?? form.errors.quantity"
                     :label="bandsawWorkLogPage.form.quantityLabel"
                     input-id="bandsaw-work-log-quantity"
                     required
@@ -406,7 +368,7 @@ watch(
                         id="bandsaw-work-log-quantity"
                         v-model.number="form.quantity"
                         :disabled="processing"
-                        :error="form.errors.quantity"
+                        :error="frontendErrors.quantity ?? form.errors.quantity"
                         :icon="Hash"
                         :placeholder="
                             bandsawWorkLogPage.form.quantityPlaceholder
@@ -425,7 +387,7 @@ watch(
             title="Additional Information"
         >
             <AppField
-                :error="form.errors.remarks"
+                :error="frontendErrors.remarks ?? form.errors.remarks"
                 :label="bandsawWorkLogPage.form.remarksLabel"
                 input-id="bandsaw-work-log-remarks"
             >
@@ -433,9 +395,11 @@ watch(
                     id="bandsaw-work-log-remarks"
                     v-model="form.remarks"
                     :disabled="processing"
-                    :error="form.errors.remarks"
+                    :error="frontendErrors.remarks ?? form.errors.remarks"
                     :icon="MessageSquare"
-                    :placeholder="bandsawWorkLogPage.form.remarksPlaceholder"
+                    :placeholder="
+                        bandsawWorkLogPage.form.remarksPlaceholder
+                    "
                 />
             </AppField>
         </FormSection>

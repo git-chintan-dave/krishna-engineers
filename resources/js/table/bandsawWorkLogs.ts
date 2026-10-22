@@ -31,32 +31,36 @@ export const createBandsawWorkLogColumns = (
             ? [
                 createColumn({
                     accessorKey: 'user.name',
+                    sortKey: 'user.name',
                     header: 'Bandsaw',
                     size: 180,
-                    primary: true,
+                    sortable: true
                 }),
             ]
             : []),
 
         createColumn({
             accessorKey: 'part.name',
+            sortKey: 'part.name',
             header: 'Part',
             size: 160,
-            primary: true,
+            sortable: true
         }),
 
         createColumn({
             accessorKey: 'section.name',
+            sortKey: 'section.name',
             header: 'Section',
             size: 140,
-            primary: true,
+            sortable: true
         }),
 
         createColumn({
             accessorKey: 'section_size.size',
+            sortKey: 'section_size.size',
             header: 'Section Size',
             size: 140,
-            primary: true,
+            sortable: true
         }),
 
         createColumn({

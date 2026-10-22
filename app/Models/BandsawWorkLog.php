@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 #[Fillable([
     'user_id',
@@ -26,13 +27,16 @@ class BandsawWorkLog extends Model
     protected array $filterable = [
         'user_id',
         'part_id',
-        'section_id',
         'section_size_id',
     ];
 
     protected array $dateFilterable = [
         'work_date',
     ];
+
+    protected string $startDateFilterColumn = 'work_date';
+
+    protected string $endDateFilterColumn = 'work_date';
 
     protected array $sortable = [
         'work_date',
@@ -43,7 +47,7 @@ class BandsawWorkLog extends Model
         'quantity',
     ];
 
-    protected string $defaultSort = 'id';
+    protected string $defaultSort = 'work_date';
 
     protected string $defaultDirection = 'desc';
 
@@ -65,7 +69,7 @@ class BandsawWorkLog extends Model
 
     /*
     |--------------------------------------------------------------------------
-    | Casts
+    | Relationships
     |--------------------------------------------------------------------------
     */
 
@@ -73,12 +77,6 @@ class BandsawWorkLog extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships
-    |--------------------------------------------------------------------------
-    */
 
     public function part(): BelongsTo
     {
@@ -90,27 +88,28 @@ class BandsawWorkLog extends Model
         return $this->belongsTo(SectionSize::class);
     }
 
-    public function scopeForUser(
-        Builder $query,
-        int     $userId,
-    ): Builder
-    {
-        return $query->where('user_id', $userId);
-    }
-
     /*
     |--------------------------------------------------------------------------
     | Scopes
     |--------------------------------------------------------------------------
     */
 
+    public function scopeForUser(
+        Builder $query,
+        int $userId,
+    ): Builder {
+        return $query->where(
+            $this->qualifyColumn('user_id'),
+            $userId,
+        );
+    }
+
     public function scopeForDate(
         Builder $query,
                 $date,
-    ): Builder
-    {
+    ): Builder {
         return $query->whereDate(
-            'work_date',
+            $this->qualifyColumn('work_date'),
             $date,
         );
     }
@@ -118,10 +117,9 @@ class BandsawWorkLog extends Model
     public function scopeFromDate(
         Builder $query,
                 $date,
-    ): Builder
-    {
+    ): Builder {
         return $query->whereDate(
-            'work_date',
+            $this->qualifyColumn('work_date'),
             '>=',
             $date,
         );
@@ -130,10 +128,9 @@ class BandsawWorkLog extends Model
     public function scopeToDate(
         Builder $query,
                 $date,
-    ): Builder
-    {
+    ): Builder {
         return $query->whereDate(
-            'work_date',
+            $this->qualifyColumn('work_date'),
             '<=',
             $date,
         );
@@ -143,10 +140,9 @@ class BandsawWorkLog extends Model
         Builder $query,
                 $fromDate,
                 $toDate,
-    ): Builder
-    {
+    ): Builder {
         return $query->whereBetween(
-            'work_date',
+            $this->qualifyColumn('work_date'),
             [
                 $fromDate,
                 $toDate,
@@ -156,25 +152,42 @@ class BandsawWorkLog extends Model
 
     public function scopeForPart(
         Builder $query,
-        int     $partId,
-    ): Builder
-    {
+        int $partId,
+    ): Builder {
         return $query->where(
-            'part_id',
+            $this->qualifyColumn('part_id'),
             $partId,
         );
     }
 
     public function scopeForSectionSize(
         Builder $query,
-        int     $sectionSizeId,
-    ): Builder
-    {
+        int $sectionSizeId,
+    ): Builder {
         return $query->where(
-            'section_size_id',
+            $this->qualifyColumn('section_size_id'),
             $sectionSizeId,
         );
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Date Handling
+    |--------------------------------------------------------------------------
+    */
+
+    protected function setWorkDateAttribute($value): void
+    {
+        $this->attributes['work_date'] = $value !== null
+            ? Carbon::parse($value)->toDateString()
+            : null;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Casts
+    |--------------------------------------------------------------------------
+    */
 
     protected function casts(): array
     {
