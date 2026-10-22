@@ -3,12 +3,16 @@
 namespace App\Http\Requests\RawMaterialTransactions;
 
 use App\Enums\RawMaterialTransactionType;
+use App\Http\Requests\Concerns\IndexQueryRules;
+use App\Models\Section;
 use App\Models\SectionSize;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class IndexRawMaterialTransactionRequest extends FormRequest
 {
+    use IndexQueryRules;
+
     public function authorize(): bool
     {
         return true;
@@ -17,64 +21,49 @@ class IndexRawMaterialTransactionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'search' => [
+            ...$this->indexQueryRules([
+                'id',
+                'sectionSize.section.name',
+                'sectionSize.size',
+                'type',
+                'quantity',
+                'user.name',
+                'created_at',
+            ]),
+
+            'section_id' => [
                 'nullable',
-                'string',
-                'max:255',
+                'integer',
+                Rule::exists(Section::class, 'id'),
             ],
+
             'section_size_id' => [
                 'nullable',
                 'integer',
                 Rule::exists(SectionSize::class, 'id'),
             ],
+
             'type' => [
                 'nullable',
                 Rule::enum(RawMaterialTransactionType::class),
             ],
+
             'user_id' => [
                 'nullable',
                 'integer',
                 Rule::exists('users', 'id'),
             ],
-            'from_date' => [
+
+            'start_date' => [
                 'nullable',
                 'date',
             ],
-            'to_date' => [
+
+            'end_date' => [
                 'nullable',
                 'date',
                 'after_or_equal:from_date',
             ],
-            'sort' => [
-                'required',
-                Rule::in([
-                    'created_at',
-                    'quantity',
-                    'type',
-                ]),
-            ],
-            'direction' => [
-                'required',
-                Rule::in([
-                    'asc',
-                    'desc',
-                ]),
-            ],
-            'per_page' => [
-                'required',
-                'integer',
-                Rule::in([10, 25, 50, 100]),
-            ],
         ];
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'search' => $this->input('search', ''),
-            'sort' => $this->input('sort', 'created_at'),
-            'direction' => $this->input('direction', 'desc'),
-            'per_page' => $this->input('per_page', 10),
-        ]);
     }
 }

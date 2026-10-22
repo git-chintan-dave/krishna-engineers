@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\RawMaterialTransactionType;
+use App\Traits\HasFilter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -21,7 +22,33 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 ])]
 class RawMaterialTransaction extends Model
 {
-    use HasUuids;
+    use HasFilter, HasUuids;
+
+    protected array $searchable = [];
+
+    protected array $filterable = [
+        'section_id' => 'sectionSize.section_id',
+        'section_size_id',
+        'type',
+    ];
+
+    protected array $sortable = [
+        'id',
+        'sectionSize.section.name',
+        'sectionSize.size',
+        'type',
+        'quantity',
+        'user.name',
+        'created_at',
+    ];
+
+    protected string $defaultSort = 'id';
+
+    protected string $defaultDirection = 'desc';
+
+    protected string $startDateFilterColumn = 'created_at';
+
+    protected string $endDateFilterColumn = 'created_at';
 
     /*
     |--------------------------------------------------------------------------

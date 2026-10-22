@@ -1,5 +1,11 @@
 import type {PaginatedResponse, SortDirection} from '@/types/listing';
 
+export type RawMaterialTransactionType =
+    | 'opening'
+    | 'purchase'
+    | 'issue'
+    | 'adjustment';
+
 /*
 |--------------------------------------------------------------------------
 | Reference
@@ -86,8 +92,8 @@ export type RawMaterialTransactionFilters = {
     sectionSizeId: number | string;
     type: string;
     userId: number | string;
-    fromDate: string;
-    toDate: string;
+    startDate: string;
+    endDate: string;
     perPage: number;
     sort: RawMaterialTransactionSort;
     direction: SortDirection;

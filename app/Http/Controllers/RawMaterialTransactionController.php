@@ -9,7 +9,6 @@ use App\Http\Requests\RawMaterialTransactions\RawMaterialTransactionRequest;
 use App\Http\Resources\RawMaterialTransactionResource;
 use App\Models\RawMaterialTransaction;
 use App\Services\RawMaterialTransactionService;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -29,103 +28,16 @@ class RawMaterialTransactionController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function index(
-        IndexRawMaterialTransactionRequest $request,
-    ): Response
+    public function index(IndexRawMaterialTransactionRequest $request): Response
     {
         Gate::authorize('viewAny', RawMaterialTransaction::class);
 
         $filters = $request->validated();
 
         $transactions = RawMaterialTransaction::query()
-            ->with([
-                'sectionSize.section',
-                'user',
-                'reference',
-            ])
-            ->when(
-                $filters['search'] ?? null,
-                function (Builder $query, string $search): void {
-                    $query->where(function (Builder $query) use ($search): void {
-                        $query
-                            ->whereHas(
-                                'sectionSize',
-                                fn(Builder $query) => $query
-                                    ->where('size', 'like', "%{$search}%")
-                                    ->orWhereHas(
-                                        'section',
-                                        fn(Builder $query) => $query
-                                            ->where('name', 'like', "%{$search}%"),
-                                    ),
-                            )
-                            ->orWhereHas(
-                                'user',
-                                fn(Builder $query) => $query
-                                    ->where('name', 'like', "%{$search}%")
-                                    ->orWhere(
-                                        'employee_code',
-                                        'like',
-                                        "%{$search}%",
-                                    ),
-                            )
-                            ->orWhere(
-                                'reference_type',
-                                'like',
-                                "%{$search}%",
-                            )
-                            ->orWhere(
-                                'reference_id',
-                                'like',
-                                "%{$search}%",
-                            )
-                            ->orWhere(
-                                'remarks',
-                                'like',
-                                "%{$search}%",
-                            );
-                    });
-                },
-            )
-            ->when(
-                $filters['section_size_id'] ?? null,
-                fn(Builder $query, int $id) => $query->where(
-                    'section_size_id',
-                    $id,
-                ),
-            )
-            ->when(
-                $filters['type'] ?? null,
-                fn(Builder $query, string $type) => $query->where(
-                    'type',
-                    $type,
-                ),
-            )
-            ->when(
-                $filters['user_id'] ?? null,
-                fn(Builder $query, int $id) => $query->where('user_id', $id),
-            )
-            ->when(
-                $filters['from_date'] ?? null,
-                fn(Builder $query, string $date) => $query->whereDate(
-                    'created_at',
-                    '>=',
-                    $date,
-                ),
-            )
-            ->when(
-                $filters['to_date'] ?? null,
-                fn(Builder $query, string $date) => $query->whereDate(
-                    'created_at',
-                    '<=',
-                    $date,
-                ),
-            )
-            ->orderBy(
-                $filters['sort'] ?? 'created_at',
-                $filters['direction'] ?? 'desc',
-            )
-            ->orderBy('id', $filters['direction'] ?? 'desc')
-            ->paginate($filters['per_page'] ?? 10)
+            ->with(['sectionSize.section', 'user', 'reference'])
+            ->filterQuery($filters)
+            ->paginate($validated['per_page'] ?? 10)
             ->withQueryString();
 
         return Inertia::render('RawMaterialTransactions/Index', [
@@ -135,11 +47,12 @@ class RawMaterialTransactionController extends Controller
 
             'filters' => [
                 'search' => $filters['search'] ?? '',
+                'sectionId' => $filters['section_id'] ?? 'all',
                 'sectionSizeId' => $filters['section_size_id'] ?? 'all',
                 'type' => $filters['type'] ?? 'all',
                 'userId' => $filters['user_id'] ?? 'all',
-                'fromDate' => $filters['from_date'] ?? '',
-                'toDate' => $filters['to_date'] ?? '',
+                'startDate' => $filters['start_date'] ?? '',
+                'endDate' => $filters['end_date'] ?? '',
                 'perPage' => $filters['per_page'] ?? 10,
                 'sort' => $filters['sort'] ?? 'created_at',
                 'direction' => $filters['direction'] ?? 'desc',

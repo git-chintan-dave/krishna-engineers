@@ -10,10 +10,11 @@ import FormSection from '@/components/form/FormSection.vue';
 import AppRawMaterialTransactionTypeSelect from '@/components/selects/AppRawMaterialTransactionTypeSelect.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppSectionSizeSelect from '@/components/selects/AppSectionSizeSelect.vue';
+import {useZodFormValidation} from '@/composables/useZodFormValidation';
 import {rawMaterialTransactionPage} from '@/config/rawMaterialTransactions';
+import type {RawMaterialTransaction, RawMaterialTransactionFormData} from '@/types/rawMaterialTransaction';
 import type {RawMaterialTransactionValidationField} from '@/schemas/rawMaterialTransactionSchema';
 import {rawMaterialTransactionSchema} from '@/schemas/rawMaterialTransactionSchema';
-import type {RawMaterialTransaction, RawMaterialTransactionFormData,} from '@/types/rawMaterialTransaction';
 
 /*
 |--------------------------------------------------------------------------
@@ -58,58 +59,45 @@ const isEdit = computed(() => !!props.transaction);
 
 /*
 |--------------------------------------------------------------------------
+| Section
+|--------------------------------------------------------------------------
+*/
+
+const selectedSectionId = ref<number | null>(
+    props.transaction?.section_size.section_id ?? null,
+);
+
+watch(selectedSectionId, (newSectionId, oldSectionId) => {
+    if (!isEdit.value && newSectionId !== oldSectionId) {
+        props.form.section_size_id = null;
+    }
+});
+
+/*
+|--------------------------------------------------------------------------
 | Frontend Validation
 |--------------------------------------------------------------------------
 */
 
-const hasSubmitted = ref(false);
-
-const frontendErrors = ref<
-    Partial<Record<RawMaterialTransactionValidationField, string>>
->({});
-
-const validateForm = (): boolean => {
-    const result = rawMaterialTransactionSchema.safeParse({
+const {
+    errors: frontendErrors,
+    validate,
+} = useZodFormValidation(
+    rawMaterialTransactionSchema,
+    () => ({
         section_id: selectedSectionId.value,
         section_size_id: props.form.section_size_id,
         type: props.form.type,
         quantity: props.form.quantity,
         remarks: props.form.remarks,
-    });
+    }),
+);
 
-    if (result.success) {
-        frontendErrors.value = {};
-
-        return true;
-    }
-
-    const errors: Partial<
-        Record<RawMaterialTransactionValidationField, string>
-    > = {};
-
-    for (const issue of result.error.issues) {
-        const field = issue.path[0];
-
-        if (
-            typeof field === 'string' &&
-            [
-                'section_id',
-                'section_size_id',
-                'type',
-                'quantity',
-                'remarks',
-            ].includes(field) &&
-            !errors[field as RawMaterialTransactionValidationField]
-        ) {
-            errors[field as RawMaterialTransactionValidationField] =
-                issue.message;
-        }
-    }
-
-    frontendErrors.value = errors;
-
-    return false;
-};
+/*
+|--------------------------------------------------------------------------
+| Error Handling
+|--------------------------------------------------------------------------
+*/
 
 const getError = (
     field: RawMaterialTransactionValidationField,
@@ -129,55 +117,31 @@ const getError = (
         ];
 };
 
-const handleSubmit = () => {
-    hasSubmitted.value = true;
+/*
+|--------------------------------------------------------------------------
+| Submit
+|--------------------------------------------------------------------------
+*/
 
-    if (!validateForm()) {
-        return;
+const handleSubmit = (): void => {
+    if (validate()) {
+        emit('submit');
     }
-
-    emit('submit');
 };
 
 /*
 |--------------------------------------------------------------------------
-| Section
+| Computed
 |--------------------------------------------------------------------------
 */
 
-const selectedSectionId = ref<number | null>(
-    props.transaction?.section_size.section_id ?? null,
+const isAdjustment = computed(() => props.form.type === 'adjustment');
+
+const quantityMin = computed(() =>
+    isAdjustment.value ? -2147483648 : 1,
 );
 
-watch(selectedSectionId, (newSectionId, oldSectionId) => {
-    if (!isEdit.value && newSectionId !== oldSectionId) {
-        props.form.section_size_id = null;
-    }
-
-    if (hasSubmitted.value) {
-        validateForm();
-    }
-});
-
-/*
-|--------------------------------------------------------------------------
-| Revalidate When Form Values Change
-|--------------------------------------------------------------------------
-*/
-
-watch(
-    () => [
-        props.form.section_size_id,
-        props.form.type,
-        props.form.quantity,
-        props.form.remarks,
-    ],
-    () => {
-        if (hasSubmitted.value) {
-            validateForm();
-        }
-    },
-);
+const quantityMax = 4294967295;
 </script>
 
 <template>
@@ -270,9 +234,8 @@ watch(
                         :placeholder="
                             rawMaterialTransactionPage.form.quantityPlaceholder
                         "
-                        max="4294967295"
-                        min="1"
-                        required
+                        :max="quantityMax"
+                        :min="quantityMin"
                         step="1"
                         type="number"
                     />

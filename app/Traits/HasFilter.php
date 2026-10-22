@@ -135,10 +135,12 @@ trait HasFilter
             ? $this->filterable
             : [];
 
-        foreach ($filterable as $field) {
-            $requestKey = str_contains($field, '.')
-                ? explode('.', $field, 2)[0]
-                : $field;
+        foreach ($filterable as $key => $field) {
+            $requestKey = is_string($key)
+                ? $key
+                : (str_contains($field, '.')
+                    ? explode('.', $field, 2)[0]
+                    : $field);
 
             $value = $filters[$requestKey] ?? null;
 
@@ -181,58 +183,54 @@ trait HasFilter
             $sort = 'id';
         }
 
-        $direction = $filters['direction'] ?? ($this->defaultDirection ?? 'desc');
-
-        $direction = $direction === 'asc' ? 'asc' : 'desc';
+        $direction = ($filters['direction'] ?? ($this->defaultDirection ?? 'desc')) === 'asc'
+            ? 'asc'
+            : 'desc';
 
         if (! str_contains($sort, '.')) {
-            $query->orderBy(
-                $this->qualifyColumn($sort),
-                $direction
-            );
+            $query->orderBy($this->qualifyColumn($sort), $direction);
 
             return;
         }
 
-        [$relationName, $column] = explode('.', $sort, 2);
+        $segments = explode('.', $sort);
+        $column = array_pop($segments);
 
-        if (! method_exists($this, $relationName)) {
-            $query->orderBy(
-                $this->qualifyColumn('id'),
-                $direction
+        $model = $this;
+        $parentTable = $this->getTable();
+
+        foreach ($segments as $relationName) {
+            if (! method_exists($model, $relationName)) {
+                $query->orderBy($this->qualifyColumn('id'), $direction);
+
+                return;
+            }
+
+            $relation = $model->{$relationName}();
+
+            if (! $relation instanceof BelongsTo) {
+                $query->orderBy($this->qualifyColumn('id'), $direction);
+
+                return;
+            }
+
+            $relatedModel = $relation->getRelated();
+            $relatedTable = $relatedModel->getTable();
+
+            $query->leftJoin(
+                $relatedTable,
+                "{$parentTable}.{$relation->getForeignKeyName()}",
+                '=',
+                $relatedModel->qualifyColumn($relation->getOwnerKeyName()),
             );
 
-            return;
+            $parentTable = $relatedTable;
+            $model = $relatedModel;
         }
 
-        $relation = $this->{$relationName}();
-
-        if ($relation instanceof BelongsTo) {
-            $this->applyBelongsToSort(
-                $query,
-                $relation,
-                $column,
-                $direction
-            );
-
-            return;
-        }
-
-        if ($relation instanceof HasOne) {
-            $this->applyHasOneSort(
-                $query,
-                $relation,
-                $column,
-                $direction
-            );
-
-            return;
-        }
-
-        $query->orderBy(
-            $this->qualifyColumn('id'),
-            $direction
-        );
+        $query
+            ->select($this->getTable().'.*')
+            ->orderBy($model->qualifyColumn($column), $direction);
     }
 
     protected function applyBelongsToSort(

@@ -68,9 +68,9 @@ const filterType = ref(props.filters.type || 'all');
 
 const filterUserId = ref<number | 'all'>(props.filters.userId ?? 'all');
 
-const filterFromDate = ref(props.filters.fromDate ?? '');
+const filterStartDate = ref(props.filters.startDate ?? '');
 
-const filterToDate = ref(props.filters.toDate ?? '');
+const filterEndDate = ref(props.filters.endDate ?? '');
 
 /*
 |--------------------------------------------------------------------------
@@ -114,8 +114,8 @@ const {
                 : undefined,
         type: filterType.value !== 'all' ? filterType.value : undefined,
         user_id: filterUserId.value !== 'all' ? filterUserId.value : undefined,
-        from_date: filterFromDate.value || undefined,
-        to_date: filterToDate.value || undefined,
+        start_date: filterStartDate.value || undefined,
+        end_date: filterEndDate.value || undefined,
     }),
 });
 
@@ -147,8 +147,8 @@ const handleClearFilters = () => {
     filterSectionSizeId.value = 'all';
     filterType.value = 'all';
     filterUserId.value = 'all';
-    filterFromDate.value = '';
-    filterToDate.value = '';
+    filterStartDate.value = '';
+    filterEndDate.value = '';
 
     clearFilters();
 };
@@ -193,8 +193,8 @@ const handleDeleteSelected = () => {
                     filterSectionSizeId === 'all' &&
                     filterType === 'all' &&
                     filterUserId === 'all' &&
-                    !filterFromDate &&
-                    !filterToDate
+                    !filterStartDate &&
+                    !filterEndDate
                 "
                 :search-button-label="
                     rawMaterialTransactionPage.searchButtonLabel
@@ -256,7 +256,7 @@ const handleDeleteSelected = () => {
 
                     <div class="w-full shrink-0 sm:w-36">
                         <AppInput
-                            v-model="filterFromDate"
+                            v-model="filterStartDate"
                             aria-label="From date"
                             type="date"
                         />
@@ -264,7 +264,7 @@ const handleDeleteSelected = () => {
 
                     <div class="w-full shrink-0 sm:w-36">
                         <AppInput
-                            v-model="filterToDate"
+                            v-model="filterEndDate"
                             aria-label="To date"
                             type="date"
                         />

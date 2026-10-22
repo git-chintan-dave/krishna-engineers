@@ -30,8 +30,12 @@ class RawMaterialTransactionRequest extends FormRequest
             'quantity' => [
                 'required',
                 'integer',
-                'min:1',
                 'max:4294967295',
+                Rule::when(
+                    $this->input('type') === RawMaterialTransactionType::ADJUSTMENT->value,
+                    ['not_in:0', 'min:-2147483648'],
+                    ['min:1'],
+                ),
             ],
             'reference_type' => [
                 'nullable',
