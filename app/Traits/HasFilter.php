@@ -16,7 +16,7 @@ trait HasFilter
             : $request;
 
         if ($query->getQuery()->columns === null) {
-            $query->select($this->getTable() . '.*');
+            $query->select($this->getTable().'.*');
         }
 
         $this->applySearch($query, $filters);
@@ -75,25 +75,57 @@ trait HasFilter
             ? $this->endDateFilterColumn
             : $startDateColumn;
 
+        $dateFilterable = property_exists($this, 'dateFilterable')
+            ? $this->dateFilterable
+            : [];
+
         $startDate = $filters['start_date'] ?? null;
         $endDate = $filters['end_date'] ?? null;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Exact Date Filters
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($dateFilterable as $field) {
+            $date = $filters[$field] ?? null;
+
+            if (! filled($date)) {
+                continue;
+            }
+
+            $column = $this->qualifyColumn($field);
+
+            $query->whereRaw(
+                "DATE({$column}) = DATE(?)",
+                [$date],
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Date Range Filters
+        |--------------------------------------------------------------------------
+        */
+
+        $startColumn = $this->qualifyColumn($startDateColumn);
+        $endColumn = $this->qualifyColumn($endDateColumn);
 
         $query
             ->when(
                 filled($startDate),
-                fn (Builder $q) => $q->whereDate(
-                    $this->qualifyColumn($startDateColumn),
-                    '>=',
-                    $startDate
-                )
+                fn (Builder $q) => $q->whereRaw(
+                    "DATE({$startColumn}) >= DATE(?)",
+                    [$startDate],
+                ),
             )
             ->when(
                 filled($endDate),
-                fn (Builder $q) => $q->whereDate(
-                    $this->qualifyColumn($endDateColumn),
-                    '<=',
-                    $endDate
-                )
+                fn (Builder $q) => $q->whereRaw(
+                    "DATE({$endColumn}) <= DATE(?)",
+                    [$endDate],
+                ),
             );
     }
 
@@ -218,7 +250,7 @@ trait HasFilter
                 '=',
                 $relatedModel->qualifyColumn($relation->getOwnerKeyName())
             )
-            ->select($this->getTable() . '.*')
+            ->select($this->getTable().'.*')
             ->orderBy(
                 $relatedModel->qualifyColumn($column),
                 $direction
@@ -240,7 +272,7 @@ trait HasFilter
                 '=',
                 $this->qualifyColumn($relation->getLocalKeyName())
             )
-            ->select($this->getTable() . '.*')
+            ->select($this->getTable().'.*')
             ->orderBy(
                 $relatedModel->qualifyColumn($column),
                 $direction

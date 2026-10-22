@@ -26,10 +26,15 @@ class IndexOperatorWorkLogRequest extends FormRequest
                 'machine_id',
                 'part_id',
                 'setup_id',
+                'part_setup_id',
                 'quantity',
                 'rejection_quantity',
                 'production_seconds',
                 'created_at',
+                'user.name',
+                'machine.name',
+                'part.name',
+                'setup.name',
             ]),
 
             'work_date' => [

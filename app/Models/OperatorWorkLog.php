@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Enums\UserShift;
+use App\Traits\HasFilter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 #[Fillable([
     'user_id',
@@ -25,7 +28,45 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class OperatorWorkLog extends Model
 {
-    use HasUuids;
+    use HasFilter, HasUuids;
+
+    protected array $searchable = [];
+
+    protected array $filterable = [
+        'user_id',
+        'shift',
+        'machine_id',
+        'part_id',
+        'setup_id',
+        'part_setup_id',
+    ];
+
+    protected array $dateFilterable = [
+        'work_date',
+    ];
+
+    protected array $sortable = [
+        'work_date',
+        'user_id',
+        'shift',
+        'machine_id',
+        'part_id',
+        'setup_id',
+        'part_setup_id',
+        'quantity',
+        'rejection_quantity',
+        'production_seconds',
+    ];
+
+    protected string $defaultSort = 'id';
+
+    protected string $defaultDirection = 'desc';
+
+    /*
+    |--------------------------------------------------------------------------
+    | UUID
+    |--------------------------------------------------------------------------
+    */
 
     public function uniqueIds(): array
     {
@@ -39,7 +80,7 @@ class OperatorWorkLog extends Model
 
     /*
     |--------------------------------------------------------------------------
-    | Casts
+    | Relationships
     |--------------------------------------------------------------------------
     */
 
@@ -47,12 +88,6 @@ class OperatorWorkLog extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships
-    |--------------------------------------------------------------------------
-    */
 
     public function machine(): BelongsTo
     {
@@ -74,104 +109,88 @@ class OperatorWorkLog extends Model
         return $this->belongsTo(PartSetup::class);
     }
 
-    public function scopeForUser(
-        Builder $query,
-        int     $userId
-    ): Builder
-    {
-        return $query->where('user_id', $userId);
-    }
-
     /*
     |--------------------------------------------------------------------------
     | Scopes
     |--------------------------------------------------------------------------
     */
 
-    public function scopeForDate(
+    public function scopeForUser(
         Builder $query,
-        string  $date
-    ): Builder
-    {
-        return $query->whereDate('work_date', $date);
-    }
-
-    public function scopeFromDate(
-        Builder $query,
-        string  $date
-    ): Builder
-    {
-        return $query->whereDate('work_date', '>=', $date);
-    }
-
-    public function scopeToDate(
-        Builder $query,
-        string  $date
-    ): Builder
-    {
-        return $query->whereDate('work_date', '<=', $date);
-    }
-
-    public function scopeBetweenDates(
-        Builder $query,
-        string  $from,
-        string  $to
-    ): Builder
-    {
-        return $query->whereBetween('work_date', [$from, $to]);
+        int $userId,
+    ): Builder {
+        return $query->where(
+            $this->qualifyColumn('user_id'),
+            $userId,
+        );
     }
 
     public function scopeForMachine(
         Builder $query,
-        int     $machineId
-    ): Builder
-    {
-        return $query->where('machine_id', $machineId);
+        int $machineId,
+    ): Builder {
+        return $query->where(
+            $this->qualifyColumn('machine_id'),
+            $machineId,
+        );
     }
 
     public function scopeForPart(
         Builder $query,
-        int     $partId
-    ): Builder
-    {
-        return $query->where('part_id', $partId);
+        int $partId,
+    ): Builder {
+        return $query->where(
+            $this->qualifyColumn('part_id'),
+            $partId,
+        );
     }
 
     public function scopeForSetup(
         Builder $query,
-        int     $setupId
-    ): Builder
-    {
-        return $query->where('setup_id', $setupId);
+        int $setupId,
+    ): Builder {
+        return $query->where(
+            $this->qualifyColumn('setup_id'),
+            $setupId,
+        );
     }
 
     public function scopeForShift(
         Builder $query,
-        string  $shift
-    ): Builder
-    {
-        return $query->where('shift', $shift);
+        string $shift,
+    ): Builder {
+        return $query->where(
+            $this->qualifyColumn('shift'),
+            $shift,
+        );
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Production
+    |--------------------------------------------------------------------------
+    */
 
     public function calculateProductionSeconds(): int
     {
         return $this->quantity * $this->actual_cycle_time;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Helpers
-    |--------------------------------------------------------------------------
-    */
-
     public function hasRejections(): bool
     {
         return $this->rejection_quantity > 0;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Casts
+    |--------------------------------------------------------------------------
+    */
+
     protected function casts(): array
     {
         return [
+            'shift' => UserShift::class,
             'work_date' => 'date',
             'machine_cycle_time' => 'integer',
             'actual_cycle_time' => 'integer',
@@ -179,5 +198,18 @@ class OperatorWorkLog extends Model
             'rejection_quantity' => 'integer',
             'production_seconds' => 'integer',
         ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Date Mutators
+    |--------------------------------------------------------------------------
+    */
+
+    protected function setWorkDateAttribute($value): void
+    {
+        $this->attributes['work_date'] = $value !== null
+            ? Carbon::parse($value)->toDateString()
+            : null;
     }
 }

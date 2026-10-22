@@ -31,39 +31,49 @@ export const createOperatorWorkLogColumns = (
             ? [
                 createColumn({
                     accessorKey: 'user.name',
+                    sortKey: 'user.name',
                     header: 'Operator',
                     size: 180,
                     align: 'center',
+                    sortable: true,
                 }),
             ]
             : []),
 
         createColumn({
-            accessorKey: 'shift',
+            accessorKey: 'shift_label',
+            sortKey: 'shift',
             header: 'Shift',
             size: 100,
             align: 'center',
+            sortable: true,
         }),
 
         createColumn({
             accessorKey: 'machine.name',
+            sortKey: 'machine.name',
             header: 'Machine',
             size: 160,
             align: 'center',
+            sortable: true,
         }),
 
         createColumn({
             accessorKey: 'part.name',
+            sortKey: 'part.name',
             header: 'Part',
             size: 160,
             align: 'center',
+            sortable: true,
         }),
 
         createColumn({
             accessorKey: 'setup.name',
+            sortKey: 'setup.name',
             header: 'Setup',
             size: 100,
             align: 'center',
+            sortable: true,
         }),
 
         createColumn({

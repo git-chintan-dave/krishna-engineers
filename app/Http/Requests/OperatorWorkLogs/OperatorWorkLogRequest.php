@@ -15,6 +15,17 @@ class OperatorWorkLogRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('work_date')) {
+            $this->merge([
+                'work_date' => \Illuminate\Support\Carbon::parse(
+                    $this->input('work_date'),
+                )->toDateString(),
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [

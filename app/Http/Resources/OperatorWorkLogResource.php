@@ -32,7 +32,8 @@ class OperatorWorkLogResource extends JsonResource
             'uuid' => $this->uuid,
 
             'work_date' => $this->work_date?->toDateString(),
-            'shift' => $this->shift,
+            'shift' => $this->shift?->value,
+            'shift_label' => $this->shift?->label(),
 
             'user' => [
                 'id' => $this->user_id,

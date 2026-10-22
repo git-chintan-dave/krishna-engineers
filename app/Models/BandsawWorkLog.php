@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasFilter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -18,7 +19,33 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class BandsawWorkLog extends Model
 {
-    use HasUuids;
+    use HasFilter, HasUuids;
+
+    protected array $searchable = [];
+
+    protected array $filterable = [
+        'user_id',
+        'part_id',
+        'section_id',
+        'section_size_id',
+    ];
+
+    protected array $dateFilterable = [
+        'work_date',
+    ];
+
+    protected array $sortable = [
+        'work_date',
+        'user.name',
+        'part.name',
+        'section.name',
+        'section_size_id',
+        'quantity',
+    ];
+
+    protected string $defaultSort = 'id';
+
+    protected string $defaultDirection = 'desc';
 
     /*
     |--------------------------------------------------------------------------

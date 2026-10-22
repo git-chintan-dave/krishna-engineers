@@ -44,47 +44,24 @@ class OperatorWorkLogController extends Controller
                 ->with(['user', 'machine', 'part', 'setup']),
         );
 
-        $operatorWorkLogs = $this->applyIndexFilters(
-            $query,
-            $filters,
-            [
-                'work_date',
-                'quantity',
-                'rejection_quantity',
-                'production_seconds',
-            ],
-        )
+        $operatorWorkLogs = $query
+            // Operators can only see their own work logs.
             ->when(
                 $isOperator,
-                fn(Builder $query): Builder => $query->forUser($user->id),
+                fn (Builder $query): Builder => $query->forUser($user->id),
             )
+            // Apply all normal filters through HasFilter.
             ->when(
-                !$isOperator && ($filters['user_id'] ?? null),
-                fn(Builder $query): Builder => $query->forUser($filters['user_id']),
+                ! $isOperator,
+                fn (Builder $query): Builder => $query->filterQuery($filters),
             )
+            // Operators also use HasFilter, but their user_id must not
+            // override the mandatory user restriction above.
             ->when(
-                $filters['work_date'] ?? null,
-                fn(Builder $query, string $workDate): Builder => $query->forDate($workDate),
-            )
-            ->when(
-                $filters['shift'] ?? null,
-                fn(Builder $query, string $shift): Builder => $query->forShift($shift),
-            )
-            ->when(
-                $filters['machine_id'] ?? null,
-                fn(Builder $query, int $machineId): Builder => $query->forMachine($machineId),
-            )
-            ->when(
-                $filters['part_id'] ?? null,
-                fn(Builder $query, int $partId): Builder => $query->forPart($partId),
-            )
-            ->when(
-                $filters['setup_id'] ?? null,
-                fn(Builder $query, int $setupId): Builder => $query->forSetup($setupId),
-            )
-            ->orderBy(
-                $filters['sort'] ?? 'work_date',
-                $filters['direction'] ?? 'desc',
+                $isOperator,
+                fn (Builder $query): Builder => $query->filterQuery(
+                    array_diff_key($filters, ['user_id' => true]),
+                ),
             )
             ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();
@@ -110,25 +87,29 @@ class OperatorWorkLogController extends Controller
         ]);
     }
 
-    /**
-     * Add daily production and attendance metrics for each work log.
-     *
-     * @param Builder<OperatorWorkLog> $query
-     * @return Builder<OperatorWorkLog>
-     */
     private function withDailyProductionMetrics(Builder $query): Builder
     {
         return $query->addSelect([
             'daily_production_seconds' => OperatorWorkLog::query()
                 ->from('operator_work_logs as daily_logs')
                 ->selectRaw('COALESCE(SUM(daily_logs.production_seconds), 0)')
-                ->whereColumn('daily_logs.user_id', 'operator_work_logs.user_id')
-                ->whereColumn('daily_logs.work_date', 'operator_work_logs.work_date'),
+                ->whereColumn(
+                    'daily_logs.user_id',
+                    'operator_work_logs.user_id',
+                )
+                ->whereRaw(
+                    'DATE(daily_logs.work_date) = DATE(operator_work_logs.work_date)',
+                ),
 
             'effective_working_seconds' => Attendance::query()
                 ->select('effective_working_seconds')
-                ->whereColumn('attendances.user_id', 'operator_work_logs.user_id')
-                ->whereColumn('attendances.attendance_date', 'operator_work_logs.work_date')
+                ->whereColumn(
+                    'attendances.user_id',
+                    'operator_work_logs.user_id',
+                )
+                ->whereRaw(
+                    'DATE(attendances.attendance_date) = DATE(operator_work_logs.work_date)',
+                )
                 ->limit(1),
         ]);
     }
@@ -196,7 +177,7 @@ class OperatorWorkLogController extends Controller
                 'setup_id',
             ])
             ->unique('user_id')
-            ->mapWithKeys(fn(OperatorWorkLog $log): array => [
+            ->mapWithKeys(fn (OperatorWorkLog $log): array => [
                 (string) $log->user_id => [
                     'shift' => $log->shift,
                     'machine_id' => $log->machine_id,
@@ -304,7 +285,7 @@ class OperatorWorkLogController extends Controller
             ->where('setup_id', $setupId)
             ->first();
 
-        if (!$partSetup) {
+        if (! $partSetup) {
             throw ValidationException::withMessages([
                 'part_setup_id' => 'The selected part setup is invalid for the selected part and setup.',
             ]);
