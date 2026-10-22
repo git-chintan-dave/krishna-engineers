@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import {computed, useId} from 'vue';
+import { computed, useId } from 'vue';
 
-import {Switch} from '@/components/ui/switch';
+import { Switch } from '@/components/ui/switch';
 
 /*
 |--------------------------------------------------------------------------

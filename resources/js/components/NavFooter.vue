@@ -6,8 +6,8 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import {toUrl} from '@/lib/utils';
-import type {NavItem} from '@/types';
+import { toUrl } from '@/lib/utils';
+import type { NavItem } from '@/types';
 
 type Props = {
     items: NavItem[];
@@ -33,7 +33,7 @@ defineProps<Props>();
                             rel="noopener noreferrer"
                             target="_blank"
                         >
-                            <component :is="item.icon"/>
+                            <component :is="item.icon" />
                             <span>{{ item.title }}</span>
                         </a>
                     </SidebarMenuButton>

@@ -1,5 +1,5 @@
-import {ref, watch} from 'vue';
-import {z} from 'zod';
+import { ref, watch } from 'vue';
+import { z } from 'zod';
 
 export function useZodFormValidation<TSchema extends z.ZodType>(
     schema: TSchema,
@@ -7,9 +7,7 @@ export function useZodFormValidation<TSchema extends z.ZodType>(
 ) {
     type FormData = z.input<TSchema>;
 
-    const errors = ref<
-        Partial<Record<keyof FormData, string>>
-    >({});
+    const errors = ref<Partial<Record<keyof FormData, string>>>({});
 
     const validate = () => {
         const result = schema.safeParse(getData());
@@ -38,7 +36,7 @@ export function useZodFormValidation<TSchema extends z.ZodType>(
                 validate();
             }
         },
-        {deep: true},
+        { deep: true },
     );
 
     return {

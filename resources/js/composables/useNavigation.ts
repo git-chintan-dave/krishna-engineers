@@ -1,7 +1,7 @@
-import {usePage} from '@inertiajs/vue3';
-import {computed} from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
-import type {NavItem} from '@/types';
+import type { NavItem } from '@/types';
 
 type NavigationHref = NavItem['href'];
 

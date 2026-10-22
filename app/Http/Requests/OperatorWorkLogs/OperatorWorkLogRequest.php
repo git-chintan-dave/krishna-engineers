@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Enums\UserShift;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 
 class OperatorWorkLogRequest extends FormRequest
@@ -19,7 +20,7 @@ class OperatorWorkLogRequest extends FormRequest
     {
         if ($this->filled('work_date')) {
             $this->merge([
-                'work_date' => \Illuminate\Support\Carbon::parse(
+                'work_date' => Carbon::parse(
                     $this->input('work_date'),
                 )->toDateString(),
             ]);
@@ -40,7 +41,7 @@ class OperatorWorkLogRequest extends FormRequest
                     UserRole::OPERATOR->value,
                 ),
                 Rule::requiredIf(
-                    fn() => $this->user()->role !== UserRole::OPERATOR
+                    fn () => $this->user()->role !== UserRole::OPERATOR
                 ),
             ],
 

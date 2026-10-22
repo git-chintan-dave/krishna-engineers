@@ -1,6 +1,6 @@
-import {h} from 'vue';
+import { h } from 'vue';
 
-import {createColumn} from '@/table/helpers/createColumn';
+import { createColumn } from '@/table/helpers/createColumn';
 
 /*
 |--------------------------------------------------------------------------
@@ -22,23 +22,23 @@ type ImageColumnOptions<TData> = {
 */
 
 export const createImageColumn = <TData>({
-                                             getImage,
-                                             getAlt = () => 'Image',
-                                             title = 'Image',
-                                             size = 100,
-                                         }: ImageColumnOptions<TData>) =>
+    getImage,
+    getAlt = () => 'Image',
+    title = 'Image',
+    size = 100,
+}: ImageColumnOptions<TData>) =>
     createColumn<TData, string | null>({
         id: 'image',
         accessorFn: (row) => getImage(row),
         header: title,
         size,
-        cell: ({getValue, row}) => {
+        cell: ({ getValue, row }) => {
             const image = getValue();
 
             if (!image) {
                 return h(
                     'span',
-                    {class: 'text-sm font-normal text-muted-foreground'},
+                    { class: 'text-sm font-normal text-muted-foreground' },
                     'N/A',
                 );
             }

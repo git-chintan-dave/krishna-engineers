@@ -1,12 +1,12 @@
-import {createColumnHelper} from '@tanstack/vue-table';
+import { createColumnHelper } from '@tanstack/vue-table';
 
-import {edit} from '@/routes/part-setups';
-import {createActionsColumn} from '@/table/columns/actionsColumn';
-import {createDateColumn} from '@/table/columns/dateColumn';
-import {createImageColumn} from '@/table/columns/imageColumn';
-import {createSelectColumn} from '@/table/columns/selectColumn';
-import {createColumn} from '@/table/helpers/createColumn';
-import type {PartSetup} from '@/types/partSetup';
+import { edit } from '@/routes/part-setups';
+import { createActionsColumn } from '@/table/columns/actionsColumn';
+import { createDateColumn } from '@/table/columns/dateColumn';
+import { createImageColumn } from '@/table/columns/imageColumn';
+import { createSelectColumn } from '@/table/columns/selectColumn';
+import { createColumn } from '@/table/helpers/createColumn';
+import type { PartSetup } from '@/types/partSetup';
 
 const columnHelper = createColumnHelper<any, PartSetup>();
 

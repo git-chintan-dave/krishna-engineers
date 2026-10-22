@@ -106,7 +106,7 @@ class BandsawWorkLog extends Model
 
     public function scopeForDate(
         Builder $query,
-                $date,
+        $date,
     ): Builder {
         return $query->whereDate(
             $this->qualifyColumn('work_date'),
@@ -116,7 +116,7 @@ class BandsawWorkLog extends Model
 
     public function scopeFromDate(
         Builder $query,
-                $date,
+        $date,
     ): Builder {
         return $query->whereDate(
             $this->qualifyColumn('work_date'),
@@ -127,7 +127,7 @@ class BandsawWorkLog extends Model
 
     public function scopeToDate(
         Builder $query,
-                $date,
+        $date,
     ): Builder {
         return $query->whereDate(
             $this->qualifyColumn('work_date'),
@@ -138,8 +138,8 @@ class BandsawWorkLog extends Model
 
     public function scopeBetweenDates(
         Builder $query,
-                $fromDate,
-                $toDate,
+        $fromDate,
+        $toDate,
     ): Builder {
         return $query->whereBetween(
             $this->qualifyColumn('work_date'),

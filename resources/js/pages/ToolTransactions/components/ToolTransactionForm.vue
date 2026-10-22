@@ -1,7 +1,15 @@
 <script lang="ts" setup>
-import type {InertiaForm} from '@inertiajs/vue3';
-import {ArrowLeftRight, Box, Hash, MessageSquare, Settings2, User, Wrench,} from '@lucide/vue';
-import {computed, watch} from 'vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+import {
+    ArrowLeftRight,
+    Box,
+    Hash,
+    MessageSquare,
+    Settings2,
+    User,
+    Wrench,
+} from '@lucide/vue';
+import { computed, watch } from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -15,10 +23,13 @@ import AppSetupSelect from '@/components/selects/AppSetupSelect.vue';
 import AppToolSelect from '@/components/selects/AppToolSelect.vue';
 import AppToolTransactionTypeSelect from '@/components/selects/AppToolTransactionTypeSelect.vue';
 
-import {useZodFormValidation} from '@/composables/useZodFormValidation';
-import {toolTransactionPage} from '@/config/toolTransactions';
-import {toolTransactionSchema, type ToolTransactionValidationField,} from '@/schemas/toolTransactionSchema';
-import type {ToolTransactionType} from '@/types/toolTransaction';
+import { useZodFormValidation } from '@/composables/useZodFormValidation';
+import { toolTransactionPage } from '@/config/toolTransactions';
+import {
+    toolTransactionSchema,
+    type ToolTransactionValidationField,
+} from '@/schemas/toolTransactionSchema';
+import type { ToolTransactionType } from '@/types/toolTransaction';
 
 /*
 |--------------------------------------------------------------------------
@@ -90,9 +101,7 @@ const showPartAndSetup = computed(() => isIssue.value);
 
 const showReturnScrap = computed(() => isIssue.value);
 
-const quantityMin = computed(() =>
-    isAdjustment.value ? -2147483648 : 1,
-);
+const quantityMin = computed(() => (isAdjustment.value ? -2147483648 : 1));
 
 const quantityMax = 4294967295;
 
@@ -102,10 +111,7 @@ const quantityMax = 4294967295;
 |--------------------------------------------------------------------------
 */
 
-const {
-    errors: frontendErrors,
-    validate,
-} = useZodFormValidation(
+const { errors: frontendErrors, validate } = useZodFormValidation(
     toolTransactionSchema,
     () => props.form,
 );
@@ -129,8 +135,7 @@ const getError = (
     field: ToolTransactionValidationField,
 ): string | undefined => {
     return (
-        frontendErrors.value[field] ??
-        props.errors[backendErrorFieldMap[field]]
+        frontendErrors.value[field] ?? props.errors[backendErrorFieldMap[field]]
     );
 };
 
@@ -169,9 +174,7 @@ const handleTypeChange = (value: string | number | null): void => {
     }
 
     const nextType =
-        typeof value === 'string'
-            ? (value as ToolTransactionType)
-            : '';
+        typeof value === 'string' ? (value as ToolTransactionType) : '';
 
     if (props.form.type === nextType) {
         return;
@@ -191,11 +194,7 @@ const handleTypeChange = (value: string | number | null): void => {
 </script>
 
 <template>
-    <form
-        class="min-w-0 space-y-6"
-        novalidate
-        @submit.prevent="handleSubmit"
-    >
+    <form class="min-w-0 space-y-6" novalidate @submit.prevent="handleSubmit">
         <!-- Transaction Details -->
 
         <FormSection
@@ -352,9 +351,7 @@ const handleTypeChange = (value: string | number | null): void => {
                         :error="getError('setupId')"
                         :icon="Settings2"
                         :part-id="props.form.partId"
-                        :placeholder="
-                            toolTransactionPage.form.setupPlaceholder
-                        "
+                        :placeholder="toolTransactionPage.form.setupPlaceholder"
                         clearable
                         searchable
                     />
@@ -362,10 +359,7 @@ const handleTypeChange = (value: string | number | null): void => {
 
                 <!-- Return / Scrap -->
 
-                <div
-                    v-if="showReturnScrap"
-                    class="md:col-span-2"
-                >
+                <div v-if="showReturnScrap" class="md:col-span-2">
                     <ToggleCardInput
                         v-model="props.form.returnScrap"
                         :active-text="

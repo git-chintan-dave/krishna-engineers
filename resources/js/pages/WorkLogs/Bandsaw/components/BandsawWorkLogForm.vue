@@ -1,7 +1,15 @@
 <script lang="ts" setup>
-import type {InertiaForm} from '@inertiajs/vue3';
-import {CalendarDays, Hash, Layers3, MessageSquare, Ruler, User, Wrench,} from '@lucide/vue';
-import {nextTick, ref, watch} from 'vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+import {
+    CalendarDays,
+    Hash,
+    Layers3,
+    MessageSquare,
+    Ruler,
+    User,
+    Wrench,
+} from '@lucide/vue';
+import { nextTick, ref, watch } from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -12,11 +20,14 @@ import AppPartSelect from '@/components/selects/AppPartSelect.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppSectionSizeSelect from '@/components/selects/AppSectionSizeSelect.vue';
 
-import {bandsawWorkLogPage} from '@/config/bandsawWorkLogs';
-import {useZodFormValidation} from '@/composables/useZodFormValidation';
-import {bandsawWorkLogSchema} from '@/schemas/bandsawWorkLogSchema';
+import { bandsawWorkLogPage } from '@/config/bandsawWorkLogs';
+import { useZodFormValidation } from '@/composables/useZodFormValidation';
+import { bandsawWorkLogSchema } from '@/schemas/bandsawWorkLogSchema';
 
-import type {BandsawWorkLogFormData, BandsawWorkLogLastReport,} from '@/types/bandsawWorkLog';
+import type {
+    BandsawWorkLogFormData,
+    BandsawWorkLogLastReport,
+} from '@/types/bandsawWorkLog';
 
 /*
 |--------------------------------------------------------------------------
@@ -63,10 +74,7 @@ const emit = defineEmits<{
 |--------------------------------------------------------------------------
 */
 
-const {
-    errors: frontendErrors,
-    validate,
-} = useZodFormValidation(
+const { errors: frontendErrors, validate } = useZodFormValidation(
     bandsawWorkLogSchema,
     () => props.form,
 );
@@ -150,9 +158,7 @@ const handleSectionChange = (value: number | null): void => {
 |--------------------------------------------------------------------------
 */
 
-const applyLastReport = async (
-    userId: number | null,
-): Promise<void> => {
+const applyLastReport = async (userId: number | null): Promise<void> => {
     if (!userId) {
         return;
     }
@@ -216,10 +222,7 @@ watch(
          */
         if (
             props.isCreate &&
-            (
-                previousUserId === undefined ||
-                userId !== previousUserId
-            )
+            (previousUserId === undefined || userId !== previousUserId)
         ) {
             await applyLastReport(userId);
         }
@@ -231,10 +234,7 @@ watch(
 </script>
 
 <template>
-    <form
-        class="min-w-0 space-y-6"
-        @submit.prevent="handleSubmit"
-    >
+    <form class="min-w-0 space-y-6" @submit.prevent="handleSubmit">
         <FormSection
             :description="bandsawWorkLogPage.form.sectionDescription"
             :title="bandsawWorkLogPage.form.sectionTitle"
@@ -272,7 +272,9 @@ watch(
                         id="bandsaw-work-log-date"
                         v-model="form.work_date"
                         :disabled="processing || !isCreate"
-                        :error="frontendErrors.work_date ?? form.errors.work_date"
+                        :error="
+                            frontendErrors.work_date ?? form.errors.work_date
+                        "
                         :icon="CalendarDays"
                         required
                         type="date"
@@ -320,7 +322,9 @@ watch(
                 >
                     <AppSectionSelect
                         :disabled="processing || !isCreate"
-                        :error="frontendErrors.section_id ?? form.errors.section_id"
+                        :error="
+                            frontendErrors.section_id ?? form.errors.section_id
+                        "
                         :icon="Layers3"
                         :model-value="form.section_id"
                         :placeholder="
@@ -397,9 +401,7 @@ watch(
                     :disabled="processing"
                     :error="frontendErrors.remarks ?? form.errors.remarks"
                     :icon="MessageSquare"
-                    :placeholder="
-                        bandsawWorkLogPage.form.remarksPlaceholder
-                    "
+                    :placeholder="bandsawWorkLogPage.form.remarksPlaceholder"
                 />
             </AppField>
         </FormSection>

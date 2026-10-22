@@ -1,5 +1,10 @@
-import type {PaginatedResponse, SortDirection, Status, StatusFilter,} from '@/types/listing';
-import type {MachineSchemaData} from '@/schemas/machineSchema';
+import type {
+    PaginatedResponse,
+    SortDirection,
+    Status,
+    StatusFilter,
+} from '@/types/listing';
+import type { MachineSchemaData } from '@/schemas/machineSchema';
 
 export type Machine = {
     id: number;

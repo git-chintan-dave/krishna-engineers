@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import {Link} from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import Heading from '@/components/Heading.vue';
-import {Button} from '@/components/ui/button';
-import {Separator} from '@/components/ui/separator';
-import {useCurrentUrl} from '@/composables/useCurrentUrl';
-import {toUrl} from '@/lib/utils';
-import {edit as editAppearance} from '@/routes/appearance';
-import {edit as editProfile} from '@/routes/profile';
-import {edit as editSecurity} from '@/routes/security';
-import type {NavItem} from '@/types';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { useCurrentUrl } from '@/composables/useCurrentUrl';
+import { toUrl } from '@/lib/utils';
+import { edit as editAppearance } from '@/routes/appearance';
+import { edit as editProfile } from '@/routes/profile';
+import { edit as editSecurity } from '@/routes/security';
+import type { NavItem } from '@/types';
 
 const sidebarNavItems: NavItem[] = [
     {
@@ -25,7 +25,7 @@ const sidebarNavItems: NavItem[] = [
     },
 ];
 
-const {isCurrentOrParentUrl} = useCurrentUrl();
+const { isCurrentOrParentUrl } = useCurrentUrl();
 </script>
 
 <template>
@@ -52,18 +52,18 @@ const {isCurrentOrParentUrl} = useCurrentUrl();
                         variant="ghost"
                     >
                         <Link :href="item.href">
-                            <component :is="item.icon" class="h-4 w-4"/>
+                            <component :is="item.icon" class="h-4 w-4" />
                             {{ item.title }}
                         </Link>
                     </Button>
                 </nav>
             </aside>
 
-            <Separator class="my-6 lg:hidden"/>
+            <Separator class="my-6 lg:hidden" />
 
             <div class="flex-1 md:max-w-2xl">
                 <section class="max-w-xl space-y-12">
-                    <slot/>
+                    <slot />
                 </section>
             </div>
         </div>

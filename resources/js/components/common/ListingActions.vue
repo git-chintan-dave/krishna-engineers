@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import {type Href, Link} from '@inertiajs/vue3';
-import {Banknote, Download, FileUp, Plus, Trash2} from '@lucide/vue';
+import { type Href, Link } from '@inertiajs/vue3';
+import { Banknote, Download, FileUp, Plus, Trash2 } from '@lucide/vue';
 
 import vConfirm from '@/directives/confirm';
-import {Button} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 
 /*
 |--------------------------------------------------------------------------
@@ -84,7 +84,7 @@ const emit = defineEmits<{
             type="button"
             variant="destructive"
         >
-            <Trash2 aria-hidden="true" class="size-4"/>
+            <Trash2 aria-hidden="true" class="size-4" />
 
             <span class="whitespace-nowrap">
                 Delete selected
@@ -104,7 +104,7 @@ const emit = defineEmits<{
             variant="outline"
         >
             <Link :aria-label="importLabel" :href="importUrl">
-                <FileUp aria-hidden="true" class="size-4"/>
+                <FileUp aria-hidden="true" class="size-4" />
 
                 <span class="whitespace-nowrap">
                     {{ importLabel }}
@@ -121,7 +121,7 @@ const emit = defineEmits<{
             variant="outline"
         >
             <Link :aria-label="exportLabel" :href="exportUrl">
-                <Download aria-hidden="true" class="size-4"/>
+                <Download aria-hidden="true" class="size-4" />
 
                 <span class="whitespace-nowrap">
                     {{ exportLabel }}
@@ -145,7 +145,7 @@ const emit = defineEmits<{
                 :tabindex="generateDisabled ? -1 : undefined"
                 method="post"
             >
-                <Banknote aria-hidden="true" class="size-4"/>
+                <Banknote aria-hidden="true" class="size-4" />
 
                 <span class="whitespace-nowrap">
                     {{ generateLabel }}
@@ -164,7 +164,7 @@ const emit = defineEmits<{
             size="sm"
         >
             <Link :aria-label="createLabel" :href="createUrl">
-                <Plus aria-hidden="true" class="size-4"/>
+                <Plus aria-hidden="true" class="size-4" />
 
                 <span class="whitespace-nowrap">
                     {{ createLabel }}

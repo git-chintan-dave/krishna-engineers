@@ -1,11 +1,11 @@
-import {createColumnHelper} from '@tanstack/vue-table';
+import { createColumnHelper } from '@tanstack/vue-table';
 
-import {edit} from '@/routes/operator';
-import {createActionsColumn} from '@/table/columns/actionsColumn';
-import {createDateColumn} from '@/table/columns/dateColumn';
-import {createSelectColumn} from '@/table/columns/selectColumn';
-import {createColumn} from '@/table/helpers/createColumn';
-import type {OperatorWorkLog} from '@/types/operatorWorkLog';
+import { edit } from '@/routes/operator';
+import { createActionsColumn } from '@/table/columns/actionsColumn';
+import { createDateColumn } from '@/table/columns/dateColumn';
+import { createSelectColumn } from '@/table/columns/selectColumn';
+import { createColumn } from '@/table/helpers/createColumn';
+import type { OperatorWorkLog } from '@/types/operatorWorkLog';
 
 const columnHelper = createColumnHelper<any, OperatorWorkLog>();
 
@@ -16,10 +16,10 @@ export const createOperatorWorkLogColumns = (
     columnHelper.columns([
         ...(canManage
             ? [
-                createSelectColumn({
-                    resourceName: 'operator-work-logs',
-                }),
-            ]
+                  createSelectColumn({
+                      resourceName: 'operator-work-logs',
+                  }),
+              ]
             : []),
 
         createDateColumn({
@@ -29,15 +29,15 @@ export const createOperatorWorkLogColumns = (
 
         ...(canManage
             ? [
-                createColumn({
-                    accessorKey: 'user.name',
-                    sortKey: 'user.name',
-                    header: 'Operator',
-                    size: 180,
-                    align: 'center',
-                    sortable: true,
-                }),
-            ]
+                  createColumn({
+                      accessorKey: 'user.name',
+                      sortKey: 'user.name',
+                      header: 'Operator',
+                      size: 180,
+                      align: 'center',
+                      sortable: true,
+                  }),
+              ]
             : []),
 
         createColumn({
@@ -98,8 +98,7 @@ export const createOperatorWorkLogColumns = (
             size: 180,
             align: 'center',
             sortable: true,
-            cell: ({ row }) =>
-                row.original.production_seconds_formatted ?? '—',
+            cell: ({ row }) => row.original.production_seconds_formatted ?? '—',
         }),
 
         createColumn<OperatorWorkLog, number | null>({
@@ -110,19 +109,17 @@ export const createOperatorWorkLogColumns = (
             cell: ({ getValue }) => {
                 const efficiency = getValue();
 
-                return efficiency == null
-                    ? '—'
-                    : `${efficiency.toFixed(2)}%`;
+                return efficiency == null ? '—' : `${efficiency.toFixed(2)}%`;
             },
         }),
 
         ...(canManage
             ? [
-                createActionsColumn({
-                    editUrl: (uuid) => edit(uuid).url,
-                    resourceName: 'operator work log',
-                    handleDelete,
-                }),
-            ]
+                  createActionsColumn({
+                      editUrl: (uuid) => edit(uuid).url,
+                      resourceName: 'operator work log',
+                      handleDelete,
+                  }),
+              ]
             : []),
     ]);

@@ -1,5 +1,11 @@
 <script lang="ts" setup>
-import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 
 defineProps<{
     title?: string;
@@ -21,7 +27,7 @@ defineProps<{
                         </CardDescription>
                     </CardHeader>
                     <CardContent class="px-10 py-8">
-                        <slot/>
+                        <slot />
                     </CardContent>
                 </Card>
             </div>

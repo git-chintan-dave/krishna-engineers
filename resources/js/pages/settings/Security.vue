@@ -1,15 +1,15 @@
 <script lang="ts" setup>
-import {Form, Head} from '@inertiajs/vue3';
+import { Form, Head } from '@inertiajs/vue3';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
-import {Button} from '@/components/ui/button';
-import {Label} from '@/components/ui/label';
-import {edit} from '@/routes/security';
-import type {Props as ManagePasskeysProps} from '@/components/ManagePasskeys.vue';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { edit } from '@/routes/security';
+import type { Props as ManagePasskeysProps } from '@/components/ManagePasskeys.vue';
 import ManagePasskeys from '@/components/ManagePasskeys.vue';
-import type {Props as ManageTwoFactorProps} from '@/components/ManageTwoFactor.vue';
+import type { Props as ManageTwoFactorProps } from '@/components/ManageTwoFactor.vue';
 import ManageTwoFactor from '@/components/ManageTwoFactor.vue';
 
 // oxfmt-ignore
@@ -33,7 +33,7 @@ defineOptions({
 </script>
 
 <template>
-    <Head title="Security settings"/>
+    <Head title="Security settings" />
 
     <h1 class="sr-only">Security settings</h1>
 
@@ -67,7 +67,7 @@ defineOptions({
                     name="current_password"
                     placeholder="Current password"
                 />
-                <InputError :message="errors.current_password"/>
+                <InputError :message="errors.current_password" />
             </div>
 
             <div class="grid gap-2">
@@ -80,7 +80,7 @@ defineOptions({
                     name="password"
                     placeholder="New password"
                 />
-                <InputError :message="errors.password"/>
+                <InputError :message="errors.password" />
             </div>
 
             <div class="grid gap-2">
@@ -93,7 +93,7 @@ defineOptions({
                     name="password_confirmation"
                     placeholder="Confirm password"
                 />
-                <InputError :message="errors.password_confirmation"/>
+                <InputError :message="errors.password_confirmation" />
             </div>
 
             <div class="flex items-center gap-4">

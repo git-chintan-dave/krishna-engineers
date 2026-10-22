@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import {router} from '@inertiajs/vue3';
-import {ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
@@ -14,14 +14,19 @@ import ListingFilters from '@/components/common/ListingFilters.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
 
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
 
-import {operatorWorkLogPage} from '@/config/operatorWorkLogs';
+import { operatorWorkLogPage } from '@/config/operatorWorkLogs';
 
-import {bulkDestroy, create, destroy, index as operatorWorkLogsRoute,} from '@/routes/operator';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as operatorWorkLogsRoute,
+} from '@/routes/operator';
 
-import {createOperatorWorkLogColumns} from '@/table/operatorWorkLogs';
+import { createOperatorWorkLogColumns } from '@/table/operatorWorkLogs';
 
 import type {
     OperatorWorkLog,
@@ -116,7 +121,7 @@ const columns = createOperatorWorkLogColumns((uuid) => {
     router.delete(destroy(uuid).url);
 }, props.canSelectOperator);
 
-const {table, selectedCount, search, clearFilters, deleteSelected} =
+const { table, selectedCount, search, clearFilters, deleteSelected } =
     useListingTable<OperatorWorkLog, OperatorWorkLogSort>({
         data: () => props.operatorWorkLogs,
 

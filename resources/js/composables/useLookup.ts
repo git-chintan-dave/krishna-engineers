@@ -1,7 +1,7 @@
-import {ref} from 'vue';
+import { ref } from 'vue';
 
-import type {SelectOption} from '@/types/common';
-import type {EnumLookupKey} from '@/types/lookup';
+import type { SelectOption } from '@/types/common';
+import type { EnumLookupKey } from '@/types/lookup';
 
 type LookupResponse<TValue extends string | number = string> = {
     data: SelectOption<TValue>[];
@@ -150,8 +150,8 @@ export function useLookup() {
     ): Promise<SelectOption<number>[]> {
         const queryString = type
             ? new URLSearchParams({
-                type,
-            }).toString()
+                  type,
+              }).toString()
             : '';
 
         return databaseOptions<number>(

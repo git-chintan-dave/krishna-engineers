@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import {Form, Head} from '@inertiajs/vue3';
+import { Form, Head } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
-import {Button} from '@/components/ui/button';
-import {Label} from '@/components/ui/label';
-import {Spinner} from '@/components/ui/spinner';
-import {store} from '@/routes/password/confirm';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
+import { store } from '@/routes/password/confirm';
 
 defineOptions({
     layout: {
@@ -17,7 +17,7 @@ defineOptions({
 </script>
 
 <template>
-    <Head title="Confirm password"/>
+    <Head title="Confirm password" />
 
     <Form
         v-slot="{ errors, processing }"
@@ -36,7 +36,7 @@ defineOptions({
                     required
                 />
 
-                <InputError :message="errors.password"/>
+                <InputError :message="errors.password" />
             </div>
 
             <div class="flex items-center">
@@ -45,7 +45,7 @@ defineOptions({
                     class="w-full"
                     data-test="confirm-password-button"
                 >
-                    <Spinner v-if="processing"/>
+                    <Spinner v-if="processing" />
                     Confirm password
                 </Button>
             </div>

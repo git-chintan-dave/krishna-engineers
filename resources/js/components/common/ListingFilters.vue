@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import {computed} from 'vue';
+import { computed } from 'vue';
 
 import AppSearch from '@/components/common/AppSearch.vue';
-import {Button} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 
 /*
 |--------------------------------------------------------------------------
@@ -102,7 +102,7 @@ const isClearDisabled = computed(
             v-if="$slots.filters"
             class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center"
         >
-            <slot name="filters"/>
+            <slot name="filters" />
         </div>
 
         <!--

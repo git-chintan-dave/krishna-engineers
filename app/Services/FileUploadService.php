@@ -17,10 +17,9 @@ class FileUploadService
      */
     public function store(
         ?UploadedFile $file,
-        string        $directory,
-    ): ?string
-    {
-        if (!$file) {
+        string $directory,
+    ): ?string {
+        if (! $file) {
             return null;
         }
 
@@ -35,15 +34,14 @@ class FileUploadService
      */
     public function upload(
         UploadedFile $file,
-        string       $directory,
-    ): string
-    {
+        string $directory,
+    ): string {
         $extension = $file->getClientOriginalExtension();
 
         $filename = Str::uuid()
-                ->toString()
-            . '.'
-            . $extension;
+            ->toString()
+            .'.'
+            .$extension;
 
         $file->storeAs(
             $directory,
@@ -65,11 +63,10 @@ class FileUploadService
      */
     public function update(
         ?UploadedFile $file,
-        ?string       $oldFilename,
-        string        $directory,
-        bool          $remove = false,
-    ): ?string
-    {
+        ?string $oldFilename,
+        string $directory,
+        bool $remove = false,
+    ): ?string {
         if ($file) {
             return $this->replace(
                 $file,
@@ -95,10 +92,9 @@ class FileUploadService
      */
     public function replace(
         UploadedFile $file,
-        ?string      $oldFilename,
-        string       $directory,
-    ): string
-    {
+        ?string $oldFilename,
+        string $directory,
+    ): string {
         $filename = $this->upload(
             $file,
             $directory,
@@ -117,15 +113,14 @@ class FileUploadService
      */
     public function delete(
         ?string $filename,
-        string  $directory,
-    ): void
-    {
-        if (!$filename) {
+        string $directory,
+    ): void {
+        if (! $filename) {
             return;
         }
 
         Storage::disk(self::DISK)->delete(
-            $directory . '/' . $filename,
+            $directory.'/'.$filename,
         );
     }
 }

@@ -1,12 +1,12 @@
 ﻿<script lang="ts" setup>
-import {router, useForm} from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {setupPage} from '@/config/setups';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { setupPage } from '@/config/setups';
 import SetupForm from '@/pages/Setups/components/SetupForm.vue';
-import {index as setups, store} from '@/routes/setups';
-import type {SetupFormData} from '@/types/setup';
+import { index as setups, store } from '@/routes/setups';
+import type { SetupFormData } from '@/types/setup';
 
 /*
 |--------------------------------------------------------------------------

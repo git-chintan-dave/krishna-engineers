@@ -1,10 +1,10 @@
-import {Link} from '@inertiajs/vue3';
-import {CheckCircle2, Eye, Pencil, Trash2} from '@lucide/vue';
-import {h, withDirectives} from 'vue';
+import { Link } from '@inertiajs/vue3';
+import { CheckCircle2, Eye, Pencil, Trash2 } from '@lucide/vue';
+import { h, withDirectives } from 'vue';
 
-import {Button} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import vConfirm from '@/directives/confirm';
-import {COLUMN_WIDTHS} from '@/table/constants/columnWidths';
+import { COLUMN_WIDTHS } from '@/table/constants/columnWidths';
 
 /*
 |--------------------------------------------------------------------------
@@ -31,28 +31,18 @@ type ActionsColumnOptions = {
 */
 
 export const createActionsColumn = ({
-                                        editUrl,
-                                        detailsUrl,
-                                        markAsPaidUrl,
-                                        resourceName,
-                                        handleDelete,
-                                        handleMarkAsPaid,
-                                        showDelete,
-                                        showEdit,
-                                        showMarkAsPaid,
-                                    }: ActionsColumnOptions) => {
+    editUrl,
+    detailsUrl,
+    markAsPaidUrl,
+    resourceName,
+    handleDelete,
+    handleMarkAsPaid,
+    showDelete,
+    showEdit,
+    showMarkAsPaid,
+}: ActionsColumnOptions) => {
     const hasDetails = Boolean(detailsUrl);
     const hasMarkAsPaid = Boolean(markAsPaidUrl && handleMarkAsPaid);
-
-    // Edit and Delete are the two default actions.
-    const actionCount =
-        2 +
-        Number(hasDetails) +
-        Number(hasMarkAsPaid);
-
-    const columnSize =
-        actionCount * COLUMN_WIDTHS.actionButton +
-        (actionCount - 1) * COLUMN_WIDTHS.actionGap;
 
     return {
         id: 'actions',
@@ -64,7 +54,7 @@ export const createActionsColumn = ({
             align: 'center',
         },
         enableSorting: false,
-        cell: ({row}: any) => {
+        cell: ({ row }: any) => {
             const uuid = row.original.uuid;
             const name =
                 row.original.name ?? row.original.user?.name ?? 'record';
@@ -94,21 +84,13 @@ export const createActionsColumn = ({
                             asChild: true,
                         },
                         () =>
-                            h(
-                                Link,
-                                {href: detailsUrl(uuid)},
-                                () => [
-                                    h(Eye, {
-                                        class: 'size-3.5',
-                                        'aria-hidden': 'true',
-                                    }),
-                                    h(
-                                        'span',
-                                        {class: 'sr-only'},
-                                        `View ${name}`,
-                                    ),
-                                ],
-                            ),
+                            h(Link, { href: detailsUrl(uuid) }, () => [
+                                h(Eye, {
+                                    class: 'size-3.5',
+                                    'aria-hidden': 'true',
+                                }),
+                                h('span', { class: 'sr-only' }, `View ${name}`),
+                            ]),
                     ),
                 );
             }
@@ -131,21 +113,13 @@ export const createActionsColumn = ({
                             asChild: true,
                         },
                         () =>
-                            h(
-                                Link,
-                                {href: editUrl(uuid)},
-                                () => [
-                                    h(Pencil, {
-                                        class: 'size-3.5',
-                                        'aria-hidden': 'true',
-                                    }),
-                                    h(
-                                        'span',
-                                        {class: 'sr-only'},
-                                        `Edit ${name}`,
-                                    ),
-                                ],
-                            ),
+                            h(Link, { href: editUrl(uuid) }, () => [
+                                h(Pencil, {
+                                    class: 'size-3.5',
+                                    'aria-hidden': 'true',
+                                }),
+                                h('span', { class: 'sr-only' }, `Edit ${name}`),
+                            ]),
                     ),
                 );
             }
@@ -174,7 +148,7 @@ export const createActionsColumn = ({
                                 }),
                                 h(
                                     'span',
-                                    {class: 'sr-only'},
+                                    { class: 'sr-only' },
                                     `Mark ${name} as paid`,
                                 ),
                             ],
@@ -221,7 +195,7 @@ export const createActionsColumn = ({
                                 }),
                                 h(
                                     'span',
-                                    {class: 'sr-only'},
+                                    { class: 'sr-only' },
                                     `Delete ${name}`,
                                 ),
                             ],

@@ -1,12 +1,12 @@
-import {createColumnHelper} from '@tanstack/vue-table';
+import { createColumnHelper } from '@tanstack/vue-table';
 
-import {edit} from '@/routes/sections';
-import {createActionsColumn} from '@/table/columns/actionsColumn';
-import {createDateColumn} from '@/table/columns/dateColumn';
-import {createSelectColumn} from '@/table/columns/selectColumn';
-import {createStatusColumn} from '@/table/columns/statusColumn';
-import {createColumn} from '@/table/helpers/createColumn';
-import type {Section} from '@/types/section';
+import { edit } from '@/routes/sections';
+import { createActionsColumn } from '@/table/columns/actionsColumn';
+import { createDateColumn } from '@/table/columns/dateColumn';
+import { createSelectColumn } from '@/table/columns/selectColumn';
+import { createStatusColumn } from '@/table/columns/statusColumn';
+import { createColumn } from '@/table/helpers/createColumn';
+import type { Section } from '@/types/section';
 
 const columnHelper = createColumnHelper<any, Section>();
 

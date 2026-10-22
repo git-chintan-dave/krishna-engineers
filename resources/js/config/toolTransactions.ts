@@ -1,4 +1,4 @@
-import type {ToolTransactionType} from '@/types/toolTransaction';
+import type { ToolTransactionType } from '@/types/toolTransaction';
 
 export const toolTransactionPage = {
     title: 'Tool Transactions',

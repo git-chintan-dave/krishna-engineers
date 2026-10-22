@@ -1,18 +1,16 @@
-import {createColumnHelper} from '@tanstack/vue-table';
+import { createColumnHelper } from '@tanstack/vue-table';
 
-import {edit} from '@/routes/machines';
-import {createActionsColumn} from '@/table/columns/actionsColumn';
-import {createDateColumn} from '@/table/columns/dateColumn';
-import {createSelectColumn} from '@/table/columns/selectColumn';
-import {createStatusColumn} from '@/table/columns/statusColumn';
-import {createColumn} from '@/table/helpers/createColumn';
-import type {Machine} from '@/types/machine';
+import { edit } from '@/routes/machines';
+import { createActionsColumn } from '@/table/columns/actionsColumn';
+import { createDateColumn } from '@/table/columns/dateColumn';
+import { createSelectColumn } from '@/table/columns/selectColumn';
+import { createStatusColumn } from '@/table/columns/statusColumn';
+import { createColumn } from '@/table/helpers/createColumn';
+import type { Machine } from '@/types/machine';
 
 const columnHelper = createColumnHelper<any, Machine>();
 
-export const createMachineColumns = (
-    handleDelete: (uuid: string) => void,
-) =>
+export const createMachineColumns = (handleDelete: (uuid: string) => void) =>
     columnHelper.columns([
         createSelectColumn({
             resourceName: 'machines',

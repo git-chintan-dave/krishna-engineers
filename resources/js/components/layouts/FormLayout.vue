@@ -28,7 +28,7 @@ withDefaults(
 
         <AppPageHeader :description="description" :title="title">
             <template v-if="$slots.actions" #actions>
-                <slot name="actions"/>
+                <slot name="actions" />
             </template>
         </AppPageHeader>
 
@@ -39,7 +39,7 @@ withDefaults(
         -->
 
         <section aria-label="Form" class="min-w-0">
-            <slot/>
+            <slot />
         </section>
     </main>
 </template>

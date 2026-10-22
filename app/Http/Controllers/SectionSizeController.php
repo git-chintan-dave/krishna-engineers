@@ -104,9 +104,8 @@ class SectionSizeController extends Controller
 
     public function update(
         SectionSizeRequest $request,
-        SectionSize        $sectionSize,
-    ): RedirectResponse
-    {
+        SectionSize $sectionSize,
+    ): RedirectResponse {
         Gate::authorize('update', $sectionSize);
 
         $sectionSize->update($request->validated());
@@ -137,8 +136,7 @@ class SectionSizeController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         Gate::authorize('deleteAny', SectionSize::class);
 
         SectionSize::query()

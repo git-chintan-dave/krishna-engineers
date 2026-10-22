@@ -1,5 +1,5 @@
-import type {PaginatedResponse, SortDirection} from '@/types/listing';
-import {SalarySchemaData} from "@/schemas/salarySchema";
+import type { PaginatedResponse, SortDirection } from '@/types/listing';
+import { SalarySchemaData } from '@/schemas/salarySchema';
 
 export type SalaryStatus = 'draft' | 'paid';
 

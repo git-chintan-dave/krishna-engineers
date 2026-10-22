@@ -1,7 +1,6 @@
-
 <script lang="ts" setup>
-import type {InertiaForm} from '@inertiajs/vue3';
-import {Clock3, Settings2, Wrench} from '@lucide/vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+import { Clock3, Settings2, Wrench } from '@lucide/vue';
 
 import AppImagePicker from '@/components/common/AppImagePicker.vue';
 import AppInput from '@/components/common/AppInput.vue';
@@ -10,10 +9,10 @@ import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import AppPartSelect from '@/components/selects/AppPartSelect.vue';
 import AppSetupSelect from '@/components/selects/AppSetupSelect.vue';
-import {partSetupPage} from '@/config/partSetups';
-import {partSetupSchema} from '@/schemas/partSetupSchema';
-import type {PartSetupFormData} from '@/types/partSetup';
-import {useZodFormValidation} from "@/composables/useZodFormValidation";
+import { partSetupPage } from '@/config/partSetups';
+import { partSetupSchema } from '@/schemas/partSetupSchema';
+import type { PartSetupFormData } from '@/types/partSetup';
+import { useZodFormValidation } from '@/composables/useZodFormValidation';
 
 // Props
 const props = withDefaults(
@@ -39,10 +38,7 @@ const emit = defineEmits<{
 }>();
 
 // Frontend validation
-const {
-    errors: frontendErrors,
-    validate,
-} = useZodFormValidation(
+const { errors: frontendErrors, validate } = useZodFormValidation(
     partSetupSchema,
     () => props.form,
 );
@@ -98,10 +94,12 @@ const handleImageRemove = (): void => {
                     <AppSetupSelect
                         id="part-setup-setup"
                         v-model="props.form.setup_id"
-                        :part-id="props.form.part_id"
                         :disabled="props.processing"
-                        :error="frontendErrors.setup_id ?? props.errors.setup_id"
+                        :error="
+                            frontendErrors.setup_id ?? props.errors.setup_id
+                        "
                         :icon="Settings2"
+                        :part-id="props.form.part_id"
                         :placeholder="partSetupPage.form.setupPlaceholder"
                         clearable
                         searchable
@@ -126,7 +124,10 @@ const handleImageRemove = (): void => {
                         id="part-setup-machine-cycle-time"
                         v-model="props.form.machine_cycle_time"
                         :disabled="props.processing"
-                        :error="frontendErrors.machine_cycle_time ?? props.errors.machine_cycle_time"
+                        :error="
+                            frontendErrors.machine_cycle_time ??
+                            props.errors.machine_cycle_time
+                        "
                         :icon="Clock3"
                         :placeholder="
                             partSetupPage.form.machineCycleTimePlaceholder
@@ -149,7 +150,10 @@ const handleImageRemove = (): void => {
                         id="part-setup-actual-cycle-time"
                         v-model="props.form.actual_cycle_time"
                         :disabled="props.processing"
-                        :error="frontendErrors.actual_cycle_time ?? props.errors.actual_cycle_time"
+                        :error="
+                            frontendErrors.actual_cycle_time ??
+                            props.errors.actual_cycle_time
+                        "
                         :icon="Clock3"
                         :placeholder="
                             partSetupPage.form.actualCycleTimePlaceholder

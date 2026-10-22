@@ -1,18 +1,26 @@
 <script lang="ts" setup>
-import {Link, usePage} from '@inertiajs/vue3';
-import {ChevronRight, Menu} from '@lucide/vue';
-import {computed, reactive, ref, watch} from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import { ChevronRight, Menu } from '@lucide/vue';
+import { computed, reactive, ref, watch } from 'vue';
 
 import AppLogo from '@/components/AppLogo.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 
-import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-import {Button} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 
-import {Collapsible, CollapsibleContent, CollapsibleTrigger,} from '@/components/ui/collapsible';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 
-import {DropdownMenu, DropdownMenuContent, DropdownMenuTrigger,} from '@/components/ui/dropdown-menu';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 import {
     NavigationMenu,
@@ -24,20 +32,31 @@ import {
     navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
 
-import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,} from '@/components/ui/sheet';
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from '@/components/ui/sheet';
 
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '@/components/ui/tooltip';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 import UserMenuContent from '@/components/UserMenuContent.vue';
 
-import {useCurrentUrl} from '@/composables/useCurrentUrl';
-import {getInitials} from '@/composables/useInitials';
-import {toUrl} from '@/lib/utils';
+import { useCurrentUrl } from '@/composables/useCurrentUrl';
+import { getInitials } from '@/composables/useInitials';
+import { toUrl } from '@/lib/utils';
 
-import {getMainNavItems, rightNavItems} from '@/config/navigation';
+import { getMainNavItems, rightNavItems } from '@/config/navigation';
 
-import type {BreadcrumbItem, NavItem} from '@/types';
-import {dashboard} from '@/routes';
+import type { BreadcrumbItem, NavItem } from '@/types';
+import { dashboard } from '@/routes';
 
 /*
 |--------------------------------------------------------------------------
@@ -73,7 +92,7 @@ const mainNavItems = computed(() =>
     getMainNavItems(page.props.auth?.user?.role),
 );
 
-const {isCurrentOrParentUrl} = useCurrentUrl();
+const { isCurrentOrParentUrl } = useCurrentUrl();
 
 const activeItemStyles = 'bg-accent text-accent-foreground';
 
@@ -181,7 +200,7 @@ watch(
                                 size="icon"
                                 variant="ghost"
                             >
-                                <Menu aria-hidden="true" class="size-5"/>
+                                <Menu aria-hidden="true" class="size-5" />
 
                                 <span class="sr-only">
                                     Open navigation menu
@@ -202,7 +221,7 @@ watch(
                             <SheetHeader
                                 class="shrink-0 flex-row justify-start space-y-0 text-left"
                             >
-                                <AppLogo/>
+                                <AppLogo />
                             </SheetHeader>
 
                             <!-- Navigation -->
@@ -376,7 +395,7 @@ watch(
                     :href="dashboard()"
                     class="flex shrink-0 items-center gap-x-2"
                 >
-                    <AppLogo/>
+                    <AppLogo />
                 </Link>
 
                 <!--
@@ -579,7 +598,7 @@ watch(
                         </DropdownMenuTrigger>
 
                         <DropdownMenuContent align="end" class="w-56">
-                            <UserMenuContent :user="auth.user"/>
+                            <UserMenuContent :user="auth.user" />
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

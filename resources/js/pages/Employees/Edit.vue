@@ -1,12 +1,15 @@
 ﻿<script lang="ts" setup>
-import {router, useForm} from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {employeePage} from '@/config/employees';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { employeePage } from '@/config/employees';
 import EmployeeForm from '@/pages/Employees/components/EmployeeForm.vue';
-import {index as employees, update as updateEmployee,} from '@/routes/employees';
-import type {Employee, EmployeeFormData} from '@/types/employee';
+import {
+    index as employees,
+    update as updateEmployee,
+} from '@/routes/employees';
+import type { Employee, EmployeeFormData } from '@/types/employee';
 
 // Props
 const props = defineProps<{

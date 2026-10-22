@@ -1,12 +1,12 @@
 ﻿<script lang="ts" setup>
-import {router, useForm} from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {partPage} from '@/config/parts';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { partPage } from '@/config/parts';
 import PartForm from '@/pages/Parts/components/PartForm.vue';
-import {index as parts, update} from '@/routes/parts';
-import type {Part, PartFormData} from '@/types/part';
+import { index as parts, update } from '@/routes/parts';
+import type { Part, PartFormData } from '@/types/part';
 
 const props = defineProps<{
     part: Part;

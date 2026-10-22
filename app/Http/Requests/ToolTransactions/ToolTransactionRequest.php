@@ -50,7 +50,7 @@ class ToolTransactionRequest extends FormRequest
             ],
 
             'to_user_id' => [
-                'required_if:type,' . ToolTransactionType::ISSUE->value,
+                'required_if:type,'.ToolTransactionType::ISSUE->value,
                 'nullable',
                 'integer',
                 Rule::exists(User::class, 'id'),

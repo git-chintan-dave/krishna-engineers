@@ -54,7 +54,7 @@ class UserPolicy
     public function delete(User $user, User $model): bool
     {
         return $this->canManageEmployees($user)
-            && !$model->isSuperAdmin();
+            && ! $model->isSuperAdmin();
     }
 
     // Force Delete
@@ -69,7 +69,7 @@ class UserPolicy
     public function forceDelete(User $user, User $model): bool
     {
         return $this->canManageEmployees($user)
-            && !$model->isSuperAdmin();
+            && ! $model->isSuperAdmin();
     }
 
     // Helpers

@@ -1,7 +1,13 @@
-
 <script lang="ts" setup>
-import type {InertiaForm} from '@inertiajs/vue3';
-import {Box, Layers3, Ruler, Scale, Settings2, ToggleRight} from '@lucide/vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+import {
+    Box,
+    Layers3,
+    Ruler,
+    Scale,
+    Settings2,
+    ToggleRight,
+} from '@lucide/vue';
 
 import AppImagePicker from '@/components/common/AppImagePicker.vue';
 import AppInput from '@/components/common/AppInput.vue';
@@ -10,10 +16,10 @@ import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import ToggleCardInput from '@/components/form/ToggleCardInput.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
-import {partPage} from '@/config/parts';
-import {partSchema} from '@/schemas/partSchema';
-import type {PartFormData} from '@/types/part';
-import {useZodFormValidation} from "@/composables/useZodFormValidation";
+import { partPage } from '@/config/parts';
+import { partSchema } from '@/schemas/partSchema';
+import type { PartFormData } from '@/types/part';
+import { useZodFormValidation } from '@/composables/useZodFormValidation';
 
 // Props
 const props = withDefaults(
@@ -39,10 +45,7 @@ const emit = defineEmits<{
 }>();
 
 // Frontend validation
-const {
-    errors: frontendErrors,
-    validate,
-} = useZodFormValidation(
+const { errors: frontendErrors, validate } = useZodFormValidation(
     partSchema,
     () => props.form,
 );
@@ -81,7 +84,9 @@ const handleImageRemove = (): void => {
                         id="part-section"
                         v-model="props.form.section_id"
                         :disabled="props.processing"
-                        :error="frontendErrors.section_id ?? props.errors.section_id"
+                        :error="
+                            frontendErrors.section_id ?? props.errors.section_id
+                        "
                         :icon="Layers3"
                         :placeholder="partPage.form.sectionPlaceholder"
                         clearable
@@ -114,7 +119,10 @@ const handleImageRemove = (): void => {
                         id="part-new-part-name"
                         v-model="props.form.new_part_name"
                         :disabled="props.processing"
-                        :error="frontendErrors.new_part_name ?? props.errors.new_part_name"
+                        :error="
+                            frontendErrors.new_part_name ??
+                            props.errors.new_part_name
+                        "
                         :icon="Settings2"
                         :placeholder="partPage.form.newPartNamePlaceholder"
                     />
@@ -129,7 +137,10 @@ const handleImageRemove = (): void => {
                         id="part-cutting-size"
                         v-model="props.form.cutting_size"
                         :disabled="props.processing"
-                        :error="frontendErrors.cutting_size ?? props.errors.cutting_size"
+                        :error="
+                            frontendErrors.cutting_size ??
+                            props.errors.cutting_size
+                        "
                         :icon="Ruler"
                         :placeholder="partPage.form.cuttingSizePlaceholder"
                     />
@@ -152,7 +163,10 @@ const handleImageRemove = (): void => {
                         id="part-part-weight"
                         v-model="props.form.part_weight"
                         :disabled="props.processing"
-                        :error="frontendErrors.part_weight ?? props.errors.part_weight"
+                        :error="
+                            frontendErrors.part_weight ??
+                            props.errors.part_weight
+                        "
                         :icon="Scale"
                         :placeholder="partPage.form.partWeightPlaceholder"
                     />
@@ -167,7 +181,10 @@ const handleImageRemove = (): void => {
                         id="part-raw-material-weight"
                         v-model="props.form.raw_material_weight"
                         :disabled="props.processing"
-                        :error="frontendErrors.raw_material_weight ?? props.errors.raw_material_weight"
+                        :error="
+                            frontendErrors.raw_material_weight ??
+                            props.errors.raw_material_weight
+                        "
                         :icon="Scale"
                         :placeholder="partPage.form.rawMaterialPlaceholder"
                     />

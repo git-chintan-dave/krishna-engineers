@@ -1,10 +1,10 @@
-import {createColumnHelper} from '@tanstack/vue-table';
+import { createColumnHelper } from '@tanstack/vue-table';
 
-import {edit} from '@/routes/attendances';
-import {createActionsColumn} from '@/table/columns/actionsColumn';
-import {createSelectColumn} from '@/table/columns/selectColumn';
-import {createColumn} from '@/table/helpers/createColumn';
-import type {Attendance} from '@/types/attendance';
+import { edit } from '@/routes/attendances';
+import { createActionsColumn } from '@/table/columns/actionsColumn';
+import { createSelectColumn } from '@/table/columns/selectColumn';
+import { createColumn } from '@/table/helpers/createColumn';
+import type { Attendance } from '@/types/attendance';
 
 const columnHelper = createColumnHelper<any, Attendance>();
 
@@ -21,13 +21,13 @@ export const createAttendanceColumns = (
 
         ...(canShowUserColumn
             ? [
-                createColumn<Attendance, string>({
-                    accessorKey: 'user.name',
-                    header: 'Employee',
-                    size: 240,
-                    sortable: true
-                }),
-            ]
+                  createColumn<Attendance, string>({
+                      accessorKey: 'user.name',
+                      header: 'Employee',
+                      size: 240,
+                      sortable: true,
+                  }),
+              ]
             : []),
 
         createColumn<Attendance, string | null>({
@@ -36,8 +36,7 @@ export const createAttendanceColumns = (
             size: 160,
             align: 'center',
             sortable: true,
-            cell: ({ row }) =>
-                row.original.attendance_date_formatted ?? '—',
+            cell: ({ row }) => row.original.attendance_date_formatted ?? '—',
         }),
 
         createColumn<Attendance, string | null>({
@@ -64,8 +63,7 @@ export const createAttendanceColumns = (
             size: 140,
             align: 'center',
             sortable: true,
-            cell: ({ row }) =>
-                row.original.break_seconds_formatted ?? '—',
+            cell: ({ row }) => row.original.break_seconds_formatted ?? '—',
         }),
 
         createColumn<Attendance, number | null>({
@@ -80,13 +78,13 @@ export const createAttendanceColumns = (
 
         ...(canEdit || canDelete
             ? [
-                createActionsColumn({
-                    editUrl: (uuid) => edit(uuid).url,
-                    resourceName: 'attendance',
-                    handleDelete,
-                    showEdit: (row) => canEdit && !row.is_locked,
-                    showDelete: (row) => canDelete && !row.is_locked,
-                }),
-            ]
+                  createActionsColumn({
+                      editUrl: (uuid) => edit(uuid).url,
+                      resourceName: 'attendance',
+                      handleDelete,
+                      showEdit: (row) => canEdit && !row.is_locked,
+                      showDelete: (row) => canDelete && !row.is_locked,
+                  }),
+              ]
             : []),
     ]);

@@ -51,13 +51,13 @@ class LookupService
     }
 
     /**
-     * @param array<int, string> $keys
+     * @param  array<int, string>  $keys
      * @return array<string, array<int, array{value: string|int, label: string}>>
      */
     public function enums(array $keys): array
     {
         return collect($keys)
-            ->mapWithKeys(fn(string $key): array => [
+            ->mapWithKeys(fn (string $key): array => [
                 $key => $this->enum($key),
             ])
             ->all();
@@ -104,7 +104,7 @@ class LookupService
                 'cutting_size',
                 'section_id',
             ])
-            ->map(fn(Part $part): array => [
+            ->map(fn (Part $part): array => [
                 'value' => $part->id,
                 'label' => $part->name,
                 'cutting_size' => $part->cutting_size,
@@ -123,9 +123,9 @@ class LookupService
         return Setup::query()
             ->when(
                 $partId,
-                fn($query) => $query->whereHas(
+                fn ($query) => $query->whereHas(
                     'partSetups',
-                    fn($partSetupQuery) => $partSetupQuery->where(
+                    fn ($partSetupQuery) => $partSetupQuery->where(
                         'part_id',
                         $partId,
                     ),
@@ -133,7 +133,7 @@ class LookupService
             )
             ->orderBy('name')
             ->get(['id', 'name'])
-            ->map(fn(Setup $setup): array => [
+            ->map(fn (Setup $setup): array => [
                 'value' => $setup->id,
                 'label' => $setup->name,
             ])
@@ -151,7 +151,7 @@ class LookupService
             ->where('status', Status::ACTIVE->value)
             ->orderBy('name')
             ->get(['id', 'name'])
-            ->map(fn(Section $section): array => [
+            ->map(fn (Section $section): array => [
                 'value' => $section->id,
                 'label' => $section->name,
             ])
@@ -169,7 +169,7 @@ class LookupService
             ->where('section_id', $sectionId)
             ->orderBy('size')
             ->get(['id', 'size'])
-            ->map(fn(SectionSize $sectionSize): array => [
+            ->map(fn (SectionSize $sectionSize): array => [
                 'value' => $sectionSize->id,
                 'label' => $sectionSize->size,
             ])
@@ -187,7 +187,7 @@ class LookupService
             ->where('status', Status::ACTIVE->value)
             ->orderBy('name')
             ->get(['id', 'name', 'reference_name'])
-            ->map(fn(Machine $machine): array => [
+            ->map(fn (Machine $machine): array => [
                 'value' => $machine->id,
                 'label' => $machine->name,
             ])
@@ -200,11 +200,11 @@ class LookupService
             ->where('status', Status::ACTIVE->value)
             ->when(
                 $role,
-                fn($query) => $query->where('role', $role)
+                fn ($query) => $query->where('role', $role)
             )
             ->orderBy('name')
             ->get(['id', 'name', 'employee_code', 'role'])
-            ->map(fn(User $user): array => [
+            ->map(fn (User $user): array => [
                 'value' => $user->id,
                 'label' => $user->name,
             ])
@@ -222,11 +222,11 @@ class LookupService
             ->where('status', Status::ACTIVE->value)
             ->when(
                 $type,
-                fn($query) => $query->where('type', $type)
+                fn ($query) => $query->where('type', $type)
             )
             ->orderBy('name')
             ->get(['id', 'name', 'type'])
-            ->map(fn(Tool $tool): array => [
+            ->map(fn (Tool $tool): array => [
                 'value' => $tool->id,
                 'label' => $tool->name,
             ])

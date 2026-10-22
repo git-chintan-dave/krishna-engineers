@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import {KeyRound, Trash2} from '@lucide/vue';
-import {ref} from 'vue';
-import {Button} from '@/components/ui/button';
+import { KeyRound, Trash2 } from '@lucide/vue';
+import { ref } from 'vue';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogClose,
@@ -11,7 +11,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import type {Passkey} from '@/types/auth';
+import type { Passkey } from '@/types/auth';
 
 const props = defineProps<{
     passkey: Passkey;
@@ -37,7 +37,7 @@ const handleDelete = () => {
             <div
                 class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted"
             >
-                <KeyRound class="h-5 w-5 text-muted-foreground"/>
+                <KeyRound class="h-5 w-5 text-muted-foreground" />
             </div>
             <div class="space-y-1">
                 <div class="flex items-center gap-2.5">
@@ -66,7 +66,7 @@ const handleDelete = () => {
                     size="sm"
                     variant="ghost"
                 >
-                    <Trash2 class="h-4 w-4"/>
+                    <Trash2 class="h-4 w-4" />
                     <span class="sr-only">Remove</span>
                 </Button>
             </DialogTrigger>

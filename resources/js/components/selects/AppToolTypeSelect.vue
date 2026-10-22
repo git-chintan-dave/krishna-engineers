@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import {onMounted, ref} from 'vue';
+import { onMounted, ref } from 'vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import {useLookup} from '@/composables/useLookup';
-import type {SelectOption} from '@/types/common';
+import { useLookup } from '@/composables/useLookup';
+import type { SelectOption } from '@/types/common';
 
 /*
 |--------------------------------------------------------------------------
@@ -49,7 +49,7 @@ const emit = defineEmits<{
 
 const options = ref<SelectOption<string>[]>([]);
 
-const {loading, enumOptions} = useLookup();
+const { loading, enumOptions } = useLookup();
 
 /*
 |--------------------------------------------------------------------------

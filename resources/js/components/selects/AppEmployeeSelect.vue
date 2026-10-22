@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import {onMounted, ref, watch} from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import type {SelectOption} from '@/types/common';
+import type { SelectOption } from '@/types/common';
 
 /*
 |--------------------------------------------------------------------------
@@ -97,8 +97,8 @@ const fetchEmployees = async () => {
         options.value = Array.isArray(data)
             ? data
             : Array.isArray(data.data)
-                ? data.data
-                : [];
+              ? data.data
+              : [];
     } catch (error) {
         console.error('Failed to load employees:', error);
 

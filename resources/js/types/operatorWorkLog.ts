@@ -1,5 +1,4 @@
-import type {PaginatedResponse, SortDirection} from '@/types/listing';
-import {OperatorWorkLogSchemaData} from "@/schemas/operatorWorkLogSchema";
+import type { PaginatedResponse, SortDirection } from '@/types/listing';
 
 export type OperatorWorkLog = {
     id: number;
@@ -108,5 +107,4 @@ export type OperatorWorkLogFilters = {
     direction: SortDirection;
 };
 
-export type OperatorWorkLogsResponse =
-    PaginatedResponse<OperatorWorkLog>;
+export type OperatorWorkLogsResponse = PaginatedResponse<OperatorWorkLog>;

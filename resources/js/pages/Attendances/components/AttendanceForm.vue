@@ -1,18 +1,25 @@
 <script lang="ts" setup>
-import {computed, reactive} from 'vue';
-import type {InertiaForm} from '@inertiajs/vue3';
-import {CalendarDays, Clock3, Plus, Trash2, User} from '@lucide/vue';
+import { computed, reactive } from 'vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+import { CalendarDays, Clock3, Plus, Trash2, User } from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
 import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
-import {Button} from '@/components/ui/button';
-import {useZodFormValidation} from '@/composables/useZodFormValidation';
-import {attendancePage} from '@/config/attendances';
-import {createAttendanceSchema, editAttendanceSchema,} from '@/schemas/attendanceSchema';
-import type {Attendance, AttendanceFormBreak, AttendanceFormData,} from '@/types/attendance';
+import { Button } from '@/components/ui/button';
+import { useZodFormValidation } from '@/composables/useZodFormValidation';
+import { attendancePage } from '@/config/attendances';
+import {
+    createAttendanceSchema,
+    editAttendanceSchema,
+} from '@/schemas/attendanceSchema';
+import type {
+    Attendance,
+    AttendanceFormBreak,
+    AttendanceFormData,
+} from '@/types/attendance';
 
 // Props
 const props = withDefaults(
@@ -48,10 +55,7 @@ const attendanceSchema = isEdit.value
     ? editAttendanceSchema
     : createAttendanceSchema;
 
-const {
-    errors: frontendErrors,
-    validate,
-} = useZodFormValidation(
+const { errors: frontendErrors, validate } = useZodFormValidation(
     attendanceSchema,
     () => props.form,
 );
@@ -208,10 +212,7 @@ const startTime = computed({
 
         const existingEndTime = getTimePart(props.form.end_at);
 
-        props.form.start_at = combineDateTime(
-            attendanceDate.value,
-            value,
-        );
+        props.form.start_at = combineDateTime(attendanceDate.value, value);
 
         if (existingEndTime) {
             const endDate = resolveAttendanceEndDate(
@@ -220,10 +221,7 @@ const startTime = computed({
                 existingEndTime,
             );
 
-            props.form.end_at = combineDateTime(
-                endDate,
-                existingEndTime,
-            );
+            props.form.end_at = combineDateTime(endDate, existingEndTime);
         }
 
         rebuildAllBreaks();
@@ -298,10 +296,7 @@ const setAttendanceDate = (value: string): void => {
         : '';
 
     props.form.end_at = oldEndTime
-        ? combineDateTime(
-            wasOvernight ? addOneDay(value) : value,
-            oldEndTime,
-        )
+        ? combineDateTime(wasOvernight ? addOneDay(value) : value, oldEndTime)
         : null;
 
     rebuildAllBreaks();
@@ -355,11 +350,7 @@ const resolveBreakStartDate = (time: string): string => {
     const attendanceEndDate = getDatePart(props.form.end_at);
     const attendanceStartTime = getTimePart(props.form.start_at);
 
-    if (
-        !attendanceStartDate ||
-        !attendanceEndDate ||
-        !attendanceStartTime
-    ) {
+    if (!attendanceStartDate || !attendanceEndDate || !attendanceStartTime) {
         return '';
     }
 
@@ -431,10 +422,7 @@ const rebuildBreak = (
         return;
     }
 
-    attendanceBreak.start_at = combineDateTime(
-        breakStartDate,
-        state.start_at,
-    );
+    attendanceBreak.start_at = combineDateTime(breakStartDate, state.start_at);
 
     if (!state.end_at) {
         attendanceBreak.end_at = '';
@@ -448,10 +436,7 @@ const rebuildBreak = (
         state.end_at,
     );
 
-    attendanceBreak.end_at = combineDateTime(
-        breakEndDate,
-        state.end_at,
-    );
+    attendanceBreak.end_at = combineDateTime(breakEndDate, state.end_at);
 };
 
 /*
@@ -593,9 +578,7 @@ const breakError = (
 
 const canAddBreak = computed(() =>
     Boolean(
-        props.form.attendance_date &&
-        props.form.start_at &&
-        props.form.end_at,
+        props.form.attendance_date && props.form.start_at && props.form.end_at,
     ),
 );
 
@@ -611,10 +594,7 @@ const addBreak = (): void => {
 
     props.form.breaks.push(attendanceBreak);
 
-    ensureBreakTimeState(
-        attendanceBreak,
-        props.form.breaks.length - 1,
-    );
+    ensureBreakTimeState(attendanceBreak, props.form.breaks.length - 1);
 };
 
 const removeBreak = (index: number): void => {
@@ -841,10 +821,7 @@ props.form.breaks.forEach((attendanceBreak, index) => {
                                 :id="`break-${index}-end`"
                                 :disabled="
                                     processing ||
-                                    !getBreakStartTime(
-                                        attendanceBreak,
-                                        index,
-                                    )
+                                    !getBreakStartTime(attendanceBreak, index)
                                 "
                                 :error="breakError(index, 'end_at')"
                                 :model-value="
@@ -868,8 +845,7 @@ props.form.breaks.forEach((attendanceBreak, index) => {
                     <!-- Break Dates -->
                     <p
                         v-if="
-                            attendanceBreak.start_at &&
-                            attendanceBreak.end_at
+                            attendanceBreak.start_at && attendanceBreak.end_at
                         "
                         class="mt-3 text-xs text-muted-foreground"
                     >

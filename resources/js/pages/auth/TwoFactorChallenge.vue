@@ -1,12 +1,16 @@
 <script lang="ts" setup>
-import {Form, Head, setLayoutProps} from '@inertiajs/vue3';
-import {computed, ref, watchEffect} from 'vue';
+import { Form, Head, setLayoutProps } from '@inertiajs/vue3';
+import { computed, ref, watchEffect } from 'vue';
 import InputError from '@/components/InputError.vue';
-import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
-import {InputOTP, InputOTPGroup, InputOTPSlot,} from '@/components/ui/input-otp';
-import {store} from '@/routes/two-factor/login';
-import type {TwoFactorConfigContent} from '@/types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+    InputOTP,
+    InputOTPGroup,
+    InputOTPSlot,
+} from '@/components/ui/input-otp';
+import { store } from '@/routes/two-factor/login';
+import type { TwoFactorConfigContent } from '@/types';
 
 const showRecoveryInput = ref<boolean>(false);
 const code = ref<string>('');
@@ -44,7 +48,7 @@ const toggleRecoveryMode = (clearErrors: () => void): void => {
 </script>
 
 <template>
-    <Head title="Two-factor authentication"/>
+    <Head title="Two-factor authentication" />
 
     <div class="space-y-6">
         <template v-if="!showRecoveryInput">
@@ -55,7 +59,7 @@ const toggleRecoveryMode = (clearErrors: () => void): void => {
                 v-bind="store.form()"
                 @error="code = ''"
             >
-                <input :value="code" name="code" type="hidden"/>
+                <input :value="code" name="code" type="hidden" />
                 <div
                     class="flex flex-col items-center justify-center space-y-3 text-center"
                 >
@@ -76,12 +80,11 @@ const toggleRecoveryMode = (clearErrors: () => void): void => {
                             </InputOTPGroup>
                         </InputOTP>
                     </div>
-                    <InputError :message="errors.code"/>
+                    <InputError :message="errors.code" />
                 </div>
                 <Button :disabled="processing" class="w-full" type="submit"
-                >Continue
-                </Button
-                >
+                    >Continue
+                </Button>
                 <div class="text-center text-sm text-muted-foreground">
                     <span>or you can </span>
                     <button
@@ -109,11 +112,10 @@ const toggleRecoveryMode = (clearErrors: () => void): void => {
                     required
                     type="text"
                 />
-                <InputError :message="errors.recovery_code"/>
+                <InputError :message="errors.recovery_code" />
                 <Button :disabled="processing" class="w-full" type="submit"
-                >Continue
-                </Button
-                >
+                    >Continue
+                </Button>
 
                 <div class="text-center text-sm text-muted-foreground">
                     <span>or you can </span>

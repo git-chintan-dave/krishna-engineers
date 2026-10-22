@@ -1,16 +1,16 @@
 <script lang="ts" setup>
-import type {InertiaForm} from '@inertiajs/vue3';
-import {Settings2, ToggleRight} from '@lucide/vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+import { Settings2, ToggleRight } from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
 import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import ToggleCardInput from '@/components/form/ToggleCardInput.vue';
-import {useZodFormValidation} from "@/composables/useZodFormValidation";
-import {setupPage} from '@/config/setups';
-import {setupSchema} from '@/schemas/setupSchema';
-import type {SetupFormData} from '@/types/setup';
+import { useZodFormValidation } from '@/composables/useZodFormValidation';
+import { setupPage } from '@/config/setups';
+import { setupSchema } from '@/schemas/setupSchema';
+import type { SetupFormData } from '@/types/setup';
 
 // Props
 const props = withDefaults(
@@ -34,10 +34,7 @@ const emit = defineEmits<{
 }>();
 
 // Frontend validation
-const {
-    errors: frontendErrors,
-    validate,
-} = useZodFormValidation(
+const { errors: frontendErrors, validate } = useZodFormValidation(
     setupSchema,
     () => props.form,
 );

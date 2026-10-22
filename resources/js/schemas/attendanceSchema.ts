@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
 const requiredDate = (label: string) =>
     z
@@ -28,8 +28,10 @@ const breakSchema = z.object({
 const isValidDateTime = (value: string): boolean => {
     const normalizedValue = value.replace(' ', 'T');
 
-    return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(normalizedValue)
-        && !Number.isNaN(Date.parse(normalizedValue));
+    return (
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(normalizedValue) &&
+        !Number.isNaN(Date.parse(normalizedValue))
+    );
 };
 
 export const createAttendanceSchema = z.object({
@@ -43,7 +45,6 @@ export const createAttendanceSchema = z.object({
     breaks: z.array(breakSchema),
 });
 
-
 export const editAttendanceSchema = createAttendanceSchema.extend({
     start_at: requiredDate('Clock-in time'),
     end_at: z
@@ -55,7 +56,6 @@ export const editAttendanceSchema = createAttendanceSchema.extend({
             'Clock-out time must be a valid date and time.',
         ),
 });
-
 
 export const attendanceSchema = createAttendanceSchema;
 

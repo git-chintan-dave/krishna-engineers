@@ -1,5 +1,10 @@
-﻿import type {PaginatedResponse, SortDirection, Status, StatusFilter,} from '@/types/listing';
-import {SectionSchemaData} from "@/schemas/sectionSchema";
+﻿import type {
+    PaginatedResponse,
+    SortDirection,
+    Status,
+    StatusFilter,
+} from '@/types/listing';
+import { SectionSchemaData } from '@/schemas/sectionSchema';
 
 export type Section = {
     id: number;

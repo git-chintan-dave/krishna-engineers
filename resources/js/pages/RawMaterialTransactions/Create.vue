@@ -1,12 +1,15 @@
 ﻿<script lang="ts" setup>
-import {router, useForm} from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {rawMaterialTransactionPage} from '@/config/rawMaterialTransactions';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { rawMaterialTransactionPage } from '@/config/rawMaterialTransactions';
 import RawMaterialTransactionForm from '@/pages/RawMaterialTransactions/components/RawMaterialTransactionForm.vue';
-import {index as rawMaterialTransactions, store,} from '@/routes/raw-material-transactions';
-import type {RawMaterialTransactionFormData} from '@/types/rawMaterialTransaction';
+import {
+    index as rawMaterialTransactions,
+    store,
+} from '@/routes/raw-material-transactions';
+import type { RawMaterialTransactionFormData } from '@/types/rawMaterialTransaction';
 
 /*
 |--------------------------------------------------------------------------

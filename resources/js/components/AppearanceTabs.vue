@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import {Monitor, Moon, Sun} from '@lucide/vue';
-import {useAppearance} from '@/composables/useAppearance';
+import { Monitor, Moon, Sun } from '@lucide/vue';
+import { useAppearance } from '@/composables/useAppearance';
 
-const {appearance, updateAppearance} = useAppearance();
+const { appearance, updateAppearance } = useAppearance();
 
 const tabs = [
-    {value: 'light', Icon: Sun, label: 'Light'},
-    {value: 'dark', Icon: Moon, label: 'Dark'},
-    {value: 'system', Icon: Monitor, label: 'System'},
+    { value: 'light', Icon: Sun, label: 'Light' },
+    { value: 'dark', Icon: Moon, label: 'Dark' },
+    { value: 'system', Icon: Monitor, label: 'System' },
 ] as const;
 </script>
 
@@ -26,7 +26,7 @@ const tabs = [
             ]"
             @click="updateAppearance(value)"
         >
-            <component :is="Icon" class="-ml-1 h-4 w-4"/>
+            <component :is="Icon" class="-ml-1 h-4 w-4" />
             <span class="ml-1.5 text-sm">{{ label }}</span>
         </button>
     </div>

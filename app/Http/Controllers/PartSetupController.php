@@ -26,9 +26,7 @@ class PartSetupController extends Controller
 
     public function __construct(
         private readonly FileUploadService $fileUploadService,
-    )
-    {
-    }
+    ) {}
 
     /*
     |--------------------------------------------------------------------------
@@ -38,14 +36,13 @@ class PartSetupController extends Controller
 
     public function index(
         IndexPartSetupRequest $request,
-    ): Response
-    {
+    ): Response {
         Gate::authorize('viewAny', PartSetup::class);
 
         $filters = $request->validated();
 
         $partSetups = PartSetup::query()
-            ->with(['part', 'setup' ])
+            ->with(['part', 'setup'])
             ->filterQuery($filters)
             ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();
@@ -123,7 +120,7 @@ class PartSetupController extends Controller
         $partSetup->load(['part', 'setup']);
 
         return Inertia::render('PartSetups/Edit', [
-            'partSetup' => new PartSetupResource($partSetup)
+            'partSetup' => new PartSetupResource($partSetup),
         ]);
     }
 

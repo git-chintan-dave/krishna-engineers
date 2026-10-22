@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import {Eye, EyeOff} from '@lucide/vue';
-import type {HTMLAttributes} from 'vue';
-import {ref, useTemplateRef} from 'vue';
-import {Input} from '@/components/ui/input';
-import {cn} from '@/lib/utils';
+import { Eye, EyeOff } from '@lucide/vue';
+import type { HTMLAttributes } from 'vue';
+import { ref, useTemplateRef } from 'vue';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
-defineOptions({inheritAttrs: false});
+defineOptions({ inheritAttrs: false });
 
 const props = defineProps<{
     class?: HTMLAttributes['class'];
@@ -41,8 +41,8 @@ defineExpose({
             type="button"
             @click="showPassword = !showPassword"
         >
-            <EyeOff v-if="showPassword" class="size-4"/>
-            <Eye v-else class="size-4"/>
+            <EyeOff v-if="showPassword" class="size-4" />
+            <Eye v-else class="size-4" />
         </button>
     </div>
 </template>

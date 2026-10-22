@@ -71,9 +71,8 @@ class SetupController extends Controller
 
     public function update(
         SetupRequest $request,
-        Setup        $setup,
-    ): RedirectResponse
-    {
+        Setup $setup,
+    ): RedirectResponse {
         Gate::authorize('update', $setup);
 
         $setup->update($request->validated());
@@ -92,8 +91,7 @@ class SetupController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         Gate::authorize('deleteAny', Setup::class);
 
         Setup::query()

@@ -28,10 +28,9 @@ class OperatorWorkLogPolicy
      * Determine whether the user can view the operator work log.
      */
     public function view(
-        User            $user,
+        User $user,
         OperatorWorkLog $operatorWorkLog
-    ): bool
-    {
+    ): bool {
         if (in_array(
             $user->role,
             [
@@ -67,10 +66,9 @@ class OperatorWorkLogPolicy
      * Determine whether the user can update the operator work log.
      */
     public function update(
-        User            $user,
+        User $user,
         OperatorWorkLog $operatorWorkLog
-    ): bool
-    {
+    ): bool {
         return in_array(
             $user->role,
             [
@@ -85,10 +83,9 @@ class OperatorWorkLogPolicy
      * Determine whether the user can delete the operator work log.
      */
     public function delete(
-        User            $user,
+        User $user,
         OperatorWorkLog $operatorWorkLog
-    ): bool
-    {
+    ): bool {
         return in_array(
             $user->role,
             [

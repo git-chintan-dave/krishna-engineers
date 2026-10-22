@@ -1,7 +1,16 @@
 <script lang="ts" setup>
-import type {InertiaForm} from '@inertiajs/vue3';
-import {CalendarDays, Clock3, Cog, Hash, MessageSquare, Settings2, User, Wrench,} from '@lucide/vue';
-import {computed, ref, watch} from 'vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+import {
+    CalendarDays,
+    Clock3,
+    Cog,
+    Hash,
+    MessageSquare,
+    Settings2,
+    User,
+    Wrench,
+} from '@lucide/vue';
+import { computed, ref, watch } from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -14,11 +23,14 @@ import AppPartSelect from '@/components/selects/AppPartSelect.vue';
 import AppSetupSelect from '@/components/selects/AppSetupSelect.vue';
 import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
 
-import {operatorWorkLogPage} from '@/config/operatorWorkLogs';
+import { operatorWorkLogPage } from '@/config/operatorWorkLogs';
 
-import type {OperatorWorkLogFormData, OperatorWorkLogPartSetupOption,} from '@/types/operatorWorkLog';
-import {operatorWorkLogSchema} from "@/schemas/operatorWorkLogSchema";
-import {useZodFormValidation} from "@/composables/useZodFormValidation";
+import type {
+    OperatorWorkLogFormData,
+    OperatorWorkLogPartSetupOption,
+} from '@/types/operatorWorkLog';
+import { operatorWorkLogSchema } from '@/schemas/operatorWorkLogSchema';
+import { useZodFormValidation } from '@/composables/useZodFormValidation';
 
 /*
 |--------------------------------------------------------------------------
@@ -39,21 +51,24 @@ type LastReport = {
 |--------------------------------------------------------------------------
 */
 
-const props = withDefaults(defineProps<{
-    form: InertiaForm<OperatorWorkLogFormData>;
-    errors?: Partial<Record<keyof OperatorWorkLogFormData, string>>;
-    processing?: boolean;
-    submitLabel?: string;
-    isCreate: boolean;
-    partSetups: OperatorWorkLogPartSetupOption[];
-    currentUserId: number;
-    canSelectOperator: boolean;
-    lastReports: Record<string, LastReport>;
-}>(), {
-    errors: () => ({}),
-    processing: false,
-    submitLabel: 'Save Work Log',
-});
+const props = withDefaults(
+    defineProps<{
+        form: InertiaForm<OperatorWorkLogFormData>;
+        errors?: Partial<Record<keyof OperatorWorkLogFormData, string>>;
+        processing?: boolean;
+        submitLabel?: string;
+        isCreate: boolean;
+        partSetups: OperatorWorkLogPartSetupOption[];
+        currentUserId: number;
+        canSelectOperator: boolean;
+        lastReports: Record<string, LastReport>;
+    }>(),
+    {
+        errors: () => ({}),
+        processing: false,
+        submitLabel: 'Save Work Log',
+    },
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -310,7 +325,9 @@ watch([() => props.form.part_id, () => props.form.setup_id], () => {
 |--------------------------------------------------------------------------
 */
 
-function formatDuration(totalSeconds: string | number | null | undefined): string {
+function formatDuration(
+    totalSeconds: string | number | null | undefined,
+): string {
     const seconds = Math.max(0, Math.floor(Number(totalSeconds) || 0));
 
     const hours = Math.floor(seconds / 3600);
@@ -345,10 +362,7 @@ function parseDuration(value: string): number | null {
 }
 
 // Frontend validation
-const {
-    errors: frontendErrors,
-    validate,
-} = useZodFormValidation(
+const { errors: frontendErrors, validate } = useZodFormValidation(
     operatorWorkLogSchema,
     () => props.form,
 );
@@ -405,7 +419,9 @@ const handleSubmit = () => {
                         id="work-log-date"
                         v-model="form.work_date"
                         :disabled="processing || !isCreate"
-                        :error="frontendErrors.work_date ?? props.errors.work_date"
+                        :error="
+                            frontendErrors.work_date ?? props.errors.work_date
+                        "
                         :icon="CalendarDays"
                         :placeholder="
                             operatorWorkLogPage.form.workDatePlaceholder
@@ -441,7 +457,9 @@ const handleSubmit = () => {
                     <AppMachineSelect
                         v-model="form.machine_id"
                         :disabled="processing || !isCreate"
-                        :error="frontendErrors.machine_id ?? props.errors.machine_id"
+                        :error="
+                            frontendErrors.machine_id ?? props.errors.machine_id
+                        "
                         :icon="Cog"
                         :placeholder="
                             operatorWorkLogPage.form.machinePlaceholder
@@ -477,7 +495,9 @@ const handleSubmit = () => {
                     <AppSetupSelect
                         v-model="form.setup_id"
                         :disabled="processing || !isCreate"
-                        :error="frontendErrors.setup_id ?? props.errors.setup_id"
+                        :error="
+                            frontendErrors.setup_id ?? props.errors.setup_id
+                        "
                         :icon="Settings2"
                         :part-id="form.part_id"
                         :placeholder="operatorWorkLogPage.form.setupPlaceholder"
@@ -496,7 +516,10 @@ const handleSubmit = () => {
                         id="work-log-actual-cycle-time"
                         v-model="actualCycleTimeInput"
                         :disabled="processing || !selectedPartSetup"
-                        :error="frontendErrors.actual_cycle_time ?? props.errors.actual_cycle_time"
+                        :error="
+                            frontendErrors.actual_cycle_time ??
+                            props.errors.actual_cycle_time
+                        "
                         :icon="Clock3"
                         :placeholder="
                             operatorWorkLogPage.form
@@ -518,7 +541,9 @@ const handleSubmit = () => {
                         id="work-log-quantity"
                         v-model.number="form.quantity"
                         :disabled="processing"
-                        :error="frontendErrors.quantity ?? props.errors.quantity"
+                        :error="
+                            frontendErrors.quantity ?? props.errors.quantity
+                        "
                         :icon="Hash"
                         :placeholder="
                             operatorWorkLogPage.form.quantityPlaceholder
@@ -538,7 +563,10 @@ const handleSubmit = () => {
                         id="work-log-rejection-quantity"
                         v-model.number="form.rejection_quantity"
                         :disabled="processing"
-                        :error="frontendErrors.rejection_quantity ?? props.errors.rejection_quantity"
+                        :error="
+                            frontendErrors.rejection_quantity ??
+                            props.errors.rejection_quantity
+                        "
                         :icon="Hash"
                         :placeholder="
                             operatorWorkLogPage.form

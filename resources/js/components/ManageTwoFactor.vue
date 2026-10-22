@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import {Form} from '@inertiajs/vue3';
-import {ShieldCheck} from '@lucide/vue';
-import {onUnmounted, ref} from 'vue';
+import { Form } from '@inertiajs/vue3';
+import { ShieldCheck } from '@lucide/vue';
+import { onUnmounted, ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import TwoFactorRecoveryCodes from '@/components/TwoFactorRecoveryCodes.vue';
 import TwoFactorSetupModal from '@/components/TwoFactorSetupModal.vue';
-import {Button} from '@/components/ui/button';
-import {useTwoFactorAuth} from '@/composables/useTwoFactorAuth';
-import {disable, enable} from '@/routes/two-factor';
+import { Button } from '@/components/ui/button';
+import { useTwoFactorAuth } from '@/composables/useTwoFactorAuth';
+import { disable, enable } from '@/routes/two-factor';
 
 export type Props = {
     canManageTwoFactor?: boolean;
@@ -21,7 +21,7 @@ withDefaults(defineProps<Props>(), {
     twoFactorEnabled: false,
 });
 
-const {hasSetupData, clearTwoFactorAuthData} = useTwoFactorAuth();
+const { hasSetupData, clearTwoFactorAuthData } = useTwoFactorAuth();
 const showSetupModal = ref<boolean>(false);
 
 onUnmounted(() => clearTwoFactorAuthData());
@@ -47,7 +47,7 @@ onUnmounted(() => clearTwoFactorAuthData());
 
             <div>
                 <Button v-if="hasSetupData" @click="showSetupModal = true">
-                    <ShieldCheck/>
+                    <ShieldCheck />
                     Continue setup
                 </Button>
                 <Form
@@ -82,7 +82,7 @@ onUnmounted(() => clearTwoFactorAuthData());
                 </Form>
             </div>
 
-            <TwoFactorRecoveryCodes/>
+            <TwoFactorRecoveryCodes />
         </div>
 
         <TwoFactorSetupModal

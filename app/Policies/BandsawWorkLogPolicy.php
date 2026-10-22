@@ -28,10 +28,9 @@ class BandsawWorkLogPolicy
      * Determine whether the user can view the Bandsaw work log.
      */
     public function view(
-        User           $user,
+        User $user,
         BandsawWorkLog $bandsawWorkLog,
-    ): bool
-    {
+    ): bool {
         return in_array(
             $user->role,
             [
@@ -63,10 +62,9 @@ class BandsawWorkLogPolicy
      * Determine whether the user can update the Bandsaw work log.
      */
     public function update(
-        User           $user,
+        User $user,
         BandsawWorkLog $bandsawWorkLog,
-    ): bool
-    {
+    ): bool {
         return in_array(
             $user->role,
             [
@@ -81,10 +79,9 @@ class BandsawWorkLogPolicy
      * Determine whether the user can delete the Bandsaw work log.
      */
     public function delete(
-        User           $user,
+        User $user,
         BandsawWorkLog $bandsawWorkLog,
-    ): bool
-    {
+    ): bool {
         return in_array(
             $user->role,
             [

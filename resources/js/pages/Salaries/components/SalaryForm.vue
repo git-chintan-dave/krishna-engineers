@@ -1,19 +1,19 @@
 <script lang="ts" setup>
 import axios from 'axios';
-import type {InertiaForm} from '@inertiajs/vue3';
-import {CalendarDays, IndianRupee, User} from '@lucide/vue';
-import {computed, ref, watch} from 'vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+import { CalendarDays, IndianRupee, User } from '@lucide/vue';
+import { computed, ref, watch } from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
 import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
-import {salaryPage} from '@/config/salaries';
-import {preview as previewSalary} from '@/routes/salaries';
-import {salarySchema} from '@/schemas/salarySchema';
-import type {Salary, SalaryFormData} from '@/types/salary';
-import {useZodFormValidation} from "@/composables/useZodFormValidation";
+import { salaryPage } from '@/config/salaries';
+import { preview as previewSalary } from '@/routes/salaries';
+import { salarySchema } from '@/schemas/salarySchema';
+import type { Salary, SalaryFormData } from '@/types/salary';
+import { useZodFormValidation } from '@/composables/useZodFormValidation';
 
 type SalaryPreview = {
     base_salary: string;
@@ -56,45 +56,26 @@ let previewRequestId = 0;
 const isEdit = computed(() => Boolean(props.salary));
 
 const baseSalary = computed(() =>
-    Number(
-        props.salary?.base_salary ??
-        previewData.value?.base_salary ??
-        0,
-    ),
+    Number(props.salary?.base_salary ?? previewData.value?.base_salary ?? 0),
 );
 
 const workingDays = computed(
-    () =>
-        props.salary?.working_days ??
-        previewData.value?.working_days ??
-        0,
+    () => props.salary?.working_days ?? previewData.value?.working_days ?? 0,
 );
 
 const incentive = computed(() =>
-    Number(
-        props.salary?.incentive ??
-        previewData.value?.incentive ??
-        0,
-    ),
+    Number(props.salary?.incentive ?? previewData.value?.incentive ?? 0),
 );
 
 const deduction = computed(() =>
-    Number(
-        props.salary?.deduction ??
-        previewData.value?.deduction ??
-        0,
-    ),
+    Number(props.salary?.deduction ?? previewData.value?.deduction ?? 0),
 );
 
 const upad = computed(() => Number(props.form.upad || 0));
 
-const paidLoan = computed(() =>
-    Number(props.form.paid_loan || 0),
-);
+const paidLoan = computed(() => Number(props.form.paid_loan || 0));
 
-const adjustment = computed(() =>
-    Number(props.form.adjustment || 0),
-);
+const adjustment = computed(() => Number(props.form.adjustment || 0));
 
 const finalPayable = computed(() =>
     (
@@ -107,15 +88,10 @@ const finalPayable = computed(() =>
     ).toFixed(2),
 );
 
-const hasAdjustment = computed(
-    () => adjustment.value > 0,
-);
+const hasAdjustment = computed(() => adjustment.value > 0);
 
 // Frontend validation
-const {
-    errors: frontendErrors,
-    validate,
-} = useZodFormValidation(
+const { errors: frontendErrors, validate } = useZodFormValidation(
     salarySchema,
     () => props.form,
 );
@@ -148,10 +124,8 @@ const loadPreview = async (): Promise<void> => {
         const response = await axios.get(previewSalary().url, {
             params: {
                 user_id: props.form.user_id,
-                salary_period_start:
-                props.form.salary_period_start,
-                salary_period_end:
-                props.form.salary_period_end,
+                salary_period_start: props.form.salary_period_start,
+                salary_period_end: props.form.salary_period_end,
             },
             headers: {
                 Accept: 'application/json',
@@ -179,9 +153,7 @@ const setPeriodEndFromStart = (): void => {
         return;
     }
 
-    const startDate = new Date(
-        `${props.form.salary_period_start}T00:00:00`,
-    );
+    const startDate = new Date(`${props.form.salary_period_start}T00:00:00`);
 
     if (Number.isNaN(startDate.getTime())) {
         return;
@@ -200,10 +172,7 @@ const setPeriodEndFromStart = (): void => {
     props.form.salary_period_end = `${year}-${month}-${day}`;
 };
 
-watch(
-    () => props.form.salary_period_start,
-    setPeriodEndFromStart,
-);
+watch(() => props.form.salary_period_start, setPeriodEndFromStart);
 
 watch(
     [
@@ -217,11 +186,7 @@ watch(
 </script>
 
 <template>
-    <form
-        class="min-w-0 space-y-6"
-        novalidate
-        @submit.prevent="handleSubmit"
-    >
+    <form class="min-w-0 space-y-6" novalidate @submit.prevent="handleSubmit">
         <FormSection
             :description="salaryPage.form.sectionDescription"
             :title="salaryPage.form.sectionTitle"
@@ -237,9 +202,7 @@ watch(
                         :disabled="processing || isEdit"
                         :error="frontendErrors.user_id ?? props.errors.user_id"
                         :icon="User"
-                        :placeholder="
-                            salaryPage.form.employeePlaceholder
-                        "
+                        :placeholder="salaryPage.form.employeePlaceholder"
                         searchable
                     />
                 </AppField>
@@ -253,7 +216,10 @@ watch(
                         id="salary-period-start"
                         v-model="props.form.salary_period_start"
                         :disabled="processing || isEdit"
-                        :error="frontendErrors.salary_period_start ?? props.errors.salary_period_start"
+                        :error="
+                            frontendErrors.salary_period_start ??
+                            props.errors.salary_period_start
+                        "
                         :icon="CalendarDays"
                         :placeholder="
                             salaryPage.form.salaryPeriodStartPlaceholder
@@ -271,7 +237,10 @@ watch(
                         id="salary-period-end"
                         v-model="props.form.salary_period_end"
                         :disabled="processing || isEdit"
-                        :error="frontendErrors.salary_period_end ?? props.errors.salary_period_end"
+                        :error="
+                            frontendErrors.salary_period_end ??
+                            props.errors.salary_period_end
+                        "
                         :icon="CalendarDays"
                         :placeholder="
                             salaryPage.form.salaryPeriodEndPlaceholder
@@ -373,7 +342,9 @@ watch(
                         id="salary-paid-loan"
                         v-model="props.form.paid_loan"
                         :disabled="processing"
-                        :error="frontendErrors.paid_loan ?? props.errors.paid_loan"
+                        :error="
+                            frontendErrors.paid_loan ?? props.errors.paid_loan
+                        "
                         :icon="IndianRupee"
                         :placeholder="salaryPage.form.paidLoanPlaceholder"
                         min="0"
@@ -391,7 +362,9 @@ watch(
                         id="salary-adjustment"
                         v-model="props.form.adjustment"
                         :disabled="processing"
-                        :error="frontendErrors.adjustment ?? props.errors.adjustment"
+                        :error="
+                            frontendErrors.adjustment ?? props.errors.adjustment
+                        "
                         :icon="IndianRupee"
                         :placeholder="salaryPage.form.adjustmentPlaceholder"
                         step="0.01"
@@ -408,7 +381,10 @@ watch(
                         id="salary-adjustment-reason"
                         v-model="props.form.adjustment_reason"
                         :disabled="processing"
-                        :error="frontendErrors.adjustment_reason ?? props.errors.adjustment_reason"
+                        :error="
+                            frontendErrors.adjustment_reason ??
+                            props.errors.adjustment_reason
+                        "
                         :placeholder="
                             salaryPage.form.adjustmentReasonPlaceholder
                         "
@@ -431,8 +407,8 @@ watch(
                         </p>
 
                         <p class="mt-1 text-sm text-muted-foreground">
-                            Base salary + incentive + adjustment − upad −
-                            paid loan − deduction.
+                            Base salary + incentive + adjustment − upad − paid
+                            loan − deduction.
                         </p>
                     </div>
 

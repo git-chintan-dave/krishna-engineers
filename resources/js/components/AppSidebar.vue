@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {Link} from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -15,8 +15,8 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 
-import {dashboard} from '@/routes';
-import {mainNavItems} from '@/config/navigation';
+import { dashboard } from '@/routes';
+import { mainNavItems } from '@/config/navigation';
 </script>
 
 <template>
@@ -26,7 +26,7 @@ import {mainNavItems} from '@/config/navigation';
                 <SidebarMenuItem>
                     <SidebarMenuButton as-child size="lg">
                         <Link :href="dashboard()">
-                            <AppLogo/>
+                            <AppLogo />
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -34,13 +34,13 @@ import {mainNavItems} from '@/config/navigation';
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :items="mainNavItems"/>
+            <NavMain :items="mainNavItems" />
         </SidebarContent>
 
         <SidebarFooter>
-            <NavUser/>
+            <NavUser />
         </SidebarFooter>
     </Sidebar>
 
-    <slot/>
+    <slot />
 </template>

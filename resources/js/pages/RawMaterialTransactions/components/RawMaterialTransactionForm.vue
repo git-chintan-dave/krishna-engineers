@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import {computed, ref, watch} from 'vue';
-import type {InertiaForm} from '@inertiajs/vue3';
-import {ArrowLeftRight, Hash, MessageSquare} from '@lucide/vue';
+import { computed, ref, watch } from 'vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+import { ArrowLeftRight, Hash, MessageSquare } from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -10,11 +10,14 @@ import FormSection from '@/components/form/FormSection.vue';
 import AppRawMaterialTransactionTypeSelect from '@/components/selects/AppRawMaterialTransactionTypeSelect.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppSectionSizeSelect from '@/components/selects/AppSectionSizeSelect.vue';
-import {useZodFormValidation} from '@/composables/useZodFormValidation';
-import {rawMaterialTransactionPage} from '@/config/rawMaterialTransactions';
-import type {RawMaterialTransaction, RawMaterialTransactionFormData} from '@/types/rawMaterialTransaction';
-import type {RawMaterialTransactionValidationField} from '@/schemas/rawMaterialTransactionSchema';
-import {rawMaterialTransactionSchema} from '@/schemas/rawMaterialTransactionSchema';
+import { useZodFormValidation } from '@/composables/useZodFormValidation';
+import { rawMaterialTransactionPage } from '@/config/rawMaterialTransactions';
+import type {
+    RawMaterialTransaction,
+    RawMaterialTransactionFormData,
+} from '@/types/rawMaterialTransaction';
+import type { RawMaterialTransactionValidationField } from '@/schemas/rawMaterialTransactionSchema';
+import { rawMaterialTransactionSchema } from '@/schemas/rawMaterialTransactionSchema';
 
 /*
 |--------------------------------------------------------------------------
@@ -79,10 +82,7 @@ watch(selectedSectionId, (newSectionId, oldSectionId) => {
 |--------------------------------------------------------------------------
 */
 
-const {
-    errors: frontendErrors,
-    validate,
-} = useZodFormValidation(
+const { errors: frontendErrors, validate } = useZodFormValidation(
     rawMaterialTransactionSchema,
     () => ({
         section_id: selectedSectionId.value,
@@ -112,9 +112,7 @@ const getError = (
         return undefined;
     }
 
-    return props.errors[
-        field as keyof RawMaterialTransactionFormData
-        ];
+    return props.errors[field as keyof RawMaterialTransactionFormData];
 };
 
 /*
@@ -137,19 +135,13 @@ const handleSubmit = (): void => {
 
 const isAdjustment = computed(() => props.form.type === 'adjustment');
 
-const quantityMin = computed(() =>
-    isAdjustment.value ? -2147483648 : 1,
-);
+const quantityMin = computed(() => (isAdjustment.value ? -2147483648 : 1));
 
 const quantityMax = 4294967295;
 </script>
 
 <template>
-    <form
-        class="min-w-0 space-y-6"
-        novalidate
-        @submit.prevent="handleSubmit"
-    >
+    <form class="min-w-0 space-y-6" novalidate @submit.prevent="handleSubmit">
         <FormSection
             :description="rawMaterialTransactionPage.form.sectionDescription"
             :title="rawMaterialTransactionPage.form.sectionTitle"

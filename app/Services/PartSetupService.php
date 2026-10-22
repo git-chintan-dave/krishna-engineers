@@ -44,13 +44,13 @@ class PartSetupService
      */
     protected function ensureActive(Part $part, Setup $setup): void
     {
-        if (!$part->isActive()) {
+        if (! $part->isActive()) {
             throw new RuntimeException(
                 'The selected part is inactive.'
             );
         }
 
-        if (!$setup->isActive()) {
+        if (! $setup->isActive()) {
             throw new RuntimeException(
                 'The selected setup is inactive.'
             );

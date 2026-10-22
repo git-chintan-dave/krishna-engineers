@@ -111,14 +111,14 @@ class PartSetup extends Model
     protected function machineCycleTime(): Attribute
     {
         return Attribute::get(
-            fn() => gmdate('H:i:s', $this->machine_cycle_time_seconds)
+            fn () => gmdate('H:i:s', $this->machine_cycle_time_seconds)
         );
     }
 
     protected function actualCycleTime(): Attribute
     {
         return Attribute::get(
-            fn() => gmdate('H:i:s', $this->actual_cycle_time_seconds)
+            fn () => gmdate('H:i:s', $this->actual_cycle_time_seconds)
         );
     }
 }

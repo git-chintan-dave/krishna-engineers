@@ -9,10 +9,9 @@ use App\Models\User;
 class ToolTransactionPolicy
 {
     public function view(
-        User            $user,
+        User $user,
         ToolTransaction $toolTransaction,
-    ): bool
-    {
+    ): bool {
         return $this->viewAny($user);
     }
 
@@ -31,18 +30,16 @@ class ToolTransactionPolicy
     }
 
     public function delete(
-        User            $user,
+        User $user,
         ToolTransaction $toolTransaction,
-    ): bool
-    {
+    ): bool {
         return $this->update($user, $toolTransaction);
     }
 
     public function update(
-        User            $user,
+        User $user,
         ToolTransaction $toolTransaction,
-    ): bool
-    {
+    ): bool {
         return $user->role === UserRole::SUPER_ADMIN
             || (
                 $user->role === UserRole::SUPERVISOR

@@ -29,7 +29,7 @@ class PartSetupRequest extends FormRequest
                 'exists:setups,id',
                 Rule::unique('part_setups', 'setup_id')
                     ->where(
-                        fn($query) => $query->where(
+                        fn ($query) => $query->where(
                             'part_id',
                             $this->input('part_id'),
                         ),

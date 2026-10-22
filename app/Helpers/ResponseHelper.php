@@ -11,12 +11,11 @@ class ResponseHelper
      * Return a successful response with a toast message.
      */
     public static function success(
-        string  $message,
+        string $message,
         ?string $route = null,
-        array   $routeParams = [],
-        array   $flash = [],
-    ): RedirectResponse
-    {
+        array $routeParams = [],
+        array $flash = [],
+    ): RedirectResponse {
         return self::redirect(
             type: 'success',
             message: $message,
@@ -30,13 +29,12 @@ class ResponseHelper
      * Build the redirect response with toast data.
      */
     private static function redirect(
-        string  $type,
-        string  $message,
+        string $type,
+        string $message,
         ?string $route,
-        array   $routeParams,
-        array   $flash,
-    ): RedirectResponse
-    {
+        array $routeParams,
+        array $flash,
+    ): RedirectResponse {
         $toast = [
             'type' => $type,
             'message' => $message,
@@ -58,12 +56,11 @@ class ResponseHelper
      * Return an error response with a toast message.
      */
     public static function error(
-        string  $message,
+        string $message,
         ?string $route = null,
-        array   $routeParams = [],
-        array   $flash = [],
-    ): RedirectResponse
-    {
+        array $routeParams = [],
+        array $flash = [],
+    ): RedirectResponse {
         return self::redirect(
             type: 'error',
             message: $message,
@@ -77,12 +74,11 @@ class ResponseHelper
      * Return a warning response with a toast message.
      */
     public static function warning(
-        string  $message,
+        string $message,
         ?string $route = null,
-        array   $routeParams = [],
-        array   $flash = [],
-    ): RedirectResponse
-    {
+        array $routeParams = [],
+        array $flash = [],
+    ): RedirectResponse {
         return self::redirect(
             type: 'warning',
             message: $message,
@@ -96,12 +92,11 @@ class ResponseHelper
      * Return an informational response with a toast message.
      */
     public static function info(
-        string  $message,
+        string $message,
         ?string $route = null,
-        array   $routeParams = [],
-        array   $flash = [],
-    ): RedirectResponse
-    {
+        array $routeParams = [],
+        array $flash = [],
+    ): RedirectResponse {
         return self::redirect(
             type: 'info',
             message: $message,

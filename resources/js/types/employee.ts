@@ -1,4 +1,4 @@
-import type {PaginatedResponse, SortDirection, Status} from '@/types/listing';
+import type { PaginatedResponse, SortDirection, Status } from '@/types/listing';
 
 export type EmployeeRole =
     | 'super_admin'

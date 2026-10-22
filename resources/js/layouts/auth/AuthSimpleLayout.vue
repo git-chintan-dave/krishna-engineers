@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import {Link} from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
-import {home} from '@/routes';
+import { home } from '@/routes';
 
 defineProps<{
     title?: string;
@@ -36,7 +36,7 @@ defineProps<{
                         </p>
                     </div>
                 </div>
-                <slot/>
+                <slot />
             </div>
         </div>
     </div>

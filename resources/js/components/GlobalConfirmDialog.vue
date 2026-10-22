@@ -7,11 +7,11 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {Button} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 
-import {useConfirmState} from '@/composables/useConfirm';
+import { useConfirmState } from '@/composables/useConfirm';
 
-const {state, onConfirm, onCancel} = useConfirmState();
+const { state, onConfirm, onCancel } = useConfirmState();
 </script>
 
 <template>

@@ -1,15 +1,24 @@
 <script lang="ts" setup>
-import {usePage} from '@inertiajs/vue3';
-import {ChevronsUpDown} from '@lucide/vue';
-import {computed} from 'vue';
-import {DropdownMenu, DropdownMenuContent, DropdownMenuTrigger,} from '@/components/ui/dropdown-menu';
-import {SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,} from '@/components/ui/sidebar';
+import { usePage } from '@inertiajs/vue3';
+import { ChevronsUpDown } from '@lucide/vue';
+import { computed } from 'vue';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    useSidebar,
+} from '@/components/ui/sidebar';
 import UserInfo from '@/components/UserInfo.vue';
 import UserMenuContent from '@/components/UserMenuContent.vue';
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
-const {isMobile, state} = useSidebar();
+const { isMobile, state } = useSidebar();
 </script>
 
 <template>
@@ -22,8 +31,8 @@ const {isMobile, state} = useSidebar();
                         data-test="sidebar-menu-button"
                         size="lg"
                     >
-                        <UserInfo :user="user"/>
-                        <ChevronsUpDown class="ml-auto size-4"/>
+                        <UserInfo :user="user" />
+                        <ChevronsUpDown class="ml-auto size-4" />
                     </SidebarMenuButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -38,7 +47,7 @@ const {isMobile, state} = useSidebar();
                     align="end"
                     class="w-(--reka-dropdown-menu-trigger-width) min-w-56 rounded-lg"
                 >
-                    <UserMenuContent :user="user"/>
+                    <UserMenuContent :user="user" />
                 </DropdownMenuContent>
             </DropdownMenu>
         </SidebarMenuItem>

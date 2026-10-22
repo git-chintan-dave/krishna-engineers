@@ -95,9 +95,8 @@ class RawMaterialTransaction extends Model
 
     public function scopeForSectionSize(
         Builder $query,
-        int     $sectionSizeId,
-    ): Builder
-    {
+        int $sectionSizeId,
+    ): Builder {
         return $query->where('section_size_id', $sectionSizeId);
     }
 
@@ -108,43 +107,38 @@ class RawMaterialTransaction extends Model
     */
 
     public function scopeOfType(
-        Builder                    $query,
+        Builder $query,
         RawMaterialTransactionType $type,
-    ): Builder
-    {
+    ): Builder {
         return $query->where('type', $type);
     }
 
     public function scopeForUser(
         Builder $query,
-        int     $userId,
-    ): Builder
-    {
+        int $userId,
+    ): Builder {
         return $query->where('user_id', $userId);
     }
 
     public function scopeFromDate(
         Builder $query,
-        string  $date,
-    ): Builder
-    {
+        string $date,
+    ): Builder {
         return $query->whereDate('created_at', '>=', $date);
     }
 
     public function scopeToDate(
         Builder $query,
-        string  $date,
-    ): Builder
-    {
+        string $date,
+    ): Builder {
         return $query->whereDate('created_at', '<=', $date);
     }
 
     public function scopeBetweenDates(
         Builder $query,
-        string  $fromDate,
-        string  $toDate,
-    ): Builder
-    {
+        string $fromDate,
+        string $toDate,
+    ): Builder {
         return $query->whereBetween('created_at', [
             "{$fromDate} 00:00:00",
             "{$toDate} 23:59:59.999999",

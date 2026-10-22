@@ -1,13 +1,15 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
 export const optionalText = (label: string) =>
-    z.string()
+    z
+        .string()
         .max(255, `${label} must not exceed 255 characters.`)
         .nullable()
         .optional();
 
 export const requiredText = (label: string) =>
-    z.string()
+    z
+        .string()
         .trim()
         .min(1, `${label} is required.`)
         .max(255, `${label} must not exceed 255 characters.`);
@@ -25,9 +27,7 @@ export const requiredInteger = (label: string) =>
                 return undefined;
             }
 
-            return typeof value === 'string'
-                ? Number(value)
-                : value;
+            return typeof value === 'string' ? Number(value) : value;
         },
         z
             .number({
@@ -55,9 +55,7 @@ export const requiredIntegerInRange = (
                 return undefined;
             }
 
-            return typeof value === 'string'
-                ? Number(value)
-                : value;
+            return typeof value === 'string' ? Number(value) : value;
         },
         z
             .number({
@@ -73,14 +71,19 @@ export const requiredIntegerInRange = (
     );
 
 export const requiredDropdown = (label: string) =>
-    z.number({
-        error: `Please select ${label}.`,
-    }).int().positive(`Please select a ${label}.`);
+    z
+        .number({
+            error: `Please select ${label}.`,
+        })
+        .int()
+        .positive(`Please select a ${label}.`);
 
 export const requiredStringDropdown = (label: string) =>
-    z.string({
-        error: `Please select ${label}.`,
-    }).min(1, `Please select a ${label}.`);
+    z
+        .string({
+            error: `Please select ${label}.`,
+        })
+        .min(1, `Please select a ${label}.`);
 
 export const requiredNonNegativeInteger = (label: string) =>
     z.preprocess(
@@ -131,20 +134,23 @@ export const requiredNonNegativeNumber = (label: string) =>
             .min(0, `${label} must be at least 0.`),
     );
 
-export const timeSchema = (message = 'Invalid time format. Expected HH:MM:SS') =>
+export const timeSchema = (
+    message = 'Invalid time format. Expected HH:MM:SS',
+) =>
     z.string().time({
         precision: 0,
         message,
     });
 
-export const durationSecondsSchema = (
-    message = 'Invalid duration.',
-) =>
-    z.number({
-        message,
-    }).int().positive({
-        message,
-    });
+export const durationSecondsSchema = (message = 'Invalid duration.') =>
+    z
+        .number({
+            message,
+        })
+        .int()
+        .positive({
+            message,
+        });
 
 export const optionalImage = z
     .file()

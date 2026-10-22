@@ -1,6 +1,10 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
-import {requiredDropdown, requiredNonNegativeNumber, requiredText,} from '@/schemas/commonSchema';
+import {
+    requiredDropdown,
+    requiredNonNegativeNumber,
+    requiredText,
+} from '@/schemas/commonSchema';
 
 export const sectionSizeSchema = z.object({
     section_id: requiredDropdown('a section'),

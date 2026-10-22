@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {useId} from 'vue';
+import { useId } from 'vue';
 
 const patternId = `pattern-${useId()}`;
 </script>

@@ -1,16 +1,16 @@
 <script lang="ts" setup>
-import type {InertiaForm} from '@inertiajs/vue3';
-import {Hash, Settings2, ToggleRight} from '@lucide/vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+import { Hash, Settings2, ToggleRight } from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
 import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import ToggleCardInput from '@/components/form/ToggleCardInput.vue';
-import {useZodFormValidation} from '@/composables/useZodFormValidation';
-import {machinePage} from '@/config/machines';
-import {machineSchema} from '@/schemas/machineSchema';
-import type {MachineFormData} from '@/types/machine';
+import { useZodFormValidation } from '@/composables/useZodFormValidation';
+import { machinePage } from '@/config/machines';
+import { machineSchema } from '@/schemas/machineSchema';
+import type { MachineFormData } from '@/types/machine';
 
 // Props
 const props = withDefaults(
@@ -34,10 +34,7 @@ const emit = defineEmits<{
 }>();
 
 // Frontend validation
-const {
-    errors: frontendErrors,
-    validate,
-} = useZodFormValidation(
+const { errors: frontendErrors, validate } = useZodFormValidation(
     machineSchema,
     () => props.form,
 );
@@ -87,9 +84,7 @@ const handleSubmit = () => {
                             props.errors.machine_number
                         "
                         :icon="Hash"
-                        :placeholder="
-                            machinePage.form.machineNumberPlaceholder
-                        "
+                        :placeholder="machinePage.form.machineNumberPlaceholder"
                     />
                 </AppField>
 

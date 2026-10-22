@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import AuthLayout from '@/layouts/auth/AuthCardLayout.vue';
 
-const {title = '', description = ''} = defineProps<{
+const { title = '', description = '' } = defineProps<{
     title?: string;
     description?: string;
 }>();
@@ -9,6 +9,6 @@ const {title = '', description = ''} = defineProps<{
 
 <template>
     <AuthLayout :description="description" :title="title">
-        <slot/>
+        <slot />
     </AuthLayout>
 </template>

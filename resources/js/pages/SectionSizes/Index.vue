@@ -1,18 +1,28 @@
 ﻿<script lang="ts" setup>
-import {router} from '@inertiajs/vue3';
-import {ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 import ListingActions from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {sectionSizePage} from '@/config/sectionSizes';
-import {bulkDestroy, create, destroy, index as sectionSizesRoute,} from '@/routes/section-sizes';
-import {createSectionSizeColumns} from '@/table/sectionSizes';
-import type {SectionSize, SectionSizeFilters, SectionSizeSort, SectionSizesResponse,} from '@/types/sectionSize';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { sectionSizePage } from '@/config/sectionSizes';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as sectionSizesRoute,
+} from '@/routes/section-sizes';
+import { createSectionSizeColumns } from '@/table/sectionSizes';
+import type {
+    SectionSize,
+    SectionSizeFilters,
+    SectionSizeSort,
+    SectionSizesResponse,
+} from '@/types/sectionSize';
 
 /*
 |--------------------------------------------------------------------------

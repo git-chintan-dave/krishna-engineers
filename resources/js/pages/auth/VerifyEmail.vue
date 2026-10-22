@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import {Form, Head} from '@inertiajs/vue3';
+import { Form, Head } from '@inertiajs/vue3';
 import TextLink from '@/components/TextLink.vue';
-import {Button} from '@/components/ui/button';
-import {Spinner} from '@/components/ui/spinner';
-import {logout} from '@/routes';
-import {send} from '@/routes/verification';
+import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
+import { logout } from '@/routes';
+import { send } from '@/routes/verification';
 
 defineOptions({
     layout: {
@@ -20,7 +20,7 @@ defineProps<{
 </script>
 
 <template>
-    <Head title="Email verification"/>
+    <Head title="Email verification" />
 
     <div
         v-if="status === 'verification-link-sent'"
@@ -36,7 +36,7 @@ defineProps<{
         v-bind="send.form()"
     >
         <Button :disabled="processing" variant="secondary">
-            <Spinner v-if="processing"/>
+            <Spinner v-if="processing" />
             Resend verification email
         </Button>
 

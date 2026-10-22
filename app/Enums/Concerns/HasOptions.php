@@ -12,7 +12,7 @@ trait HasOptions
     public static function options(): array
     {
         return array_map(
-            fn(self $case): array => [
+            fn (self $case): array => [
                 'value' => $case->value,
                 'label' => $case->label(),
             ],

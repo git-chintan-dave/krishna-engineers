@@ -1,5 +1,14 @@
 <script lang="ts" setup>
-import {Badge, CalendarDays, CreditCard, IndianRupee, LockKeyhole, Mail, Phone, User,} from '@lucide/vue';
+import {
+    Badge,
+    CalendarDays,
+    CreditCard,
+    IndianRupee,
+    LockKeyhole,
+    Mail,
+    Phone,
+    User,
+} from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -8,10 +17,13 @@ import FormSection from '@/components/form/FormSection.vue';
 import ToggleCardInput from '@/components/form/ToggleCardInput.vue';
 import AppUserRoleSelect from '@/components/selects/AppUserRoleSelect.vue';
 import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
-import {employeePage} from '@/config/employees';
-import {createEmployeeSchema, editEmployeeSchema,} from '@/schemas/employeeSchema';
-import type {EmployeeFormData} from '@/types/employee';
-import {useZodFormValidation} from "@/composables/useZodFormValidation";
+import { employeePage } from '@/config/employees';
+import {
+    createEmployeeSchema,
+    editEmployeeSchema,
+} from '@/schemas/employeeSchema';
+import type { EmployeeFormData } from '@/types/employee';
+import { useZodFormValidation } from '@/composables/useZodFormValidation';
 
 const props = withDefaults(
     defineProps<{
@@ -35,10 +47,7 @@ const emit = defineEmits<{
 }>();
 
 // Frontend validation
-const {
-    errors: frontendErrors,
-    validate,
-} = useZodFormValidation(
+const { errors: frontendErrors, validate } = useZodFormValidation(
     props.isEdit ? editEmployeeSchema : createEmployeeSchema,
     () => props.form,
 );
@@ -84,11 +93,12 @@ const handleSubmit = () => {
                         id="employee-code"
                         v-model="props.form.employee_code"
                         :disabled="processing"
-                        :error="frontendErrors.employee_code ?? props.errors.employee_code"
-                        :icon="Badge"
-                        :placeholder="
-                            employeePage.form.employeeCodePlaceholder
+                        :error="
+                            frontendErrors.employee_code ??
+                            props.errors.employee_code
                         "
+                        :icon="Badge"
+                        :placeholder="employeePage.form.employeeCodePlaceholder"
                     />
                 </AppField>
 
@@ -101,7 +111,10 @@ const handleSubmit = () => {
                         id="employee-joining-date"
                         v-model="props.form.joining_date"
                         :disabled="processing"
-                        :error="frontendErrors.joining_date ?? props.errors.joining_date"
+                        :error="
+                            frontendErrors.joining_date ??
+                            props.errors.joining_date
+                        "
                         :icon="CalendarDays"
                         type="date"
                     />
@@ -116,11 +129,12 @@ const handleSubmit = () => {
                         id="employee-phone-number"
                         v-model="props.form.phone_number"
                         :disabled="processing"
-                        :error="frontendErrors.phone_number ?? props.errors.phone_number"
-                        :icon="Phone"
-                        :placeholder="
-                            employeePage.form.phoneNumberPlaceholder
+                        :error="
+                            frontendErrors.phone_number ??
+                            props.errors.phone_number
                         "
+                        :icon="Phone"
+                        :placeholder="employeePage.form.phoneNumberPlaceholder"
                         inputmode="numeric"
                         maxlength="10"
                         type="tel"
@@ -136,7 +150,10 @@ const handleSubmit = () => {
                         id="employee-alternate-phone-number"
                         v-model="props.form.alternate_phone_number"
                         :disabled="processing"
-                        :error="frontendErrors.alternate_phone_number ?? props.errors.alternate_phone_number"
+                        :error="
+                            frontendErrors.alternate_phone_number ??
+                            props.errors.alternate_phone_number
+                        "
                         :icon="Phone"
                         :placeholder="
                             employeePage.form.alternatePhoneNumberPlaceholder
@@ -172,7 +189,10 @@ const handleSubmit = () => {
                         id="employee-aadhar-number"
                         v-model="props.form.aadhar_number"
                         :disabled="processing"
-                        :error="frontendErrors.aadhar_number ?? props.errors.aadhar_number"
+                        :error="
+                            frontendErrors.aadhar_number ??
+                            props.errors.aadhar_number
+                        "
                         :icon="CreditCard"
                         :placeholder="employeePage.form.aadharNumberPlaceholder"
                         inputmode="numeric"
@@ -200,7 +220,9 @@ const handleSubmit = () => {
                         id="employee-password"
                         v-model="props.form.password"
                         :disabled="processing"
-                        :error="frontendErrors.password ?? props.errors.password"
+                        :error="
+                            frontendErrors.password ?? props.errors.password
+                        "
                         :icon="LockKeyhole"
                         :placeholder="employeePage.form.passwordPlaceholder"
                         type="password"
@@ -217,7 +239,10 @@ const handleSubmit = () => {
                         id="employee-password-confirmation"
                         v-model="props.form.password_confirmation"
                         :disabled="processing"
-                        :error="frontendErrors.password_confirmation ?? props.errors.password_confirmation"
+                        :error="
+                            frontendErrors.password_confirmation ??
+                            props.errors.password_confirmation
+                        "
                         :icon="LockKeyhole"
                         :placeholder="
                             employeePage.form.passwordConfirmationPlaceholder
@@ -300,7 +325,10 @@ const handleSubmit = () => {
                         id="employee-incentive-per-day"
                         v-model="props.form.incentive_per_day"
                         :disabled="processing"
-                        :error="frontendErrors.incentive_per_day ?? props.errors.incentive_per_day"
+                        :error="
+                            frontendErrors.incentive_per_day ??
+                            props.errors.incentive_per_day
+                        "
                         :icon="IndianRupee"
                         :placeholder="
                             employeePage.form.incentivePerDayPlaceholder
@@ -321,7 +349,10 @@ const handleSubmit = () => {
                         id="employee-deduction-per-day"
                         v-model="props.form.deduction_per_day"
                         :disabled="processing"
-                        :error="frontendErrors.deduction_per_day ?? props.errors.deduction_per_day"
+                        :error="
+                            frontendErrors.deduction_per_day ??
+                            props.errors.deduction_per_day
+                        "
                         :icon="IndianRupee"
                         :placeholder="
                             employeePage.form.deductionPerDayPlaceholder

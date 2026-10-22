@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import {Form, Head} from '@inertiajs/vue3';
+import { Form, Head } from '@inertiajs/vue3';
 
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
-import {Button} from '@/components/ui/button';
-import {Checkbox} from '@/components/ui/checkbox';
-import {Input} from '@/components/ui/input';
-import {Label} from '@/components/ui/label';
-import {Spinner} from '@/components/ui/spinner';
-import {store} from '@/routes/login';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
+import { store } from '@/routes/login';
 
 defineOptions({
     layout: {
@@ -23,7 +23,7 @@ defineProps<{
 </script>
 
 <template>
-    <Head title="Log in"/>
+    <Head title="Log in" />
 
     <div
         v-if="status"
@@ -54,7 +54,7 @@ defineProps<{
                     type="text"
                 />
 
-                <InputError :message="errors.employee_code"/>
+                <InputError :message="errors.employee_code" />
             </div>
 
             <div class="grid gap-2">
@@ -71,12 +71,12 @@ defineProps<{
                     required
                 />
 
-                <InputError :message="errors.password"/>
+                <InputError :message="errors.password" />
             </div>
 
             <div class="flex items-center justify-between">
                 <Label class="flex items-center space-x-3" for="remember">
-                    <Checkbox id="remember" :tabindex="3" name="remember"/>
+                    <Checkbox id="remember" :tabindex="3" name="remember" />
                     <span>Remember me</span>
                 </Label>
             </div>
@@ -88,7 +88,7 @@ defineProps<{
                 data-test="login-button"
                 type="submit"
             >
-                <Spinner v-if="processing"/>
+                <Spinner v-if="processing" />
                 Log in
             </Button>
         </div>

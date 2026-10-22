@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import {ArrowLeft, LoaderCircle, Save} from '@lucide/vue';
+import { ArrowLeft, LoaderCircle, Save } from '@lucide/vue';
 
-import {Button} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 
 /*
 |--------------------------------------------------------------------------
@@ -50,7 +50,7 @@ const emit = defineEmits<{
             variant="outline"
             @click="emit('cancel')"
         >
-            <ArrowLeft aria-hidden="true" class="size-4"/>
+            <ArrowLeft aria-hidden="true" class="size-4" />
 
             {{ cancelLabel }}
         </Button>
@@ -72,7 +72,7 @@ const emit = defineEmits<{
                 class="size-4 animate-spin"
             />
 
-            <Save v-else aria-hidden="true" class="size-4"/>
+            <Save v-else aria-hidden="true" class="size-4" />
 
             {{ submitLabel }}
         </Button>

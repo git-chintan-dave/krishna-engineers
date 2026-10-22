@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import {Search} from '@lucide/vue';
-import {useAttrs} from 'vue';
+import { Search } from '@lucide/vue';
+import { useAttrs } from 'vue';
 
-import {Input} from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 
 defineOptions({
     inheritAttrs: false,

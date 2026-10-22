@@ -1,5 +1,5 @@
-import type {PaginatedResponse, SortDirection} from '@/types/listing';
-import {ToolSchemaData} from "@/schemas/toolSchema";
+import type { PaginatedResponse, SortDirection } from '@/types/listing';
+import { ToolSchemaData } from '@/schemas/toolSchema';
 
 /*
 |--------------------------------------------------------------------------

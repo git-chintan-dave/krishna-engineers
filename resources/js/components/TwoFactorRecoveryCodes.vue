@@ -1,14 +1,20 @@
 <script lang="ts" setup>
-import {Form} from '@inertiajs/vue3';
-import {Eye, EyeOff, LockKeyhole, RefreshCw} from '@lucide/vue';
-import {nextTick, onMounted, ref, useTemplateRef} from 'vue';
+import { Form } from '@inertiajs/vue3';
+import { Eye, EyeOff, LockKeyhole, RefreshCw } from '@lucide/vue';
+import { nextTick, onMounted, ref, useTemplateRef } from 'vue';
 import AlertError from '@/components/AlertError.vue';
-import {Button} from '@/components/ui/button';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from '@/components/ui/card';
-import {useTwoFactorAuth} from '@/composables/useTwoFactorAuth';
-import {regenerateRecoveryCodes} from '@/routes/two-factor';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { useTwoFactorAuth } from '@/composables/useTwoFactorAuth';
+import { regenerateRecoveryCodes } from '@/routes/two-factor';
 
-const {recoveryCodesList, fetchRecoveryCodes, errors} = useTwoFactorAuth();
+const { recoveryCodesList, fetchRecoveryCodes, errors } = useTwoFactorAuth();
 const isRecoveryCodesVisible = ref<boolean>(false);
 const recoveryCodeSectionRef = useTemplateRef('recoveryCodeSectionRef');
 
@@ -21,7 +27,7 @@ const toggleRecoveryCodesVisibility = async () => {
 
     if (isRecoveryCodesVisible.value) {
         await nextTick();
-        recoveryCodeSectionRef.value?.scrollIntoView({behavior: 'smooth'});
+        recoveryCodeSectionRef.value?.scrollIntoView({ behavior: 'smooth' });
     }
 };
 
@@ -36,7 +42,7 @@ onMounted(async () => {
     <Card class="w-full">
         <CardHeader>
             <CardTitle class="flex gap-3">
-                <LockKeyhole class="size-4"/>
+                <LockKeyhole class="size-4" />
                 2FA recovery codes
             </CardTitle>
             <CardDescription>
@@ -70,7 +76,7 @@ onMounted(async () => {
                         type="submit"
                         variant="secondary"
                     >
-                        <RefreshCw/>
+                        <RefreshCw />
                         Regenerate codes
                     </Button>
                 </Form>
@@ -84,7 +90,7 @@ onMounted(async () => {
                 ]"
             >
                 <div v-if="errors?.length" class="mt-6">
-                    <AlertError :errors="errors"/>
+                    <AlertError :errors="errors" />
                 </div>
                 <div v-else class="mt-3 space-y-3">
                     <div

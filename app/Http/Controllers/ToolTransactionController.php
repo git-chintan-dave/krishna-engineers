@@ -29,9 +29,7 @@ class ToolTransactionController extends Controller
 
     public function __construct(
         private readonly ToolTransactionService $toolTransactionService,
-    )
-    {
-    }
+    ) {}
 
     public function index(IndexToolTransactionRequest $request): Response
     {
@@ -87,7 +85,7 @@ class ToolTransactionController extends Controller
         $data = $request->validated();
         $tool = Tool::query()->findOrFail($data['tool_id']);
         $type = ToolTransactionType::from($data['type']);
-        $quantity = (int)$data['quantity'];
+        $quantity = (int) $data['quantity'];
 
         match ($type) {
             ToolTransactionType::OPENING => $this->toolTransactionService->opening(
@@ -149,9 +147,8 @@ class ToolTransactionController extends Controller
 
     public function update(
         ToolTransactionRequest $request,
-        ToolTransaction        $toolTransaction,
-    ): RedirectResponse
-    {
+        ToolTransaction $toolTransaction,
+    ): RedirectResponse {
         Gate::authorize('update', $toolTransaction);
 
         /** @var User $user */

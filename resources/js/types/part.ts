@@ -1,6 +1,11 @@
-﻿import type {PaginatedResponse, SortDirection, Status, StatusFilter,} from '@/types/listing';
-import {Section} from '@/types/section';
-import {PartSchemaData} from "@/schemas/partSchema";
+﻿import type {
+    PaginatedResponse,
+    SortDirection,
+    Status,
+    StatusFilter,
+} from '@/types/listing';
+import { Section } from '@/types/section';
+import { PartSchemaData } from '@/schemas/partSchema';
 
 export type Part = {
     id: number;

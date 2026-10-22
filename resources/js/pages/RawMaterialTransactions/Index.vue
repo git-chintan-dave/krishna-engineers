@@ -1,6 +1,6 @@
 ﻿<script lang="ts" setup>
-import {router, usePage} from '@inertiajs/vue3';
-import {computed, ref} from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import ListingActions from '@/components/common/ListingActions.vue';
@@ -10,11 +10,16 @@ import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppSectionSizeSelect from '@/components/selects/AppSectionSizeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {rawMaterialTransactionPage} from '@/config/rawMaterialTransactions';
-import {bulkDestroy, create, destroy, index as rawMaterialTransactionsRoute,} from '@/routes/raw-material-transactions';
-import {createRawMaterialTransactionColumns} from '@/table/rawMaterialTransactions';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { rawMaterialTransactionPage } from '@/config/rawMaterialTransactions';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as rawMaterialTransactionsRoute,
+} from '@/routes/raw-material-transactions';
+import { createRawMaterialTransactionColumns } from '@/table/rawMaterialTransactions';
 import type {
     RawMaterialTransaction,
     RawMaterialTransactionFilters,

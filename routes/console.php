@@ -3,5 +3,5 @@
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('etimeoffice:sync')
-    ->everyFiveMinutes() //->everyFifteenMinutes()
+    ->everyFiveMinutes() // ->everyFifteenMinutes()
     ->withoutOverlapping();

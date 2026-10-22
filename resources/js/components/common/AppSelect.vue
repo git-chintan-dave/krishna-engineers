@@ -1,13 +1,23 @@
-
 <script lang="ts" setup>
-import {computed, useAttrs} from 'vue';
-import {Check, ChevronsUpDown, X} from '@lucide/vue';
+import { computed, useAttrs } from 'vue';
+import { Check, ChevronsUpDown, X } from '@lucide/vue';
 
-import {Button} from '@/components/ui/button';
-import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,} from '@/components/ui/command';
-import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from '@/components/ui/command';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 
-import type {SelectOption as CommonSelectOption} from '@/types/common';
+import type { SelectOption as CommonSelectOption } from '@/types/common';
 
 defineOptions({
     inheritAttrs: false,
@@ -24,8 +34,8 @@ type Primitive = string | number;
 type Option =
     | Primitive
     | (CommonSelectOption<Primitive> & {
-    [key: string]: unknown;
-});
+          [key: string]: unknown;
+      });
 
 type ModelValue = Primitive | Primitive[] | null;
 
@@ -287,9 +297,7 @@ const clearSelection = () => {
                         :class="[!hasSelection && 'text-muted-foreground']"
                         class="min-w-0 flex-1 truncate text-left"
                     >
-                        <template v-if="loading">
-                            Loading...
-                        </template>
+                        <template v-if="loading"> Loading... </template>
 
                         <template
                             v-else-if="multiple && selectedOptions.length"
@@ -356,7 +364,9 @@ const clearSelection = () => {
                                 :key="String(option.value)"
                                 :value="option.label"
                                 class="min-w-0 cursor-pointer"
-                                @select="selectOption(option.value as Primitive)"
+                                @select="
+                                    selectOption(option.value as Primitive)
+                                "
                             >
                                 <span class="min-w-0 flex-1 truncate">
                                     {{ option.label }}

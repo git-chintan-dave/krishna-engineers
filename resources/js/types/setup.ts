@@ -1,5 +1,10 @@
-﻿import type {PaginatedResponse, SortDirection, Status, StatusFilter,} from '@/types/listing';
-import {SetupSchemaData} from "@/schemas/setupSchema";
+﻿import type {
+    PaginatedResponse,
+    SortDirection,
+    Status,
+    StatusFilter,
+} from '@/types/listing';
+import { SetupSchemaData } from '@/schemas/setupSchema';
 
 export type Setup = {
     id: number;
@@ -11,11 +16,7 @@ export type Setup = {
 
 export type SetupFormData = SetupSchemaData;
 
-export type SetupSort =
-    | 'id'
-    | 'name'
-    | 'status'
-    | 'created_at';
+export type SetupSort = 'id' | 'name' | 'status' | 'created_at';
 
 export type SetupFilters = {
     search: string;

@@ -1,31 +1,41 @@
 <script lang="ts" setup>
-import {Form} from '@inertiajs/vue3';
-import {useClipboard} from '@vueuse/core';
-import {Check, Copy, ScanLine} from '@lucide/vue';
-import {computed, nextTick, ref, useTemplateRef, watch} from 'vue';
+import { Form } from '@inertiajs/vue3';
+import { useClipboard } from '@vueuse/core';
+import { Check, Copy, ScanLine } from '@lucide/vue';
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 import AlertError from '@/components/AlertError.vue';
 import InputError from '@/components/InputError.vue';
-import {Button} from '@/components/ui/button';
-import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from '@/components/ui/dialog';
-import {InputOTP, InputOTPGroup, InputOTPSlot,} from '@/components/ui/input-otp';
-import {Spinner} from '@/components/ui/spinner';
-import {useAppearance} from '@/composables/useAppearance';
-import {useTwoFactorAuth} from '@/composables/useTwoFactorAuth';
-import {confirm} from '@/routes/two-factor';
-import type {TwoFactorConfigContent} from '@/types';
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
+    InputOTP,
+    InputOTPGroup,
+    InputOTPSlot,
+} from '@/components/ui/input-otp';
+import { Spinner } from '@/components/ui/spinner';
+import { useAppearance } from '@/composables/useAppearance';
+import { useTwoFactorAuth } from '@/composables/useTwoFactorAuth';
+import { confirm } from '@/routes/two-factor';
+import type { TwoFactorConfigContent } from '@/types';
 
 type Props = {
     requiresConfirmation: boolean;
     twoFactorEnabled: boolean;
 };
 
-const {resolvedAppearance} = useAppearance();
+const { resolvedAppearance } = useAppearance();
 
 const props = defineProps<Props>();
 const isOpen = defineModel<boolean>('isOpen');
 
-const {copy, copied} = useClipboard();
-const {qrCodeSvg, manualSetupKey, clearSetupData, fetchSetupData, errors} =
+const { copy, copied } = useClipboard();
+const { qrCodeSvg, manualSetupKey, clearSetupData, fetchSetupData, errors } =
     useTwoFactorAuth();
 
 const showVerificationStep = ref(false);
@@ -142,7 +152,7 @@ watch(
                 class="relative flex w-auto flex-col items-center justify-center space-y-5"
             >
                 <template v-if="!showVerificationStep">
-                    <AlertError v-if="errors?.length" :errors="errors"/>
+                    <AlertError v-if="errors?.length" :errors="errors" />
                     <template v-else>
                         <div
                             class="relative mx-auto flex max-w-md items-center overflow-hidden"
@@ -154,7 +164,7 @@ watch(
                                     v-if="!qrCodeSvg"
                                     class="absolute inset-0 z-10 flex aspect-square h-auto w-full animate-pulse items-center justify-center bg-background"
                                 >
-                                    <Spinner class="size-6"/>
+                                    <Spinner class="size-6" />
                                 </div>
                                 <div
                                     v-else
@@ -187,7 +197,7 @@ watch(
                                 class="absolute inset-0 top-1/2 h-px w-full bg-border"
                             />
                             <span class="relative bg-card px-2 py-1"
-                            >or, enter the code manually</span
+                                >or, enter the code manually</span
                             >
                         </div>
 
@@ -201,7 +211,7 @@ watch(
                                     v-if="!manualSetupKey"
                                     class="flex h-full w-full items-center justify-center bg-muted p-3"
                                 >
-                                    <Spinner/>
+                                    <Spinner />
                                 </div>
                                 <template v-else>
                                     <input
@@ -218,7 +228,7 @@ watch(
                                             v-if="copied"
                                             class="w-4 text-green-500"
                                         />
-                                        <Copy v-else class="w-4"/>
+                                        <Copy v-else class="w-4" />
                                     </button>
                                 </template>
                             </div>
@@ -235,7 +245,7 @@ watch(
                         @finish="code = ''"
                         @success="isOpen = false"
                     >
-                        <input :value="code" name="code" type="hidden"/>
+                        <input :value="code" name="code" type="hidden" />
                         <div
                             ref="pinInputContainerRef"
                             class="relative w-full space-y-3"
@@ -258,7 +268,7 @@ watch(
                                         />
                                     </InputOTPGroup>
                                 </InputOTP>
-                                <InputError :message="errors?.code"/>
+                                <InputError :message="errors?.code" />
                             </div>
 
                             <div class="flex w-full items-center space-x-5">

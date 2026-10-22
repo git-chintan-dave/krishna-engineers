@@ -10,8 +10,7 @@ class FlashMessage
     public static function success(
         string $action,
         string $module,
-    ): string
-    {
+    ): string {
         return match ($action) {
             'added' => "{$module} added successfully.",
             'created' => "{$module} created successfully.",
@@ -41,8 +40,7 @@ class FlashMessage
     public static function error(
         string $action,
         string $module,
-    ): string
-    {
+    ): string {
         return match ($action) {
             'added' => "Failed to add {$module}.",
             'created' => "Failed to create {$module}.",

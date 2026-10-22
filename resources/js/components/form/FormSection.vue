@@ -44,7 +44,7 @@ withDefaults(
         -->
 
         <div class="w-full min-w-0 p-4 md:p-6">
-            <slot/>
+            <slot />
         </div>
     </section>
 </template>

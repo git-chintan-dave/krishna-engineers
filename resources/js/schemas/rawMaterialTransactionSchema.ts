@@ -1,6 +1,9 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
-import {requiredDropdown, requiredInteger, requiredStringDropdown,} from '@/schemas/commonSchema';
+import {
+    requiredDropdown,
+    requiredStringDropdown,
+} from '@/schemas/commonSchema';
 
 const MAX_UNSIGNED_INTEGER = 4_294_967_295;
 const MIN_SIGNED_INTEGER = -2_147_483_648;

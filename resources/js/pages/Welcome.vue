@@ -1,7 +1,13 @@
 <script lang="ts" setup>
-import {Head, Link} from '@inertiajs/vue3';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from '@/components/ui/card';
-import {dashboard, login} from '@/routes';
+import { Head, Link } from '@inertiajs/vue3';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { dashboard, login } from '@/routes';
 </script>
 
 <template>
@@ -18,7 +24,7 @@ import {dashboard, login} from '@/routes';
         <div class="w-full max-w-md">
             <Card class="rounded-xl shadow-lg">
                 <CardHeader class="px-8 pt-8 text-center sm:px-10">
-<!--                    <img
+                    <!--                    <img
                         alt="Krishna Engineers"
                         class="mx-auto mb-4 h-20 w-auto max-w-56 object-contain"
                         src="/logo.svg"

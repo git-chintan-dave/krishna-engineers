@@ -31,9 +31,7 @@ class ToolController extends Controller
 
     private const string IMAGE_DIRECTORY = 'tools';
 
-    public function __construct(private readonly FileUploadService $fileUploadService)
-    {
-    }
+    public function __construct(private readonly FileUploadService $fileUploadService) {}
 
     /*
     |--------------------------------------------------------------------------
@@ -123,9 +121,8 @@ class ToolController extends Controller
 
     public function update(
         ToolRequest $request,
-        Tool        $tool,
-    ): RedirectResponse
-    {
+        Tool $tool,
+    ): RedirectResponse {
         Gate::authorize('update', $tool);
 
         $data = $request->validated();
@@ -167,8 +164,7 @@ class ToolController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         Gate::authorize('deleteAny', Tool::class);
 
         Tool::query()

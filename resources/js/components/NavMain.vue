@@ -1,8 +1,12 @@
 <script lang="ts" setup>
-import {Link} from '@inertiajs/vue3';
-import {ChevronRight} from '@lucide/vue';
+import { Link } from '@inertiajs/vue3';
+import { ChevronRight } from '@lucide/vue';
 
-import {Collapsible, CollapsibleContent, CollapsibleTrigger,} from '@/components/ui/collapsible';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import {
     SidebarGroup,
     SidebarGroupLabel,
@@ -13,14 +17,14 @@ import {
     SidebarMenuSubButton,
     SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
-import {useCurrentUrl} from '@/composables/useCurrentUrl';
-import type {NavItem} from '@/types';
+import { useCurrentUrl } from '@/composables/useCurrentUrl';
+import type { NavItem } from '@/types';
 
 defineProps<{
     items: NavItem[];
 }>();
 
-const {isCurrentUrl} = useCurrentUrl();
+const { isCurrentUrl } = useCurrentUrl();
 
 const isItemActive = (item: NavItem): boolean => {
     if (item.href && isCurrentUrl(item.href)) {

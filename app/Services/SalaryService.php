@@ -31,8 +31,7 @@ class SalaryService
      */
     public function generateForAllEmployees(
         ?CarbonInterface $referenceDate = null,
-    ): array
-    {
+    ): array {
         $referenceDate = $referenceDate
             ? Carbon::instance($referenceDate)
             : now();
@@ -111,15 +110,14 @@ class SalaryService
      * Generate a salary record for a user and period.
      */
     public function generate(
-        User            $user,
+        User $user,
         CarbonInterface $periodStart,
         CarbonInterface $periodEnd,
-        float           $upad = 0,
-        float           $paidLoan = 0,
-        float           $adjustment = 0,
-        ?string         $adjustmentReason = null,
-    ): Salary
-    {
+        float $upad = 0,
+        float $paidLoan = 0,
+        float $adjustment = 0,
+        ?string $adjustmentReason = null,
+    ): Salary {
         return DB::transaction(function () use (
             $user,
             $periodStart,
@@ -152,9 +150,9 @@ class SalaryService
                 $periodEnd,
             );
 
-            $baseSalary = (float)$user->salary;
-            $incentiveRate = (float)$user->incentive_per_day;
-            $deductionRate = (float)$user->deduction_per_day;
+            $baseSalary = (float) $user->salary;
+            $incentiveRate = (float) $user->incentive_per_day;
+            $deductionRate = (float) $user->deduction_per_day;
 
             $incentive = $this->calculateIncentive(
                 $workingDays,
@@ -220,11 +218,10 @@ class SalaryService
      * Get the number of working days for a salary period.
      */
     private function getWorkingDays(
-        User            $user,
+        User $user,
         CarbonInterface $periodStart,
         CarbonInterface $periodEnd,
-    ): int
-    {
+    ): int {
         return $user->attendances()
             ->whereBetween('attendance_date', [
                 $periodStart->toDateString(),
@@ -235,10 +232,9 @@ class SalaryService
     }
 
     private function calculateIncentive(
-        int   $workingDays,
+        int $workingDays,
         float $rate,
-    ): float
-    {
+    ): float {
         if ($workingDays <= 23) {
             return 0;
         }
@@ -256,10 +252,9 @@ class SalaryService
     */
 
     private function calculateDeduction(
-        int   $workingDays,
+        int $workingDays,
         float $rate,
-    ): float
-    {
+    ): float {
         if ($workingDays >= 21) {
             return 0;
         }
@@ -283,8 +278,7 @@ class SalaryService
         float $upad,
         float $paidLoan,
         float $deduction,
-    ): float
-    {
+    ): float {
         return round(
             $baseSalary
             + $incentive
@@ -302,8 +296,7 @@ class SalaryService
      */
     private function isUniqueViolation(
         QueryException $exception,
-    ): bool
-    {
+    ): bool {
         return $exception->getCode() === '23000';
     }
 
@@ -311,13 +304,12 @@ class SalaryService
      * Recalculate a draft salary.
      */
     public function recalculate(
-        Salary  $salary,
-        float   $upad = 0,
-        float   $paidLoan = 0,
-        float   $adjustment = 0,
+        Salary $salary,
+        float $upad = 0,
+        float $paidLoan = 0,
+        float $adjustment = 0,
         ?string $adjustmentReason = null,
-    ): Salary
-    {
+    ): Salary {
         if ($salary->isPaid()) {
             throw new RuntimeException(
                 'A paid salary cannot be recalculated.',
@@ -341,16 +333,16 @@ class SalaryService
 
             $incentive = $this->calculateIncentive(
                 $workingDays,
-                (float)$salary->incentive_rate,
+                (float) $salary->incentive_rate,
             );
 
             $deduction = $this->calculateDeduction(
                 $workingDays,
-                (float)$salary->deduction_rate,
+                (float) $salary->deduction_rate,
             );
 
             $finalPayable = $this->calculateFinalPayable(
-                baseSalary: (float)$salary->base_salary,
+                baseSalary: (float) $salary->base_salary,
                 incentive: $incentive,
                 adjustment: $adjustment,
                 upad: $upad,
@@ -381,10 +373,9 @@ class SalaryService
      * Mark salary as paid.
      */
     public function markAsPaid(
-        Salary  $salary,
+        Salary $salary,
         ?Carbon $paidAt = null,
-    ): Salary
-    {
+    ): Salary {
         if ($salary->isPaid()) {
             throw new RuntimeException(
                 'Salary has already been paid.',
@@ -414,20 +405,19 @@ class SalaryService
      * Preview salary calculation for a user and period.
      */
     public function preview(
-        User            $user,
+        User $user,
         CarbonInterface $periodStart,
         CarbonInterface $periodEnd,
-    ): array
-    {
+    ): array {
         $workingDays = $this->getWorkingDays(
             $user,
             $periodStart,
             $periodEnd,
         );
 
-        $baseSalary = (float)$user->salary;
-        $incentiveRate = (float)$user->incentive_per_day;
-        $deductionRate = (float)$user->deduction_per_day;
+        $baseSalary = (float) $user->salary;
+        $incentiveRate = (float) $user->incentive_per_day;
+        $deductionRate = (float) $user->deduction_per_day;
 
         $incentive = $this->calculateIncentive(
             $workingDays,

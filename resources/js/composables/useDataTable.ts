@@ -1,4 +1,8 @@
-import type {RowData, RowSelectionState, SortingState,} from '@tanstack/vue-table';
+import type {
+    RowData,
+    RowSelectionState,
+    SortingState,
+} from '@tanstack/vue-table';
 import {
     createPaginatedRowModel,
     createSortedRowModel,
@@ -9,9 +13,9 @@ import {
     tableFeatures,
     useTable,
 } from '@tanstack/vue-table';
-import {computed, ref} from 'vue';
+import { computed, ref } from 'vue';
 
-import type {PaginationState} from '@/types/listing';
+import type { PaginationState } from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------

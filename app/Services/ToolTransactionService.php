@@ -13,12 +13,11 @@ use Illuminate\Validation\ValidationException;
 class ToolTransactionService
 {
     public function opening(
-        Tool    $tool,
-        int     $quantity,
-        User    $user,
+        Tool $tool,
+        int $quantity,
+        User $user,
         ?string $remarks = null,
-    ): ToolTransaction
-    {
+    ): ToolTransaction {
         $this->ensurePositiveQuantity($quantity);
 
         return DB::transaction(function () use ($tool, $quantity, $user, $remarks) {
@@ -53,7 +52,7 @@ class ToolTransactionService
 
     private function changeStock(Tool $tool, int $change): void
     {
-        $newQuantity = (int)$tool->quantity + $change;
+        $newQuantity = (int) $tool->quantity + $change;
 
         if ($newQuantity < 0) {
             throw ValidationException::withMessages([
@@ -68,10 +67,9 @@ class ToolTransactionService
 
     public function update(
         ToolTransaction $transaction,
-        array           $data,
-        User            $user,
-    ): ToolTransaction
-    {
+        array $data,
+        User $user,
+    ): ToolTransaction {
         return DB::transaction(function () use ($transaction, $data) {
             $transaction = ToolTransaction::query()
                 ->lockForUpdate()
@@ -79,8 +77,8 @@ class ToolTransactionService
 
             $tool = $this->lockTool($transaction->tool_id);
 
-            $oldQuantity = (int)$transaction->quantity;
-            $newQuantity = (int)$data['quantity'];
+            $oldQuantity = (int) $transaction->quantity;
+            $newQuantity = (int) $data['quantity'];
 
             if ($transaction->type === ToolTransactionType::ADJUSTMENT) {
                 if ($newQuantity === 0) {
@@ -124,16 +122,15 @@ class ToolTransactionService
 
     private function validateIssueQuantityChange(
         ToolTransaction $transaction,
-        Tool            $tool,
-        int             $quantity,
-    ): void
-    {
+        Tool $tool,
+        int $quantity,
+    ): void {
         $fromUserId = $transaction->from_user_id;
 
         if ($fromUserId !== null) {
             $fromUser = User::query()->findOrFail($fromUserId);
 
-            if (!$this->isCentralStockIssuer($fromUser)) {
+            if (! $this->isCentralStockIssuer($fromUser)) {
                 $custody = $this->getUserCustody(
                     $tool,
                     $fromUser,
@@ -154,8 +151,8 @@ class ToolTransactionService
          * The current tool quantity already excludes the original issue.
          * Add the old quantity back before validating the new quantity.
          */
-        $availableCentralStock = (int)$tool->quantity
-            + (int)$transaction->quantity;
+        $availableCentralStock = (int) $tool->quantity
+            + (int) $transaction->quantity;
 
         if ($availableCentralStock < $quantity) {
             throw ValidationException::withMessages([
@@ -165,7 +162,7 @@ class ToolTransactionService
 
         $this->changeStock(
             $tool,
-            (int)$transaction->quantity - $quantity,
+            (int) $transaction->quantity - $quantity,
         );
     }
 
@@ -178,8 +175,7 @@ class ToolTransactionService
         Tool $tool,
         User $user,
         ?int $excludeTransactionId = null,
-    ): int
-    {
+    ): int {
         if ($this->isCentralStockIssuer($user)) {
             return $this->getSuperAdminCustody($tool);
         }
@@ -191,11 +187,11 @@ class ToolTransactionService
             $query->where('id', '!=', $excludeTransactionId);
         }
 
-        $received = (int)(clone $query)
+        $received = (int) (clone $query)
             ->where('to_user_id', $user->id)
             ->sum('quantity');
 
-        $transferred = (int)(clone $query)
+        $transferred = (int) (clone $query)
             ->where('from_user_id', $user->id)
             ->sum('quantity');
 
@@ -204,24 +200,22 @@ class ToolTransactionService
 
     public function getSuperAdminCustody(Tool $tool): int
     {
-        return max(0, (int)$tool->quantity);
+        return max(0, (int) $tool->quantity);
     }
 
     private function createTransaction(
-        Tool  $tool,
+        Tool $tool,
         array $data,
-    ): ToolTransaction
-    {
+    ): ToolTransaction {
         return $tool->transactions()->create($data);
     }
 
     public function purchase(
-        Tool    $tool,
-        int     $quantity,
-        User    $user,
+        Tool $tool,
+        int $quantity,
+        User $user,
         ?string $remarks = null,
-    ): ToolTransaction
-    {
+    ): ToolTransaction {
         $this->ensurePositiveQuantity($quantity);
 
         return DB::transaction(function () use ($tool, $quantity, $user, $remarks) {
@@ -239,17 +233,16 @@ class ToolTransactionService
     }
 
     public function issue(
-        Tool    $tool,
-        ?User   $fromUser,
-        User    $toUser,
-        int     $quantity,
-        User    $createdBy,
-        ?int    $partId = null,
-        ?int    $setupId = null,
-        ?bool   $returnScrap = null,
+        Tool $tool,
+        ?User $fromUser,
+        User $toUser,
+        int $quantity,
+        User $createdBy,
+        ?int $partId = null,
+        ?int $setupId = null,
+        ?bool $returnScrap = null,
         ?string $remarks = null,
-    ): ToolTransaction
-    {
+    ): ToolTransaction {
         $this->ensurePositiveQuantity($quantity);
 
         if ($fromUser && $fromUser->is($toUser)) {
@@ -277,7 +270,7 @@ class ToolTransactionService
         ) {
             $tool = $this->lockTool($tool->id);
 
-            if ($fromUser && !$this->isCentralStockIssuer($fromUser)) {
+            if ($fromUser && ! $this->isCentralStockIssuer($fromUser)) {
                 $this->ensureUserHasCustody($tool, $fromUser, $quantity);
             } else {
                 $this->ensureCentralStock($tool, $quantity);
@@ -303,9 +296,8 @@ class ToolTransactionService
     private function ensureUserHasCustody(
         Tool $tool,
         User $user,
-        int  $quantity,
-    ): void
-    {
+        int $quantity,
+    ): void {
         if ($this->getUserCustody($tool, $user) < $quantity) {
             throw ValidationException::withMessages([
                 'quantity' => 'The issuing user does not have enough tools in custody.',
@@ -315,9 +307,8 @@ class ToolTransactionService
 
     private function ensureCentralStock(
         Tool $tool,
-        int  $quantity,
-    ): void
-    {
+        int $quantity,
+    ): void {
         if ($this->getSuperAdminCustody($tool) < $quantity) {
             throw ValidationException::withMessages([
                 'quantity' => 'There is not enough available tool stock.',
@@ -326,12 +317,11 @@ class ToolTransactionService
     }
 
     public function adjustment(
-        Tool    $tool,
-        int     $quantity,
-        User    $createdBy,
+        Tool $tool,
+        int $quantity,
+        User $createdBy,
         ?string $remarks = null,
-    ): ToolTransaction
-    {
+    ): ToolTransaction {
         if ($quantity === 0) {
             throw ValidationException::withMessages([
                 'quantity' => 'Adjustment quantity cannot be zero.',
@@ -354,9 +344,8 @@ class ToolTransactionService
 
     public function bulkDelete(
         Collection $transactions,
-        User       $user,
-    ): void
-    {
+        User $user,
+    ): void {
         DB::transaction(function () use ($transactions) {
             $ids = $transactions->pluck('id')->unique()->values();
 
@@ -387,7 +376,7 @@ class ToolTransactionService
             foreach ($lockedTransactions as $transaction) {
                 $tool = $tools->get($transaction->tool_id);
 
-                if (!$tool) {
+                if (! $tool) {
                     throw ValidationException::withMessages([
                         'transactions' => 'One or more tools could not be found.',
                     ]);
@@ -402,15 +391,14 @@ class ToolTransactionService
 
     private function reverseTransactionEffect(
         ToolTransaction $transaction,
-        Tool            $tool,
-    ): void
-    {
+        Tool $tool,
+    ): void {
         match ($transaction->type) {
             ToolTransactionType::OPENING,
             ToolTransactionType::PURCHASE,
             ToolTransactionType::ADJUSTMENT => $this->changeStock(
                 $tool,
-                -(int)$transaction->quantity,
+                -(int) $transaction->quantity,
             ),
 
             ToolTransactionType::ISSUE => $this->reverseIssue(
@@ -422,9 +410,8 @@ class ToolTransactionService
 
     private function reverseIssue(
         ToolTransaction $transaction,
-        Tool            $tool,
-    ): void
-    {
+        Tool $tool,
+    ): void {
         /*
          * Only an issue from central stock decreases tools.quantity.
          *
@@ -438,16 +425,15 @@ class ToolTransactionService
         ) {
             $this->changeStock(
                 $tool,
-                (int)$transaction->quantity,
+                (int) $transaction->quantity,
             );
         }
     }
 
     public function delete(
         ToolTransaction $transaction,
-        User            $user,
-    ): void
-    {
+        User $user,
+    ): void {
         DB::transaction(function () use ($transaction) {
             $transaction = ToolTransaction::query()
                 ->lockForUpdate()

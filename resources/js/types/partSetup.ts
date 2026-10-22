@@ -1,6 +1,6 @@
-import type {PaginatedResponse, SortDirection} from '@/types/listing';
-import {Setup} from '@/types/setup';
-import {PartSetupSchemaData} from "@/schemas/partSetupSchema";
+import type { PaginatedResponse, SortDirection } from '@/types/listing';
+import { Setup } from '@/types/setup';
+import { PartSetupSchemaData } from '@/schemas/partSetupSchema';
 
 export type PartSetupPart = {
     id: number;

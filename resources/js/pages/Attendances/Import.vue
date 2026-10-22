@@ -1,15 +1,21 @@
 <script lang="ts" setup>
-import {Head, useForm} from '@inertiajs/vue3';
-import {CheckCircle2, FileSpreadsheet, Loader2, UploadCloud, X,} from '@lucide/vue';
-import {computed, ref} from 'vue';
+import { Head, useForm } from '@inertiajs/vue3';
+import {
+    CheckCircle2,
+    FileSpreadsheet,
+    Loader2,
+    UploadCloud,
+    X,
+} from '@lucide/vue';
+import { computed, ref } from 'vue';
 
 import AppPageHeader from '@/components/common/AppPageHeader.vue';
-import {Card, CardContent} from '@/components/ui/card';
-import {Button} from '@/components/ui/button';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {attendancePage} from '@/config/attendances';
-import {index as attendances} from '@/routes/attendances';
-import {store as submitImport} from '@/routes/attendances/import';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { attendancePage } from '@/config/attendances';
+import { index as attendances } from '@/routes/attendances';
+import { store as submitImport } from '@/routes/attendances/import';
 
 /*
 |--------------------------------------------------------------------------
@@ -152,7 +158,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head :title="props.title"/>
+    <Head :title="props.title" />
 
     <div class="space-y-6 p-6">
         <!--
@@ -161,7 +167,7 @@ const submit = () => {
         |--------------------------------------------------------------------------
         -->
 
-        <AppPageHeader :description="props.description" :title="props.title"/>
+        <AppPageHeader :description="props.description" :title="props.title" />
 
         <!--
         |--------------------------------------------------------------------------
@@ -268,7 +274,7 @@ const submit = () => {
                                     variant="ghost"
                                     @click.stop="removeFile"
                                 >
-                                    <X aria-hidden="true" class="size-4"/>
+                                    <X aria-hidden="true" class="size-4" />
 
                                     <span>Remove file</span>
                                 </Button>

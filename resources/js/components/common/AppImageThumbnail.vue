@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {ref} from 'vue';
+import { ref } from 'vue';
 
 import AppImageViewer from '@/components/common/AppImageViewer.vue';
 
@@ -54,7 +54,7 @@ const openViewer = () => {
             />
         </button>
 
-        <AppImageViewer v-model:open="viewerOpen" :alt="alt" :src="src"/>
+        <AppImageViewer v-model:open="viewerOpen" :alt="alt" :src="src" />
     </template>
 
     <span

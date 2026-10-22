@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import {onBeforeUnmount, watch} from 'vue';
-import {X} from '@lucide/vue';
+import { onBeforeUnmount, watch } from 'vue';
+import { X } from '@lucide/vue';
 
 // Props
 const props = defineProps<{
@@ -68,7 +68,7 @@ onBeforeUnmount(() => {
                 type="button"
                 @click="close"
             >
-                <X class="size-5"/>
+                <X class="size-5" />
             </button>
 
             <img

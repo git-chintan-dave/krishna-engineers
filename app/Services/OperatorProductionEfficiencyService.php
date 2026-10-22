@@ -17,7 +17,7 @@ class OperatorProductionEfficiencyService
             ->whereDate('attendance_date', $date)
             ->first();
 
-        if (!$attendance) {
+        if (! $attendance) {
             return null;
         }
 

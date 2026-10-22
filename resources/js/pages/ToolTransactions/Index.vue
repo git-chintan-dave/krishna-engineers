@@ -1,6 +1,6 @@
 ﻿<script lang="ts" setup>
-import {router} from '@inertiajs/vue3';
-import {ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppPartSelect from '@/components/selects/AppPartSelect.vue';
@@ -12,16 +12,24 @@ import ListingFilters from '@/components/common/ListingFilters.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
 
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
 
-import {toolTransactionPage} from '@/config/toolTransactions';
+import { toolTransactionPage } from '@/config/toolTransactions';
 
-import {bulkDestroy, create, destroy, index as toolTransactionsRoute,} from '@/routes/tool-transactions';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as toolTransactionsRoute,
+} from '@/routes/tool-transactions';
 
-import {createToolTransactionColumns} from '@/table/toolTransactions';
+import { createToolTransactionColumns } from '@/table/toolTransactions';
 
-import type {ToolTransaction, ToolTransactionType,} from '@/types/toolTransaction';
+import type {
+    ToolTransaction,
+    ToolTransactionType,
+} from '@/types/toolTransaction';
 
 /*
 |--------------------------------------------------------------------------

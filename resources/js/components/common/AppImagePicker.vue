@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import {computed, onBeforeUnmount, ref} from 'vue';
-import {Image, Trash2, Upload, X} from '@lucide/vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
+import { Image, Trash2, Upload, X } from '@lucide/vue';
 
 // Props
 const props = withDefaults(
@@ -175,7 +175,7 @@ onBeforeUnmount(() => {
                 type="button"
                 @click="removeImage"
             >
-                <X class="size-4"/>
+                <X class="size-4" />
             </button>
         </div>
 
@@ -216,7 +216,7 @@ onBeforeUnmount(() => {
                 type="button"
                 @click="openPicker"
             >
-                <Upload class="size-4"/>
+                <Upload class="size-4" />
                 Change image
             </button>
 
@@ -225,7 +225,7 @@ onBeforeUnmount(() => {
                 type="button"
                 @click="removeImage"
             >
-                <Trash2 class="size-4"/>
+                <Trash2 class="size-4" />
                 {{ removeLabel }}
             </button>
         </div>

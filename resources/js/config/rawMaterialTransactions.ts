@@ -1,4 +1,4 @@
-import {rawMaterialTransactionTypeOptions} from '@/config/rawMaterialTransactionTypes';
+import { rawMaterialTransactionTypeOptions } from '@/config/rawMaterialTransactionTypes';
 
 export const rawMaterialTransactionPage = {
     title: 'Raw Material Transactions',

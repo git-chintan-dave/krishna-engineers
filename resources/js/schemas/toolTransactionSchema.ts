@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
 const MAX_UNSIGNED_INTEGER = 4_294_967_295;
 const MIN_SIGNED_INTEGER = -2_147_483_648;
@@ -13,10 +13,9 @@ export const toolTransactionSchema = z
         partId: z.number().int().positive().nullable(),
         setupId: z.number().int().positive().nullable(),
         returnScrap: z.boolean().nullable(),
-        remarks: z.string().max(
-            5000,
-            'Remarks must not exceed 5000 characters.',
-        ),
+        remarks: z
+            .string()
+            .max(5000, 'Remarks must not exceed 5000 characters.'),
     })
     .superRefine((data, ctx) => {
         if (!data.type) {

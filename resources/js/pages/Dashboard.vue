@@ -1,8 +1,6 @@
 <script lang="ts" setup>
 import {
     ArrowDown,
-    ArrowUp,
-    ArrowUpRight,
     ClipboardList,
     Clock3,
     PackagePlus,
@@ -10,19 +8,14 @@ import {
     Users,
     Wrench,
 } from '@lucide/vue';
-import {computed, ref} from 'vue';
+import { computed, ref } from 'vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import {Button} from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-import {dashboardPage} from '@/config/dashboard';
-import {dashboard} from '@/routes';
+import { dashboardPage } from '@/config/dashboard';
+import { dashboard } from '@/routes';
 
 type DashboardStat = {
     label: string;
@@ -124,10 +117,7 @@ const maxProductionQuantity = computed(() =>
 );
 
 const maxRejectionQuantity = computed(() =>
-    Math.max(
-        1,
-        ...productionTrend.value.map((item) => item.rejectionQuantity),
-    ),
+    Math.max(1, ...productionTrend.value.map((item) => item.rejectionQuantity)),
 );
 
 const attendanceItems = computed(() =>
@@ -136,7 +126,7 @@ const attendanceItems = computed(() =>
         label:
             dashboardPage.attendanceStatuses[
                 item.label.toLowerCase() as keyof typeof dashboardPage.attendanceStatuses
-                ] ?? item.label,
+            ] ?? item.label,
     })),
 );
 
@@ -237,7 +227,10 @@ const getRejectionHeight = (quantity: number): string =>
                             class="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted"
                         >
                             <component
-                                :is="quickActionIcons[action.icon] ?? ClipboardList"
+                                :is="
+                                    quickActionIcons[action.icon] ??
+                                    ClipboardList
+                                "
                                 class="size-4"
                             />
                         </span>
@@ -273,7 +266,9 @@ const getRejectionHeight = (quantity: number): string =>
                                     {{ stat.label }}
                                 </p>
 
-                                <p class="break-words text-2xl font-semibold tracking-tight">
+                                <p
+                                    class="text-2xl font-semibold tracking-tight break-words"
+                                >
                                     {{ stat.value }}
                                 </p>
                             </div>
@@ -343,7 +338,7 @@ const getRejectionHeight = (quantity: number): string =>
                                 />
 
                                 <span
-                                    class="whitespace-nowrap text-[10px] text-muted-foreground"
+                                    class="text-[10px] whitespace-nowrap text-muted-foreground"
                                 >
                                     {{ item.label }}
                                 </span>
@@ -419,59 +414,66 @@ const getRejectionHeight = (quantity: number): string =>
                     >
                         <table class="w-full min-w-[520px] text-sm">
                             <thead>
-                            <tr
-                                class="border-b text-left text-xs text-muted-foreground"
-                            >
-                                <th class="pb-3 font-medium">
-                                    {{ dashboardPage.table.machine.machine }}
-                                </th>
+                                <tr
+                                    class="border-b text-left text-xs text-muted-foreground"
+                                >
+                                    <th class="pb-3 font-medium">
+                                        {{
+                                            dashboardPage.table.machine.machine
+                                        }}
+                                    </th>
 
-                                <th class="pb-3 text-right font-medium">
-                                    {{ dashboardPage.table.machine.parts }}
-                                </th>
+                                    <th class="pb-3 text-right font-medium">
+                                        {{ dashboardPage.table.machine.parts }}
+                                    </th>
 
-                                <th class="pb-3 text-right font-medium">
-                                    {{ dashboardPage.table.machine.quantity }}
-                                </th>
+                                    <th class="pb-3 text-right font-medium">
+                                        {{
+                                            dashboardPage.table.machine.quantity
+                                        }}
+                                    </th>
 
-                                <th class="pb-3 text-right font-medium">
-                                    {{ dashboardPage.table.machine.productionTime }}
-                                </th>
-                            </tr>
+                                    <th class="pb-3 text-right font-medium">
+                                        {{
+                                            dashboardPage.table.machine
+                                                .productionTime
+                                        }}
+                                    </th>
+                                </tr>
                             </thead>
 
                             <tbody>
-                            <tr
-                                v-for="machine in machinePerformance"
-                                :key="machine.id"
-                                class="border-b last:border-0"
-                            >
-                                <td class="py-3">
-                                    <p class="font-medium">
-                                        {{ machine.referenceName }}
-                                    </p>
-
-                                    <p
-                                        class="max-w-48 truncate text-xs text-muted-foreground"
-                                    >
-                                        {{ machine.name }}
-                                    </p>
-                                </td>
-
-                                <td class="py-3 text-right tabular-nums">
-                                    {{ machine.parts }}
-                                </td>
-
-                                <td
-                                    class="py-3 text-right font-medium tabular-nums"
+                                <tr
+                                    v-for="machine in machinePerformance"
+                                    :key="machine.id"
+                                    class="border-b last:border-0"
                                 >
-                                    {{ formatNumber(machine.quantity) }}
-                                </td>
+                                    <td class="py-3">
+                                        <p class="font-medium">
+                                            {{ machine.referenceName }}
+                                        </p>
 
-                                <td class="py-3 text-right tabular-nums">
-                                    {{ machine.productionTime }}
-                                </td>
-                            </tr>
+                                        <p
+                                            class="max-w-48 truncate text-xs text-muted-foreground"
+                                        >
+                                            {{ machine.name }}
+                                        </p>
+                                    </td>
+
+                                    <td class="py-3 text-right tabular-nums">
+                                        {{ machine.parts }}
+                                    </td>
+
+                                    <td
+                                        class="py-3 text-right font-medium tabular-nums"
+                                    >
+                                        {{ formatNumber(machine.quantity) }}
+                                    </td>
+
+                                    <td class="py-3 text-right tabular-nums">
+                                        {{ machine.productionTime }}
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -494,10 +496,7 @@ const getRejectionHeight = (quantity: number): string =>
                 </CardHeader>
 
                 <CardContent>
-                    <div
-                        v-if="attendanceItems.length"
-                        class="space-y-4"
-                    >
+                    <div v-if="attendanceItems.length" class="space-y-4">
                         <div
                             v-for="item in attendanceItems"
                             :key="item.label"
@@ -551,63 +550,82 @@ const getRejectionHeight = (quantity: number): string =>
                     >
                         <table class="w-full min-w-[680px] text-sm">
                             <thead>
-                            <tr
-                                class="border-b text-left text-xs text-muted-foreground"
-                            >
-                                <th class="pb-3 font-medium">
-                                    {{ dashboardPage.table.operator.operator }}
-                                </th>
+                                <tr
+                                    class="border-b text-left text-xs text-muted-foreground"
+                                >
+                                    <th class="pb-3 font-medium">
+                                        {{
+                                            dashboardPage.table.operator
+                                                .operator
+                                        }}
+                                    </th>
 
-                                <th class="pb-3 text-right font-medium">
-                                    {{ dashboardPage.table.operator.quantity }}
-                                </th>
+                                    <th class="pb-3 text-right font-medium">
+                                        {{
+                                            dashboardPage.table.operator
+                                                .quantity
+                                        }}
+                                    </th>
 
-                                <th class="pb-3 text-right font-medium">
-                                    {{ dashboardPage.table.operator.rejected }}
-                                </th>
+                                    <th class="pb-3 text-right font-medium">
+                                        {{
+                                            dashboardPage.table.operator
+                                                .rejected
+                                        }}
+                                    </th>
 
-                                <th class="pb-3 text-right font-medium">
-                                    {{ dashboardPage.table.operator.productionTime }}
-                                </th>
+                                    <th class="pb-3 text-right font-medium">
+                                        {{
+                                            dashboardPage.table.operator
+                                                .productionTime
+                                        }}
+                                    </th>
 
-                                <th class="pb-3 text-right font-medium">
-                                    {{ dashboardPage.table.operator.efficiency }}
-                                </th>
-                            </tr>
+                                    <th class="pb-3 text-right font-medium">
+                                        {{
+                                            dashboardPage.table.operator
+                                                .efficiency
+                                        }}
+                                    </th>
+                                </tr>
                             </thead>
 
                             <tbody>
-                            <tr
-                                v-for="operator in operatorPerformance"
-                                :key="operator.id"
-                                class="border-b last:border-0"
-                            >
-                                <td class="py-3 font-medium">
-                                    {{ operator.name }}
-                                </td>
-
-                                <td class="py-3 text-right tabular-nums">
-                                    {{ formatNumber(operator.quantity) }}
-                                </td>
-
-                                <td class="py-3 text-right tabular-nums">
-                                    {{ formatNumber(operator.rejectionQuantity) }}
-                                </td>
-
-                                <td class="py-3 text-right tabular-nums">
-                                    {{ operator.productionTime }}
-                                </td>
-
-                                <td
-                                    class="py-3 text-right font-medium tabular-nums"
+                                <tr
+                                    v-for="operator in operatorPerformance"
+                                    :key="operator.id"
+                                    class="border-b last:border-0"
                                 >
-                                    {{
-                                        operator.efficiency === null
-                                            ? '—'
-                                            : `${operator.efficiency}%`
-                                    }}
-                                </td>
-                            </tr>
+                                    <td class="py-3 font-medium">
+                                        {{ operator.name }}
+                                    </td>
+
+                                    <td class="py-3 text-right tabular-nums">
+                                        {{ formatNumber(operator.quantity) }}
+                                    </td>
+
+                                    <td class="py-3 text-right tabular-nums">
+                                        {{
+                                            formatNumber(
+                                                operator.rejectionQuantity,
+                                            )
+                                        }}
+                                    </td>
+
+                                    <td class="py-3 text-right tabular-nums">
+                                        {{ operator.productionTime }}
+                                    </td>
+
+                                    <td
+                                        class="py-3 text-right font-medium tabular-nums"
+                                    >
+                                        {{
+                                            operator.efficiency === null
+                                                ? '—'
+                                                : `${operator.efficiency}%`
+                                        }}
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>

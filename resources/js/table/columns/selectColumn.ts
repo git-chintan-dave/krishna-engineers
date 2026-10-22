@@ -1,7 +1,7 @@
-import {h} from 'vue';
+import { h } from 'vue';
 
-import {Checkbox} from '@/components/ui/checkbox';
-import {COLUMN_WIDTHS} from '@/table/constants/columnWidths';
+import { Checkbox } from '@/components/ui/checkbox';
+import { COLUMN_WIDTHS } from '@/table/constants/columnWidths';
 
 /*
 |--------------------------------------------------------------------------
@@ -21,16 +21,16 @@ type SelectColumnOptions<TData = any> = {
 */
 
 export const createSelectColumn = <TData = any>({
-                                                    resourceName,
-                                                    isSelectable,
-                                                }: SelectColumnOptions<TData>) => ({
+    resourceName,
+    isSelectable,
+}: SelectColumnOptions<TData>) => ({
     id: 'select',
 
     size: COLUMN_WIDTHS.select,
     minSize: COLUMN_WIDTHS.select,
     maxSize: COLUMN_WIDTHS.select,
 
-    header: ({table}: any) =>
+    header: ({ table }: any) =>
         h(Checkbox, {
             modelValue:
                 table.getIsAllPageRowsSelected() ||
@@ -44,7 +44,7 @@ export const createSelectColumn = <TData = any>({
             class: 'cursor-pointer',
         }),
 
-    cell: ({row}: any) => {
+    cell: ({ row }: any) => {
         const selectable = isSelectable?.(row.original) ?? true;
 
         if (!selectable) {
@@ -63,8 +63,7 @@ export const createSelectColumn = <TData = any>({
         });
     },
 
-    enableRowSelection: (row: any) =>
-        isSelectable?.(row.original) ?? true,
+    enableRowSelection: (row: any) => isSelectable?.(row.original) ?? true,
 
     enableSorting: false,
 });

@@ -1,6 +1,10 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
-import {optionalText, requiredText, statusSchema,} from '@/schemas/commonSchema';
+import {
+    optionalText,
+    requiredText,
+    statusSchema,
+} from '@/schemas/commonSchema';
 
 export const machineSchema = z.object({
     name: requiredText('Machine name'),

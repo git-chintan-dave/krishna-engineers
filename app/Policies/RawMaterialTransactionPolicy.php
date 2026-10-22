@@ -14,10 +14,9 @@ class RawMaterialTransactionPolicy
     }
 
     public function view(
-        User                   $user,
+        User $user,
         RawMaterialTransaction $rawMaterialTransaction,
-    ): bool
-    {
+    ): bool {
         return $user->role === UserRole::SUPER_ADMIN;
     }
 
@@ -27,18 +26,16 @@ class RawMaterialTransactionPolicy
     }
 
     public function update(
-        User                   $user,
+        User $user,
         RawMaterialTransaction $rawMaterialTransaction,
-    ): bool
-    {
+    ): bool {
         return $user->role === UserRole::SUPER_ADMIN;
     }
 
     public function delete(
-        User                   $user,
+        User $user,
         RawMaterialTransaction $rawMaterialTransaction,
-    ): bool
-    {
+    ): bool {
         return $user->role === UserRole::SUPER_ADMIN;
     }
 

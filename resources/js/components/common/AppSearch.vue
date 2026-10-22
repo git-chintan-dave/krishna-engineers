@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {Search} from '@lucide/vue';
+import { Search } from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 

@@ -16,14 +16,11 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
 {
     public function __construct(
         private readonly AttendanceService $attendanceService,
-    )
-    {
-    }
+    ) {}
 
     public function collection(
         Collection $rows,
-    ): void
-    {
+    ): void {
         $employeeCode = $this->extractEmployeeCode(
             $rows,
         );
@@ -54,8 +51,7 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
 
     private function extractEmployeeCode(
         Collection $rows,
-    ): ?string
-    {
+    ): ?string {
         /*
          * Employee code is stored in B3.
          */
@@ -65,13 +61,12 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
 
         return blank($employeeCode)
             ? null
-            : trim((string)$employeeCode);
+            : trim((string) $employeeCode);
     }
 
     private function findEmployee(
         string $employeeCode,
-    ): User
-    {
+    ): User {
         $user = User::query()
             ->where(
                 'employee_code',
@@ -79,7 +74,7 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
             )
             ->first();
 
-        if (!$user) {
+        if (! $user) {
             throw new AttendanceImportException(
                 "Employee code {$employeeCode} was not found.",
             );
@@ -95,10 +90,9 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
     */
 
     private function importAttendanceRow(
-        User  $user,
+        User $user,
         mixed $row,
-    ): void
-    {
+    ): void {
         $row = $row instanceof Collection
             ? $row
             : collect($row);
@@ -174,11 +168,10 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
 
     private function parseDate(
         mixed $value,
-    ): ?string
-    {
+    ): ?string {
         if (
             $value === null
-            || trim((string)$value) === ''
+            || trim((string) $value) === ''
         ) {
             return null;
         }
@@ -190,22 +183,22 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
         if (is_numeric($value)) {
             try {
                 return Carbon::createFromTimestamp(
-                    ((float)$value - 25569) * 86400,
+                    ((float) $value - 25569) * 86400,
                 )->toDateString();
             } catch (Throwable) {
                 return null;
             }
         }
 
-        $value = trim((string)$value);
+        $value = trim((string) $value);
 
         foreach ([
-                     'd-m-Y',
-                     'd/m/Y',
-                     'Y-m-d',
-                     'm/d/Y',
-                     'd.m.Y',
-                 ] as $format) {
+            'd-m-Y',
+            'd/m/Y',
+            'Y-m-d',
+            'm/d/Y',
+            'd.m.Y',
+        ] as $format) {
             try {
                 return Carbon::createFromFormat(
                     $format,
@@ -233,11 +226,10 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
 
     private function parseTime(
         mixed $value,
-    ): ?string
-    {
+    ): ?string {
         if (
             $value === null
-            || trim((string)$value) === ''
+            || trim((string) $value) === ''
         ) {
             return null;
         }
@@ -247,7 +239,7 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
         }
 
         if (is_numeric($value)) {
-            $fraction = (float)$value;
+            $fraction = (float) $value;
 
             /*
              * Excel time values are represented as a
@@ -257,7 +249,7 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
                 $fraction >= 0
                 && $fraction < 1
             ) {
-                $seconds = (int)round(
+                $seconds = (int) round(
                     $fraction * 86400,
                 );
 
@@ -270,7 +262,7 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
             }
         }
 
-        $value = trim((string)$value);
+        $value = trim((string) $value);
 
         /*
          * Values such as "--:--" represent no punch.
@@ -284,11 +276,11 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
         }
 
         foreach ([
-                     'H:i:s',
-                     'H:i',
-                     'g:i A',
-                     'g:i:s A',
-                 ] as $format) {
+            'H:i:s',
+            'H:i',
+            'g:i A',
+            'g:i:s A',
+        ] as $format) {
             try {
                 return Carbon::createFromFormat(
                     $format,
@@ -311,8 +303,7 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
     private function combineDateAndTime(
         string $date,
         string $time,
-    ): Carbon
-    {
+    ): Carbon {
         return Carbon::parse(
             "{$date} {$time}",
         );
@@ -320,9 +311,8 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
 
     private function extractBreaks(
         Collection $row,
-        string     $attendanceDate,
-    ): array
-    {
+        string $attendanceDate,
+    ): array {
         $breaks = [];
 
         /*
@@ -375,7 +365,7 @@ class AttendanceImport implements ToCollection, WithCalculatedFormulas
                 'end_at' => $breakEnd,
                 'duration_seconds' => max(
                     0,
-                    (int)$breakStart->diffInSeconds(
+                    (int) $breakStart->diffInSeconds(
                         $breakEnd,
                     ),
                 ),

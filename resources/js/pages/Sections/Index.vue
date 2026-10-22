@@ -1,19 +1,29 @@
 ﻿<script lang="ts" setup>
-import {router} from '@inertiajs/vue3';
-import {ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 import ListingActions from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {sectionPage} from '@/config/sections';
-import {bulkDestroy, create, destroy, index as sectionsRoute,} from '@/routes/sections';
-import {createSectionColumns} from '@/table/sections';
-import type {Section, SectionFilters, SectionSort, SectionsResponse,} from '@/types/section';
-import type {StatusFilter} from '@/types/listing';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { sectionPage } from '@/config/sections';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as sectionsRoute,
+} from '@/routes/sections';
+import { createSectionColumns } from '@/table/sections';
+import type {
+    Section,
+    SectionFilters,
+    SectionSort,
+    SectionsResponse,
+} from '@/types/section';
+import type { StatusFilter } from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------

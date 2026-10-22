@@ -59,8 +59,7 @@ class EmployeeController extends Controller
     // Store
     public function store(
         UserRequest $request,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         Gate::authorize('create', User::class);
 
         User::create($request->validated());

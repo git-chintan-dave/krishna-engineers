@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {usePage} from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 
 const name = usePage().props.name;
 </script>
@@ -12,7 +12,7 @@ const name = usePage().props.name;
     <!--    </div>-->
     <div class="ml-1 grid flex-1 text-left text-sm">
         <span class="mb-0.5 truncate leading-tight font-semibold">{{
-                name
-            }}</span>
+            name
+        }}</span>
     </div>
 </template>

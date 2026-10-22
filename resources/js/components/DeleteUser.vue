@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import {Form} from '@inertiajs/vue3';
-import {useTemplateRef} from 'vue';
+import { Form } from '@inertiajs/vue3';
+import { useTemplateRef } from 'vue';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
-import {Button} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogClose,
@@ -16,7 +16,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import {Label} from '@/components/ui/label';
+import { Label } from '@/components/ui/label';
 
 const passwordInput = useTemplateRef('passwordInput');
 </script>
@@ -40,9 +40,8 @@ const passwordInput = useTemplateRef('passwordInput');
             <Dialog>
                 <DialogTrigger as-child>
                     <Button data-test="delete-user-button" variant="destructive"
-                    >Delete account
-                    </Button
-                    >
+                        >Delete account
+                    </Button>
                 </DialogTrigger>
                 <DialogContent>
                     <Form
@@ -57,10 +56,8 @@ const passwordInput = useTemplateRef('passwordInput');
                     >
                         <DialogHeader class="space-y-3">
                             <DialogTitle
-                            >Are you sure you want to delete your
-                                account?
-                            </DialogTitle
-                            >
+                                >Are you sure you want to delete your account?
+                            </DialogTitle>
                             <DialogDescription>
                                 Once your account is deleted, all of its
                                 resources and data will also be permanently
@@ -72,7 +69,7 @@ const passwordInput = useTemplateRef('passwordInput');
 
                         <div class="grid gap-2">
                             <Label class="sr-only" for="password"
-                            >Password</Label
+                                >Password</Label
                             >
                             <PasswordInput
                                 id="password"
@@ -80,7 +77,7 @@ const passwordInput = useTemplateRef('passwordInput');
                                 name="password"
                                 placeholder="Password"
                             />
-                            <InputError :message="errors.password"/>
+                            <InputError :message="errors.password" />
                         </div>
 
                         <DialogFooter class="gap-2">

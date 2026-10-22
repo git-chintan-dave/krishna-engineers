@@ -1,6 +1,6 @@
 ﻿<script lang="ts" setup>
-import {router} from '@inertiajs/vue3';
-import {computed, ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import ListingActions from '@/components/common/ListingActions.vue';
@@ -9,12 +9,23 @@ import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppSalaryStatusSelect from '@/components/selects/AppSalaryStatusSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {salaryPage} from '@/config/salaries';
-import {bulkDestroy, create, destroy, generateLastMonth, index as salariesRoute,} from '@/routes/salaries';
-import {createSalaryColumns} from '@/table/salaries';
-import type {Salary, SalaryFilters, SalaryResponse, SalarySort,} from '@/types/salary';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { salaryPage } from '@/config/salaries';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    generateLastMonth,
+    index as salariesRoute,
+} from '@/routes/salaries';
+import { createSalaryColumns } from '@/table/salaries';
+import type {
+    Salary,
+    SalaryFilters,
+    SalaryResponse,
+    SalarySort,
+} from '@/types/salary';
 
 /*
 |--------------------------------------------------------------------------
@@ -90,7 +101,7 @@ const columns = createSalaryColumns((uuid) => {
     router.delete(destroy(uuid).url);
 });
 
-const {table, selectedCount, search, clearFilters, deleteSelected} =
+const { table, selectedCount, search, clearFilters, deleteSelected } =
     useListingTable<Salary, SalarySort>({
         data: () => props.salaries,
         columns,
@@ -144,7 +155,7 @@ const generateButtonLabel = computed(() => {
 
     date.setMonth(date.getMonth() - 1);
 
-    const lastMonthName = date.toLocaleString('default', {month: 'long'});
+    const lastMonthName = date.toLocaleString('default', { month: 'long' });
 
     return `Generate ${lastMonthName}'s Salary`;
 });

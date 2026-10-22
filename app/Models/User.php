@@ -136,8 +136,7 @@ class User extends Authenticatable
     public function salaryForPeriod(
         CarbonInterface|string $startDate,
         CarbonInterface|string $endDate
-    ): ?Salary
-    {
+    ): ?Salary {
         return $this->salaries()
             ->where('salary_period_start', $startDate)
             ->where('salary_period_end', $endDate)

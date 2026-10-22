@@ -1,15 +1,15 @@
 <script lang="ts" setup>
-import {Form, Head, Link, usePage} from '@inertiajs/vue3';
-import {computed} from 'vue';
+import { Form, Head, Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/DeleteUser.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
-import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
-import {Label} from '@/components/ui/label';
-import {edit} from '@/routes/profile';
-import {send} from '@/routes/verification';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { edit } from '@/routes/profile';
+import { send } from '@/routes/verification';
 
 defineOptions({
     layout: {
@@ -27,7 +27,7 @@ const user = computed(() => page.props.auth.user);
 </script>
 
 <template>
-    <Head title="Profile settings"/>
+    <Head title="Profile settings" />
 
     <h1 class="sr-only">Profile settings</h1>
 
@@ -54,7 +54,7 @@ const user = computed(() => page.props.auth.user);
                     placeholder="Full name"
                     required
                 />
-                <InputError :message="errors.name" class="mt-2"/>
+                <InputError :message="errors.name" class="mt-2" />
             </div>
 
             <div class="grid gap-2">
@@ -69,7 +69,7 @@ const user = computed(() => page.props.auth.user);
                     required
                     type="email"
                 />
-                <InputError :message="errors.email" class="mt-2"/>
+                <InputError :message="errors.email" class="mt-2" />
             </div>
 
             <div v-if="page.props.mustVerifyEmail && !user.email_verified_at">
@@ -94,12 +94,11 @@ const user = computed(() => page.props.auth.user);
 
             <div class="flex items-center gap-4">
                 <Button :disabled="processing" data-test="update-profile-button"
-                >Save
-                </Button
-                >
+                    >Save
+                </Button>
             </div>
         </Form>
     </div>
 
-    <DeleteUser/>
+    <DeleteUser />
 </template>

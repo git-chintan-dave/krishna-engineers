@@ -1,13 +1,17 @@
 <script lang="ts" setup>
-import {router, useForm} from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
 import OperatorWorkLogForm from '@/pages/WorkLogs/Operator/components/OperatorWorkLogForm.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {operatorWorkLogPage} from '@/config/operatorWorkLogs';
-import {index as operatorWorkLogs, update} from '@/routes/operator';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { operatorWorkLogPage } from '@/config/operatorWorkLogs';
+import { index as operatorWorkLogs, update } from '@/routes/operator';
 
-import type {OperatorWorkLog, OperatorWorkLogFormData, OperatorWorkLogPartSetupOption,} from '@/types/operatorWorkLog';
+import type {
+    OperatorWorkLog,
+    OperatorWorkLogFormData,
+    OperatorWorkLogPartSetupOption,
+} from '@/types/operatorWorkLog';
 
 /*
 |--------------------------------------------------------------------------

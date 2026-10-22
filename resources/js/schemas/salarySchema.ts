@@ -1,16 +1,15 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
-import {requiredDropdown, requiredNonNegativeNumber,} from '@/schemas/commonSchema';
-import {MachineSchemaData} from "@/schemas/machineSchema";
+import {
+    requiredDropdown,
+    requiredNonNegativeNumber,
+} from '@/schemas/commonSchema';
 
 const requiredDate = (label: string) =>
     z
         .string()
         .min(1, `${label} is required.`)
-        .regex(
-            /^\d{4}-\d{2}-\d{2}$/,
-            `${label} must be a valid date.`,
-        )
+        .regex(/^\d{4}-\d{2}-\d{2}$/, `${label} must be a valid date.`)
         .refine((value) => {
             const [year, month, day] = value.split('-').map(Number);
 
@@ -61,13 +60,9 @@ export const salarySchema = z
             .optional(),
     })
     .superRefine((data, ctx) => {
-        const startDate = new Date(
-            `${data.salary_period_start}T00:00:00`,
-        );
+        const startDate = new Date(`${data.salary_period_start}T00:00:00`);
 
-        const endDate = new Date(
-            `${data.salary_period_end}T00:00:00`,
-        );
+        const endDate = new Date(`${data.salary_period_end}T00:00:00`);
 
         if (
             !Number.isNaN(startDate.getTime()) &&
@@ -82,10 +77,7 @@ export const salarySchema = z
             });
         }
 
-        if (
-            data.adjustment > 0 &&
-            !data.adjustment_reason?.trim()
-        ) {
+        if (data.adjustment > 0 && !data.adjustment_reason?.trim()) {
             ctx.addIssue({
                 code: 'custom',
                 path: ['adjustment_reason'],

@@ -1,12 +1,12 @@
 ﻿<script lang="ts" setup>
-import {router, useForm} from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {toolPage} from '@/config/tools';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { toolPage } from '@/config/tools';
 import ToolForm from '@/pages/Tools/components/ToolForm.vue';
-import {index as tools, store} from '@/routes/tools';
-import type {ToolFormData} from '@/types/tool';
+import { index as tools, store } from '@/routes/tools';
+import type { ToolFormData } from '@/types/tool';
 
 /*
 |--------------------------------------------------------------------------

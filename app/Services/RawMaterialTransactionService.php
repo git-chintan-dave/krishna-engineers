@@ -19,15 +19,14 @@ class RawMaterialTransactionService
 
     public function create(
         array $data,
-        User  $user,
-    ): RawMaterialTransaction
-    {
+        User $user,
+    ): RawMaterialTransaction {
         return DB::transaction(function () use ($data, $user) {
             $type = $this->resolveType($data['type']);
-            $quantity = (int)$data['quantity'];
+            $quantity = (int) $data['quantity'];
 
             $this->applyStockChanges([
-                (int)$data['section_size_id'] => $this->movement(
+                (int) $data['section_size_id'] => $this->movement(
                     $type,
                     $quantity,
                 ),
@@ -50,8 +49,7 @@ class RawMaterialTransactionService
 
     private function resolveType(
         RawMaterialTransactionType|string $type,
-    ): RawMaterialTransactionType
-    {
+    ): RawMaterialTransactionType {
         return $type instanceof RawMaterialTransactionType
             ? $type
             : RawMaterialTransactionType::from($type);
@@ -69,18 +67,18 @@ class RawMaterialTransactionService
      * Positive values add stock.
      * Negative values remove stock.
      *
-     * @param array<int, int> $changes
+     * @param  array<int, int>  $changes
      */
     private function applyStockChanges(array $changes): void
     {
         $changes = collect($changes)
             ->mapWithKeys(
-                fn(int|float $change, int|string $sectionSizeId): array => [
-                    (int)$sectionSizeId => (int)$change,
+                fn (int|float $change, int|string $sectionSizeId): array => [
+                    (int) $sectionSizeId => (int) $change,
                 ],
             )
             ->filter(
-                fn(int $change): bool => $change !== 0,
+                fn (int $change): bool => $change !== 0,
             )
             ->sortKeys();
 
@@ -109,7 +107,7 @@ class RawMaterialTransactionService
         foreach ($changes as $sectionSizeId => $change) {
             $sectionSize = $sectionSizes->get($sectionSizeId);
 
-            $currentStock = (int)$sectionSize->quantity;
+            $currentStock = (int) $sectionSize->quantity;
             $newStock = $currentStock + $change;
 
             if ($newStock < 0) {
@@ -130,7 +128,7 @@ class RawMaterialTransactionService
             $sectionSize = $sectionSizes->get($sectionSizeId);
 
             $sectionSize->quantity =
-                (int)$sectionSize->quantity + $change;
+                (int) $sectionSize->quantity + $change;
 
             $sectionSize->save();
         }
@@ -144,9 +142,8 @@ class RawMaterialTransactionService
 
     private function movement(
         RawMaterialTransactionType $type,
-        int                        $quantity,
-    ): int
-    {
+        int $quantity,
+    ): int {
         return match ($type) {
             RawMaterialTransactionType::OPENING,
             RawMaterialTransactionType::PURCHASE,
@@ -164,9 +161,8 @@ class RawMaterialTransactionService
 
     public function update(
         RawMaterialTransaction $transaction,
-        array                  $data,
-    ): RawMaterialTransaction
-    {
+        array $data,
+    ): RawMaterialTransaction {
         return DB::transaction(function () use ($transaction, $data) {
             $transaction = RawMaterialTransaction::query()
                 ->lockForUpdate()
@@ -176,10 +172,10 @@ class RawMaterialTransactionService
              * Section size and transaction type are intentionally immutable.
              * Only quantity and remarks should be changed.
              */
-            $newQuantity = (int)$data['quantity'];
+            $newQuantity = (int) $data['quantity'];
 
             $oldType = $this->resolveType($transaction->type);
-            $oldQuantity = (int)$transaction->quantity;
+            $oldQuantity = (int) $transaction->quantity;
 
             $oldMovement = $this->movement(
                 $oldType,
@@ -195,7 +191,7 @@ class RawMaterialTransactionService
 
             if ($stockChange !== 0) {
                 $this->applyStockChanges([
-                    (int)$transaction->section_size_id => $stockChange,
+                    (int) $transaction->section_size_id => $stockChange,
                 ]);
             }
 
@@ -230,19 +226,19 @@ class RawMaterialTransactionService
             $changes = [];
 
             foreach ($transactions as $transaction) {
-                $sectionSizeId = (int)$transaction->section_size_id;
+                $sectionSizeId = (int) $transaction->section_size_id;
 
                 $movement = $this->movement(
                     $this->resolveType($transaction->type),
-                    (int)$transaction->quantity,
+                    (int) $transaction->quantity,
                 );
 
                 /*
                  * Reverse each transaction.
                  */
                 $changes[$sectionSizeId] = (
-                        $changes[$sectionSizeId] ?? 0
-                    ) - $movement;
+                    $changes[$sectionSizeId] ?? 0
+                ) - $movement;
             }
 
             /*
@@ -265,8 +261,7 @@ class RawMaterialTransactionService
 
     public function delete(
         RawMaterialTransaction $transaction,
-    ): void
-    {
+    ): void {
         DB::transaction(function () use ($transaction): void {
             $transaction = RawMaterialTransaction::query()
                 ->lockForUpdate()
@@ -274,7 +269,7 @@ class RawMaterialTransactionService
 
             $movement = $this->movement(
                 $this->resolveType($transaction->type),
-                (int)$transaction->quantity,
+                (int) $transaction->quantity,
             );
 
             /*
@@ -287,7 +282,7 @@ class RawMaterialTransactionService
              *     -quantity -> +quantity
              */
             $this->applyStockChanges([
-                (int)$transaction->section_size_id => -$movement,
+                (int) $transaction->section_size_id => -$movement,
             ]);
 
             $transaction->delete();

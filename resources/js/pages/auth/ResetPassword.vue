@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import {Form, Head} from '@inertiajs/vue3';
-import {ref} from 'vue';
+import { Form, Head } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
-import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
-import {Label} from '@/components/ui/label';
-import {Spinner} from '@/components/ui/spinner';
-import {update} from '@/routes/password';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
+import { update } from '@/routes/password';
 
 defineOptions({
     layout: {
@@ -26,7 +26,7 @@ const inputEmail = ref(props.email);
 </script>
 
 <template>
-    <Head title="Reset password"/>
+    <Head title="Reset password" />
 
     <Form
         v-slot="{ errors, processing }"
@@ -46,7 +46,7 @@ const inputEmail = ref(props.email);
                     readonly
                     type="email"
                 />
-                <InputError :message="errors.email" class="mt-2"/>
+                <InputError :message="errors.email" class="mt-2" />
             </div>
 
             <div class="grid gap-2">
@@ -60,7 +60,7 @@ const inputEmail = ref(props.email);
                     name="password"
                     placeholder="Password"
                 />
-                <InputError :message="errors.password"/>
+                <InputError :message="errors.password" />
             </div>
 
             <div class="grid gap-2">
@@ -73,7 +73,7 @@ const inputEmail = ref(props.email);
                     name="password_confirmation"
                     placeholder="Confirm password"
                 />
-                <InputError :message="errors.password_confirmation"/>
+                <InputError :message="errors.password_confirmation" />
             </div>
 
             <Button
@@ -82,7 +82,7 @@ const inputEmail = ref(props.email);
                 data-test="reset-password-button"
                 type="submit"
             >
-                <Spinner v-if="processing"/>
+                <Spinner v-if="processing" />
                 Reset password
             </Button>
         </div>

@@ -1,5 +1,5 @@
-import {COLUMN_WIDTHS} from '@/table/constants/columnWidths';
-import {createColumn} from '@/table/helpers/createColumn';
+import { COLUMN_WIDTHS } from '@/table/constants/columnWidths';
+import { createColumn } from '@/table/helpers/createColumn';
 
 /*
 |--------------------------------------------------------------------------
@@ -19,13 +19,13 @@ type DateColumnOptions = {
 */
 
 export const createDateColumn = ({
-                                     accessorKey,
-                                     header = 'Date',
-                                 }: DateColumnOptions) =>
+    accessorKey,
+    header = 'Date',
+}: DateColumnOptions) =>
     createColumn({
         accessorKey,
         header,
         size: COLUMN_WIDTHS.date,
         sortable: true,
-        align: 'center'
+        align: 'center',
     });

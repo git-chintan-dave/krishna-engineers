@@ -69,8 +69,7 @@ class RawMaterialTransactionController extends Controller
     public function store(
         RawMaterialTransactionRequest $request,
         RawMaterialTransactionService $service,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         $service->create(
             $request->validated(),
             $request->user(),
@@ -100,8 +99,7 @@ class RawMaterialTransactionController extends Controller
 
     public function edit(
         RawMaterialTransaction $rawMaterialTransaction,
-    ): Response
-    {
+    ): Response {
         Gate::authorize('view', $rawMaterialTransaction);
 
         $rawMaterialTransaction->load([
@@ -125,10 +123,9 @@ class RawMaterialTransactionController extends Controller
 
     public function update(
         RawMaterialTransactionRequest $request,
-        RawMaterialTransaction        $rawMaterialTransaction,
+        RawMaterialTransaction $rawMaterialTransaction,
         RawMaterialTransactionService $service,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         Gate::authorize('update', $rawMaterialTransaction);
 
         $service->update(
@@ -146,10 +143,9 @@ class RawMaterialTransactionController extends Controller
     */
 
     public function destroy(
-        RawMaterialTransaction        $rawMaterialTransaction,
+        RawMaterialTransaction $rawMaterialTransaction,
         RawMaterialTransactionService $service,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         Gate::authorize('delete', $rawMaterialTransaction);
 
         $service->delete($rawMaterialTransaction);
@@ -164,10 +160,9 @@ class RawMaterialTransactionController extends Controller
     */
 
     public function bulkDestroy(
-        BulkDestroyRequest            $request,
+        BulkDestroyRequest $request,
         RawMaterialTransactionService $service,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         Gate::authorize('deleteAny', RawMaterialTransaction::class);
 
         $service->bulkDelete($request->validated('ids'));

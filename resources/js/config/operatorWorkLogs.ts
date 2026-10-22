@@ -1,4 +1,3 @@
-
 export const operatorWorkLogPage = {
     title: 'Operator Work Logs',
     description:

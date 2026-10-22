@@ -20,7 +20,7 @@ class PartSetupResource extends JsonResource
             'part_id' => $this->part_id,
             'part' => $this->whenLoaded(
                 'part',
-                fn() => [
+                fn () => [
                     'id' => $this->part->id,
                     'name' => $this->part->name,
                     'reference_name' => $this->part->reference_name,
@@ -29,14 +29,14 @@ class PartSetupResource extends JsonResource
             'setup_id' => $this->setup_id,
             'setup' => $this->whenLoaded(
                 'setup',
-                fn() => [
+                fn () => [
                     'id' => $this->setup->id,
                     'name' => $this->setup->name,
                 ],
             ),
             'image' => $this->image
                 ? Storage::disk('public')->url(
-                    'part-setups/' . $this->image,
+                    'part-setups/'.$this->image,
                 )
                 : null,
             'machine_cycle_time' => $this->machine_cycle_time_seconds,

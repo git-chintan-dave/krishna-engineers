@@ -1,6 +1,6 @@
 ﻿<script lang="ts" setup>
-import {router} from '@inertiajs/vue3';
-import {ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 import ListingActions from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
@@ -8,12 +8,22 @@ import AppPartSelect from '@/components/selects/AppPartSelect.vue';
 import AppSetupSelect from '@/components/selects/AppSetupSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {partSetupPage} from '@/config/partSetups';
-import {bulkDestroy, create, destroy, index as partSetupsRoute,} from '@/routes/part-setups';
-import {createPartSetupColumns} from '@/table/partSetups';
-import type {PartSetup, PartSetupFilters, PartSetupSort, PartSetupsResponse,} from '@/types/partSetup';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { partSetupPage } from '@/config/partSetups';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as partSetupsRoute,
+} from '@/routes/part-setups';
+import { createPartSetupColumns } from '@/table/partSetups';
+import type {
+    PartSetup,
+    PartSetupFilters,
+    PartSetupSort,
+    PartSetupsResponse,
+} from '@/types/partSetup';
 
 /*
 |--------------------------------------------------------------------------

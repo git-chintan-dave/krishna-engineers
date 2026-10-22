@@ -1,11 +1,18 @@
 <script lang="ts" setup>
-import {computed} from 'vue';
-import {FlexRender} from '@tanstack/vue-table';
-import {ChevronLeft, ChevronRight} from '@lucide/vue';
+import { computed } from 'vue';
+import { FlexRender } from '@tanstack/vue-table';
+import { ChevronLeft, ChevronRight } from '@lucide/vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import {Button} from '@/components/ui/button';
-import {Table as UiTable, TableBody, TableCell, TableHead, TableHeader, TableRow,} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import {
+    Table as UiTable,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 
 /*
 |--------------------------------------------------------------------------
@@ -101,15 +108,15 @@ const paginationItems = computed<PaginationItem[]>(() => {
     const currentPage = props.pageIndex + 1;
 
     if (pageCount <= 7) {
-        return Array.from({length: pageCount}, (_, index) => ({
+        return Array.from({ length: pageCount }, (_, index) => ({
             type: 'page' as const,
             page: index + 1,
         }));
     }
 
     const items: PaginationItem[] = [];
-    const addPage = (page: number) => items.push({type: 'page', page});
-    const addEllipsis = (key: string) => items.push({type: 'ellipsis', key});
+    const addPage = (page: number) => items.push({ type: 'page', page });
+    const addEllipsis = (key: string) => items.push({ type: 'ellipsis', key });
 
     addPage(1);
 
@@ -144,7 +151,7 @@ const loadingColumnIds = computed(() => {
     const headers = props.table.getHeaderGroups()[0]?.headers ?? [];
 
     return Array.from(
-        {length: props.columnsCount},
+        { length: props.columnsCount },
         (_, index) => headers[index]?.column?.id ?? '',
     );
 });
@@ -181,12 +188,7 @@ const getPlaceholderAlignmentClass = (align: ColumnAlign) => ({
 |--------------------------------------------------------------------------
 */
 
-const FIXED_COLUMN_IDS = [
-    'select',
-    'status',
-    'created_at',
-    'actions',
-];
+const FIXED_COLUMN_IDS = ['select', 'status', 'created_at', 'actions'];
 
 const getColumnStyle = (column: any) => {
     const columnId = column?.id;
@@ -325,7 +327,7 @@ const handlePageSizeChange = (
                                 :style="getColumnStyle(cell.column)"
                                 class="px-4 py-3 align-middle"
                             >
-                                <FlexRender :cell="cell"/>
+                                <FlexRender :cell="cell" />
                             </TableCell>
                         </TableRow>
                     </template>

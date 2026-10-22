@@ -1,12 +1,15 @@
 <script lang="ts" setup>
-import {router, useForm} from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
 import BandsawWorkLogForm from '@/pages/WorkLogs/Bandsaw/components/BandsawWorkLogForm.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {bandsawWorkLogPage} from '@/config/bandsawWorkLogs';
-import {index as bandsawWorkLogs, store} from '@/routes/bandsaw';
-import type {BandsawWorkLogFormData, BandsawWorkLogLastReport,} from '@/types/bandsawWorkLog';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { bandsawWorkLogPage } from '@/config/bandsawWorkLogs';
+import { index as bandsawWorkLogs, store } from '@/routes/bandsaw';
+import type {
+    BandsawWorkLogFormData,
+    BandsawWorkLogLastReport,
+} from '@/types/bandsawWorkLog';
 
 /*
 |--------------------------------------------------------------------------

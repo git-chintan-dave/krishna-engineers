@@ -1,5 +1,5 @@
-﻿import type {PaginatedResponse, SortDirection} from '@/types/listing';
-import {SectionSizeSchemaData} from "@/schemas/sectionSizeSchema";
+﻿import type { PaginatedResponse, SortDirection } from '@/types/listing';
+import { SectionSizeSchemaData } from '@/schemas/sectionSizeSchema';
 
 /*
 |--------------------------------------------------------------------------

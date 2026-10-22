@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type {HTMLAttributes} from 'vue';
+import type { HTMLAttributes } from 'vue';
 
 defineOptions({
     inheritAttrs: false,

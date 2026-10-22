@@ -1,12 +1,12 @@
-import {router} from '@inertiajs/vue3';
-import {createColumnHelper} from '@tanstack/vue-table';
+import { router } from '@inertiajs/vue3';
+import { createColumnHelper } from '@tanstack/vue-table';
 
-import {edit, markAsPaid, show} from '@/routes/salaries';
-import {createActionsColumn} from '@/table/columns/actionsColumn';
-import {createSelectColumn} from '@/table/columns/selectColumn';
-import {createStatusColumn} from '@/table/columns/statusColumn';
-import {createColumn} from '@/table/helpers/createColumn';
-import type {Salary} from '@/types/salary';
+import { edit, markAsPaid, show } from '@/routes/salaries';
+import { createActionsColumn } from '@/table/columns/actionsColumn';
+import { createSelectColumn } from '@/table/columns/selectColumn';
+import { createStatusColumn } from '@/table/columns/statusColumn';
+import { createColumn } from '@/table/helpers/createColumn';
+import type { Salary } from '@/types/salary';
 
 const columnHelper = createColumnHelper<any, Salary>();
 
@@ -32,10 +32,8 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             sortable: true,
             align: 'center',
             cell: ({ row }) => {
-                const start =
-                    row.original.salary_period_start_formatted ?? '—';
-                const end =
-                    row.original.salary_period_end_formatted ?? '—';
+                const start = row.original.salary_period_start_formatted ?? '—';
+                const end = row.original.salary_period_end_formatted ?? '—';
 
                 return `${start} - ${end}`;
             },
@@ -47,7 +45,7 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             header: 'Days',
             size: 120,
             sortable: true,
-            align: 'center'
+            align: 'center',
         }),
 
         createColumn({
@@ -57,7 +55,6 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             size: 140,
             sortable: true,
             align: 'center',
-            cell: (info) => `${info.getValue()}`,
         }),
 
         createColumn({
@@ -67,7 +64,6 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             size: 140,
             sortable: true,
             align: 'center',
-            cell: (info) => `${info.getValue()}`,
         }),
 
         createColumn({
@@ -77,7 +73,6 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             size: 140,
             sortable: true,
             align: 'center',
-            cell: (info) => `${info.getValue()}`,
         }),
 
         createColumn({
@@ -87,7 +82,6 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             size: 160,
             sortable: true,
             align: 'center',
-            cell: (info) => `${info.getValue()}`,
         }),
 
         createStatusColumn({

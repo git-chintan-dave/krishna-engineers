@@ -49,9 +49,7 @@ self.addEventListener('fetch', (event) => {
     if (url.origin !== self.location.origin) return;
 
     if (
-        EXCLUDED_PATH_PREFIXES.some((prefix) =>
-            url.pathname.startsWith(prefix),
-        )
+        EXCLUDED_PATH_PREFIXES.some((prefix) => url.pathname.startsWith(prefix))
     ) {
         return;
     }
@@ -64,9 +62,7 @@ self.addEventListener('fetch', (event) => {
 
     // Static assets use the current cache only.
     if (
-        STATIC_ASSET_PREFIXES.some((prefix) =>
-            url.pathname.startsWith(prefix),
-        )
+        STATIC_ASSET_PREFIXES.some((prefix) => url.pathname.startsWith(prefix))
     ) {
         event.respondWith(cacheFirst(request));
         return;

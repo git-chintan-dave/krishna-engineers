@@ -148,7 +148,7 @@ class OperatorWorkLogController extends Controller
             ]),
         ];
 
-        if (!$includeLastReports) {
+        if (! $includeLastReports) {
             return [
                 ...$options,
                 'currentUserId' => $currentUser->id,

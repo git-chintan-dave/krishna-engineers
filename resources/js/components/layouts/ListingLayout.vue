@@ -28,7 +28,7 @@ withDefaults(
 
         <AppPageHeader :description="description" :title="title">
             <template v-if="$slots.actions" #actions>
-                <slot name="actions"/>
+                <slot name="actions" />
             </template>
         </AppPageHeader>
 
@@ -39,7 +39,7 @@ withDefaults(
         -->
 
         <section v-if="$slots.filters" aria-label="Filters" class="min-w-0">
-            <slot name="filters"/>
+            <slot name="filters" />
         </section>
 
         <!--
@@ -49,7 +49,7 @@ withDefaults(
         -->
 
         <section v-if="$slots.table" aria-label="Data table" class="min-w-0">
-            <slot name="table"/>
+            <slot name="table" />
         </section>
 
         <!--
@@ -63,7 +63,7 @@ withDefaults(
             aria-label="Pagination"
             class="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
         >
-            <slot name="pagination"/>
+            <slot name="pagination" />
         </section>
     </main>
 </template>

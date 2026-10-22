@@ -1,13 +1,19 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
-import {requiredNonNegativeNumber, requiredStringDropdown, requiredText, statusSchema,} from '@/schemas/commonSchema';
+import {
+    requiredNonNegativeNumber,
+    requiredStringDropdown,
+    requiredText,
+    statusSchema,
+} from '@/schemas/commonSchema';
 
 const optionalDigits = (length: number, label: string) =>
     z
         .string()
         .trim()
         .refine(
-            (value) => value === '' || new RegExp(`^\\d{${length}}$`).test(value),
+            (value) =>
+                value === '' || new RegExp(`^\\d{${length}}$`).test(value),
             `${label} must be exactly ${length} digits.`,
         )
         .nullable()
@@ -24,10 +30,7 @@ const optionalDate = (label: string) =>
         .nullable()
         .optional();
 
-const passwordSchema = z
-    .string()
-    .nullable()
-    .optional();
+const passwordSchema = z.string().nullable().optional();
 
 const baseEmployeeSchema = z.object({
     name: requiredText('Employee name'),
@@ -36,10 +39,7 @@ const baseEmployeeSchema = z.object({
 
     phone_number: optionalDigits(10, 'Phone number'),
 
-    alternate_phone_number: optionalDigits(
-        10,
-        'Alternate phone number',
-    ),
+    alternate_phone_number: optionalDigits(10, 'Alternate phone number'),
 
     email: z
         .email('Please enter a valid email address.')
@@ -50,10 +50,7 @@ const baseEmployeeSchema = z.object({
 
     joining_date: optionalDate('Joining date'),
 
-    aadhar_number: optionalDigits(
-        12,
-        'Aadhaar number',
-    ),
+    aadhar_number: optionalDigits(12, 'Aadhaar number'),
 
     password: passwordSchema,
 
@@ -61,21 +58,13 @@ const baseEmployeeSchema = z.object({
 
     role: requiredStringDropdown('role'),
 
-    shift: z
-        .string()
-        .nullable()
-        .optional()
-        .or(z.literal('')),
+    shift: z.string().nullable().optional().or(z.literal('')),
 
     salary: requiredNonNegativeNumber('Salary'),
 
-    incentive_per_day: requiredNonNegativeNumber(
-        'Incentive per day',
-    ),
+    incentive_per_day: requiredNonNegativeNumber('Incentive per day'),
 
-    deduction_per_day: requiredNonNegativeNumber(
-        'Deduction per day',
-    ),
+    deduction_per_day: requiredNonNegativeNumber('Deduction per day'),
 
     status: statusSchema,
 });
@@ -134,9 +123,8 @@ export const createEmployeeSchema = baseEmployeeSchema
     })
     .superRefine(validatePassword);
 
-export const editEmployeeSchema = baseEmployeeSchema.superRefine(
-    validatePassword,
-);
+export const editEmployeeSchema =
+    baseEmployeeSchema.superRefine(validatePassword);
 
 export const employeeSchema = createEmployeeSchema;
 

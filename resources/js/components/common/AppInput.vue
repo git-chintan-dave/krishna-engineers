@@ -1,15 +1,26 @@
 <script lang="ts" setup>
-import type {DateValue} from '@internationalized/date';
-import {parseDate} from '@internationalized/date';
-import {CalendarDays, Clock3, Eye, EyeOff, LoaderCircle, X,} from '@lucide/vue';
-import type {Component} from 'vue';
-import {computed, nextTick, ref, useAttrs} from 'vue';
+import type { DateValue } from '@internationalized/date';
+import { parseDate } from '@internationalized/date';
+import {
+    CalendarDays,
+    Clock3,
+    Eye,
+    EyeOff,
+    LoaderCircle,
+    X,
+} from '@lucide/vue';
+import type { Component } from 'vue';
+import { computed, nextTick, ref, useAttrs } from 'vue';
 
-import {Button} from '@/components/ui/button';
-import {Calendar} from '@/components/ui/calendar';
-import {Input} from '@/components/ui/input';
-import {Popover, PopoverContent, PopoverTrigger,} from '@/components/ui/popover';
-import {Textarea} from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
 
 defineOptions({
     inheritAttrs: false,
@@ -141,11 +152,11 @@ const showPassword = ref(false);
 |--------------------------------------------------------------------------
 */
 
-const hours = Array.from({length: 12}, (_, index) =>
+const hours = Array.from({ length: 12 }, (_, index) =>
     String(index + 1).padStart(2, '0'),
 );
 
-const minutes = Array.from({length: 60}, (_, index) =>
+const minutes = Array.from({ length: 60 }, (_, index) =>
     String(index).padStart(2, '0'),
 );
 
@@ -254,10 +265,10 @@ const inputClasses = computed(() => [
 
     hasError.value
         ? [
-            'border-destructive',
-            'focus-visible:border-destructive',
-            'focus-visible:ring-destructive/20',
-        ]
+              'border-destructive',
+              'focus-visible:border-destructive',
+              'focus-visible:ring-destructive/20',
+          ]
         : 'border-input',
 ]);
 
@@ -881,7 +892,7 @@ defineExpose({
 
                     <div class="border-t pt-4">
                         <div class="mb-2 flex items-center gap-2">
-                            <Clock3 class="size-4 text-muted-foreground"/>
+                            <Clock3 class="size-4 text-muted-foreground" />
 
                             <span class="text-sm font-medium"> Time </span>
                         </div>
@@ -1040,7 +1051,7 @@ defineExpose({
                 type="button"
                 @click="clear"
             >
-                <X aria-hidden="true" class="size-4"/>
+                <X aria-hidden="true" class="size-4" />
             </button>
 
             <!-- Password -->
@@ -1054,9 +1065,9 @@ defineExpose({
                 type="button"
                 @click="togglePassword"
             >
-                <EyeOff v-if="showPassword" aria-hidden="true" class="size-4"/>
+                <EyeOff v-if="showPassword" aria-hidden="true" class="size-4" />
 
-                <Eye v-else aria-hidden="true" class="size-4"/>
+                <Eye v-else aria-hidden="true" class="size-4" />
             </button>
 
             <!-- Suffix -->
@@ -1117,6 +1128,6 @@ defineExpose({
 
         <!-- Description Slot -->
 
-        <slot name="description"/>
+        <slot name="description" />
     </div>
 </template>

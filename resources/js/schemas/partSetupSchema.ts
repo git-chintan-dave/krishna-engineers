@@ -1,6 +1,11 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
-import {optionalImage, removeImageSchema, requiredDropdown, requiredNonNegativeInteger,} from '@/schemas/commonSchema';
+import {
+    optionalImage,
+    removeImageSchema,
+    requiredDropdown,
+    requiredNonNegativeInteger,
+} from '@/schemas/commonSchema';
 
 export const partSetupSchema = z.object({
     part_id: requiredDropdown('a part'),

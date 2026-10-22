@@ -1,7 +1,7 @@
 ﻿<script lang="ts" setup>
-import {router, usePage} from '@inertiajs/vue3';
-import {RefreshCw} from '@lucide/vue';
-import {computed, ref} from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
+import { RefreshCw } from '@lucide/vue';
+import { computed, ref } from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import ListingActions from '@/components/common/ListingActions.vue';
@@ -9,15 +9,30 @@ import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {Button} from '@/components/ui/button';
-import {Popover, PopoverContent, PopoverTrigger,} from '@/components/ui/popover';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {attendancePage} from '@/config/attendances';
-import {bulkDestroy, create, destroy, index as attendancesRoute, sync} from '@/routes/attendances';
-import {view as attendancesImportRoute} from '@/routes/attendances/import';
-import {createAttendanceColumns} from '@/table/attendances';
-import type {Attendance, AttendanceFilters, AttendanceResponse, AttendanceSort,} from '@/types/attendance';
+import { Button } from '@/components/ui/button';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { attendancePage } from '@/config/attendances';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as attendancesRoute,
+    sync,
+} from '@/routes/attendances';
+import { view as attendancesImportRoute } from '@/routes/attendances/import';
+import { createAttendanceColumns } from '@/table/attendances';
+import type {
+    Attendance,
+    AttendanceFilters,
+    AttendanceResponse,
+    AttendanceSort,
+} from '@/types/attendance';
 
 /*
 |--------------------------------------------------------------------------
@@ -247,9 +262,7 @@ const handleDeleteSelected = () => {
         <template #actions>
             <ListingActions
                 :create-label="attendancePage.createLabel"
-                :create-url="
-                    canManageAttendance ? create().url : undefined
-                "
+                :create-url="canManageAttendance ? create().url : undefined"
                 :import-url="
                     auth.user?.role === 'super_admin'
                         ? attendancesImportRoute().url
@@ -261,10 +274,7 @@ const handleDeleteSelected = () => {
                 @delete-selected="handleDeleteSelected"
             >
                 <template #sync>
-                    <Popover
-                        :open="syncOpen"
-                        @update:open="openSyncPopover"
-                    >
+                    <Popover :open="syncOpen" @update:open="openSyncPopover">
                         <PopoverTrigger as-child>
                             <Button
                                 v-if="auth.user?.role === 'super_admin'"
@@ -273,10 +283,7 @@ const handleDeleteSelected = () => {
                                 type="button"
                                 variant="outline"
                             >
-                                <RefreshCw
-                                    aria-hidden="true"
-                                    class="size-4"
-                                />
+                                <RefreshCw aria-hidden="true" class="size-4" />
                                 <span>Sync</span>
                             </Button>
                         </PopoverTrigger>
@@ -308,8 +315,8 @@ const handleDeleteSelected = () => {
                                         id="sync-employee"
                                         v-model="syncEmployee"
                                         clearable
-                                        searchable
                                         placeholder="All employees"
+                                        searchable
                                     />
 
                                     <p class="text-xs text-muted-foreground">
@@ -328,8 +335,8 @@ const handleDeleteSelected = () => {
                                     <AppInput
                                         id="sync-start-date"
                                         v-model="syncStartDate"
-                                        type="date"
                                         aria-label="Sync start date"
+                                        type="date"
                                     />
                                 </div>
 
@@ -344,8 +351,8 @@ const handleDeleteSelected = () => {
                                     <AppInput
                                         id="sync-end-date"
                                         v-model="syncEndDate"
-                                        type="date"
                                         aria-label="Sync end date"
+                                        type="date"
                                     />
                                 </div>
 
@@ -358,30 +365,30 @@ const handleDeleteSelected = () => {
 
                                 <div
                                     v-if="syncMessage"
-                                    role="status"
-                                    aria-live="polite"
-                                    class="rounded-md border p-3 text-sm"
                                     :class="
                                         syncMessageType === 'success'
                                             ? 'border-green-600/30 text-green-700 dark:text-green-400'
                                             : 'border-destructive/30 text-destructive'
                                     "
+                                    aria-live="polite"
+                                    class="rounded-md border p-3 text-sm"
+                                    role="status"
                                 >
                                     {{ syncMessage }}
                                 </div>
 
                                 <Button
-                                    class="w-full cursor-pointer"
                                     :disabled="syncDisabled"
+                                    class="w-full cursor-pointer"
                                     type="button"
                                     @click="handleSync"
                                 >
                                     <RefreshCw
-                                        aria-hidden="true"
-                                        class="size-4"
                                         :class="{
                                             'animate-spin': syncProcessing,
                                         }"
+                                        aria-hidden="true"
+                                        class="size-4"
                                     />
                                     {{
                                         syncProcessing
@@ -417,9 +424,7 @@ const handleDeleteSelected = () => {
                     >
                         <AppEmployeeSelect
                             :model-value="
-                                filterEmployee === 'all'
-                                    ? null
-                                    : filterEmployee
+                                filterEmployee === 'all' ? null : filterEmployee
                             "
                             :placeholder="attendancePage.employeePlaceholder"
                             clearable
