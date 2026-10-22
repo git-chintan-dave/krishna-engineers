@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\AttendanceImportException;
 use App\Http\Controllers\Concerns\HasCrudResponses;
-use App\Http\Queries\Concerns\AppliesIndexFilters;
 use App\Http\Requests\Attendances\AttendanceImportRequest;
 use App\Http\Requests\Attendances\AttendanceRequest;
 use App\Http\Requests\Attendances\IndexAttendanceRequest;
@@ -29,7 +28,7 @@ use Throwable;
 
 class AttendanceController extends Controller
 {
-    use AppliesIndexFilters, HasCrudResponses;
+    use HasCrudResponses;
 
     private const string MODULE_NAME = 'Attendance';
 
