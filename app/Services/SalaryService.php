@@ -165,7 +165,7 @@ class SalaryService
             );
 
             $finalPayable = $this->calculateFinalPayable(
-                baseSalary: $baseSalary,
+                baseSalary: $baseSalary * $workingDays,
                 incentive: $incentive,
                 adjustment: $adjustment,
                 upad: $upad,
@@ -342,7 +342,7 @@ class SalaryService
             );
 
             $finalPayable = $this->calculateFinalPayable(
-                baseSalary: (float) $salary->base_salary,
+                baseSalary: (float) $salary->base_salary * $workingDays,
                 incentive: $incentive,
                 adjustment: $adjustment,
                 upad: $upad,
@@ -430,7 +430,7 @@ class SalaryService
         );
 
         $finalPayable = $this->calculateFinalPayable(
-            baseSalary: $baseSalary,
+            baseSalary: $baseSalary * $workingDays,
             incentive: $incentive,
             adjustment: 0,
             upad: 0,

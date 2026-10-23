@@ -79,7 +79,7 @@ const adjustment = computed(() => Number(props.form.adjustment || 0));
 
 const finalPayable = computed(() =>
     (
-        baseSalary.value +
+        (baseSalary.value * workingDays.value) +
         incentive.value +
         adjustment.value -
         upad.value -
