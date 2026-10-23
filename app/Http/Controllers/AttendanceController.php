@@ -316,13 +316,15 @@ class AttendanceController extends Controller
             '--from' => Carbon::createFromFormat(
                 '!Y-m-d',
                 $validated['from'],
-            )->format('d/m/Y'),
+            )->format('d/m/Y').'_00:00',
 
             '--to' => Carbon::createFromFormat(
                 '!Y-m-d',
                 $validated['to'],
-            )->format('d/m/Y'),
+            )->format('d/m/Y').'_23:59',
         ];
+
+        $arguments['--empcode'] = 'ALL';
 
         if (! empty($validated['user_id'])) {
             $user = User::query()
@@ -338,27 +340,20 @@ class AttendanceController extends Controller
         }
 
         /*
-         * The sync is currently executed synchronously through Artisan::call().
-         *
-         * PHP's web-request execution limit can otherwise terminate the request
-         * after 30 seconds, even though the eTimeOffice HTTP client allows
-         * 60 seconds.
-         *
-         * This is a temporary/synchronous safeguard. For very large syncs,
-         * moving this operation to a queue would be the better architecture.
+         * Attendance synchronization runs synchronously through Artisan::call().
          */
         @set_time_limit(0);
 
         try {
             $exitCode = Artisan::call(
-                'etimeoffice:sync',
+                'etimeoffice:sync-punches',
                 $arguments,
             );
 
             $output = trim(Artisan::output());
 
             if ($exitCode !== Command::SUCCESS) {
-                logger()->error('eTimeOffice attendance sync failed.', [
+                logger()->error('eTimeOffice attendance and break sync failed.', [
                     'arguments' => $arguments,
                     'output' => $output,
                 ]);
@@ -373,7 +368,7 @@ class AttendanceController extends Controller
                 'success',
                 $output !== ''
                     ? $output
-                    : 'Attendance sync completed successfully.',
+                    : 'Attendance and break synchronization completed successfully.',
             );
         } catch (Throwable $exception) {
             report($exception);

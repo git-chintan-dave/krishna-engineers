@@ -438,7 +438,7 @@ class AttendanceService
             ->breaks()
             ->sum('duration_seconds');
 
-        $breakSeconds = $breakSeconds === 0 ? 3600 : $breakSeconds;
+        $breakSeconds = max(3600, $breakSeconds);
         $standardShiftSeconds = 12 * 3600; // 12 Hours shift
         $effectiveWorkingSeconds = max(0, ($totalWorkingSeconds - $breakSeconds));
         $undertimeSeconds = max(0, ($standardShiftSeconds - $totalWorkingSeconds));
