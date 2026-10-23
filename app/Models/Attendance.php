@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'total_working_seconds',
     'break_seconds',
     'effective_working_seconds',
+    'undertime_seconds',
 ])]
 class Attendance extends Model
 {
@@ -40,6 +41,7 @@ class Attendance extends Model
         'end_at',
         'break_seconds',
         'effective_working_seconds',
+        'undertime_seconds',
     ];
 
     protected string $defaultSort = 'id';

@@ -193,7 +193,7 @@ const generateButtonLabel = computed(() => {
                 @search="search"
             >
                 <template #filters>
-                    <div class="w-full shrink-0 sm:w-48">
+                    <div class="w-full shrink-0 sm:w-64">
                         <AppEmployeeSelect
                             :model-value="
                                 filterEmployee === 'all' ? null : filterEmployee

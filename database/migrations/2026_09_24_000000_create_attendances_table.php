@@ -21,12 +21,10 @@ return new class extends Migration
             $table->date('attendance_date');
             $table->dateTime('start_at');
             $table->dateTime('end_at')->nullable();
-            $table->unsignedInteger('total_working_seconds')
-                ->default(0);
-            $table->unsignedInteger('break_seconds')
-                ->default(0);
-            $table->unsignedInteger('effective_working_seconds')
-                ->default(0);
+            $table->unsignedInteger('total_working_seconds')->default(0);
+            $table->unsignedInteger('break_seconds')->default(0);
+            $table->unsignedInteger('effective_working_seconds')->default(0);
+            $table->unsignedInteger('undertime_seconds')->default(0);
             $table->timestamps();
             $table->unique([
                 'user_id',

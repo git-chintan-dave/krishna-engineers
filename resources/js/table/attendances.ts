@@ -1,10 +1,10 @@
-import { createColumnHelper } from '@tanstack/vue-table';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit } from '@/routes/attendances';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import { createColumn } from '@/table/helpers/createColumn';
-import type { Attendance } from '@/types/attendance';
+import {edit} from '@/routes/attendances';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createColumn} from '@/table/helpers/createColumn';
+import type {Attendance} from '@/types/attendance';
 
 const columnHelper = createColumnHelper<any, Attendance>();
 
@@ -21,70 +21,86 @@ export const createAttendanceColumns = (
 
         ...(canShowUserColumn
             ? [
-                  createColumn<Attendance, string>({
-                      accessorKey: 'user.name',
-                      header: 'Employee',
-                      size: 240,
-                      sortable: true,
-                  }),
-              ]
+                createColumn<Attendance, string>({
+                    accessorKey: 'user.name',
+                    header: 'Employee',
+                    size: 140,
+                    sortable: true,
+                }),
+            ]
             : []),
 
         createColumn<Attendance, string | null>({
-            accessorKey: 'attendance_date',
+            accessorKey: 'attendance_date_formatted',
+            sortKey: 'attendance_date',
             header: 'Attendance Date',
             size: 160,
             align: 'center',
             sortable: true,
-            cell: ({ row }) => row.original.attendance_date_formatted ?? '—',
         }),
 
         createColumn<Attendance, string | null>({
-            accessorKey: 'start_at',
+            accessorKey: 'start_at_formatted',
+            sortKey: 'start_at',
             header: 'Clock In',
             size: 150,
             align: 'center',
             sortable: true,
-            cell: ({ row }) => row.original.start_at_formatted ?? '—',
         }),
 
         createColumn<Attendance, string | null>({
-            accessorKey: 'end_at',
+            accessorKey: 'end_at_formatted',
+            sortKey: 'end_at',
             header: 'Clock Out',
             size: 150,
             align: 'center',
             sortable: true,
-            cell: ({ row }) => row.original.end_at_formatted ?? '—',
         }),
 
         createColumn<Attendance, number | null>({
-            accessorKey: 'break_seconds',
+            accessorKey: 'total_working_seconds_formatted',
+            sortKey: 'total_working_seconds',
+            header: 'Total hours',
+            size: 140,
+            align: 'center',
+            sortable: true,
+        }),
+
+        createColumn<Attendance, number | null>({
+            accessorKey: 'break_seconds_formatted',
             header: 'Break Time',
             size: 140,
             align: 'center',
             sortable: true,
-            cell: ({ row }) => row.original.break_seconds_formatted ?? '—',
         }),
 
         createColumn<Attendance, number | null>({
-            accessorKey: 'effective_working_seconds',
+            accessorKey: 'effective_working_seconds_formatted',
+            sortKey: 'effective_working_seconds',
             header: 'Effective Hours',
             size: 160,
             align: 'center',
             sortable: true,
-            cell: ({ row }) =>
-                row.original.effective_working_seconds_formatted ?? '—',
+        }),
+
+        createColumn<Attendance, number | null>({
+            accessorKey: 'undertime_seconds_formatted',
+            sortKey: 'undertime_seconds',
+            header: 'Undertime',
+            size: 160,
+            align: 'center',
+            sortable: true,
         }),
 
         ...(canEdit || canDelete
             ? [
-                  createActionsColumn({
-                      editUrl: (uuid) => edit(uuid).url,
-                      resourceName: 'attendance',
-                      handleDelete,
-                      showEdit: (row) => canEdit && !row.is_locked,
-                      showDelete: (row) => canDelete && !row.is_locked,
-                  }),
-              ]
+                createActionsColumn({
+                    editUrl: (uuid) => edit(uuid).url,
+                    resourceName: 'attendance',
+                    handleDelete,
+                    showEdit: (row) => canEdit && !row.is_locked,
+                    showDelete: (row) => canDelete && !row.is_locked,
+                }),
+            ]
             : []),
     ]);

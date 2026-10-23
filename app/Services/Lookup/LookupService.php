@@ -185,11 +185,11 @@ class LookupService
     {
         return Machine::query()
             ->where('status', Status::ACTIVE->value)
-            ->orderBy('name')
-            ->get(['id', 'name', 'reference_name'])
+            ->orderBy('machine_number')
+            ->get(['id', 'name', 'machine_number'])
             ->map(fn (Machine $machine): array => [
                 'value' => $machine->id,
-                'label' => $machine->name,
+                'label' => $machine->machine_number,
             ])
             ->all();
     }
@@ -198,15 +198,12 @@ class LookupService
     {
         return User::query()
             ->where('status', Status::ACTIVE->value)
-            ->when(
-                $role,
-                fn ($query) => $query->where('role', $role)
-            )
-            ->orderBy('name')
+            ->when($role, fn ($query) => $query->where('role', $role))
+            ->orderBy('employee_code')
             ->get(['id', 'name', 'employee_code', 'role'])
             ->map(fn (User $user): array => [
                 'value' => $user->id,
-                'label' => $user->name,
+                'label' => $user->employee_code.' - '.$user->name,
             ])
             ->all();
     }

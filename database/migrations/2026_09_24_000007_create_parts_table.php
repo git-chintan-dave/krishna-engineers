@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->uuid()->unique();
             $table->string('name');
-            $table->string('new_part_name')->nullable()->unique();
+            $table->string('new_part_name')->nullable();
             $table->foreignIdFor(Section::class)
                 ->nullable()
                 ->constrained()

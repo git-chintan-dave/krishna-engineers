@@ -256,7 +256,7 @@ const handleDeleteSelected = () => {
                         />
                     </div>
 
-                    <div class="w-full shrink-0 sm:w-48">
+                    <div class="w-full shrink-0 sm:w-64">
                         <AppEmployeeSelect
                             :model-value="
                                 filterFromUserId === 'all'
@@ -272,7 +272,7 @@ const handleDeleteSelected = () => {
                         />
                     </div>
 
-                    <div class="w-full shrink-0 sm:w-48">
+                    <div class="w-full shrink-0 sm:w-64">
                         <AppEmployeeSelect
                             :model-value="
                                 filterToUserId === 'all' ? null : filterToUserId

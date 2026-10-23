@@ -48,6 +48,55 @@ class PartSetupSeeder extends Seeder
 
         foreach ([
             [
+                'part_id' => 1,
+                'setup_id' => 11,
+                'image' => null,
+                'machine_cycle_time_seconds' => 840,
+                'actual_cycle_time_seconds' => 840,
+            ],
+            [
+                'part_id' => 2,
+                'setup_id' => 2,
+                'image' => null,
+                'machine_cycle_time_seconds' => 240,
+                'actual_cycle_time_seconds' => 240,
+            ],
+            [
+                'part_id' => 3,
+                'setup_id' => 4,
+                'image' => null,
+                'machine_cycle_time_seconds' => 1200,
+                'actual_cycle_time_seconds' => 1200,
+            ],
+            [
+                'part_id' => 4,
+                'setup_id' => 1,
+                'image' => null,
+                'machine_cycle_time_seconds' => 600,
+                'actual_cycle_time_seconds' => 600,
+            ],
+            [
+                'part_id' => 4,
+                'setup_id' => 2,
+                'image' => null,
+                'machine_cycle_time_seconds' => 600,
+                'actual_cycle_time_seconds' => 600,
+            ],
+            [
+                'part_id' => 5,
+                'setup_id' => 11,
+                'image' => null,
+                'machine_cycle_time_seconds' => 300,
+                'actual_cycle_time_seconds' => 300,
+            ],
+            [
+                'part_id' => 6,
+                'setup_id' => 3,
+                'image' => null,
+                'machine_cycle_time_seconds' => 900,
+                'actual_cycle_time_seconds' => 900,
+            ],
+            [
                 'part_id' => $parts['2H-2000M']->id,
                 'setup_id' => $setups['S1']->id,
                 'image' => null,

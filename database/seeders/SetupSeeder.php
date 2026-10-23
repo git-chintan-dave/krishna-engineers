@@ -27,6 +27,7 @@ class SetupSeeder extends Seeder
                 ['name' => 'DRILL'],
                 ['name' => 'OUTER'],
                 ['name' => 'KNURLING'],
+                ['name' => 'FINAL'],
             ],
             ['name'],
         );

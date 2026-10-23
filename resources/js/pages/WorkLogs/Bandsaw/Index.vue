@@ -195,7 +195,7 @@ const handleDeleteSelected = (): void => {
 
                     <div
                         v-if="canSelectBandsaw"
-                        class="w-full shrink-0 sm:w-44"
+                        class="w-full shrink-0 sm:w-64"
                     >
                         <AppEmployeeSelect
                             :model-value="

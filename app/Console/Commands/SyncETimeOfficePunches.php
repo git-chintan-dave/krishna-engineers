@@ -24,6 +24,13 @@ class SyncETimeOfficePunches extends Command
 
     public function handle(AttendanceService $attendanceService): int
     {
+        /*
+         * This command can also be invoked through a web request using
+         * Artisan::call(). Do not allow PHP's web execution limit to terminate
+         * a long attendance synchronization.
+         */
+        @set_time_limit(0);
+
         try {
             $fromDate = $this->parseDate(
                 $this->option('from') ?: now()->format('d/m/Y')
@@ -48,7 +55,12 @@ class SyncETimeOfficePunches extends Command
 
         $config = config('services.etimeoffice', []);
 
-        foreach (['base_url', 'corporate_id', 'username', 'password'] as $key) {
+        foreach ([
+                     'base_url',
+                     'corporate_id',
+                     'username',
+                     'password',
+                 ] as $key) {
             if (blank($config[$key] ?? null)) {
                 $this->error(
                     "Missing eTimeOffice configuration: {$key}."
@@ -71,10 +83,6 @@ class SyncETimeOfficePunches extends Command
         $this->line("From: {$parameters['FromDate']}");
         $this->line("To: {$parameters['ToDate']}");
 
-        /*
-         * Confirm this credential format with eTimeOffice.
-         * It follows the format currently configured for this integration.
-         */
         $credentials = implode(':', [
             $config['corporate_id'],
             $config['username'],
@@ -93,7 +101,7 @@ class SyncETimeOfficePunches extends Command
                 ->get(
                     rtrim($config['base_url'], '/').
                     '/DownloadInOutPunchData',
-                    $parameters
+                    $parameters,
                 );
 
             $response->throw();
@@ -128,18 +136,6 @@ class SyncETimeOfficePunches extends Command
 
         $this->info('API request completed successfully.');
 
-        /*
-         * TODO: Map the actual API response into normalized attendance
-         * records after confirming the response structure.
-         *
-         * Each normalized record must contain:
-         * - employee_code
-         * - attendance_date (Y-m-d)
-         * - start_at (CarbonInterface)
-         * - end_at (CarbonInterface|null)
-         *
-         * Do not process raw API records until this mapping is implemented.
-         */
         $punchRecords = $this->normalizePunchRecords($data);
 
         if ($punchRecords === null) {
@@ -148,24 +144,106 @@ class SyncETimeOfficePunches extends Command
                 'The API response mapping must be implemented first.'
             );
 
-            $this->line('Response type: '.(array_is_list($data) ? 'List' : 'Object'));
-            $this->line('Top-level fields: '.implode(', ', array_keys($data)));
+            $this->line(
+                'Response type: '.
+                (array_is_list($data) ? 'List' : 'Object')
+            );
+
+            $this->line(
+                'Top-level fields: '.
+                implode(', ', array_keys($data))
+            );
 
             return self::FAILURE;
         }
+
+        if ($punchRecords === []) {
+            $this->newLine();
+            $this->info('No attendance punch records found.');
+
+            return self::SUCCESS;
+        }
+
+        /*
+         * ------------------------------------------------------------------
+         * Load users once
+         * ------------------------------------------------------------------
+         *
+         * Previously:
+         *
+         * foreach ($punchRecords as $record) {
+         *     User::where(...)->first();
+         * }
+         *
+         * That creates one query per attendance record.
+         */
+        $employeeCodes = collect($punchRecords)
+            ->pluck('employee_code')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $usersByEmployeeCode = User::query()
+            ->whereIn('employee_code', $employeeCodes)
+            ->get()
+            ->keyBy('employee_code');
+
+        /*
+         * ------------------------------------------------------------------
+         * Load existing attendance once
+         * ------------------------------------------------------------------
+         *
+         * We only need attendance for the requested date range and employees
+         * returned by the API.
+         */
+        $userIds = $usersByEmployeeCode
+            ->pluck('id')
+            ->values();
+
+        $existingAttendance = Attendance::query()
+            ->whereIn('user_id', $userIds)
+            ->whereBetween('attendance_date', [
+                $fromDate->format('Y-m-d'),
+                $toDate->format('Y-m-d'),
+            ])
+            ->get([
+                'user_id',
+                'attendance_date',
+            ])
+            ->mapWithKeys(
+                fn (Attendance $attendance) => [
+                    $this->attendanceKey(
+                        $attendance->user_id,
+                        $attendance->attendance_date,
+                    ) => true,
+                ]
+            );
 
         $created = 0;
         $skipped = 0;
         $failed = 0;
 
+        /*
+         * Track newly-created records too.
+         *
+         * This protects us if the API itself returns duplicate records
+         * for the same employee/date.
+         */
+        $processedAttendance = $existingAttendance->all();
+
+        $this->info(
+            'Processing '.count($punchRecords).' punch record(s)...'
+        );
+
         foreach ($punchRecords as $record) {
-            $user = User::query()
-                ->where('employee_code', $record['employee_code'])
-                ->first();
+            $employeeCode = $record['employee_code'];
+
+            /** @var User|null $user */
+            $user = $usersByEmployeeCode->get($employeeCode);
 
             if (! $user) {
                 $this->warn(
-                    "Employee not found: {$record['employee_code']}"
+                    "Employee not found: {$employeeCode}"
                 );
 
                 $skipped++;
@@ -173,15 +251,14 @@ class SyncETimeOfficePunches extends Command
                 continue;
             }
 
-            $exists = Attendance::query()
-                ->where('user_id', $user->id)
-                ->whereDate(
-                    'attendance_date',
-                    $record['attendance_date']
-                )
-                ->exists();
+            $attendanceDate = $record['attendance_date'];
 
-            if ($exists) {
+            $attendanceKey = $this->attendanceKey(
+                $user->id,
+                $attendanceDate,
+            );
+
+            if (isset($processedAttendance[$attendanceKey])) {
                 $skipped++;
 
                 continue;
@@ -190,16 +267,22 @@ class SyncETimeOfficePunches extends Command
             try {
                 $attendanceService->import(
                     user: $user,
-                    attendanceDate: $record['attendance_date'],
+                    attendanceDate: $attendanceDate,
                     startAt: $record['start_at'],
                     endAt: $record['end_at'] ?? null,
                 );
 
+                /*
+                 * Mark it as processed so duplicate records returned by the
+                 * API cannot create duplicate attendance.
+                 */
+                $processedAttendance[$attendanceKey] = true;
+
                 $created++;
             } catch (AttendanceImportException $exception) {
                 $this->warn(
-                    "Skipped {$record['employee_code']} on ".
-                    "{$record['attendance_date']}: ".
+                    "Skipped {$employeeCode} on ".
+                    "{$attendanceDate}: ".
                     $exception->getMessage()
                 );
 
@@ -208,8 +291,8 @@ class SyncETimeOfficePunches extends Command
                 report($exception);
 
                 $this->error(
-                    "Failed to import {$record['employee_code']} on ".
-                    "{$record['attendance_date']}."
+                    "Failed to import {$employeeCode} on ".
+                    "{$attendanceDate}."
                 );
 
                 $failed++;
@@ -221,7 +304,23 @@ class SyncETimeOfficePunches extends Command
         $this->info("Attendance skipped: {$skipped}");
         $this->info("Attendance failed: {$failed}");
 
-        return $failed > 0 ? self::FAILURE : self::SUCCESS;
+        return $failed > 0
+            ? self::FAILURE
+            : self::SUCCESS;
+    }
+
+    /**
+     * Create a unique key for an employee attendance date.
+     */
+    private function attendanceKey(
+        int $userId,
+        string|Carbon $attendanceDate,
+    ): string {
+        $date = $attendanceDate instanceof Carbon
+            ? $attendanceDate->format('Y-m-d')
+            : $attendanceDate;
+
+        return "{$userId}:{$date}";
     }
 
     /**
@@ -250,23 +349,47 @@ class SyncETimeOfficePunches extends Command
                 continue;
             }
 
-            $employeeCode = trim((string) ($punch['Empcode'] ?? ''));
-            $dateString = trim((string) ($punch['DateString'] ?? ''));
-            $inTime = trim((string) ($punch['INTime'] ?? ''));
-            $outTime = trim((string) ($punch['OUTTime'] ?? ''));
-            $status = strtoupper(trim((string) ($punch['Status'] ?? '')));
+            $employeeCode = trim(
+                (string) ($punch['Empcode'] ?? '')
+            );
 
-            // Skip records without a valid employee code or attendance date.
+            $dateString = trim(
+                (string) ($punch['DateString'] ?? '')
+            );
+
+            $inTime = trim(
+                (string) ($punch['INTime'] ?? '')
+            );
+
+            $outTime = trim(
+                (string) ($punch['OUTTime'] ?? '')
+            );
+
+            $status = strtoupper(
+                trim((string) ($punch['Status'] ?? ''))
+            );
+
+            /*
+             * Skip records without employee code or attendance date.
+             */
             if ($employeeCode === '' || $dateString === '') {
                 continue;
             }
 
-            // Skip absent, weekly-off, and other non-working statuses.
-            if ($status !== 'P') {
-                continue;
-            }
+            /*
+             * Keep current behaviour:
+             * status filtering is intentionally disabled.
+             *
+             * If required later:
+             *
+             * if ($status !== 'P') {
+             *     continue;
+             * }
+             */
 
-            // "--:--" indicates that no punch time is available.
+            /*
+             * "--:--" indicates that no punch-in time is available.
+             */
             if (
                 $inTime === '--:--' ||
                 ! preg_match('/^\d{2}:\d{2}$/', $inTime)
@@ -274,11 +397,13 @@ class SyncETimeOfficePunches extends Command
                 continue;
             }
 
-            // Parse the attendance date.
+            /*
+             * Parse attendance date.
+             */
             try {
                 $attendanceDate = Carbon::createFromFormat(
                     '!d/m/Y',
-                    $dateString
+                    $dateString,
                 );
             } catch (Throwable) {
                 continue;
@@ -291,11 +416,13 @@ class SyncETimeOfficePunches extends Command
                 continue;
             }
 
-            // Combine the attendance date with the punch-in time.
+            /*
+             * Combine attendance date with punch-in time.
+             */
             try {
                 $startAt = Carbon::createFromFormat(
                     '!Y-m-d H:i',
-                    $attendanceDate->format('Y-m-d').' '.$inTime
+                    $attendanceDate->format('Y-m-d').' '.$inTime,
                 );
             } catch (Throwable) {
                 continue;
@@ -305,7 +432,9 @@ class SyncETimeOfficePunches extends Command
                 continue;
             }
 
-            // OUTTime may be missing when an employee has not punched out.
+            /*
+             * OUTTime may be missing when an employee has not punched out.
+             */
             $endAt = null;
 
             if (
@@ -315,7 +444,7 @@ class SyncETimeOfficePunches extends Command
                 try {
                     $endAt = Carbon::createFromFormat(
                         '!Y-m-d H:i',
-                        $attendanceDate->format('Y-m-d').' '.$outTime
+                        $attendanceDate->format('Y-m-d').' '.$outTime,
                     );
                 } catch (Throwable) {
                     $endAt = null;
@@ -327,7 +456,9 @@ class SyncETimeOfficePunches extends Command
                 ) {
                     $endAt = null;
                 } elseif ($endAt->lt($startAt)) {
-                    // Handle an overnight shift.
+                    /*
+                     * Handle overnight shifts.
+                     */
                     $endAt->addDay();
                 }
             }
@@ -346,12 +477,18 @@ class SyncETimeOfficePunches extends Command
     private function parseDate(string $date): Carbon
     {
         try {
-            $parsedDate = Carbon::createFromFormat('!d/m/Y', $date);
+            $parsedDate = Carbon::createFromFormat(
+                '!d/m/Y',
+                $date,
+            );
         } catch (Throwable) {
             $parsedDate = false;
         }
 
-        if (! $parsedDate || $parsedDate->format('d/m/Y') !== $date) {
+        if (
+            ! $parsedDate ||
+            $parsedDate->format('d/m/Y') !== $date
+        ) {
             throw new InvalidArgumentException(
                 "Invalid date '{$date}'. Expected format: d/m/Y."
             );

@@ -274,7 +274,7 @@ const hasFilters = (): boolean =>
 
                     <div
                         v-if="canSelectOperator"
-                        class="w-full shrink-0 sm:w-44"
+                        class="w-full shrink-0 sm:w-64"
                     >
                         <AppEmployeeSelect
                             :model-value="

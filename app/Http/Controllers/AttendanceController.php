@@ -294,8 +294,17 @@ class AttendanceController extends Controller
     public function sync(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'user_id' => ['nullable', 'integer', 'exists:users,id'],
-            'from' => ['required', 'date_format:Y-m-d'],
+            'user_id' => [
+                'nullable',
+                'integer',
+                'exists:users,id',
+            ],
+
+            'from' => [
+                'required',
+                'date_format:Y-m-d',
+            ],
+
             'to' => [
                 'required',
                 'date_format:Y-m-d',
@@ -327,6 +336,18 @@ class AttendanceController extends Controller
 
             $arguments['--empcode'] = $user->employee_code;
         }
+
+        /*
+         * The sync is currently executed synchronously through Artisan::call().
+         *
+         * PHP's web-request execution limit can otherwise terminate the request
+         * after 30 seconds, even though the eTimeOffice HTTP client allows
+         * 60 seconds.
+         *
+         * This is a temporary/synchronous safeguard. For very large syncs,
+         * moving this operation to a queue would be the better architecture.
+         */
+        @set_time_limit(0);
 
         try {
             $exitCode = Artisan::call(

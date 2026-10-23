@@ -420,7 +420,7 @@ const handleDeleteSelected = () => {
                 <template #filters>
                     <div
                         v-if="canManageAttendance"
-                        class="w-full shrink-0 sm:w-48"
+                        class="w-full shrink-0 sm:w-64"
                     >
                         <AppEmployeeSelect
                             :model-value="

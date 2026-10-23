@@ -24,6 +24,7 @@ class IndexAttendanceRequest extends FormRequest
                 'end_at',
                 'break_seconds',
                 'effective_working_seconds',
+                'undertime_seconds',
             ]),
 
             'user_id' => [

@@ -404,6 +404,7 @@ class AttendanceService
                     'total_working_seconds' => 0,
                     'break_seconds' => 0,
                     'effective_working_seconds' => 0,
+                    'undertime_seconds' => 0,
                 ]);
 
                 $this->syncBreaks(
@@ -438,14 +439,15 @@ class AttendanceService
             ->sum('duration_seconds');
 
         $breakSeconds = $breakSeconds === 0 ? 3600 : $breakSeconds;
+        $standardShiftSeconds = 12 * 3600; // 12 Hours shift
+        $effectiveWorkingSeconds = max(0, ($totalWorkingSeconds - $breakSeconds));
+        $undertimeSeconds = max(0, ($standardShiftSeconds - $totalWorkingSeconds));
 
         $attendance->update([
             'total_working_seconds' => $totalWorkingSeconds,
             'break_seconds' => $breakSeconds,
-            'effective_working_seconds' => max(
-                0,
-                $totalWorkingSeconds - $breakSeconds,
-            ),
+            'effective_working_seconds' => $effectiveWorkingSeconds,
+            'undertime_seconds' => $undertimeSeconds,
         ]);
 
         return $attendance->fresh();

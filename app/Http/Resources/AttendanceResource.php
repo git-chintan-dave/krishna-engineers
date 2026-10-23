@@ -95,6 +95,12 @@ class AttendanceResource extends JsonResource
                 $this->effective_working_seconds,
             )->format('H:i:s'),
 
+            'undertime_seconds' => $this->undertime_seconds,
+
+            'undertime_seconds_formatted' => $this->undertime_seconds ? Carbon::createFromTimestampUTC(
+                $this->undertime_seconds,
+            )->format('H:i:s') : null,
+
             /*
             |--------------------------------------------------------------------------
             | Production
