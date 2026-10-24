@@ -1,20 +1,21 @@
-
 <script lang="ts" setup>
 import axios from 'axios';
-import type { InertiaForm } from '@inertiajs/vue3';
-import { CalendarDays, IndianRupee, User } from '@lucide/vue';
-import { computed, ref, watch } from 'vue';
+import type {InertiaForm} from '@inertiajs/vue3';
+import {CalendarDays, IndianRupee, User} from '@lucide/vue';
+import {computed, ref, watch} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
 import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
-import { useZodFormValidation } from '@/composables/useZodFormValidation';
-import { salaryPage } from '@/config/salaries';
-import { preview as previewSalary } from '@/routes/salaries';
-import { salarySchema } from '@/schemas/salarySchema';
-import type { Salary, SalaryFormData } from '@/types/salary';
+import AttendanceHistoryDialog from '@/components/attendance/AttendanceHistoryDialog.vue';
+import {Button} from '@/components/ui/button';
+import {useZodFormValidation} from '@/composables/useZodFormValidation';
+import {salaryPage} from '@/config/salaries';
+import {preview as previewSalary} from '@/routes/salaries';
+import {salarySchema} from '@/schemas/salarySchema';
+import type {Salary, SalaryFormData} from '@/types/salary';
 
 /*
 |--------------------------------------------------------------------------
@@ -73,6 +74,7 @@ const emit = defineEmits<{
 
 const previewData = ref<SalaryPreview | null>(null);
 const previewLoading = ref(false);
+const attendanceDialogOpen = ref(false);
 
 let previewRequestId = 0;
 
@@ -143,9 +145,7 @@ const deduction = computed(() =>
 );
 
 const upad = computed(() => Number(props.form.upad || 0));
-
 const paidLoan = computed(() => Number(props.form.paid_loan || 0));
-
 const adjustment = computed(() => Number(props.form.adjustment || 0));
 
 const finalPayable = computed(() =>
@@ -192,7 +192,7 @@ const { errors: frontendErrors, validate } = useZodFormValidation(
     () => props.form,
 );
 
-const handleSubmit = () => {
+const handleSubmit = (): void => {
     if (validate()) {
         emit('submit');
     }
@@ -223,16 +223,19 @@ const loadPreview = async (): Promise<void> => {
     previewLoading.value = true;
 
     try {
-        const response = await axios.get<SalaryPreview>(previewSalary().url, {
-            params: {
-                user_id: props.form.user_id,
-                salary_period_start: props.form.salary_period_start,
-                salary_period_end: props.form.salary_period_end,
+        const response = await axios.get<SalaryPreview>(
+            previewSalary().url,
+            {
+                params: {
+                    user_id: props.form.user_id,
+                    salary_period_start: props.form.salary_period_start,
+                    salary_period_end: props.form.salary_period_end,
+                },
+                headers: {
+                    Accept: 'application/json',
+                },
             },
-            headers: {
-                Accept: 'application/json',
-            },
-        });
+        );
 
         if (requestId !== previewRequestId) {
             return;
@@ -240,9 +243,7 @@ const loadPreview = async (): Promise<void> => {
 
         previewData.value = response.data;
 
-        // Initialize the editable late days from the server's calculation.
-        // This runs when employee/period preview data changes, not when
-        // the user edits late_days itself.
+        // Initialize editable late days from the server calculation.
         props.form.late_days = response.data.late_days;
     } catch {
         if (requestId === previewRequestId) {
@@ -266,23 +267,27 @@ const setPeriodEndFromStart = (): void => {
         return;
     }
 
-    const startDate = new Date(`${props.form.salary_period_start}T00:00:00`);
+    const [year, month, day] = props.form.salary_period_start
+        .split('-')
+        .map(Number);
 
-    if (Number.isNaN(startDate.getTime())) {
+    const startDate = new Date(year, month - 1, day);
+
+    if (
+        startDate.getFullYear() !== year ||
+        startDate.getMonth() !== month - 1 ||
+        startDate.getDate() !== day
+    ) {
         return;
     }
 
-    const endDate = new Date(
-        startDate.getFullYear(),
-        startDate.getMonth() + 1,
-        0,
-    );
+    const endDate = new Date(year, month, 0);
 
-    const year = endDate.getFullYear();
-    const month = String(endDate.getMonth() + 1).padStart(2, '0');
-    const day = String(endDate.getDate()).padStart(2, '0');
-
-    props.form.salary_period_end = `${year}-${month}-${day}`;
+    props.form.salary_period_end = [
+        endDate.getFullYear(),
+        String(endDate.getMonth() + 1).padStart(2, '0'),
+        String(endDate.getDate()).padStart(2, '0'),
+    ].join('-');
 };
 
 /*
@@ -303,7 +308,6 @@ watch(
     { immediate: true },
 );
 
-// Ensure edit forms use the saved client-confirmed late days.
 watch(
     () => props.salary?.late_days,
     (value) => {
@@ -380,11 +384,44 @@ watch(
                     />
                 </AppField>
             </div>
+
+            <!-- Attendance history dialog -->
+            <div
+                class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t pt-4"
+            >
+                <p class="text-sm text-muted-foreground">
+                    Review attendance records for this salary period.
+                </p>
+
+                <Button
+                    type="button"
+                    variant="outline"
+                    :disabled="
+                        !props.form.user_id ||
+                        !props.form.salary_period_start ||
+                        !props.form.salary_period_end
+                    "
+                    @click="attendanceDialogOpen = true"
+                >
+                    <CalendarDays class="mr-2 size-4" />
+                    View Attendance
+                </Button>
+            </div>
         </FormSection>
 
-        <!-- Main content: editable form + read-only calculation panel -->
-        <div class="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,1fr)]">
+        <AttendanceHistoryDialog
+            v-model:open="attendanceDialogOpen"
+            :user-id="props.form.user_id"
+            :start-date="props.form.salary_period_start"
+            :end-date="props.form.salary_period_end"
+        />
+
+        <!-- Main content -->
+        <div
+            class="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,1fr)]"
+        >
             <div class="min-w-0 space-y-6">
+                <!-- Payment Adjustments -->
                 <FormSection
                     description="Enter any advance, loan payment, or manual salary adjustment."
                     title="Payment Adjustments"
@@ -422,9 +459,7 @@ watch(
                                     props.errors.paid_loan
                                 "
                                 :icon="IndianRupee"
-                                :placeholder="
-                                    salaryPage.form.paidLoanPlaceholder
-                                "
+                                :placeholder="salaryPage.form.paidLoanPlaceholder"
                                 min="0"
                                 step="0.01"
                                 type="number"
@@ -445,9 +480,7 @@ watch(
                                     props.errors.adjustment
                                 "
                                 :icon="IndianRupee"
-                                :placeholder="
-                                    salaryPage.form.adjustmentPlaceholder
-                                "
+                                :placeholder="salaryPage.form.adjustmentPlaceholder"
                                 step="0.01"
                                 type="number"
                             />
@@ -474,6 +507,7 @@ watch(
                     </div>
                 </FormSection>
 
+                <!-- Salary Summary -->
                 <FormSection
                     description="The amount updates automatically as you change the adjustments or late days."
                     title="Salary Summary"
@@ -489,7 +523,7 @@ watch(
 
                                 <p class="mt-1 text-sm text-muted-foreground">
                                     Base salary × payable days + incentive +
-                                    adjustment − upad − paid loan − deduction.
+                                    adjustment − UPAD − paid loan − deduction.
                                 </p>
                             </div>
 
@@ -508,7 +542,7 @@ watch(
                 </FormSection>
             </div>
 
-            <!-- Read-only information panel -->
+            <!-- Attendance and Salary Summary -->
             <aside class="min-w-0 space-y-4 lg:sticky lg:top-6">
                 <div class="rounded-xl border bg-card p-5">
                     <div class="flex items-start justify-between gap-3">
@@ -542,7 +576,6 @@ watch(
                             <span class="text-sm text-muted-foreground">
                                 Base salary / day
                             </span>
-
                             <span class="font-medium tabular-nums">
                                 ₹{{ formatCurrency(baseSalary) }}
                             </span>
@@ -552,7 +585,6 @@ watch(
                             <span class="text-sm text-muted-foreground">
                                 Attendance days
                             </span>
-
                             <span class="font-medium tabular-nums">
                                 {{ attendanceDays }}
                             </span>
@@ -562,7 +594,6 @@ watch(
                             <span class="text-sm text-muted-foreground">
                                 Total undertime
                             </span>
-
                             <span class="font-medium tabular-nums">
                                 {{ formatDuration(totalUndertimeSeconds) }}
                             </span>
@@ -572,7 +603,6 @@ watch(
                             <span class="text-sm text-muted-foreground">
                                 Suggested late days
                             </span>
-
                             <span class="font-medium tabular-nums">
                                 {{ calculatedLateDays }}
                             </span>
@@ -600,8 +630,8 @@ watch(
                             </AppField>
 
                             <p class="mt-2 text-xs text-muted-foreground">
-                                Automatically calculated from undertime.
-                                You can adjust this value before saving.
+                                Automatically calculated from undertime. You
+                                can adjust this value before saving.
                             </p>
                         </div>
 
@@ -611,7 +641,6 @@ watch(
                             <span class="text-sm font-medium">
                                 Payable working days
                             </span>
-
                             <span class="text-lg font-semibold tabular-nums">
                                 {{ workingDays }}
                             </span>
@@ -622,7 +651,6 @@ watch(
                                 <span class="text-sm text-muted-foreground">
                                     Base salary
                                 </span>
-
                                 <span class="tabular-nums">
                                     ₹{{ formatCurrency(baseSalary * workingDays) }}
                                 </span>
@@ -632,7 +660,6 @@ watch(
                                 <span class="text-sm text-muted-foreground">
                                     Incentive
                                 </span>
-
                                 <span class="tabular-nums">
                                     ₹{{ formatCurrency(incentive) }}
                                 </span>
@@ -642,7 +669,6 @@ watch(
                                 <span class="text-sm text-muted-foreground">
                                     Deduction
                                 </span>
-
                                 <span class="tabular-nums">
                                     − ₹{{ formatCurrency(deduction) }}
                                 </span>

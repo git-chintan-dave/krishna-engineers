@@ -1,24 +1,18 @@
-
 <script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { ArrowLeft, Printer } from '@lucide/vue';
-import { computed } from 'vue';
+import {router} from '@inertiajs/vue3';
+import {ArrowLeft, CalendarDays, Printer} from '@lucide/vue';
+import {computed, ref} from 'vue';
 
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { Button } from '@/components/ui/button';
-import { salaryPage } from '@/config/salaries';
-import { index as salaries } from '@/routes/salaries';
-import type { Salary } from '@/types/salary';
+import AttendanceHistoryDialog from '@/components/attendance/AttendanceHistoryDialog.vue';
+import {Button} from '@/components/ui/button';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {salaryPage} from '@/config/salaries';
+import {index as salaries} from '@/routes/salaries';
+import type {Salary} from '@/types/salary';
 
 const props = defineProps<{
     salary: Salary;
 }>();
-
-/*
-|--------------------------------------------------------------------------
-| Page
-|--------------------------------------------------------------------------
-*/
 
 defineOptions({
     layout: {
@@ -42,9 +36,11 @@ const companyAddress =
 
 /*
 |--------------------------------------------------------------------------
-| Attendance Summary
+| Attendance Dialog
 |--------------------------------------------------------------------------
 */
+
+const attendanceDialogOpen = ref(false);
 
 const totalUndertimeSeconds = computed(() =>
     Math.max(0, Number(props.salary.total_undertime_seconds ?? 0)),
@@ -138,7 +134,9 @@ const goBack = (): void => {
                                 Salary Slip
                             </p>
 
-                            <p class="mt-2 text-sm font-medium print:mt-1 print:text-xs">
+                            <p
+                                class="mt-2 text-sm font-medium print:mt-1 print:text-xs"
+                            >
                                 {{ salary.salary_period_start_formatted }}
                                 <span class="px-1 text-muted-foreground">–</span>
                                 {{ salary.salary_period_end_formatted }}
@@ -150,7 +148,6 @@ const goBack = (): void => {
                 <!-- Employee Summary -->
                 <div class="border-b px-6 py-5 sm:px-8 print:px-5 print:py-3">
                     <div class="grid grid-cols-3 items-center">
-                        <!-- Employee -->
                         <div class="min-w-0 text-left">
                             <p
                                 class="text-xs font-medium tracking-wide text-muted-foreground uppercase print:text-[10px]"
@@ -165,7 +162,6 @@ const goBack = (): void => {
                             </p>
                         </div>
 
-                        <!-- Employee Code -->
                         <div class="min-w-0 text-center">
                             <p
                                 class="text-xs font-medium tracking-wide text-muted-foreground uppercase print:text-[10px]"
@@ -180,7 +176,6 @@ const goBack = (): void => {
                             </p>
                         </div>
 
-                        <!-- Payable Working Days -->
                         <div class="min-w-0 text-right">
                             <p
                                 class="text-xs font-medium tracking-wide text-muted-foreground uppercase print:text-[10px]"
@@ -201,11 +196,25 @@ const goBack = (): void => {
                 <div class="px-6 py-6 sm:px-8 print:px-5 print:py-4">
                     <!-- Attendance Summary -->
                     <section class="mb-7 print:mb-4">
-                        <h2
-                            class="mb-3 text-sm font-semibold tracking-wide uppercase print:mb-2 print:text-[11px]"
+                        <div
+                            class="mb-3 flex flex-wrap items-center justify-between gap-3 print:mb-2"
                         >
-                            Attendance Summary
-                        </h2>
+                            <h2
+                                class="text-sm font-semibold tracking-wide uppercase print:text-[11px]"
+                            >
+                                Attendance Summary
+                            </h2>
+
+                            <Button
+                                class="print:hidden"
+                                type="button"
+                                variant="outline"
+                                @click="attendanceDialogOpen = true"
+                            >
+                                <CalendarDays class="mr-2 size-4" />
+                                View Attendance
+                            </Button>
+                        </div>
 
                         <div
                             class="overflow-hidden rounded-lg border print:rounded-md"
@@ -214,7 +223,6 @@ const goBack = (): void => {
                                 class="grid grid-cols-[1fr_auto] border-b bg-muted/30 px-4 py-2.5 text-xs font-medium tracking-wide text-muted-foreground uppercase print:px-3 print:py-1.5 print:text-[9px]"
                             >
                                 <span>Component</span>
-
                                 <span class="text-right">Value</span>
                             </div>
 
@@ -223,10 +231,7 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Attendance Days</span>
-
-                                    <span
-                                        class="text-right font-medium tabular-nums"
-                                    >
+                                    <span class="text-right font-medium tabular-nums">
                                         {{ salary.attendance_days }}
                                     </span>
                                 </div>
@@ -235,15 +240,8 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Total Undertime</span>
-
-                                    <span
-                                        class="text-right font-medium tabular-nums"
-                                    >
-                                        {{
-                                            formatDuration(
-                                                totalUndertimeSeconds,
-                                            )
-                                        }}
+                                    <span class="text-right font-medium tabular-nums">
+                                        {{ formatDuration(totalUndertimeSeconds) }}
                                     </span>
                                 </div>
 
@@ -251,10 +249,7 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Calculated Late Days</span>
-
-                                    <span
-                                        class="text-right font-medium tabular-nums"
-                                    >
+                                    <span class="text-right font-medium tabular-nums">
                                         {{ calculatedLateDays }}
                                     </span>
                                 </div>
@@ -263,10 +258,7 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Late Days Deducted</span>
-
-                                    <span
-                                        class="text-right font-medium tabular-nums"
-                                    >
+                                    <span class="text-right font-medium tabular-nums">
                                         {{ salary.late_days }}
                                     </span>
                                 </div>
@@ -275,7 +267,6 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 bg-muted/30 px-4 py-3 text-sm font-semibold print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Payable Working Days</span>
-
                                     <span class="text-right tabular-nums">
                                         {{ salary.working_days }}
                                     </span>
@@ -299,7 +290,6 @@ const goBack = (): void => {
                                 class="grid grid-cols-[1fr_auto] border-b bg-muted/30 px-4 py-2.5 text-xs font-medium tracking-wide text-muted-foreground uppercase print:px-3 print:py-1.5 print:text-[9px]"
                             >
                                 <span>Component</span>
-
                                 <span class="text-right">Amount</span>
                             </div>
 
@@ -308,10 +298,7 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Base Salary</span>
-
-                                    <span
-                                        class="text-right font-medium tabular-nums"
-                                    >
+                                    <span class="text-right font-medium tabular-nums">
                                         {{ salary.base_salary_formatted }}
                                     </span>
                                 </div>
@@ -320,10 +307,7 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Incentive</span>
-
-                                    <span
-                                        class="text-right font-medium tabular-nums"
-                                    >
+                                    <span class="text-right font-medium tabular-nums">
                                         {{ salary.incentive_formatted }}
                                     </span>
                                 </div>
@@ -333,10 +317,7 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Adjustment</span>
-
-                                    <span
-                                        class="text-right font-medium tabular-nums"
-                                    >
+                                    <span class="text-right font-medium tabular-nums">
                                         {{ salary.adjustment_formatted }}
                                     </span>
                                 </div>
@@ -359,7 +340,6 @@ const goBack = (): void => {
                                 class="grid grid-cols-[1fr_auto] border-b bg-muted/30 px-4 py-2.5 text-xs font-medium tracking-wide text-muted-foreground uppercase print:px-3 print:py-1.5 print:text-[9px]"
                             >
                                 <span>Component</span>
-
                                 <span class="text-right">Amount</span>
                             </div>
 
@@ -368,10 +348,7 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>UPAD</span>
-
-                                    <span
-                                        class="text-right font-medium tabular-nums"
-                                    >
+                                    <span class="text-right font-medium tabular-nums">
                                         {{ salary.upad_formatted }}
                                     </span>
                                 </div>
@@ -380,10 +357,7 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Paid Loan</span>
-
-                                    <span
-                                        class="text-right font-medium tabular-nums"
-                                    >
+                                    <span class="text-right font-medium tabular-nums">
                                         {{ salary.paid_loan_formatted }}
                                     </span>
                                 </div>
@@ -392,10 +366,7 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Deduction</span>
-
-                                    <span
-                                        class="text-right font-medium tabular-nums"
-                                    >
+                                    <span class="text-right font-medium tabular-nums">
                                         {{ salary.deduction_formatted }}
                                     </span>
                                 </div>
@@ -455,20 +426,14 @@ const goBack = (): void => {
                         class="flex items-center justify-between gap-4 text-sm print:text-xs"
                     >
                         <div>
-                            <span class="text-muted-foreground">
-                                Status:
-                            </span>
-
+                            <span class="text-muted-foreground">Status:</span>
                             <span class="ml-1 font-medium">
                                 {{ salary.status_label }}
                             </span>
                         </div>
 
                         <div v-if="salary.paid_at_formatted">
-                            <span class="text-muted-foreground">
-                                Paid On:
-                            </span>
-
+                            <span class="text-muted-foreground">Paid On:</span>
                             <span class="ml-1 font-medium">
                                 {{ salary.paid_at_formatted }}
                             </span>
@@ -494,6 +459,14 @@ const goBack = (): void => {
                 </div>
             </div>
         </div>
+
+        <!-- Kept outside the printable salary slip -->
+        <AttendanceHistoryDialog
+            v-model:open="attendanceDialogOpen"
+            :user-id="salary.user_id"
+            :start-date="salary.salary_period_start"
+            :end-date="salary.salary_period_end"
+        />
     </div>
 </template>
 
@@ -504,7 +477,6 @@ const goBack = (): void => {
         margin: 8mm;
     }
 
-    /* Hide application layout elements and print controls */
     header,
     nav,
     aside,
@@ -517,7 +489,6 @@ const goBack = (): void => {
         display: none !important;
     }
 
-    /* Reset document layout */
     html,
     body {
         width: 100% !important;
@@ -545,7 +516,6 @@ const goBack = (): void => {
         overflow: visible !important;
     }
 
-    /* Keep the salary slip visible */
     #salary-slip {
         display: block !important;
         width: 100% !important;
@@ -566,7 +536,6 @@ const goBack = (): void => {
         overflow: visible !important;
     }
 
-    /* Avoid splitting salary slip sections across pages */
     #salary-slip > div,
     #salary-slip section {
         break-inside: avoid;

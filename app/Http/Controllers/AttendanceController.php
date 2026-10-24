@@ -418,4 +418,60 @@ class AttendanceController extends Controller
             );
         }
     }
+
+    /*
+|--------------------------------------------------------------------------
+| Attendance History
+|--------------------------------------------------------------------------
+*/
+
+    public function history(
+        Request $request,
+    ): \Illuminate\Http\Resources\Json\AnonymousResourceCollection {
+        Gate::authorize(
+            'viewAny',
+            Attendance::class,
+        );
+
+        $validated = $request->validate([
+            'user_id' => [
+                'required',
+                'integer',
+                'exists:users,id',
+            ],
+
+            'start_date' => [
+                'required',
+                'date_format:Y-m-d',
+            ],
+
+            'end_date' => [
+                'required',
+                'date_format:Y-m-d',
+                'after_or_equal:start_date',
+            ],
+
+            'per_page' => [
+                'sometimes',
+                'integer',
+                'min:1',
+                'max:50',
+            ],
+        ]);
+
+        $attendances = Attendance::query()
+            ->with([
+                'user:id,name,employee_code',
+                'breaks',
+            ])
+            ->where('user_id', $validated['user_id'])
+            ->whereBetween('attendance_date', [
+                $validated['start_date'],
+                $validated['end_date'],
+            ])
+            ->orderBy('attendance_date', 'asc')
+            ->paginate($validated['per_page'] ?? 50);
+
+        return AttendanceResource::collection($attendances);
+    }
 }

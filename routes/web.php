@@ -185,6 +185,11 @@ Route::middleware('auth')->group(function () {
             [AttendanceController::class, 'bulkDestroy'],
         )->name('attendances.bulk-destroy');
 
+        Route::get(
+            'attendances/history',
+            [AttendanceController::class, 'history'],
+        )->name('attendances.history');
+
         Route::resource(
             'attendances',
             AttendanceController::class,
