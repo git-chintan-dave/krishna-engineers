@@ -45,7 +45,7 @@ class SectionSizeController extends Controller
                 'search' => $filters['search'] ?? '',
                 'sectionId' => $filters['section_id'] ?? 'all',
                 'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'size',
+                'sort' => $filters['sort'] ?? 'id',
                 'direction' => $filters['direction'] ?? 'asc',
             ],
         ]);

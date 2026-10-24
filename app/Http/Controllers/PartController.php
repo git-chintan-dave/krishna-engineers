@@ -45,7 +45,7 @@ class PartController extends Controller
                 'sectionId' => $filters['section_id'] ?? 'all',
                 'status' => $filters['status'] ?? 'all',
                 'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'name',
+                'sort' => $filters['sort'] ?? 'id',
                 'direction' => $filters['direction'] ?? 'asc',
             ],
         ]);

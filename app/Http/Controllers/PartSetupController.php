@@ -54,7 +54,7 @@ class PartSetupController extends Controller
                 'partId' => $filters['part_id'] ?? null,
                 'setupId' => $filters['setup_id'] ?? null,
                 'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'created_at',
+                'sort' => $filters['sort'] ?? 'id',
                 'direction' => $filters['direction'] ?? 'desc',
             ],
         ],

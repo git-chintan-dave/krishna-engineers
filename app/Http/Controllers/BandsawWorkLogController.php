@@ -78,7 +78,7 @@ class BandsawWorkLogController extends Controller
                 'sectionId' => $filters['section_id'] ?? 'all',
                 'sectionSizeId' => $filters['section_size_id'] ?? 'all',
                 'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'work_date',
+                'sort' => $filters['sort'] ?? 'id',
                 'direction' => $filters['direction'] ?? 'desc',
             ],
             ...$this->formOptions(),

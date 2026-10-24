@@ -62,7 +62,7 @@ class ToolTransactionController extends Controller
                 'setupId' => $filters['setup_id'] ?? null,
                 'fromDate' => $filters['from_date'] ?? null,
                 'toDate' => $filters['to_date'] ?? null,
-                'sort' => $filters['sort'] ?? 'created_at',
+                'sort' => $filters['sort'] ?? 'id',
                 'direction' => $filters['direction'] ?? 'desc',
                 'perPage' => $filters['per_page'] ?? 10,
             ],

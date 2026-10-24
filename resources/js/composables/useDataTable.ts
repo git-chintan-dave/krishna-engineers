@@ -1,8 +1,4 @@
-import type {
-    RowData,
-    RowSelectionState,
-    SortingState,
-} from '@tanstack/vue-table';
+import type {RowData, RowSelectionState, SortingState,} from '@tanstack/vue-table';
 import {
     createPaginatedRowModel,
     createSortedRowModel,
@@ -13,9 +9,9 @@ import {
     tableFeatures,
     useTable,
 } from '@tanstack/vue-table';
-import { computed, ref } from 'vue';
+import {computed, ref} from 'vue';
 
-import type { PaginationState } from '@/types/listing';
+import type {PaginationState} from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +23,7 @@ type DataTableOptions<TData extends RowData> = {
     manualPagination?: boolean;
     manualSorting?: boolean;
     pageCount?: () => number;
+    initialPageSize?: number;
     initialSorting?: SortingState;
 
     enableRowSelection?: (row: TData) => boolean;
@@ -59,7 +56,7 @@ export function useDataTable<TData extends RowData>(
 
     const pagination = ref<PaginationState>({
         pageIndex: 0,
-        pageSize: 10,
+        pageSize: options.initialPageSize ?? 10,
     });
 
     /*

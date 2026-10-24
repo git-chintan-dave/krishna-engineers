@@ -86,7 +86,7 @@ export const createAttendanceColumns = (
         createColumn<Attendance, number | null>({
             accessorKey: 'undertime_seconds_formatted',
             sortKey: 'undertime_seconds',
-            header: 'Undertime',
+            header: 'Late By',
             size: 160,
             align: 'center',
             sortable: true,

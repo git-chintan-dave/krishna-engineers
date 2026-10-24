@@ -42,7 +42,7 @@ class EmployeeController extends Controller
                 'shift' => $filters['shift'] ?? 'all',
                 'status' => $filters['status'] ?? 'all',
                 'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'created_at',
+                'sort' => $filters['sort'] ?? 'id',
                 'direction' => $filters['direction'] ?? 'desc',
             ],
         ]);

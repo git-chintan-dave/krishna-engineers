@@ -68,7 +68,7 @@ class AttendanceController extends Controller
                 'start_date' => $filters['start_date'] ?? '',
                 'end_date' => $filters['end_date'] ?? '',
                 'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'attendance_date',
+                'sort' => $filters['sort'] ?? 'id',
                 'direction' => $filters['direction'] ?? 'desc',
             ],
         ]);

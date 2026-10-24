@@ -8,6 +8,11 @@ trait IndexQueryRules
 {
     protected function indexQueryRules(array $sortColumns = []): array
     {
+        $sortColumns = array_values(array_unique([
+            'id',
+            ...$sortColumns,
+        ]));
+
         return [
             'search' => [
                 'nullable',
@@ -30,9 +35,7 @@ trait IndexQueryRules
             'sort' => [
                 'nullable',
                 'string',
-                ...($sortColumns !== [] ? [
-                    Rule::in($sortColumns),
-                ] : []),
+                Rule::in($sortColumns),
             ],
 
             'direction' => [

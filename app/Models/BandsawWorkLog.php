@@ -47,7 +47,7 @@ class BandsawWorkLog extends Model
         'quantity',
     ];
 
-    protected string $defaultSort = 'work_date';
+    protected string $defaultSort = 'id';
 
     protected string $defaultDirection = 'desc';
 

@@ -54,7 +54,7 @@ class RawMaterialTransactionController extends Controller
                 'startDate' => $filters['start_date'] ?? '',
                 'endDate' => $filters['end_date'] ?? '',
                 'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'created_at',
+                'sort' => $filters['sort'] ?? 'id',
                 'direction' => $filters['direction'] ?? 'desc',
             ],
         ]);

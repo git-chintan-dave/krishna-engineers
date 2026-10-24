@@ -38,7 +38,7 @@ class MachineController extends Controller
                 'search' => $filters['search'] ?? '',
                 'status' => $filters['status'] ?? 'all',
                 'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'name',
+                'sort' => $filters['sort'] ?? 'id',
                 'direction' => $filters['direction'] ?? 'asc',
             ],
         ]);

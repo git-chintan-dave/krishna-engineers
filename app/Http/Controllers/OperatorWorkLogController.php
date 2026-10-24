@@ -80,7 +80,7 @@ class OperatorWorkLogController extends Controller
                 'partId' => $filters['part_id'] ?? 'all',
                 'setupId' => $filters['setup_id'] ?? 'all',
                 'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'work_date',
+                'sort' => $filters['sort'] ?? 'id',
                 'direction' => $filters['direction'] ?? 'desc',
             ],
             ...$this->formOptions(),

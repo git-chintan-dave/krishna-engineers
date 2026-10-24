@@ -64,7 +64,7 @@ class SalaryController extends Controller
                 'start_date' => $filters['start_date'] ?? '',
                 'end_date' => $filters['end_date'] ?? '',
                 'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'salary_period_start',
+                'sort' => $filters['sort'] ?? 'id',
                 'direction' => $filters['direction'] ?? 'desc',
             ],
         ]);
