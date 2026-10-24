@@ -271,9 +271,8 @@
                                 :key="header.id"
                                 :class="[
                                     getColumnClass(header.column.id),
-                                    getAlignmentClass(
-                                        getColumnAlign(header.column),
-                                    ),
+                                    getAlignmentClass(getColumnAlign(header.column)),
+                                    'capitalize',
                                 ]"
                                 :style="getColumnStyle(header.column)"
                                 class="h-11 px-4 text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground"
@@ -281,7 +280,6 @@
                                 <FlexRender
                                     v-if="!header.isPlaceholder"
                                     :header="header"
-                                    class="capitalize"
                                 />
                             </TableHead>
                         </TableRow>

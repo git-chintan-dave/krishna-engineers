@@ -85,6 +85,7 @@ const {
     search,
     clearFilters,
     deleteSelected,
+    resetPreferences,
 } = useListingTable<SectionSize, SectionSizeSort>({
     data: () => props.sectionSizes,
     columns,
@@ -118,6 +119,7 @@ const handleDeleteSelected = () => {
     <ListingLayout
         :description="sectionSizePage.description"
         :title="sectionSizePage.title"
+        @reset-preferences="resetPreferences"
     >
         <!-- Actions -->
         <template #actions>

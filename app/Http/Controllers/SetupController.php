@@ -39,7 +39,7 @@ class SetupController extends Controller
                 'status' => $filters['status'] ?? 'all',
                 'perPage' => $filters['per_page'] ?? 10,
                 'sort' => $filters['sort'] ?? 'id',
-                'direction' => $filters['direction'] ?? 'asc',
+                'direction' => $filters['direction'] ?? 'desc',
             ],
         ]);
     }

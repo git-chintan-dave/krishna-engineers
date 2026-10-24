@@ -1,4 +1,3 @@
-
 <script lang="ts" setup>
 import {Link, usePage} from '@inertiajs/vue3';
 import {ChevronRight, Menu} from '@lucide/vue';
@@ -8,16 +7,8 @@ import AppLogo from '@/components/AppLogo.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 import {Button} from '@/components/ui/button';
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from '@/components/ui/collapsible';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import {Collapsible, CollapsibleContent, CollapsibleTrigger,} from '@/components/ui/collapsible';
+import {DropdownMenu, DropdownMenuContent, DropdownMenuTrigger,} from '@/components/ui/dropdown-menu';
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -27,27 +18,14 @@ import {
     NavigationMenuTrigger,
     navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from '@/components/ui/sheet';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
+import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,} from '@/components/ui/sheet';
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '@/components/ui/tooltip';
 
 import UserMenuContent from '@/components/UserMenuContent.vue';
 
 import {useCurrentUrl} from '@/composables/useCurrentUrl';
 import {getInitials} from '@/composables/useInitials';
-import {
-    getListingPreferenceFeatures,
-} from '@/config/listingPreferences';
+import {getListingPreferenceFeatures} from '@/config/listingPreferences';
 import {getMainNavItems, rightNavItems} from '@/config/navigation';
 import {toUrl} from '@/lib/utils';
 
@@ -77,6 +55,12 @@ type SavedListingPreferences = {
 */
 
 const LISTING_PREFERENCES_PREFIX = 'listing-preferences:';
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_PAGE_SIZE = 10;
+const DEFAULT_SORT = 'id';
+const DEFAULT_DIRECTION: SavedListingPreferences['direction'] = 'desc';
+
 const ALLOWED_PAGE_SIZES = [10, 25, 50, 100];
 
 /*
@@ -176,7 +160,6 @@ const getNavigationHref = (href: NavItem['href']): string => {
         const path = url.pathname.replace(/\/+$/, '') || '/';
         const features = getListingPreferenceFeatures(path);
 
-        // The listing has no active preference features.
         if (!features.perPage && !features.sorting) {
             return destination;
         }
@@ -199,29 +182,28 @@ const getNavigationHref = (href: NavItem['href']): string => {
             return destination;
         }
 
-        const preferences =
-            parsed as SavedListingPreferences;
-
-        let hasRestoredPreference = false;
+        const preferences = parsed as SavedListingPreferences;
 
         /*
-         * Restore page size only when enabled for this listing.
+         * Restore page size only when enabled and non-default.
          */
         if (
             features.perPage &&
             typeof preferences.perPage === 'number' &&
             ALLOWED_PAGE_SIZES.includes(preferences.perPage)
         ) {
-            url.searchParams.set(
-                'per_page',
-                String(preferences.perPage),
-            );
-
-            hasRestoredPreference = true;
+            if (preferences.perPage === DEFAULT_PAGE_SIZE) {
+                url.searchParams.delete('per_page');
+            } else {
+                url.searchParams.set(
+                    'per_page',
+                    String(preferences.perPage),
+                );
+            }
         }
 
         /*
-         * Restore sorting only when enabled for this listing.
+         * Restore sorting only when enabled and valid.
          */
         if (
             features.sorting &&
@@ -232,21 +214,50 @@ const getNavigationHref = (href: NavItem['href']): string => {
                 preferences.direction === 'desc'
             )
         ) {
-            url.searchParams.set('sort', preferences.sort);
-            url.searchParams.set(
-                'direction',
-                preferences.direction,
+            const isDefaultSorting =
+                preferences.sort === DEFAULT_SORT &&
+                preferences.direction === DEFAULT_DIRECTION;
+
+            if (isDefaultSorting) {
+                url.searchParams.delete('sort');
+                url.searchParams.delete('direction');
+            } else {
+                url.searchParams.set('sort', preferences.sort);
+                url.searchParams.set(
+                    'direction',
+                    preferences.direction,
+                );
+            }
+        }
+
+        /*
+         * Start at page 1 only when restoring an actual
+         * non-default preference.
+         */
+        const hasNonDefaultPageSize =
+            features.perPage &&
+            typeof preferences.perPage === 'number' &&
+            ALLOWED_PAGE_SIZES.includes(preferences.perPage) &&
+            preferences.perPage !== DEFAULT_PAGE_SIZE;
+
+        const hasNonDefaultSorting =
+            features.sorting &&
+            typeof preferences.sort === 'string' &&
+            preferences.sort.length > 0 &&
+            (
+                preferences.direction === 'asc' ||
+                preferences.direction === 'desc'
+            ) &&
+            !(
+                preferences.sort === DEFAULT_SORT &&
+                preferences.direction === DEFAULT_DIRECTION
             );
 
-            hasRestoredPreference = true;
+        if (hasNonDefaultPageSize || hasNonDefaultSorting) {
+            url.searchParams.set('page', String(DEFAULT_PAGE));
+        } else {
+            url.searchParams.delete('page');
         }
-
-        if (!hasRestoredPreference) {
-            return destination;
-        }
-
-        // Start at the first page when restoring preferences.
-        url.searchParams.set('page', '1');
 
         return `${url.pathname}${url.search}${url.hash}`;
     } catch {

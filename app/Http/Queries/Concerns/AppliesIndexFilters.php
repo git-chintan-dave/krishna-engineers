@@ -39,7 +39,7 @@ trait AppliesIndexFilters
 
             return $query->orderBy(
                 $sort,
-                $filters['direction'] ?? 'asc',
+                $filters['direction'] ?? 'desc',
             );
         }
 

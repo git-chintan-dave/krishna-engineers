@@ -280,6 +280,12 @@ export function useListingPreferences(
             sort.value = defaultSort;
             direction.value = defaultDirection;
         }
+
+        if (typeof window !== 'undefined') {
+            window.localStorage.removeItem(
+                `${STORAGE_PREFIX}:${module}`,
+            );
+        }
     };
 
     return {

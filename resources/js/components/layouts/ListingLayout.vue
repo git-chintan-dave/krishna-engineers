@@ -11,53 +11,50 @@ withDefaults(
     defineProps<{
         title: string;
         description?: string;
+        showResetPreferences?: boolean;
     }>(),
     {
         description: '',
+        showResetPreferences: true,
     },
 );
+
+/*
+|--------------------------------------------------------------------------
+| Events
+|--------------------------------------------------------------------------
+*/
+
+const emit = defineEmits<{
+    resetPreferences: [];
+}>();
 </script>
 
 <template>
     <main class="w-full min-w-0 space-y-6 overflow-x-hidden p-4 md:p-6">
-        <!--
-        |--------------------------------------------------------------------------
-        | Page Header
-        |--------------------------------------------------------------------------
-        -->
-
-        <AppPageHeader :description="description" :title="title">
+        <!-- Page Header -->
+        <AppPageHeader
+            :description="description"
+            :show-reset-preferences="showResetPreferences"
+            :title="title"
+            @reset-preferences="emit('resetPreferences')"
+        >
             <template v-if="$slots.actions" #actions>
                 <slot name="actions" />
             </template>
         </AppPageHeader>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Filters
-        |--------------------------------------------------------------------------
-        -->
-
+        <!-- Filters -->
         <section v-if="$slots.filters" aria-label="Filters" class="min-w-0">
             <slot name="filters" />
         </section>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Table
-        |--------------------------------------------------------------------------
-        -->
-
+        <!-- Table -->
         <section v-if="$slots.table" aria-label="Data table" class="min-w-0">
             <slot name="table" />
         </section>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Pagination
-        |--------------------------------------------------------------------------
-        -->
-
+        <!-- Pagination -->
         <section
             v-if="$slots.pagination"
             aria-label="Pagination"

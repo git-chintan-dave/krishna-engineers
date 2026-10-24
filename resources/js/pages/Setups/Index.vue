@@ -76,6 +76,7 @@ const {
     search,
     clearFilters,
     deleteSelected,
+    resetPreferences,
 } = useListingTable<Setup, SetupSort>({
     data: () => props.setups,
     columns,
@@ -124,6 +125,7 @@ const handleDeleteSelected = () => {
     <ListingLayout
         :description="setupPage.description"
         :title="setupPage.title"
+        @reset-preferences="resetPreferences"
     >
         <!--
         |--------------------------------------------------------------------------

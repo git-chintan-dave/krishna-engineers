@@ -80,6 +80,7 @@ const {
     search,
     clearFilters,
     deleteSelected,
+    resetPreferences,
 } = useListingTable<Machine, MachineSort>({
     data: () => props.machines,
     columns,
@@ -124,6 +125,7 @@ const handleDeleteSelected = () => {
     <ListingLayout
         :description="machinePage.description"
         :title="machinePage.title"
+        @reset-preferences="resetPreferences"
     >
         <!--
         |--------------------------------------------------------------------------

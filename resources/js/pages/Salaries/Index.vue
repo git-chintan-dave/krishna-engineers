@@ -127,6 +127,7 @@ const {
     search,
     clearFilters,
     deleteSelected,
+    resetPreferences,
 } = useListingTable<Salary, SalarySort>({
     data: () => props.salaries,
     columns,
@@ -203,6 +204,7 @@ const generateButtonLabel = computed(() => {
     <ListingLayout
         :description="salaryPage.description"
         :title="salaryPage.title"
+        @reset-preferences="resetPreferences"
     >
         <template #actions>
             <ListingActions

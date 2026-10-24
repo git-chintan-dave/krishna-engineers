@@ -89,6 +89,7 @@ const {
     search,
     clearFilters,
     deleteSelected,
+    resetPreferences,
 } = useListingTable<Tool, ToolSort>({
     data: () => props.tools,
     columns,
@@ -120,7 +121,7 @@ const handleDeleteSelected = () => {
 </script>
 
 <template>
-    <ListingLayout :description="toolPage.description" :title="toolPage.title">
+    <ListingLayout :description="toolPage.description" :title="toolPage.title" @reset-preferences="resetPreferences">
         <!-- Actions -->
         <template #actions>
             <ListingActions

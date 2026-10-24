@@ -121,7 +121,7 @@ const columns = createOperatorWorkLogColumns((uuid) => {
     router.delete(destroy(uuid).url);
 }, props.canSelectOperator);
 
-const { table, selectedCount, search, clearFilters, deleteSelected } =
+const { table, selectedCount, search, clearFilters, deleteSelected, resetPreferences, } =
     useListingTable<OperatorWorkLog, OperatorWorkLogSort>({
         data: () => props.operatorWorkLogs,
 
@@ -233,6 +233,7 @@ const hasFilters = (): boolean =>
     <ListingLayout
         :description="operatorWorkLogPage.description"
         :title="operatorWorkLogPage.title"
+        @reset-preferences="resetPreferences"
     >
         <!-- Actions -->
 

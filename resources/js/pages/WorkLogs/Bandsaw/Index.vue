@@ -83,7 +83,7 @@ const columns = createBandsawWorkLogColumns((id) => {
     router.delete(destroy(id).url);
 }, props.canSelectBandsaw);
 
-const { table, selectedCount, search, clearFilters, deleteSelected } =
+const { table, selectedCount, search, clearFilters, deleteSelected, resetPreferences, } =
     useListingTable<BandsawWorkLog, BandsawWorkLogSort>({
         data: () => props.bandsawWorkLogs,
         columns,
@@ -163,6 +163,7 @@ const handleDeleteSelected = (): void => {
     <ListingLayout
         :description="bandsawWorkLogPage.description"
         :title="bandsawWorkLogPage.title"
+        @reset-preferences="resetPreferences"
     >
         <template #actions>
             <ListingActions

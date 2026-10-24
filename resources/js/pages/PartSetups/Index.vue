@@ -78,6 +78,7 @@ const {
     search,
     clearFilters,
     deleteSelected,
+    resetPreferences,
 } = useListingTable<PartSetup, PartSetupSort>({
     data: () => props.partSetups,
     columns,
@@ -124,6 +125,7 @@ const handleDeleteSelected = () => {
     <ListingLayout
         :description="partSetupPage.description"
         :title="partSetupPage.title"
+        @reset-preferences="resetPreferences"
     >
         <!-- Actions -->
         <template #actions>

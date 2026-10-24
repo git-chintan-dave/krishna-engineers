@@ -145,6 +145,7 @@ const {
     search,
     clearFilters,
     deleteSelected,
+    resetPreferences,
 } = useListingTable<ToolTransaction, ToolTransactionSort>({
     data: () => props.transactions,
     columns,
@@ -209,6 +210,7 @@ const handleDeleteSelected = () => {
     <ListingLayout
         :description="toolTransactionPage.description"
         :title="toolTransactionPage.title"
+        @reset-preferences="resetPreferences"
     >
         <template #actions>
             <ListingActions

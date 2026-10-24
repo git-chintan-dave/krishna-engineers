@@ -46,6 +46,7 @@ type VisitOptions<TSort extends string> = {
     sort?: TSort;
     direction?: SortDirection;
     clearSorting?: boolean;
+    useServerDefaults?: boolean;
 };
 
 /*
@@ -55,6 +56,10 @@ type VisitOptions<TSort extends string> = {
 */
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+const DEFAULT_PAGE = 1;
+const DEFAULT_PER_PAGE = 10;
+const DEFAULT_SORT = 'id';
+const DEFAULT_DIRECTION: SortDirection = 'desc';
 
 /*
 |--------------------------------------------------------------------------
@@ -103,16 +108,13 @@ export function useListingTable<
     |--------------------------------------------------------------------------
     */
 
-    const listingPreferences = useListingPreferences(
-        options.route,
-        {
-            defaultPerPage: options.data().meta.per_page,
-            defaultSorting,
-            defaultSort: options.filters.sort,
-            defaultDirection: options.filters.direction,
-            allowedPageSizes: PAGE_SIZE_OPTIONS,
-        },
-    );
+    const listingPreferences = useListingPreferences(options.route, {
+        defaultPerPage: options.data().meta.per_page,
+        defaultSorting,
+        defaultSort: options.filters.sort,
+        defaultDirection: options.filters.direction,
+        allowedPageSizes: PAGE_SIZE_OPTIONS,
+    });
 
     const {features} = listingPreferences;
 
@@ -143,12 +145,42 @@ export function useListingTable<
             ? options.data().meta.per_page
             : listingPreferences.perPage.value;
 
-    const initialSorting =
-        hasExplicitSort || !features.sorting
-            ? defaultSorting
-            : listingPreferences.sorting.value.length > 0
-                ? listingPreferences.sorting.value
-                : defaultSorting;
+    const initialSorting: SortingState = (() => {
+        if (hasExplicitSort || !features.sorting) {
+            return defaultSorting;
+        }
+
+        const savedSorting = listingPreferences.sorting.value
+            .map((item) => {
+                const column = options.columns.find((column) => {
+                    const meta = column.meta as
+                        | {sortKey?: string}
+                        | undefined;
+
+                    return (
+                        (column.id ?? column.accessorKey) === item.id ||
+                        meta?.sortKey === item.id
+                    );
+                });
+
+                if (!column) {
+                    return null;
+                }
+
+                return {
+                    id: column.id ?? column.accessorKey ?? item.id,
+                    desc: item.desc,
+                };
+            })
+            .filter(
+                (item): item is {id: string; desc: boolean} =>
+                    item !== null,
+            );
+
+        return savedSorting.length > 0
+            ? savedSorting
+            : defaultSorting;
+    })();
 
     /*
     |--------------------------------------------------------------------------
@@ -236,15 +268,23 @@ export function useListingTable<
     */
 
     const getSortKey = (columnId: string): TSort => {
-        const column = table.getColumn(columnId);
-
-        return (
-            (
-                column?.columnDef.meta as
-                    | {sortKey?: TSort}
+        const column = table.getAllColumns().find((item) => {
+            const sortKey = (
+                item.columnDef.meta as
+                    | {sortKey?: string}
                     | undefined
-            )?.sortKey ?? columnId
-        ) as TSort;
+            )?.sortKey;
+
+            return item.id === columnId || sortKey === columnId;
+        });
+
+        const sortKey = (
+            column?.columnDef.meta as
+                | {sortKey?: TSort}
+                | undefined
+        )?.sortKey;
+
+        return (sortKey ?? column?.id ?? columnId) as TSort;
     };
 
     const getCurrentSorting = () => {
@@ -290,12 +330,29 @@ export function useListingTable<
     */
 
     function visit({
-                       page = 1,
+                       page = DEFAULT_PAGE,
                        perPage = listingPreferences.perPage.value,
                        sort,
                        direction,
                        clearSorting = false,
+                       useServerDefaults = false,
                    }: VisitOptions<TSort> = {}) {
+        const additionalFilters = options.additionalFilters?.() ?? {};
+
+        if (useServerDefaults) {
+            router.get(
+                options.route,
+                additionalFilters as RequestPayload,
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                    replace: true,
+                },
+            );
+
+            return;
+        }
+
         const currentSorting = getCurrentSorting();
 
         const sortingParams = clearSorting
@@ -308,12 +365,39 @@ export function useListingTable<
                 direction: direction ?? currentSorting.direction,
             };
 
-        const params: RequestPayload = {
-            per_page: perPage,
-            page,
+        const params: Record<string, unknown> = {
             ...sortingParams,
-            ...options.additionalFilters?.(),
+            ...additionalFilters,
         };
+
+        // Include only non-default pagination values.
+        if (page !== DEFAULT_PAGE) {
+            params.page = page;
+        }
+
+        if (perPage !== DEFAULT_PER_PAGE) {
+            params.per_page = perPage;
+        }
+
+        // Include only non-default sorting values.
+        const effectiveSort = sortingParams.sort;
+        const effectiveDirection = sortingParams.direction;
+
+        if (
+            effectiveSort === DEFAULT_SORT &&
+            effectiveDirection === DEFAULT_DIRECTION
+        ) {
+            delete params.sort;
+            delete params.direction;
+        } else {
+            if (effectiveSort !== undefined) {
+                params.sort = effectiveSort;
+            }
+
+            if (effectiveDirection !== undefined) {
+                params.direction = effectiveDirection;
+            }
+        }
 
         if (options.searchable !== false) {
             const search = searchQuery.value.trim();
@@ -323,7 +407,7 @@ export function useListingTable<
             }
         }
 
-        router.get(options.route, params, {
+        router.get(options.route, params as RequestPayload, {
             preserveState: true,
             preserveScroll: true,
             replace: true,
@@ -407,6 +491,11 @@ export function useListingTable<
         });
     };
 
+    const resetPreferences = () => {
+        listingPreferences.reset();
+        visit({useServerDefaults: true});
+    };
+
     /*
     |--------------------------------------------------------------------------
     | Return
@@ -424,5 +513,6 @@ export function useListingTable<
         search,
         clearFilters,
         deleteSelected,
+        resetPreferences,
     };
 }

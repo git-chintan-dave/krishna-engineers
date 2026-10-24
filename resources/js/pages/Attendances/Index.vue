@@ -215,7 +215,7 @@ const columns = createAttendanceColumns(
     canManageAttendance.value,
 );
 
-const { table, selectedCount, search, clearFilters, deleteSelected } =
+const { table, selectedCount, search, clearFilters, deleteSelected, resetPreferences, } =
     useListingTable<Attendance, AttendanceSort>({
         data: () => props.attendances,
         columns,
@@ -268,6 +268,7 @@ const handleDeleteSelected = () => {
     <ListingLayout
         :description="attendancePage.description"
         :title="attendancePage.title"
+        @reset-preferences="resetPreferences"
     >
         <!-- Actions -->
         <template #actions>

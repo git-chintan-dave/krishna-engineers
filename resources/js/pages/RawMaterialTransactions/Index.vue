@@ -100,6 +100,7 @@ const {
     search,
     clearFilters,
     deleteSelected,
+    resetPreferences,
 } = useListingTable<RawMaterialTransaction, RawMaterialTransactionSort>({
     data: () => props.transactions,
     columns,
@@ -175,6 +176,7 @@ const handleDeleteSelected = () => {
     <ListingLayout
         :description="rawMaterialTransactionPage.description"
         :title="rawMaterialTransactionPage.title"
+        @reset-preferences="resetPreferences"
     >
         <template #actions>
             <ListingActions
