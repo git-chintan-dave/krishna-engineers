@@ -294,6 +294,12 @@ class AttendanceController extends Controller
     public function sync(Request $request): RedirectResponse
     {
         $validated = $request->validate([
+            'sync_type' => [
+                'required',
+                'string',
+                'in:in_out,punches',
+            ],
+
             'user_id' => [
                 'nullable',
                 'integer',
@@ -312,23 +318,48 @@ class AttendanceController extends Controller
             ],
         ]);
 
-        $arguments = [
-            '--from' => Carbon::createFromFormat(
-                '!Y-m-d',
-                $validated['from'],
-            )->format('d/m/Y').'_00:00',
+        $fromDate = Carbon::createFromFormat(
+            '!Y-m-d',
+            $validated['from'],
+        );
 
-            '--to' => Carbon::createFromFormat(
-                '!Y-m-d',
-                $validated['to'],
-            )->format('d/m/Y').'_23:59',
-        ];
+        $toDate = Carbon::createFromFormat(
+            '!Y-m-d',
+            $validated['to'],
+        );
+
+        $command = match ($validated['sync_type']) {
+            'in_out' => 'etimeoffice:sync',
+            'punches' => 'etimeoffice:sync-punches',
+        };
+
+        /*
+         * Each command expects a different date format:
+         *
+         * etimeoffice:sync
+         *     d/m/Y
+         *
+         * etimeoffice:sync-punches
+         *     d/m/Y_H:i
+         */
+        $arguments = match ($validated['sync_type']) {
+            'in_out' => [
+                '--from' => $fromDate->format('d/m/Y'),
+                '--to' => $toDate->format('d/m/Y'),
+            ],
+
+            'punches' => [
+                '--from' => $fromDate->startOfDay()->format('d/m/Y_H:i'),
+                '--to' => $toDate->endOfDay()->format('d/m/Y_H:i'),
+            ],
+        };
 
         $arguments['--empcode'] = 'ALL';
 
         if (! empty($validated['user_id'])) {
-            $user = User::query()
-                ->findOrFail($validated['user_id']);
+            $user = User::query()->findOrFail(
+                $validated['user_id'],
+            );
 
             if (blank($user->employee_code)) {
                 throw ValidationException::withMessages([
@@ -340,27 +371,29 @@ class AttendanceController extends Controller
         }
 
         /*
-         * Attendance synchronization runs synchronously through Artisan::call().
+         * Run synchronously so the command output and exit code
+         * are available for the response.
          */
         @set_time_limit(0);
 
         try {
             $exitCode = Artisan::call(
-                'etimeoffice:sync-punches',
+                $command,
                 $arguments,
             );
 
             $output = trim(Artisan::output());
 
             if ($exitCode !== Command::SUCCESS) {
-                logger()->error('eTimeOffice attendance and break sync failed.', [
+                logger()->error('eTimeOffice attendance sync failed.', [
+                    'command' => $command,
                     'arguments' => $arguments,
                     'output' => $output,
                 ]);
 
                 return back()->with(
                     'error',
-                    'Attendance sync failed. Please check the application logs.',
+                    'Attendance synchronization failed. Please check the application logs.',
                 );
             }
 
@@ -368,10 +401,16 @@ class AttendanceController extends Controller
                 'success',
                 $output !== ''
                     ? $output
-                    : 'Attendance and break synchronization completed successfully.',
+                    : 'Attendance synchronization completed successfully.',
             );
         } catch (Throwable $exception) {
             report($exception);
+
+            logger()->error('Unable to run eTimeOffice attendance sync.', [
+                'command' => $command,
+                'arguments' => $arguments,
+                'exception' => $exception->getMessage(),
+            ]);
 
             return back()->with(
                 'error',

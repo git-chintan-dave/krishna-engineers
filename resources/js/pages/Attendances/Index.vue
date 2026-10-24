@@ -1,7 +1,8 @@
-﻿<script lang="ts" setup>
-import { router, usePage } from '@inertiajs/vue3';
-import { RefreshCw } from '@lucide/vue';
-import { computed, ref } from 'vue';
+﻿
+<script lang="ts" setup>
+import {router, usePage} from '@inertiajs/vue3';
+import {RefreshCw} from '@lucide/vue';
+import {computed, ref} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import ListingActions from '@/components/common/ListingActions.vue';
@@ -9,30 +10,23 @@ import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { Button } from '@/components/ui/button';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { attendancePage } from '@/config/attendances';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as attendancesRoute,
-    sync,
-} from '@/routes/attendances';
-import { view as attendancesImportRoute } from '@/routes/attendances/import';
-import { createAttendanceColumns } from '@/table/attendances';
-import type {
-    Attendance,
-    AttendanceFilters,
-    AttendanceResponse,
-    AttendanceSort,
-} from '@/types/attendance';
+import {Button} from '@/components/ui/button';
+import {Popover, PopoverContent, PopoverTrigger,} from '@/components/ui/popover';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {attendancePage} from '@/config/attendances';
+import {bulkDestroy, create, destroy, index as attendancesRoute, sync,} from '@/routes/attendances';
+import {view as attendancesImportRoute} from '@/routes/attendances/import';
+import {createAttendanceColumns} from '@/table/attendances';
+import type {Attendance, AttendanceFilters, AttendanceResponse, AttendanceSort,} from '@/types/attendance';
+
+/*
+|--------------------------------------------------------------------------
+| Types
+|--------------------------------------------------------------------------
+*/
+
+type SyncType = 'in_out' | 'punches';
 
 /*
 |--------------------------------------------------------------------------
@@ -89,6 +83,7 @@ const handleEmployeeChange = (value: number | null) => {
 */
 
 const syncOpen = ref(false);
+const syncType = ref<SyncType>('punches');
 const syncEmployee = ref<number | null>(null);
 const syncStartDate = ref('');
 const syncEndDate = ref('');
@@ -107,6 +102,18 @@ const syncDateError = computed(() => {
 
     return '';
 });
+
+const syncDescription = computed(() =>
+    syncType.value === 'in_out'
+        ? 'Imports daily IN/OUT summary records from eTimeOffice. Existing attendance records are skipped, so this option does not update existing attendance or breaks.'
+        : 'Imports individual punch timestamps from eTimeOffice, identifies break intervals, and creates or updates attendance with the detailed punch data. The API does not provide today’s raw punches, so use a completed date range.',
+);
+
+const syncButtonLabel = computed(() =>
+    syncType.value === 'in_out'
+        ? 'Sync IN/OUT Data'
+        : 'Sync Detailed Punch Data',
+);
 
 const syncDisabled = computed(
     () => syncProcessing.value || Boolean(syncDateError.value),
@@ -142,6 +149,7 @@ const handleSync = () => {
     router.post(
         sync().url,
         {
+            sync_type: syncType.value,
             user_id: syncEmployee.value ?? undefined,
             from: syncStartDate.value,
             to: syncEndDate.value,
@@ -168,12 +176,15 @@ const handleSync = () => {
                     syncMessageType.value = 'success';
                 }
 
-                // Refresh the listing to show newly created attendance.
-                router.reload({ only: ['attendances'] });
+                router.reload({
+                    only: ['attendances'],
+                    preserveScroll: true,
+                });
             },
 
             onError: (errors) => {
                 syncMessage.value =
+                    errors.sync_type ??
                     errors.from ??
                     errors.to ??
                     errors.user_id ??
@@ -283,26 +294,120 @@ const handleDeleteSelected = () => {
                                 type="button"
                                 variant="outline"
                             >
-                                <RefreshCw aria-hidden="true" class="size-4" />
+                                <RefreshCw
+                                    aria-hidden="true"
+                                    class="size-4"
+                                />
                                 <span>Sync</span>
                             </Button>
                         </PopoverTrigger>
 
                         <PopoverContent
                             align="end"
-                            class="w-[min(22rem,calc(100vw-2rem))]"
+                            class="w-[min(24rem,calc(100vw-2rem))]"
                         >
                             <div class="space-y-4">
                                 <div class="space-y-1">
                                     <h3 class="font-semibold">
                                         Sync attendance
                                     </h3>
+
                                     <p class="text-sm text-muted-foreground">
-                                        Import punch records from eTimeOffice.
-                                        Existing attendance will be skipped.
+                                        Choose which eTimeOffice data to
+                                        import.
                                     </p>
                                 </div>
 
+                                <!-- Sync type -->
+                                <fieldset class="space-y-3">
+                                    <legend class="text-sm font-medium">
+                                        Synchronization type
+                                    </legend>
+
+                                    <label
+                                        for="sync-type-in-out"
+                                        class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-muted/50"
+                                        :class="
+                                            syncType === 'in_out'
+                                                ? 'border-primary bg-muted/30'
+                                                : 'border-border'
+                                        "
+                                    >
+                                        <input
+                                            id="sync-type-in-out"
+                                            v-model="syncType"
+                                            class="mt-1 size-4 shrink-0 accent-primary"
+                                            name="sync-type"
+                                            type="radio"
+                                            value="in_out"
+                                            :disabled="syncProcessing"
+                                        />
+
+                                        <span class="space-y-1">
+                                            <span
+                                                class="block text-sm font-medium"
+                                            >
+                                                IN/OUT Summary
+                                            </span>
+
+                                            <span
+                                                class="block text-xs text-muted-foreground"
+                                            >
+                                                Imports the daily IN and OUT
+                                                times. Existing attendance is
+                                                skipped; breaks are not
+                                                imported.
+                                            </span>
+                                        </span>
+                                    </label>
+
+                                    <label
+                                        for="sync-type-punches"
+                                        class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-muted/50"
+                                        :class="
+                                            syncType === 'punches'
+                                                ? 'border-primary bg-muted/30'
+                                                : 'border-border'
+                                        "
+                                    >
+                                        <input
+                                            id="sync-type-punches"
+                                            v-model="syncType"
+                                            class="mt-1 size-4 shrink-0 accent-primary"
+                                            name="sync-type"
+                                            type="radio"
+                                            value="punches"
+                                            :disabled="syncProcessing"
+                                        />
+
+                                        <span class="space-y-1">
+                                            <span
+                                                class="block text-sm font-medium"
+                                            >
+                                                Detailed Punch Data
+                                            </span>
+
+                                            <span
+                                                class="block text-xs text-muted-foreground"
+                                            >
+                                                Imports individual punch times
+                                                and break intervals. Creates
+                                                missing attendance or updates
+                                                existing attendance with the
+                                                detailed data.
+                                            </span>
+                                        </span>
+                                    </label>
+                                </fieldset>
+
+                                <div
+                                    class="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground"
+                                    aria-live="polite"
+                                >
+                                    {{ syncDescription }}
+                                </div>
+
+                                <!-- Employee -->
                                 <div class="space-y-2">
                                     <label
                                         class="text-sm font-medium"
@@ -324,6 +429,7 @@ const handleDeleteSelected = () => {
                                     </p>
                                 </div>
 
+                                <!-- Start date -->
                                 <div class="space-y-2">
                                     <label
                                         class="text-sm font-medium"
@@ -340,6 +446,7 @@ const handleDeleteSelected = () => {
                                     />
                                 </div>
 
+                                <!-- End date -->
                                 <div class="space-y-2">
                                     <label
                                         class="text-sm font-medium"
@@ -371,7 +478,7 @@ const handleDeleteSelected = () => {
                                             : 'border-destructive/30 text-destructive'
                                     "
                                     aria-live="polite"
-                                    class="rounded-md border p-3 text-sm"
+                                    class="max-h-40 overflow-y-auto whitespace-pre-wrap rounded-md border p-3 text-sm"
                                     role="status"
                                 >
                                     {{ syncMessage }}
@@ -390,10 +497,11 @@ const handleDeleteSelected = () => {
                                         aria-hidden="true"
                                         class="size-4"
                                     />
+
                                     {{
                                         syncProcessing
                                             ? 'Syncing...'
-                                            : 'Sync attendance'
+                                            : syncButtonLabel
                                     }}
                                 </Button>
                             </div>
