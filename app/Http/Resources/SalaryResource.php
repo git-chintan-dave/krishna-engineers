@@ -44,6 +44,13 @@ class SalaryResource extends JsonResource
             // Salary Calculation
             'base_salary' => $this->base_salary,
             'base_salary_formatted' => Number::currency($this->base_salary, in: 'INR'),
+            'attendance_days' => $this->attendance_days,
+            'total_undertime_seconds' => $this->total_undertime_seconds,
+            'total_undertime_formatted' => gmdate(
+                'H:i:s',
+                (int) $this->total_undertime_seconds,
+            ),
+            'late_days' => $this->late_days,
             'working_days' => $this->working_days,
             'incentive_rate' => $this->incentive_rate,
             'incentive_rate_formatted' => Number::currency($this->incentive_rate, in: 'INR'),

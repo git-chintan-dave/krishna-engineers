@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { router, useForm } from '@inertiajs/vue3';
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { salaryPage } from '@/config/salaries';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {salaryPage} from '@/config/salaries';
 import SalaryForm from '@/pages/Salaries/components/SalaryForm.vue';
-import { index as salaries, update } from '@/routes/salaries';
-import type { Salary, SalaryFormData } from '@/types/salary';
+import {index as salaries, update} from '@/routes/salaries';
+import type {Salary, SalaryFormData} from '@/types/salary';
 
 const props = defineProps<{
     salary: Salary;
@@ -25,6 +25,7 @@ const form = useForm<SalaryFormData>({
     user_id: props.salary.user_id,
     salary_period_start: props.salary.salary_period_start,
     salary_period_end: props.salary.salary_period_end,
+    late_days: props.salary.late_days,
     upad: props.salary.upad,
     paid_loan: props.salary.paid_loan,
     adjustment: props.salary.adjustment,
@@ -32,7 +33,13 @@ const form = useForm<SalaryFormData>({
 });
 
 const handleSubmit = (): void => {
-    form.put(update(props.salary.uuid).url);
+    form.transform((data) => ({
+        ...data,
+        late_days: Number(data.late_days),
+        upad: Number(data.upad),
+        paid_loan: Number(data.paid_loan),
+        adjustment: Number(data.adjustment),
+    })).put(update(props.salary.uuid).url);
 };
 
 const handleCancel = (): void => {

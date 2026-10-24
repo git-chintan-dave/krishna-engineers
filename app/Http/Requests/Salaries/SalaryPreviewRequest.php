@@ -19,10 +19,12 @@ class SalaryPreviewRequest extends FormRequest
                 'integer',
                 'exists:users,id',
             ],
+
             'salary_period_start' => [
                 'required',
                 'date',
             ],
+
             'salary_period_end' => [
                 'required',
                 'date',

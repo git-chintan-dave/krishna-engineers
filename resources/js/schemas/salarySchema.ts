@@ -5,6 +5,12 @@ import {
     requiredNonNegativeNumber,
 } from '@/schemas/commonSchema';
 
+/*
+|--------------------------------------------------------------------------
+| Date Validation
+|--------------------------------------------------------------------------
+*/
+
 const requiredDate = (label: string) =>
     z
         .string()
@@ -21,6 +27,12 @@ const requiredDate = (label: string) =>
                 date.getUTCDate() === day
             );
         }, `${label} must be a valid date.`);
+
+/*
+|--------------------------------------------------------------------------
+| Number Validation
+|--------------------------------------------------------------------------
+*/
 
 const requiredNumber = (label: string) =>
     z.preprocess(
@@ -45,14 +57,36 @@ const requiredNumber = (label: string) =>
             .finite(`${label} must be a valid number.`),
     );
 
+const requiredNonNegativeInteger = (label: string) =>
+    requiredNumber(label).pipe(
+        z
+            .number()
+            .int(`${label} must be a whole number.`)
+            .nonnegative(`${label} cannot be negative.`),
+    );
+
+/*
+|--------------------------------------------------------------------------
+| Salary Schema
+|--------------------------------------------------------------------------
+*/
+
 export const salarySchema = z
     .object({
         user_id: requiredDropdown('an employee'),
+
         salary_period_start: requiredDate('Salary period start date'),
+
         salary_period_end: requiredDate('Salary period end date'),
+
+        late_days: requiredNonNegativeInteger('Late days'),
+
         upad: requiredNonNegativeNumber('UPAD'),
+
         paid_loan: requiredNonNegativeNumber('Paid loan'),
+
         adjustment: requiredNumber('Adjustment'),
+
         adjustment_reason: z
             .string()
             .max(5000, 'Adjustment reason must not exceed 5000 characters.')
@@ -60,9 +94,19 @@ export const salarySchema = z
             .optional(),
     })
     .superRefine((data, ctx) => {
-        const startDate = new Date(`${data.salary_period_start}T00:00:00`);
+        /*
+        |--------------------------------------------------------------------------
+        | Salary Period
+        |--------------------------------------------------------------------------
+        */
 
-        const endDate = new Date(`${data.salary_period_end}T00:00:00`);
+        const startDate = new Date(
+            `${data.salary_period_start}T00:00:00`,
+        );
+
+        const endDate = new Date(
+            `${data.salary_period_end}T00:00:00`,
+        );
 
         if (
             !Number.isNaN(startDate.getTime()) &&
@@ -76,6 +120,12 @@ export const salarySchema = z
                     'Salary period end date must be on or after the start date.',
             });
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Adjustment Reason
+        |--------------------------------------------------------------------------
+        */
 
         if (data.adjustment > 0 && !data.adjustment_reason?.trim()) {
             ctx.addIssue({

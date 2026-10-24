@@ -1,31 +1,20 @@
 ﻿<script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import {router} from '@inertiajs/vue3';
+import {computed, ref, watch} from 'vue';
 
+import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
+import AppSalaryStatusSelect from '@/components/selects/AppSalaryStatusSelect.vue';
 import AppInput from '@/components/common/AppInput.vue';
 import ListingActions from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
-import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
-import AppSalaryStatusSelect from '@/components/selects/AppSalaryStatusSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { salaryPage } from '@/config/salaries';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    generateLastMonth,
-    index as salariesRoute,
-} from '@/routes/salaries';
-import { createSalaryColumns } from '@/table/salaries';
-import type {
-    Salary,
-    SalaryFilters,
-    SalaryResponse,
-    SalarySort,
-} from '@/types/salary';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {salaryPage} from '@/config/salaries';
+import {bulkDestroy, create, destroy, generateLastMonth, index as salariesRoute,} from '@/routes/salaries';
+import {createSalaryColumns} from '@/table/salaries';
+import type {Salary, SalaryFilters, SalaryResponse, SalarySort, SalaryStatus,} from '@/types/salary';
 
 /*
 |--------------------------------------------------------------------------
@@ -61,34 +50,65 @@ defineOptions({
 */
 
 const filterEmployee = ref<number | 'all'>(props.filters.user_id);
-
 const filterStatus = ref<SalaryFilters['status']>(props.filters.status);
-
 const filterStartDate = ref(props.filters.start_date);
 
+/**
+ * Calculate the last calendar day of the selected start-date month.
+ *
+ * This avoids parsing YYYY-MM-DD as a UTC date, which can cause
+ * timezone-related date shifts.
+ */
 const filterEndDate = computed(() => {
     if (!filterStartDate.value) {
         return '';
     }
 
-    const date = new Date(`${filterStartDate.value}T00:00:00`);
+    const [year, month, day] = filterStartDate.value
+        .split('-')
+        .map(Number);
 
-    date.setMonth(date.getMonth() + 1);
-    date.setDate(0);
+    if (!year || !month || !day) {
+        return '';
+    }
 
-    return [
-        date.getFullYear(),
-        String(date.getMonth() + 1).padStart(2, '0'),
-        String(date.getDate()).padStart(2, '0'),
-    ].join('-');
+    const selectedDate = new Date(year, month - 1, day);
+
+    if (
+        selectedDate.getFullYear() !== year ||
+        selectedDate.getMonth() !== month - 1 ||
+        selectedDate.getDate() !== day
+    ) {
+        return '';
+    }
+
+    const lastDay = new Date(year, month, 0).getDate();
+
+    return `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 });
+
+/**
+ * Synchronize filter state when Inertia supplies new server-side filters.
+ */
+watch(
+    () => props.filters,
+    (filters) => {
+        filterEmployee.value = filters.user_id;
+        filterStatus.value = filters.status;
+        filterStartDate.value = filters.start_date;
+    },
+    { deep: true },
+);
 
 const handleEmployeeChange = (value: number | null): void => {
     filterEmployee.value = value ?? 'all';
 };
 
 const handleStatusChange = (value: string | null): void => {
-    filterStatus.value = value ?? 'all';
+    filterStatus.value =
+        value === 'draft' || value === 'paid'
+            ? (value as SalaryStatus)
+            : 'all';
 };
 
 /*
@@ -101,36 +121,47 @@ const columns = createSalaryColumns((uuid) => {
     router.delete(destroy(uuid).url);
 });
 
-const { table, selectedCount, search, clearFilters, deleteSelected } =
-    useListingTable<Salary, SalarySort>({
-        data: () => props.salaries,
-        columns,
-        filters: {
-            sort: props.filters.sort,
-            direction: props.filters.direction,
-        },
-        route: salariesRoute.url(),
-        searchable: false,
-        additionalFilters: () => ({
-            user_id:
-                filterEmployee.value !== 'all'
-                    ? filterEmployee.value
-                    : undefined,
-
-            status:
-                filterStatus.value !== 'all' ? filterStatus.value : undefined,
-
-            start_date: filterStartDate.value || undefined,
-
-            end_date: filterEndDate.value || undefined,
-        }),
-    });
+const {
+    table,
+    selectedCount,
+    search,
+    clearFilters,
+    deleteSelected,
+} = useListingTable<Salary, SalarySort>({
+    data: () => props.salaries,
+    columns,
+    filters: {
+        sort: props.filters.sort,
+        direction: props.filters.direction,
+    },
+    route: salariesRoute.url(),
+    searchable: false,
+    additionalFilters: () => ({
+        user_id:
+            filterEmployee.value !== 'all'
+                ? filterEmployee.value
+                : undefined,
+        status:
+            filterStatus.value !== 'all'
+                ? filterStatus.value
+                : undefined,
+        start_date: filterStartDate.value || undefined,
+        end_date: filterEndDate.value || undefined,
+    }),
+});
 
 /*
 |--------------------------------------------------------------------------
 | Filter Actions
 |--------------------------------------------------------------------------
 */
+
+const hasActiveFilters = computed(
+    () =>
+        filterEmployee.value !== 'all' ||
+        filterStatus.value !== 'all' ||
+        Boolean(filterStartDate.value),
+);
 
 const handleClearFilters = (): void => {
     filterEmployee.value = 'all';
@@ -150,14 +181,21 @@ const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);
 };
 
+/*
+|--------------------------------------------------------------------------
+| Generate Salary
+|--------------------------------------------------------------------------
+*/
+
 const generateButtonLabel = computed(() => {
-    const date = new Date();
+    const now = new Date();
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-    date.setMonth(date.getMonth() - 1);
+    const monthName = lastMonth.toLocaleString(undefined, {
+        month: 'long',
+    });
 
-    const lastMonthName = date.toLocaleString('default', { month: 'long' });
-
-    return `Generate ${lastMonthName}'s Salary`;
+    return `Generate ${monthName}'s Salary`;
 });
 </script>
 
@@ -182,12 +220,7 @@ const generateButtonLabel = computed(() => {
         <template #filters>
             <ListingFilters
                 :clear-button-label="salaryPage.clearButtonLabel"
-                :clear-disabled="
-                    filterEmployee === 'all' &&
-                    filterStatus === 'all' &&
-                    !filterStartDate &&
-                    !filterEndDate
-                "
+                :clear-disabled="!hasActiveFilters"
                 :searchable="false"
                 @clear="handleClearFilters"
                 @search="search"
@@ -196,7 +229,9 @@ const generateButtonLabel = computed(() => {
                     <div class="w-full shrink-0 sm:w-64">
                         <AppEmployeeSelect
                             :model-value="
-                                filterEmployee === 'all' ? null : filterEmployee
+                                filterEmployee === 'all'
+                                    ? null
+                                    : filterEmployee
                             "
                             :placeholder="salaryPage.employeePlaceholder"
                             clearable
@@ -215,7 +250,7 @@ const generateButtonLabel = computed(() => {
 
                     <div class="w-full shrink-0 sm:w-40">
                         <AppInput
-                            v-model="filterEndDate"
+                            :model-value="filterEndDate"
                             placeholder="End date"
                             readonly
                             type="date"
@@ -225,7 +260,9 @@ const generateButtonLabel = computed(() => {
                     <div class="w-full shrink-0 sm:w-36">
                         <AppSalaryStatusSelect
                             :model-value="
-                                filterStatus === 'all' ? null : filterStatus
+                                filterStatus === 'all'
+                                    ? null
+                                    : filterStatus
                             "
                             :placeholder="salaryPage.statusPlaceholder"
                             clearable

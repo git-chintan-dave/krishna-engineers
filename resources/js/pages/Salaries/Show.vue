@@ -1,12 +1,14 @@
-<script lang="ts" setup>
-import { ArrowLeft, Printer } from '@lucide/vue';
-import { router } from '@inertiajs/vue3';
 
+<script lang="ts" setup>
+import { router } from '@inertiajs/vue3';
+import { ArrowLeft, Printer } from '@lucide/vue';
+import { computed } from 'vue';
+
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
 import { Button } from '@/components/ui/button';
+import { salaryPage } from '@/config/salaries';
 import { index as salaries } from '@/routes/salaries';
 import type { Salary } from '@/types/salary';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { salaryPage } from '@/config/salaries';
 
 const props = defineProps<{
     salary: Salary;
@@ -27,15 +29,50 @@ defineOptions({
     },
 });
 
+/*
+|--------------------------------------------------------------------------
+| Company Information
+|--------------------------------------------------------------------------
+*/
+
 const companyName = 'Krishna Engineers';
+
 const companyAddress =
     '437/49 Amar Estate, B/H Asarva Chemical, Nr. Bhikshukh Gruh, Odhav GIDC, Odhav, Ahmedababd, 382415.';
 
-const printSalarySlip = () => {
+/*
+|--------------------------------------------------------------------------
+| Attendance Summary
+|--------------------------------------------------------------------------
+*/
+
+const totalUndertimeSeconds = computed(() =>
+    Math.max(0, Number(props.salary.total_undertime_seconds ?? 0)),
+);
+
+const calculatedLateDays = computed(() =>
+    Math.floor(totalUndertimeSeconds.value / (12 * 60 * 60)),
+);
+
+const formatDuration = (seconds: number): string => {
+    const totalMinutes = Math.floor(Math.max(0, seconds) / 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    return `${hours}h ${String(minutes).padStart(2, '0')}m`;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Actions
+|--------------------------------------------------------------------------
+*/
+
+const printSalarySlip = (): void => {
     window.print();
 };
 
-const goBack = () => {
+const goBack = (): void => {
     router.visit(salaries().url);
 };
 </script>
@@ -71,19 +108,27 @@ const goBack = () => {
             >
                 <!-- Header -->
                 <div class="border-b px-6 py-6 sm:px-8 print:px-5 print:py-4">
-                    <div class="flex items-start justify-between gap-6">
-                        <div class="min-w-0">
-                            <h1
-                                class="text-2xl font-bold tracking-tight print:text-xl"
-                            >
-                                {{ companyName }}
-                            </h1>
+                    <div class="flex items-center justify-between gap-6">
+                        <div class="flex min-w-0 items-center gap-3">
+                            <img
+                                src="/logo_new.svg"
+                                alt="Krishna Engineers Logo"
+                                class="h-14 w-auto shrink-0 object-contain print:h-12"
+                            />
 
-                            <p
-                                class="mt-1 text-sm leading-5 whitespace-pre-line text-muted-foreground print:text-xs print:leading-4"
-                            >
-                                {{ companyAddress }}
-                            </p>
+                            <div class="min-w-0">
+                                <h1
+                                    class="text-lg font-bold tracking-wide uppercase sm:text-xl print:text-base"
+                                >
+                                    {{ companyName }}
+                                </h1>
+
+                                <p
+                                    class="mt-1 max-w-md text-xs leading-relaxed text-muted-foreground print:text-[10px]"
+                                >
+                                    {{ companyAddress }}
+                                </p>
+                            </div>
                         </div>
 
                         <div class="shrink-0 text-right">
@@ -93,13 +138,9 @@ const goBack = () => {
                                 Salary Slip
                             </p>
 
-                            <p
-                                class="mt-2 text-sm font-medium print:mt-1 print:text-xs"
-                            >
+                            <p class="mt-2 text-sm font-medium print:mt-1 print:text-xs">
                                 {{ salary.salary_period_start_formatted }}
-                                <span class="px-1 text-muted-foreground">
-                                    –
-                                </span>
+                                <span class="px-1 text-muted-foreground">–</span>
                                 {{ salary.salary_period_end_formatted }}
                             </p>
                         </div>
@@ -109,7 +150,7 @@ const goBack = () => {
                 <!-- Employee Summary -->
                 <div class="border-b px-6 py-5 sm:px-8 print:px-5 print:py-3">
                     <div class="grid grid-cols-3 items-center">
-                        <!-- Left -->
+                        <!-- Employee -->
                         <div class="min-w-0 text-left">
                             <p
                                 class="text-xs font-medium tracking-wide text-muted-foreground uppercase print:text-[10px]"
@@ -124,7 +165,7 @@ const goBack = () => {
                             </p>
                         </div>
 
-                        <!-- Center -->
+                        <!-- Employee Code -->
                         <div class="min-w-0 text-center">
                             <p
                                 class="text-xs font-medium tracking-wide text-muted-foreground uppercase print:text-[10px]"
@@ -139,12 +180,12 @@ const goBack = () => {
                             </p>
                         </div>
 
-                        <!-- Right -->
+                        <!-- Payable Working Days -->
                         <div class="min-w-0 text-right">
                             <p
                                 class="text-xs font-medium tracking-wide text-muted-foreground uppercase print:text-[10px]"
                             >
-                                Working Days
+                                Payable Working Days
                             </p>
 
                             <p
@@ -158,6 +199,91 @@ const goBack = () => {
 
                 <!-- Salary Details -->
                 <div class="px-6 py-6 sm:px-8 print:px-5 print:py-4">
+                    <!-- Attendance Summary -->
+                    <section class="mb-7 print:mb-4">
+                        <h2
+                            class="mb-3 text-sm font-semibold tracking-wide uppercase print:mb-2 print:text-[11px]"
+                        >
+                            Attendance Summary
+                        </h2>
+
+                        <div
+                            class="overflow-hidden rounded-lg border print:rounded-md"
+                        >
+                            <div
+                                class="grid grid-cols-[1fr_auto] border-b bg-muted/30 px-4 py-2.5 text-xs font-medium tracking-wide text-muted-foreground uppercase print:px-3 print:py-1.5 print:text-[9px]"
+                            >
+                                <span>Component</span>
+
+                                <span class="text-right">Value</span>
+                            </div>
+
+                            <div class="divide-y">
+                                <div
+                                    class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
+                                >
+                                    <span>Attendance Days</span>
+
+                                    <span
+                                        class="text-right font-medium tabular-nums"
+                                    >
+                                        {{ salary.attendance_days }}
+                                    </span>
+                                </div>
+
+                                <div
+                                    class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
+                                >
+                                    <span>Total Undertime</span>
+
+                                    <span
+                                        class="text-right font-medium tabular-nums"
+                                    >
+                                        {{
+                                            formatDuration(
+                                                totalUndertimeSeconds,
+                                            )
+                                        }}
+                                    </span>
+                                </div>
+
+                                <div
+                                    class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
+                                >
+                                    <span>Calculated Late Days</span>
+
+                                    <span
+                                        class="text-right font-medium tabular-nums"
+                                    >
+                                        {{ calculatedLateDays }}
+                                    </span>
+                                </div>
+
+                                <div
+                                    class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
+                                >
+                                    <span>Late Days Deducted</span>
+
+                                    <span
+                                        class="text-right font-medium tabular-nums"
+                                    >
+                                        {{ salary.late_days }}
+                                    </span>
+                                </div>
+
+                                <div
+                                    class="grid grid-cols-[1fr_auto] items-center gap-4 bg-muted/30 px-4 py-3 text-sm font-semibold print:px-3 print:py-2 print:text-xs"
+                                >
+                                    <span>Payable Working Days</span>
+
+                                    <span class="text-right tabular-nums">
+                                        {{ salary.working_days }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
                     <!-- Earnings -->
                     <section>
                         <h2
@@ -172,16 +298,16 @@ const goBack = () => {
                             <div
                                 class="grid grid-cols-[1fr_auto] border-b bg-muted/30 px-4 py-2.5 text-xs font-medium tracking-wide text-muted-foreground uppercase print:px-3 print:py-1.5 print:text-[9px]"
                             >
-                                <span> Component </span>
+                                <span>Component</span>
 
-                                <span class="text-right"> Amount </span>
+                                <span class="text-right">Amount</span>
                             </div>
 
                             <div class="divide-y">
                                 <div
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
-                                    <span> Base Salary </span>
+                                    <span>Base Salary</span>
 
                                     <span
                                         class="text-right font-medium tabular-nums"
@@ -193,7 +319,7 @@ const goBack = () => {
                                 <div
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
-                                    <span> Incentive </span>
+                                    <span>Incentive</span>
 
                                     <span
                                         class="text-right font-medium tabular-nums"
@@ -206,7 +332,7 @@ const goBack = () => {
                                     v-if="Number(salary.adjustment) !== 0"
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
-                                    <span> Adjustment </span>
+                                    <span>Adjustment</span>
 
                                     <span
                                         class="text-right font-medium tabular-nums"
@@ -232,16 +358,16 @@ const goBack = () => {
                             <div
                                 class="grid grid-cols-[1fr_auto] border-b bg-muted/30 px-4 py-2.5 text-xs font-medium tracking-wide text-muted-foreground uppercase print:px-3 print:py-1.5 print:text-[9px]"
                             >
-                                <span> Component </span>
+                                <span>Component</span>
 
-                                <span class="text-right"> Amount </span>
+                                <span class="text-right">Amount</span>
                             </div>
 
                             <div class="divide-y">
                                 <div
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
-                                    <span> UPAD </span>
+                                    <span>UPAD</span>
 
                                     <span
                                         class="text-right font-medium tabular-nums"
@@ -253,7 +379,7 @@ const goBack = () => {
                                 <div
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
-                                    <span> Paid Loan </span>
+                                    <span>Paid Loan</span>
 
                                     <span
                                         class="text-right font-medium tabular-nums"
@@ -265,7 +391,7 @@ const goBack = () => {
                                 <div
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
-                                    <span> Deduction </span>
+                                    <span>Deduction</span>
 
                                     <span
                                         class="text-right font-medium tabular-nums"
@@ -329,7 +455,9 @@ const goBack = () => {
                         class="flex items-center justify-between gap-4 text-sm print:text-xs"
                     >
                         <div>
-                            <span class="text-muted-foreground"> Status: </span>
+                            <span class="text-muted-foreground">
+                                Status:
+                            </span>
 
                             <span class="ml-1 font-medium">
                                 {{ salary.status_label }}
@@ -376,6 +504,20 @@ const goBack = () => {
         margin: 8mm;
     }
 
+    /* Hide application layout elements and print controls */
+    header,
+    nav,
+    aside,
+    [role='banner'],
+    [role='navigation'],
+    [aria-label='Breadcrumb'],
+    [aria-label='breadcrumbs'],
+    .no-print,
+    .print\:hidden {
+        display: none !important;
+    }
+
+    /* Reset document layout */
     html,
     body {
         width: 100% !important;
@@ -398,9 +540,12 @@ const goBack = () => {
         min-width: 0 !important;
         height: auto !important;
         min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
         overflow: visible !important;
     }
 
+    /* Keep the salary slip visible */
     #salary-slip {
         display: block !important;
         width: 100% !important;
@@ -414,21 +559,15 @@ const goBack = () => {
         border: 0 !important;
         border-radius: 0 !important;
         box-shadow: none !important;
+        background: white !important;
     }
 
     #salary-slip * {
         overflow: visible !important;
     }
 
-    .print\:hidden {
-        display: none !important;
-    }
-
-    #salary-slip > div {
-        break-inside: avoid;
-        page-break-inside: avoid;
-    }
-
+    /* Avoid splitting salary slip sections across pages */
+    #salary-slip > div,
     #salary-slip section {
         break-inside: avoid;
         page-break-inside: avoid;

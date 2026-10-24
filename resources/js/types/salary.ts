@@ -1,5 +1,6 @@
+
+import type { SalarySchemaData } from '@/schemas/salarySchema';
 import type { PaginatedResponse, SortDirection } from '@/types/listing';
-import { SalarySchemaData } from '@/schemas/salarySchema';
 
 export type SalaryStatus = 'draft' | 'paid';
 
@@ -24,10 +25,15 @@ export type Salary = {
 
     base_salary: string;
     base_salary_formatted: string;
+
+    attendance_days: number;
+    total_undertime_seconds: number;
+    late_days: number;
     working_days: number;
 
     upad: string;
     upad_formatted: string;
+
     paid_loan: string;
     paid_loan_formatted: string;
 

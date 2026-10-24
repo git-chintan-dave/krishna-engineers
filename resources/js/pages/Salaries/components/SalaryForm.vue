@@ -1,3 +1,4 @@
+
 <script lang="ts" setup>
 import axios from 'axios';
 import type { InertiaForm } from '@inertiajs/vue3';
@@ -9,23 +10,39 @@ import AppField from '@/components/form/AppField.vue';
 import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
+import { useZodFormValidation } from '@/composables/useZodFormValidation';
 import { salaryPage } from '@/config/salaries';
 import { preview as previewSalary } from '@/routes/salaries';
 import { salarySchema } from '@/schemas/salarySchema';
 import type { Salary, SalaryFormData } from '@/types/salary';
-import { useZodFormValidation } from '@/composables/useZodFormValidation';
+
+/*
+|--------------------------------------------------------------------------
+| Types
+|--------------------------------------------------------------------------
+*/
 
 type SalaryPreview = {
-    base_salary: string;
+    base_salary: string | number;
+    attendance_days: number;
+    total_undertime_seconds: number;
+    calculated_late_days: number;
+    late_days: number;
     working_days: number;
-    incentive_rate: string;
-    incentive: string;
-    deduction_rate: string;
-    deduction: string;
-    final_payable: string;
+    incentive_rate: string | number;
+    incentive: string | number;
+    deduction_rate: string | number;
+    deduction: string | number;
+    final_payable: string | number;
 };
 
 type SalaryField = keyof SalaryFormData;
+
+/*
+|--------------------------------------------------------------------------
+| Props
+|--------------------------------------------------------------------------
+*/
 
 const props = withDefaults(
     defineProps<{
@@ -48,6 +65,12 @@ const emit = defineEmits<{
     cancel: [];
 }>();
 
+/*
+|--------------------------------------------------------------------------
+| State
+|--------------------------------------------------------------------------
+*/
+
 const previewData = ref<SalaryPreview | null>(null);
 const previewLoading = ref(false);
 
@@ -55,20 +78,68 @@ let previewRequestId = 0;
 
 const isEdit = computed(() => Boolean(props.salary));
 
+/*
+|--------------------------------------------------------------------------
+| Salary Calculation
+|--------------------------------------------------------------------------
+*/
+
 const baseSalary = computed(() =>
     Number(props.salary?.base_salary ?? previewData.value?.base_salary ?? 0),
 );
 
-const workingDays = computed(
-    () => props.salary?.working_days ?? previewData.value?.working_days ?? 0,
+const attendanceDays = computed(() =>
+    Number(
+        props.salary?.attendance_days ??
+        previewData.value?.attendance_days ??
+        0,
+    ),
+);
+
+const totalUndertimeSeconds = computed(() =>
+    Number(
+        props.salary?.total_undertime_seconds ??
+        previewData.value?.total_undertime_seconds ??
+        0,
+    ),
+);
+
+const calculatedLateDays = computed(() =>
+    Math.floor(totalUndertimeSeconds.value / (12 * 60 * 60)),
+);
+
+const lateDays = computed(() => Number(props.form.late_days || 0));
+
+const workingDays = computed(() =>
+    Math.max(0, attendanceDays.value - lateDays.value),
+);
+
+const incentiveRate = computed(() =>
+    Number(
+        props.salary?.incentive_rate ??
+        previewData.value?.incentive_rate ??
+        0,
+    ),
+);
+
+const deductionRate = computed(() =>
+    Number(
+        props.salary?.deduction_rate ??
+        previewData.value?.deduction_rate ??
+        0,
+    ),
 );
 
 const incentive = computed(() =>
-    Number(props.salary?.incentive ?? previewData.value?.incentive ?? 0),
+    workingDays.value <= 23
+        ? 0
+        : (workingDays.value - 23) * incentiveRate.value,
 );
 
 const deduction = computed(() =>
-    Number(props.salary?.deduction ?? previewData.value?.deduction ?? 0),
+    workingDays.value >= 21
+        ? 0
+        : (21 - workingDays.value) * deductionRate.value,
 );
 
 const upad = computed(() => Number(props.form.upad || 0));
@@ -79,7 +150,7 @@ const adjustment = computed(() => Number(props.form.adjustment || 0));
 
 const finalPayable = computed(() =>
     (
-        (baseSalary.value * workingDays.value) +
+        baseSalary.value * workingDays.value +
         incentive.value +
         adjustment.value -
         upad.value -
@@ -90,7 +161,32 @@ const finalPayable = computed(() =>
 
 const hasAdjustment = computed(() => adjustment.value > 0);
 
-// Frontend validation
+/*
+|--------------------------------------------------------------------------
+| Formatting
+|--------------------------------------------------------------------------
+*/
+
+const formatCurrency = (value: number | string): string =>
+    Number(value || 0).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+
+const formatDuration = (seconds: number): string => {
+    const totalMinutes = Math.floor(Math.max(0, seconds) / 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    return `${hours}h ${String(minutes).padStart(2, '0')}m`;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Validation
+|--------------------------------------------------------------------------
+*/
+
 const { errors: frontendErrors, validate } = useZodFormValidation(
     salarySchema,
     () => props.form,
@@ -101,6 +197,12 @@ const handleSubmit = () => {
         emit('submit');
     }
 };
+
+/*
+|--------------------------------------------------------------------------
+| Preview
+|--------------------------------------------------------------------------
+*/
 
 const loadPreview = async (): Promise<void> => {
     if (
@@ -121,7 +223,7 @@ const loadPreview = async (): Promise<void> => {
     previewLoading.value = true;
 
     try {
-        const response = await axios.get(previewSalary().url, {
+        const response = await axios.get<SalaryPreview>(previewSalary().url, {
             params: {
                 user_id: props.form.user_id,
                 salary_period_start: props.form.salary_period_start,
@@ -136,7 +238,12 @@ const loadPreview = async (): Promise<void> => {
             return;
         }
 
-        previewData.value = response.data as SalaryPreview;
+        previewData.value = response.data;
+
+        // Initialize the editable late days from the server's calculation.
+        // This runs when employee/period preview data changes, not when
+        // the user edits late_days itself.
+        props.form.late_days = response.data.late_days;
     } catch {
         if (requestId === previewRequestId) {
             previewData.value = null;
@@ -147,6 +254,12 @@ const loadPreview = async (): Promise<void> => {
         }
     }
 };
+
+/*
+|--------------------------------------------------------------------------
+| Period Handling
+|--------------------------------------------------------------------------
+*/
 
 const setPeriodEndFromStart = (): void => {
     if (isEdit.value || !props.form.salary_period_start) {
@@ -172,6 +285,12 @@ const setPeriodEndFromStart = (): void => {
     props.form.salary_period_end = `${year}-${month}-${day}`;
 };
 
+/*
+|--------------------------------------------------------------------------
+| Watchers
+|--------------------------------------------------------------------------
+*/
+
 watch(() => props.form.salary_period_start, setPeriodEndFromStart);
 
 watch(
@@ -183,10 +302,22 @@ watch(
     loadPreview,
     { immediate: true },
 );
+
+// Ensure edit forms use the saved client-confirmed late days.
+watch(
+    () => props.salary?.late_days,
+    (value) => {
+        if (isEdit.value && value !== undefined && value !== null) {
+            props.form.late_days = value;
+        }
+    },
+    { immediate: true },
+);
 </script>
 
 <template>
     <form class="min-w-0 space-y-6" novalidate @submit.prevent="handleSubmit">
+        <!-- Employee and salary period -->
         <FormSection
             :description="salaryPage.form.sectionDescription"
             :title="salaryPage.form.sectionTitle"
@@ -248,183 +379,279 @@ watch(
                         type="date"
                     />
                 </AppField>
-
-                <AppField
-                    :label="salaryPage.form.baseSalaryLabel"
-                    input-id="salary-base-salary"
-                >
-                    <AppInput
-                        id="salary-base-salary"
-                        :icon="IndianRupee"
-                        :model-value="baseSalary"
-                        disabled
-                    />
-                </AppField>
-
-                <AppField
-                    :label="salaryPage.form.workingDaysLabel"
-                    input-id="salary-working-days"
-                >
-                    <AppInput
-                        id="salary-working-days"
-                        :model-value="String(workingDays)"
-                        disabled
-                    />
-                </AppField>
-
-                <AppField
-                    :label="salaryPage.form.incentiveLabel"
-                    input-id="salary-incentive"
-                >
-                    <AppInput
-                        id="salary-incentive"
-                        :icon="IndianRupee"
-                        :model-value="incentive"
-                        disabled
-                    />
-                </AppField>
-
-                <AppField
-                    :label="salaryPage.form.deductionLabel"
-                    input-id="salary-deduction"
-                >
-                    <AppInput
-                        id="salary-deduction"
-                        :icon="IndianRupee"
-                        :model-value="deduction"
-                        disabled
-                    />
-                </AppField>
-
-                <div
-                    v-if="previewLoading"
-                    class="flex items-center gap-2 text-sm text-muted-foreground md:col-span-2"
-                >
-                    <IndianRupee
-                        aria-hidden="true"
-                        class="size-4 animate-pulse"
-                    />
-
-                    <span>Loading salary details...</span>
-                </div>
             </div>
         </FormSection>
 
-        <FormSection
-            description="Enter any advance, loan payment, or manual salary adjustment."
-            title="Payment Adjustments"
-        >
-            <div class="grid min-w-0 gap-5 md:grid-cols-2">
-                <AppField
-                    :label="salaryPage.form.upadLabel"
-                    input-id="salary-upad"
-                    required
+        <!-- Main content: editable form + read-only calculation panel -->
+        <div class="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,1fr)]">
+            <div class="min-w-0 space-y-6">
+                <FormSection
+                    description="Enter any advance, loan payment, or manual salary adjustment."
+                    title="Payment Adjustments"
                 >
-                    <AppInput
-                        id="salary-upad"
-                        v-model="props.form.upad"
-                        :disabled="processing"
-                        :error="frontendErrors.upad ?? props.errors.upad"
-                        :icon="IndianRupee"
-                        :placeholder="salaryPage.form.upadPlaceholder"
-                        min="0"
-                        step="0.01"
-                        type="number"
-                    />
-                </AppField>
+                    <div class="grid min-w-0 gap-5 md:grid-cols-2">
+                        <AppField
+                            :label="salaryPage.form.upadLabel"
+                            input-id="salary-upad"
+                            required
+                        >
+                            <AppInput
+                                id="salary-upad"
+                                v-model="props.form.upad"
+                                :disabled="processing"
+                                :error="frontendErrors.upad ?? props.errors.upad"
+                                :icon="IndianRupee"
+                                :placeholder="salaryPage.form.upadPlaceholder"
+                                min="0"
+                                step="0.01"
+                                type="number"
+                            />
+                        </AppField>
 
-                <AppField
-                    :label="salaryPage.form.paidLoanLabel"
-                    input-id="salary-paid-loan"
-                    required
-                >
-                    <AppInput
-                        id="salary-paid-loan"
-                        v-model="props.form.paid_loan"
-                        :disabled="processing"
-                        :error="
-                            frontendErrors.paid_loan ?? props.errors.paid_loan
-                        "
-                        :icon="IndianRupee"
-                        :placeholder="salaryPage.form.paidLoanPlaceholder"
-                        min="0"
-                        step="0.01"
-                        type="number"
-                    />
-                </AppField>
+                        <AppField
+                            :label="salaryPage.form.paidLoanLabel"
+                            input-id="salary-paid-loan"
+                            required
+                        >
+                            <AppInput
+                                id="salary-paid-loan"
+                                v-model="props.form.paid_loan"
+                                :disabled="processing"
+                                :error="
+                                    frontendErrors.paid_loan ??
+                                    props.errors.paid_loan
+                                "
+                                :icon="IndianRupee"
+                                :placeholder="
+                                    salaryPage.form.paidLoanPlaceholder
+                                "
+                                min="0"
+                                step="0.01"
+                                type="number"
+                            />
+                        </AppField>
 
-                <AppField
-                    :label="salaryPage.form.adjustmentLabel"
-                    input-id="salary-adjustment"
-                    required
-                >
-                    <AppInput
-                        id="salary-adjustment"
-                        v-model="props.form.adjustment"
-                        :disabled="processing"
-                        :error="
-                            frontendErrors.adjustment ?? props.errors.adjustment
-                        "
-                        :icon="IndianRupee"
-                        :placeholder="salaryPage.form.adjustmentPlaceholder"
-                        step="0.01"
-                        type="number"
-                    />
-                </AppField>
+                        <AppField
+                            :label="salaryPage.form.adjustmentLabel"
+                            input-id="salary-adjustment"
+                            required
+                        >
+                            <AppInput
+                                id="salary-adjustment"
+                                v-model="props.form.adjustment"
+                                :disabled="processing"
+                                :error="
+                                    frontendErrors.adjustment ??
+                                    props.errors.adjustment
+                                "
+                                :icon="IndianRupee"
+                                :placeholder="
+                                    salaryPage.form.adjustmentPlaceholder
+                                "
+                                step="0.01"
+                                type="number"
+                            />
+                        </AppField>
 
-                <AppField
-                    :label="salaryPage.form.adjustmentReasonLabel"
-                    :required="hasAdjustment"
-                    input-id="salary-adjustment-reason"
-                >
-                    <AppInput
-                        id="salary-adjustment-reason"
-                        v-model="props.form.adjustment_reason"
-                        :disabled="processing"
-                        :error="
-                            frontendErrors.adjustment_reason ??
-                            props.errors.adjustment_reason
-                        "
-                        :placeholder="
-                            salaryPage.form.adjustmentReasonPlaceholder
-                        "
-                    />
-                </AppField>
-            </div>
-        </FormSection>
-
-        <FormSection
-            description="Review the final payable amount before saving."
-            title="Salary Summary"
-        >
-            <div class="rounded-xl border bg-muted/30 p-5">
-                <div
-                    class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                    <div class="min-w-0">
-                        <p class="text-sm font-medium">
-                            {{ salaryPage.form.finalPayableLabel }}
-                        </p>
-
-                        <p class="mt-1 text-sm text-muted-foreground">
-                            Base salary + incentive + adjustment − upad − paid
-                            loan − deduction.
-                        </p>
+                        <AppField
+                            :label="salaryPage.form.adjustmentReasonLabel"
+                            :required="hasAdjustment"
+                            input-id="salary-adjustment-reason"
+                        >
+                            <AppInput
+                                id="salary-adjustment-reason"
+                                v-model="props.form.adjustment_reason"
+                                :disabled="processing"
+                                :error="
+                                    frontendErrors.adjustment_reason ??
+                                    props.errors.adjustment_reason
+                                "
+                                :placeholder="
+                                    salaryPage.form.adjustmentReasonPlaceholder
+                                "
+                            />
+                        </AppField>
                     </div>
+                </FormSection>
 
-                    <div class="flex shrink-0 items-center gap-2">
+                <FormSection
+                    description="The amount updates automatically as you change the adjustments or late days."
+                    title="Salary Summary"
+                >
+                    <div class="rounded-xl border bg-muted/30 p-5">
+                        <div
+                            class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+                        >
+                            <div class="min-w-0">
+                                <p class="text-sm font-medium">
+                                    {{ salaryPage.form.finalPayableLabel }}
+                                </p>
+
+                                <p class="mt-1 text-sm text-muted-foreground">
+                                    Base salary × payable days + incentive +
+                                    adjustment − upad − paid loan − deduction.
+                                </p>
+                            </div>
+
+                            <div class="flex shrink-0 items-center gap-2">
+                                <IndianRupee
+                                    aria-hidden="true"
+                                    class="size-5 text-muted-foreground"
+                                />
+
+                                <p class="text-2xl font-semibold tabular-nums">
+                                    {{ formatCurrency(finalPayable) }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </FormSection>
+            </div>
+
+            <!-- Read-only information panel -->
+            <aside class="min-w-0 space-y-4 lg:sticky lg:top-6">
+                <div class="rounded-xl border bg-card p-5">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <h3 class="font-semibold">
+                                Attendance & Salary
+                            </h3>
+
+                            <p class="mt-1 text-sm text-muted-foreground">
+                                Review the calculation for this salary period.
+                            </p>
+                        </div>
+
                         <IndianRupee
                             aria-hidden="true"
-                            class="size-5 text-muted-foreground"
+                            class="size-5 shrink-0 text-muted-foreground"
                         />
+                    </div>
 
-                        <p class="text-2xl font-semibold tabular-nums">
-                            {{ Number(finalPayable).toFixed(2) }}
-                        </p>
+                    <div
+                        v-if="previewLoading"
+                        class="mt-5 animate-pulse space-y-4"
+                    >
+                        <div class="h-4 rounded bg-muted" />
+                        <div class="h-4 rounded bg-muted" />
+                        <div class="h-4 rounded bg-muted" />
+                    </div>
+
+                    <div v-else class="mt-5 space-y-4">
+                        <div class="flex items-center justify-between gap-4">
+                            <span class="text-sm text-muted-foreground">
+                                Base salary / day
+                            </span>
+
+                            <span class="font-medium tabular-nums">
+                                ₹{{ formatCurrency(baseSalary) }}
+                            </span>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-4">
+                            <span class="text-sm text-muted-foreground">
+                                Attendance days
+                            </span>
+
+                            <span class="font-medium tabular-nums">
+                                {{ attendanceDays }}
+                            </span>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-4">
+                            <span class="text-sm text-muted-foreground">
+                                Total undertime
+                            </span>
+
+                            <span class="font-medium tabular-nums">
+                                {{ formatDuration(totalUndertimeSeconds) }}
+                            </span>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-4">
+                            <span class="text-sm text-muted-foreground">
+                                Suggested late days
+                            </span>
+
+                            <span class="font-medium tabular-nums">
+                                {{ calculatedLateDays }}
+                            </span>
+                        </div>
+
+                        <div class="border-t pt-4">
+                            <AppField
+                                label="Late days deducted"
+                                input-id="salary-late-days"
+                                required
+                            >
+                                <AppInput
+                                    id="salary-late-days"
+                                    v-model="props.form.late_days"
+                                    :disabled="processing"
+                                    :error="
+                                        frontendErrors.late_days ??
+                                        props.errors.late_days
+                                    "
+                                    min="0"
+                                    :max="attendanceDays"
+                                    step="1"
+                                    type="number"
+                                />
+                            </AppField>
+
+                            <p class="mt-2 text-xs text-muted-foreground">
+                                Automatically calculated from undertime.
+                                You can adjust this value before saving.
+                            </p>
+                        </div>
+
+                        <div
+                            class="flex items-center justify-between gap-4 rounded-lg bg-muted/50 p-3"
+                        >
+                            <span class="text-sm font-medium">
+                                Payable working days
+                            </span>
+
+                            <span class="text-lg font-semibold tabular-nums">
+                                {{ workingDays }}
+                            </span>
+                        </div>
+
+                        <div class="space-y-3 border-t pt-4">
+                            <div class="flex items-center justify-between gap-4">
+                                <span class="text-sm text-muted-foreground">
+                                    Base salary
+                                </span>
+
+                                <span class="tabular-nums">
+                                    ₹{{ formatCurrency(baseSalary * workingDays) }}
+                                </span>
+                            </div>
+
+                            <div class="flex items-center justify-between gap-4">
+                                <span class="text-sm text-muted-foreground">
+                                    Incentive
+                                </span>
+
+                                <span class="tabular-nums">
+                                    ₹{{ formatCurrency(incentive) }}
+                                </span>
+                            </div>
+
+                            <div class="flex items-center justify-between gap-4">
+                                <span class="text-sm text-muted-foreground">
+                                    Deduction
+                                </span>
+
+                                <span class="tabular-nums">
+                                    − ₹{{ formatCurrency(deduction) }}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </FormSection>
+            </aside>
+        </div>
 
         <FormActions
             :cancel-label="salaryPage.form.cancelLabel"

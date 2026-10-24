@@ -29,7 +29,9 @@ class SalaryController extends Controller
 
     private const string INDEX_ROUTE = 'salaries.index';
 
-    public function __construct(private readonly SalaryService $salaryService) {}
+    public function __construct(
+        private readonly SalaryService $salaryService,
+    ) {}
 
     public function index(IndexSalaryRequest $request): Response
     {
@@ -38,16 +40,15 @@ class SalaryController extends Controller
         $filters = $request->validated();
 
         $salaries = Salary::query()
-            ->with([
-                'user:id,name,employee_code',
-            ])
+            ->with('user:id,name,employee_code')
             ->filterQuery($filters)
             ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();
 
         $now = now()->subMonthNoOverflow();
-        $periodStart = $now->clone()->startOfMonth()->toDateString();
-        $periodEnd = $now->clone()->endOfMonth()->toDateString();
+
+        $periodStart = $now->copy()->startOfMonth()->toDateString();
+        $periodEnd = $now->copy()->endOfMonth()->toDateString();
 
         $canGenerateLastMonth = ! Salary::query()
             ->whereDate('salary_period_start', $periodStart)
@@ -92,6 +93,7 @@ class SalaryController extends Controller
             paidLoan: (float) $data['paid_loan'],
             adjustment: (float) $data['adjustment'],
             adjustmentReason: $data['adjustment_reason'] ?? null,
+            lateDays: (int) $data['late_days'],
         );
 
         return $this->successResponse('created');
@@ -101,9 +103,7 @@ class SalaryController extends Controller
     {
         Gate::authorize('view', $salary);
 
-        $salary->load([
-            'user:id,name,employee_code',
-        ]);
+        $salary->load('user:id,name,employee_code');
 
         return Inertia::render('Salaries/Show', [
             'salary' => new SalaryResource($salary),
@@ -114,17 +114,17 @@ class SalaryController extends Controller
     {
         Gate::authorize('update', $salary);
 
-        $salary->load([
-            'user:id,name,employee_code',
-        ]);
+        $salary->load('user:id,name,employee_code');
 
         return Inertia::render('Salaries/Edit', [
             'salary' => new SalaryResource($salary),
         ]);
     }
 
-    public function update(SalaryRequest $request, Salary $salary): RedirectResponse
-    {
+    public function update(
+        SalaryRequest $request,
+        Salary $salary,
+    ): RedirectResponse {
         Gate::authorize('update', $salary);
 
         $data = $request->validated();
@@ -135,6 +135,7 @@ class SalaryController extends Controller
             paidLoan: (float) $data['paid_loan'],
             adjustment: (float) $data['adjustment'],
             adjustmentReason: $data['adjustment_reason'] ?? null,
+            lateDays: (int) $data['late_days'],
         );
 
         return $this->successResponse('updated');
@@ -158,8 +159,9 @@ class SalaryController extends Controller
         return $this->successResponse('deleted');
     }
 
-    public function bulkDestroy(BulkDestroyRequest $request): RedirectResponse
-    {
+    public function bulkDestroy(
+        BulkDestroyRequest $request,
+    ): RedirectResponse {
         Gate::authorize('deleteAny', Salary::class);
 
         $ids = $request->input('ids', []);
@@ -172,31 +174,27 @@ class SalaryController extends Controller
         return $this->successResponse('bulk_deleted');
     }
 
-    public function preview(SalaryPreviewRequest $request): JsonResponse
-    {
+    public function preview(
+        SalaryPreviewRequest $request,
+    ): JsonResponse {
         Gate::authorize('create', Salary::class);
 
         $data = $request->validated();
 
-        $user = User::query()->findOrFail(
-            $data['user_id'],
-        );
+        $user = User::query()->findOrFail($data['user_id']);
 
         $preview = $this->salaryService->preview(
             user: $user,
-            periodStart: Carbon::parse(
-                $data['salary_period_start'],
-            ),
-            periodEnd: Carbon::parse(
-                $data['salary_period_end'],
-            ),
+            periodStart: Carbon::parse($data['salary_period_start']),
+            periodEnd: Carbon::parse($data['salary_period_end']),
         );
 
         return response()->json($preview);
     }
 
-    public function generateLastMonth(SalaryService $salaryService): RedirectResponse
-    {
+    public function generateLastMonth(
+        SalaryService $salaryService,
+    ): RedirectResponse {
         try {
             $result = $salaryService->generateForAllEmployees();
 

@@ -27,6 +27,9 @@ return new class extends Migration
 
             // Salary Calculation
             $table->decimal('base_salary', 12, 2)->default(0);
+            $table->unsignedSmallInteger('attendance_days')->default(0);
+            $table->unsignedInteger('total_undertime_seconds')->default(0);
+            $table->unsignedSmallInteger('late_days')->default(0);
             $table->unsignedSmallInteger('working_days')->default(0);
 
             $table->decimal('upad', 12, 2)->default(0);

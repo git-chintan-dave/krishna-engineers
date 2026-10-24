@@ -32,6 +32,12 @@ class SalaryRequest extends FormRequest
                 'after_or_equal:salary_period_start',
             ],
 
+            'late_days' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
+
             'upad' => [
                 'required',
                 'numeric',
@@ -54,7 +60,7 @@ class SalaryRequest extends FormRequest
                 'string',
                 'max:5000',
                 Rule::requiredIf(
-                    fn () => (float) $this->input('adjustment') > 0,
+                    fn (): bool => (float) $this->input('adjustment') > 0,
                 ),
             ],
         ];
