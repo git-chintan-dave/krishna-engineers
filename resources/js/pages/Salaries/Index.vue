@@ -195,6 +195,7 @@ const actions = computed<ActionItem[]>(() => [
                 label: generateButtonLabel.value,
                 icon: Wallet,
                 href: generateLastMonth().url,
+                method: 'post' as const,
             },
         ]
         : []),
