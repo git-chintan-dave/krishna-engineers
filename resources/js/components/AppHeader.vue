@@ -1,11 +1,11 @@
 <script lang="ts" setup>
 import {Link, usePage} from '@inertiajs/vue3';
 import {ChevronRight, Menu} from '@lucide/vue';
-import {computed, onMounted, reactive, ref, watch} from 'vue';
+import {computed, reactive, ref, watch} from 'vue';
 
 import AppLogo from '@/components/AppLogo.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
-import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
+import {Avatar, AvatarFallback, AvatarImage,} from '@/components/ui/avatar';
 import {Button} from '@/components/ui/button';
 import {Collapsible, CollapsibleContent, CollapsibleTrigger,} from '@/components/ui/collapsible';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuTrigger,} from '@/components/ui/dropdown-menu';
@@ -24,8 +24,8 @@ import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '@/compo
 import UserMenuContent from '@/components/UserMenuContent.vue';
 
 import {useCurrentUrl} from '@/composables/useCurrentUrl';
+import {useListingPreferenceNavigation} from '@/composables/useListingPreferenceNavigation';
 import {getInitials} from '@/composables/useInitials';
-import {getListingPreferenceFeatures} from '@/config/listingPreferences';
 import {getMainNavItems, rightNavItems} from '@/config/navigation';
 import {toUrl} from '@/lib/utils';
 
@@ -41,27 +41,6 @@ import {dashboard} from '@/routes';
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
 };
-
-type SavedListingPreferences = {
-    perPage?: number;
-    sort?: string;
-    direction?: 'asc' | 'desc';
-};
-
-/*
-|--------------------------------------------------------------------------
-| Constants
-|--------------------------------------------------------------------------
-*/
-
-const LISTING_PREFERENCES_PREFIX = 'listing-preferences:';
-
-const DEFAULT_PAGE = 1;
-const DEFAULT_PAGE_SIZE = 10;
-const DEFAULT_SORT = 'id';
-const DEFAULT_DIRECTION: SavedListingPreferences['direction'] = 'desc';
-
-const ALLOWED_PAGE_SIZES = [10, 25, 50, 100];
 
 /*
 |--------------------------------------------------------------------------
@@ -93,7 +72,10 @@ const mainNavItems = computed(() =>
     getMainNavItems(page.props.auth?.user?.role),
 );
 
-const {isCurrentOrParentUrl} = useCurrentUrl();
+const { isCurrentOrParentUrl } = useCurrentUrl();
+
+const { getNavigationHref } =
+    useListingPreferenceNavigation();
 
 const activeItemStyles = 'bg-accent text-accent-foreground';
 
@@ -106,164 +88,6 @@ const isItemActive = (item: NavItem): boolean => {
     }
 
     return item.items?.some(isItemActive) ?? false;
-};
-
-/*
-|--------------------------------------------------------------------------
-| Listing Preference Navigation
-|--------------------------------------------------------------------------
-*/
-
-const isClientReady = ref(false);
-
-onMounted(() => {
-    isClientReady.value = true;
-});
-
-const resolveNavigationHref = (href: NavItem['href']): string => {
-    if (typeof href === 'string') {
-        return href;
-    }
-
-    if (href && typeof href === 'object') {
-        if ('url' in href && typeof href.url === 'string') {
-            return href.url;
-        }
-
-        if ('href' in href && typeof href.href === 'string') {
-            return href.href;
-        }
-    }
-
-    return '';
-};
-
-const getNavigationHref = (href: NavItem['href']): string => {
-    const destination = resolveNavigationHref(href);
-
-    if (
-        !destination ||
-        !isClientReady.value ||
-        typeof window === 'undefined'
-    ) {
-        return destination;
-    }
-
-    try {
-        const url = new URL(destination, window.location.origin);
-
-        // Never modify external links.
-        if (url.origin !== window.location.origin) {
-            return destination;
-        }
-
-        const path = url.pathname.replace(/\/+$/, '') || '/';
-        const features = getListingPreferenceFeatures(path);
-
-        if (!features.perPage && !features.sorting) {
-            return destination;
-        }
-
-        const rawPreferences = window.localStorage.getItem(
-            `${LISTING_PREFERENCES_PREFIX}${path}`,
-        );
-
-        if (!rawPreferences) {
-            return destination;
-        }
-
-        const parsed: unknown = JSON.parse(rawPreferences);
-
-        if (
-            typeof parsed !== 'object' ||
-            parsed === null ||
-            Array.isArray(parsed)
-        ) {
-            return destination;
-        }
-
-        const preferences = parsed as SavedListingPreferences;
-
-        /*
-         * Restore page size only when enabled and non-default.
-         */
-        if (
-            features.perPage &&
-            typeof preferences.perPage === 'number' &&
-            ALLOWED_PAGE_SIZES.includes(preferences.perPage)
-        ) {
-            if (preferences.perPage === DEFAULT_PAGE_SIZE) {
-                url.searchParams.delete('per_page');
-            } else {
-                url.searchParams.set(
-                    'per_page',
-                    String(preferences.perPage),
-                );
-            }
-        }
-
-        /*
-         * Restore sorting only when enabled and valid.
-         */
-        if (
-            features.sorting &&
-            typeof preferences.sort === 'string' &&
-            preferences.sort.length > 0 &&
-            (
-                preferences.direction === 'asc' ||
-                preferences.direction === 'desc'
-            )
-        ) {
-            const isDefaultSorting =
-                preferences.sort === DEFAULT_SORT &&
-                preferences.direction === DEFAULT_DIRECTION;
-
-            if (isDefaultSorting) {
-                url.searchParams.delete('sort');
-                url.searchParams.delete('direction');
-            } else {
-                url.searchParams.set('sort', preferences.sort);
-                url.searchParams.set(
-                    'direction',
-                    preferences.direction,
-                );
-            }
-        }
-
-        /*
-         * Start at page 1 only when restoring an actual
-         * non-default preference.
-         */
-        const hasNonDefaultPageSize =
-            features.perPage &&
-            typeof preferences.perPage === 'number' &&
-            ALLOWED_PAGE_SIZES.includes(preferences.perPage) &&
-            preferences.perPage !== DEFAULT_PAGE_SIZE;
-
-        const hasNonDefaultSorting =
-            features.sorting &&
-            typeof preferences.sort === 'string' &&
-            preferences.sort.length > 0 &&
-            (
-                preferences.direction === 'asc' ||
-                preferences.direction === 'desc'
-            ) &&
-            !(
-                preferences.sort === DEFAULT_SORT &&
-                preferences.direction === DEFAULT_DIRECTION
-            );
-
-        if (hasNonDefaultPageSize || hasNonDefaultSorting) {
-            url.searchParams.set('page', String(DEFAULT_PAGE));
-        } else {
-            url.searchParams.delete('page');
-        }
-
-        return `${url.pathname}${url.search}${url.hash}`;
-    } catch {
-        // Fall back to ordinary navigation if storage is unavailable.
-        return destination;
-    }
 };
 
 /*
@@ -312,7 +136,7 @@ watch(
         syncMobileGroups();
         mobileMenuState.value = false;
     },
-    {immediate: true},
+    { immediate: true },
 );
 </script>
 

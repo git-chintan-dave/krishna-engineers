@@ -161,10 +161,12 @@ const getActionClass = (variant?: ActionItem['variant']) => ({
                 class="max-h-[min(70vh,32rem)] w-60 max-w-[calc(100vw-2rem)] overflow-y-auto"
             >
                 <template
-                    v-for="item in actions"
+                    v-for="(item, index) in actions"
                     :key="item.key"
                 >
-                    <DropdownMenuSeparator v-if="item.separatorBefore" />
+                    <DropdownMenuSeparator
+                        v-if="actions.length > 1 && (index > 0 || item.separatorBefore)"
+                    />
 
                     <!-- Navigation Action -->
                     <DropdownMenuItem
@@ -196,9 +198,9 @@ const getActionClass = (variant?: ActionItem['variant']) => ({
                         v-else
                         :disabled="item.disabled"
                         :class="[
-                            'cursor-pointer',
-                            getActionClass(item.variant),
-                        ]"
+            'cursor-pointer',
+            getActionClass(item.variant),
+        ]"
                         @select="item.action()"
                     >
                         <component

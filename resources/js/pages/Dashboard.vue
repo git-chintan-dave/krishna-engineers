@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import {Link} from '@inertiajs/vue3';
-import {ArrowUpRight, LayoutGrid, Sparkles,} from '@lucide/vue';
+import {ArrowUpRight, LayoutGrid, Sparkles} from '@lucide/vue';
 import {computed} from 'vue';
 
+import {useListingPreferenceNavigation} from '@/composables/useListingPreferenceNavigation';
 import {dashboardPage} from '@/config/dashboard';
 import {getMainNavItems} from '@/config/navigation';
 import {dashboard} from '@/routes';
@@ -35,8 +36,6 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-type RouteTarget = string | { url: string };
-
 type QuickAction = {
     title: string;
     description: string;
@@ -50,6 +49,19 @@ type QuickActionGroup = {
     icon: NonNullable<NavItem['icon']>;
     items: QuickAction[];
 };
+
+/*
+|--------------------------------------------------------------------------
+| Navigation
+|--------------------------------------------------------------------------
+*/
+
+const { getNavigationHref } =
+    useListingPreferenceNavigation();
+
+const navigation = computed(() =>
+    getMainNavItems(props.role),
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -71,16 +83,23 @@ const getHref = (href: unknown): string | undefined => {
         return href.url;
     }
 
+    if (
+        typeof href === 'object' &&
+        href !== null &&
+        'href' in href &&
+        typeof href.href === 'string'
+    ) {
+        return href.href;
+    }
+
     return undefined;
 };
 
 /*
 |--------------------------------------------------------------------------
-| Navigation
+| Quick Actions
 |--------------------------------------------------------------------------
 */
-
-const navigation = computed(() => getMainNavItems(props.role));
 
 const quickActionGroups = computed<QuickActionGroup[]>(() => {
     const groups: QuickActionGroup[] = [];
@@ -135,8 +154,10 @@ const totalActions = computed(() =>
 </script>
 
 <template>
-    <div class="mx-auto w-full min-w-0 max-w-screen-2xl space-y-8 p-4 sm:p-6 lg:space-y-10 lg:p-8">
-        <!-- Welcome header -->
+    <div
+        class="mx-auto w-full min-w-0 max-w-screen-2xl space-y-8 p-4 sm:p-6 lg:space-y-10 lg:p-8"
+    >
+        <!-- Welcome Header -->
         <section
             class="relative isolate overflow-hidden rounded-2xl border bg-card p-6 shadow-sm sm:p-8"
         >
@@ -195,7 +216,7 @@ const totalActions = computed(() =>
             </div>
         </section>
 
-        <!-- Quick Actions heading -->
+        <!-- Quick Actions -->
         <section class="space-y-7">
             <div
                 class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"
@@ -218,24 +239,20 @@ const totalActions = computed(() =>
                     </p>
                 </div>
 
-                <p
-                    class="text-xs font-medium text-muted-foreground"
-                >
+                <p class="text-xs font-medium text-muted-foreground">
                     {{ totalActions }} modules available
                 </p>
             </div>
 
-            <!-- Navigation groups -->
+            <!-- Navigation Groups -->
             <div class="space-y-9">
                 <section
-                    v-for="(group, groupIndex) in quickActionGroups"
+                    v-for="group in quickActionGroups"
                     :key="group.title"
                     class="space-y-4"
                 >
-                    <!-- Group header -->
-                    <div
-                        class="flex items-center gap-3 border-b pb-3"
-                    >
+                    <!-- Group Header -->
+                    <div class="flex items-center gap-3 border-b pb-3">
                         <div
                             class="flex size-10 shrink-0 items-center justify-center rounded-xl border bg-muted/50"
                         >
@@ -246,9 +263,7 @@ const totalActions = computed(() =>
                         </div>
 
                         <div class="min-w-0 flex-1">
-                            <h3
-                                class="text-sm font-semibold tracking-wide"
-                            >
+                            <h3 class="text-sm font-semibold tracking-wide">
                                 {{ group.title }}
                             </h3>
 
@@ -267,17 +282,17 @@ const totalActions = computed(() =>
                         </span>
                     </div>
 
-                    <!-- Action cards -->
+                    <!-- Action Cards -->
                     <div
                         class="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
                     >
                         <Link
                             v-for="action in group.items"
                             :key="action.title"
-                            :href="action.href"
+                            :href="getNavigationHref(action.href)"
                             class="group relative flex min-h-28 min-w-0 items-start gap-4 overflow-hidden rounded-xl border bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         >
-                            <!-- Module icon -->
+                            <!-- Module Icon -->
                             <div
                                 class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted/70 text-muted-foreground transition-colors duration-200 group-hover:bg-primary/10 group-hover:text-primary"
                             >
@@ -287,7 +302,7 @@ const totalActions = computed(() =>
                                 />
                             </div>
 
-                            <!-- Module details -->
+                            <!-- Module Details -->
                             <div class="min-w-0 flex-1 pt-0.5">
                                 <h4
                                     class="truncate text-sm font-semibold transition-colors group-hover:text-primary"
@@ -301,6 +316,7 @@ const totalActions = computed(() =>
                                 >
                                     {{ action.description }}
                                 </p>
+
                                 <p
                                     v-else
                                     class="mt-1 text-xs leading-5 text-muted-foreground"
@@ -309,7 +325,7 @@ const totalActions = computed(() =>
                                 </p>
                             </div>
 
-                            <!-- Navigation indicator -->
+                            <!-- Navigation Indicator -->
                             <div
                                 class="mt-1 flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-all duration-200 group-hover:bg-primary/10 group-hover:text-primary"
                             >
@@ -322,7 +338,7 @@ const totalActions = computed(() =>
                 </section>
             </div>
 
-            <!-- Empty state -->
+            <!-- Empty State -->
             <div
                 v-if="quickActionGroups.length === 0"
                 class="flex flex-col items-center justify-center rounded-2xl border border-dashed px-6 py-16 text-center"
