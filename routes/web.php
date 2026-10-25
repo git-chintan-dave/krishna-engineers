@@ -18,7 +18,19 @@ use App\Http\Controllers\ToolController;
 use App\Http\Controllers\ToolTransactionController;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::inertia('/', 'Welcome')->name('home');
+
+/*
+|--------------------------------------------------------------------------
+| Authenticated Routes
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware('auth')->group(function () {
     /*
@@ -28,7 +40,6 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::get('/dashboard', DashboardController::class)
-        ->middleware('auth')
         ->name('dashboard');
 
     /*
@@ -38,126 +49,145 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::prefix('master')->group(function () {
-        // Machines
-        Route::delete(
-            'machines/bulk-delete',
-            [MachineController::class, 'bulkDestroy'],
-        )->name('machines.bulk-destroy');
+        /*
+        | Machines
+        */
 
+        Route::controller(MachineController::class)
+            ->prefix('machines')
+            ->group(function () {
+                Route::delete('/bulk-delete', 'bulkDestroy')
+                    ->name('machines.bulk-destroy');
 
-        Route::get('machines/import', [MachineController::class, 'import'])
-            ->name('machines.import.view');
+                Route::get('/import', 'import')
+                    ->name('machines.import.view');
 
-        Route::post('machines/import', [MachineController::class, 'importStore'])
-            ->name('machines.import.store');
+                Route::post('/import', 'importStore')
+                    ->name('machines.import.store');
+            });
 
+        Route::resource('machines', MachineController::class)
+            ->except(['show']);
 
-        Route::resource(
-            'machines',
-            MachineController::class,
-        )->except(['show']);
+        /*
+        | Parts
+        */
 
-        // Parts
-        Route::delete(
-            'parts/bulk-delete',
-            [PartController::class, 'bulkDestroy'],
-        )->name('parts.bulk-destroy');
+        Route::controller(PartController::class)
+            ->prefix('parts')
+            ->group(function () {
+                Route::delete('/bulk-delete', 'bulkDestroy')
+                    ->name('parts.bulk-destroy');
 
-        Route::get('parts/import', [PartController::class, 'import'])
-            ->name('parts.import.view');
+                Route::get('/import', 'import')
+                    ->name('parts.import.view');
 
-        Route::post('parts/import', [PartController::class, 'importStore'])
-            ->name('parts.import.store');
+                Route::post('/import', 'importStore')
+                    ->name('parts.import.store');
+            });
 
-        Route::resource(
-            'parts',
-            PartController::class,
-        )->except(['show']);
+        Route::resource('parts', PartController::class)
+            ->except(['show']);
 
-        // Setups
-        Route::delete(
-            'setups/bulk-delete',
-            [SetupController::class, 'bulkDestroy'],
-        )->name('setups.bulk-destroy');
+        /*
+        | Setups
+        */
 
-        Route::get('setups/import', [SetupController::class, 'import'])
-            ->name('setups.import.view');
+        Route::controller(SetupController::class)
+            ->prefix('setups')
+            ->group(function () {
+                Route::delete('/bulk-delete', 'bulkDestroy')
+                    ->name('setups.bulk-destroy');
 
-        Route::post('setups/import', [SetupController::class, 'importStore'])
-            ->name('setups.import.store');
+                Route::get('/import', 'import')
+                    ->name('setups.import.view');
 
-        Route::resource(
-            'setups',
-            SetupController::class,
-        )->except(['show']);
+                Route::post('/import', 'importStore')
+                    ->name('setups.import.store');
+            });
 
-        // Part Setups
-        Route::delete(
-            'part-setups/bulk-delete',
-            [PartSetupController::class, 'bulkDestroy'],
-        )->name('part-setups.bulk-destroy');
+        Route::resource('setups', SetupController::class)
+            ->except(['show']);
 
-        Route::get('part-setups/import', [PartSetupController::class, 'import'])
-            ->name('part-setups.import.view');
+        /*
+        | Part Setups
+        */
 
-        Route::post('part-setups/import', [PartSetupController::class, 'importStore'])
-            ->name('part-setups.import.store');
+        Route::controller(PartSetupController::class)
+            ->prefix('part-setups')
+            ->group(function () {
+                Route::delete('/bulk-delete', 'bulkDestroy')
+                    ->name('part-setups.bulk-destroy');
 
-        Route::resource(
-            'part-setups',
-            PartSetupController::class,
-        )->except(['show']);
+                Route::get('/import', 'import')
+                    ->name('part-setups.import.view');
 
-        // Sections
-        Route::delete(
-            'sections/bulk-delete',
-            [SectionController::class, 'bulkDestroy'],
-        )->name('sections.bulk-destroy');
+                Route::post('/import', 'importStore')
+                    ->name('part-setups.import.store');
+            });
 
-        Route::get('sections/import', [SectionController::class, 'import'])
-            ->name('sections.import.view');
+        Route::resource('part-setups', PartSetupController::class)
+            ->except(['show']);
 
-        Route::post('sections/import', [SectionController::class, 'importStore'])
-            ->name('sections.import.store');
+        /*
+        | Sections
+        */
 
-        Route::resource(
-            'sections',
-            SectionController::class,
-        )->except(['show']);
+        Route::controller(SectionController::class)
+            ->prefix('sections')
+            ->group(function () {
+                Route::delete('/bulk-delete', 'bulkDestroy')
+                    ->name('sections.bulk-destroy');
 
-        // Section Sizes
-        Route::delete(
-            'section-sizes/bulk-delete',
-            [SectionSizeController::class, 'bulkDestroy'],
-        )->name('section-sizes.bulk-destroy');
+                Route::get('/import', 'import')
+                    ->name('sections.import.view');
 
-        Route::get('section-sizes/import', [SectionSizeController::class, 'import'])
-            ->name('section-sizes.import.view');
+                Route::post('/import', 'importStore')
+                    ->name('sections.import.store');
+            });
 
-        Route::post('section-sizes/import', [SectionSizeController::class, 'importStore'])
-            ->name('section-sizes.import.store');
+        Route::resource('sections', SectionController::class)
+            ->except(['show']);
 
-        Route::resource(
-            'section-sizes',
-            SectionSizeController::class,
-        )->except(['show']);
+        /*
+        | Section Sizes
+        */
 
-        // Tools
-        Route::delete(
-            'tools/bulk-delete',
-            [ToolController::class, 'bulkDestroy'],
-        )->name('tools.bulk-destroy');
+        Route::controller(SectionSizeController::class)
+            ->prefix('section-sizes')
+            ->group(function () {
+                Route::delete('/bulk-delete', 'bulkDestroy')
+                    ->name('section-sizes.bulk-destroy');
 
-        Route::get('tools/import', [ToolController::class, 'import'])
-            ->name('tools.import.view');
+                Route::get('/import', 'import')
+                    ->name('section-sizes.import.view');
 
-        Route::post('tools/import', [ToolController::class, 'importStore'])
-            ->name('tools.import.store');
+                Route::post('/import', 'importStore')
+                    ->name('section-sizes.import.store');
+            });
 
-        Route::resource(
-            'tools',
-            ToolController::class,
-        )->except(['show']);
+        Route::resource('section-sizes', SectionSizeController::class)
+            ->except(['show']);
+
+        /*
+        | Tools
+        */
+
+        Route::controller(ToolController::class)
+            ->prefix('tools')
+            ->group(function () {
+                Route::delete('/bulk-delete', 'bulkDestroy')
+                    ->name('tools.bulk-destroy');
+
+                Route::get('/import', 'import')
+                    ->name('tools.import.view');
+
+                Route::post('/import', 'importStore')
+                    ->name('tools.import.store');
+            });
+
+        Route::resource('tools', ToolController::class)
+            ->except(['show']);
     });
 
     /*
@@ -167,7 +197,10 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::prefix('inventory')->group(function () {
-        // Raw Material Transactions
+        /*
+        | Raw Material Transactions
+        */
+
         Route::delete(
             'raw-material-transactions/bulk-delete',
             [RawMaterialTransactionController::class, 'bulkDestroy'],
@@ -178,7 +211,10 @@ Route::middleware('auth')->group(function () {
             RawMaterialTransactionController::class,
         )->except(['show']);
 
-        // Tool Transactions
+        /*
+        | Tool Transactions
+        */
+
         Route::delete(
             'tool-transactions/bulk-delete',
             [ToolTransactionController::class, 'bulkDestroy'],
@@ -197,89 +233,86 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::prefix('people')->group(function () {
-        // Employees
-        Route::delete(
-            'employees/bulk-delete',
-            [EmployeeController::class, 'bulkDestroy'],
-        )->name('employees.bulk-destroy');
+        /*
+        | Employees
+        */
 
-        Route::get('employees/import', [EmployeeController::class, 'import'])
-            ->name('employees.import.view');
+        Route::controller(EmployeeController::class)
+            ->prefix('employees')
+            ->group(function () {
+                Route::delete('/bulk-delete', 'bulkDestroy')
+                    ->name('employees.bulk-destroy');
 
-        Route::post('employees/import', [EmployeeController::class, 'importStore'])
-            ->name('employees.import.store');
+                Route::get('/import', 'import')
+                    ->name('employees.import.view');
 
-        Route::resource(
-            'employees',
-            EmployeeController::class,
-        )->except(['show']);
+                Route::post('/import', 'importStore')
+                    ->name('employees.import.store');
+            });
 
-        // Attendances
-        Route::get(
-            'attendances/import',
-            [AttendanceController::class, 'importView'],
-        )->name('attendances.import.view');
+        Route::resource('employees', EmployeeController::class)
+            ->except(['show']);
 
-        Route::post(
-            'attendances/import',
-            [AttendanceController::class, 'import'],
-        )->name('attendances.import.store');
+        /*
+        | Attendances
+        */
 
-        Route::post(
-            'attendances/sync',
-            [AttendanceController::class, 'sync'],
-        )->name('attendances.sync');
+        Route::controller(AttendanceController::class)
+            ->prefix('attendances')
+            ->group(function () {
+                Route::get('/import', 'importView')
+                    ->name('attendances.import.view');
 
-        Route::delete(
-            'attendances/bulk-delete',
-            [AttendanceController::class, 'bulkDestroy'],
-        )->name('attendances.bulk-destroy');
+                Route::post('/import', 'import')
+                    ->name('attendances.import.store');
 
-        Route::get(
-            'attendances/history',
-            [AttendanceController::class, 'history'],
-        )->name('attendances.history');
+                Route::post('/sync', 'sync')
+                    ->name('attendances.sync');
 
-        Route::resource(
-            'attendances',
-            AttendanceController::class,
-        )->except(['show']);
+                Route::delete('/bulk-delete', 'bulkDestroy')
+                    ->name('attendances.bulk-destroy');
 
-        // Salaries
-        Route::delete(
-            'salaries/bulk-delete',
-            [SalaryController::class, 'bulkDestroy'],
-        )->name('salaries.bulk-destroy');
+                Route::get('/history', 'history')
+                    ->name('attendances.history');
+            });
 
-        Route::get(
-            'salaries/preview',
-            [SalaryController::class, 'preview'],
-        )->name('salaries.preview');
+        Route::resource('attendances', AttendanceController::class)
+            ->except(['show']);
 
-        Route::post(
-            'salaries/{salary}/mark-as-paid',
-            [SalaryController::class, 'markAsPaid'],
-        )->name('salaries.mark-as-paid');
+        /*
+        | Salaries
+        */
 
-        Route::post(
-            'salaries/generate-last-month',
-            [SalaryController::class, 'generateLastMonth']
-        )->name('salaries.generate-last-month');
+        Route::controller(SalaryController::class)
+            ->prefix('salaries')
+            ->group(function () {
+                Route::delete('/bulk-delete', 'bulkDestroy')
+                    ->name('salaries.bulk-destroy');
 
-        Route::resource(
-            'salaries',
-            SalaryController::class,
-        );
+                Route::get('/preview', 'preview')
+                    ->name('salaries.preview');
+
+                Route::post('/{salary}/mark-as-paid', 'markAsPaid')
+                    ->name('salaries.mark-as-paid');
+
+                Route::post('/generate-last-month', 'generateLastMonth')
+                    ->name('salaries.generate-last-month');
+            });
+
+        Route::resource('salaries', SalaryController::class);
     });
 
     /*
     |--------------------------------------------------------------------------
-    | Work logs
+    | Work Logs
     |--------------------------------------------------------------------------
     */
 
     Route::prefix('work-logs')->group(function () {
-        // Operator
+        /*
+        | Operator Work Logs
+        */
+
         Route::delete(
             'operator/bulk-delete',
             [OperatorWorkLogController::class, 'bulkDestroy'],
@@ -290,7 +323,10 @@ Route::middleware('auth')->group(function () {
             OperatorWorkLogController::class,
         )->except(['show']);
 
-        // Bandsaw
+        /*
+        | Bandsaw Work Logs
+        */
+
         Route::delete(
             'bandsaw/bulk-delete',
             [BandsawWorkLogController::class, 'bulkDestroy'],
@@ -302,12 +338,20 @@ Route::middleware('auth')->group(function () {
         )->except(['show']);
     });
 
-    // Lookup
+    /*
+    |--------------------------------------------------------------------------
+    | Lookups
+    |--------------------------------------------------------------------------
+    */
+
     Route::prefix('lookups')
         ->name('lookups.')
         ->controller(LookupController::class)
         ->group(function () {
-            // Enums
+            /*
+            | Enums
+            */
+
             Route::get('/enums', 'allEnums')
                 ->name('enums.all');
 
@@ -317,7 +361,10 @@ Route::middleware('auth')->group(function () {
             Route::post('/enums', 'enums')
                 ->name('enums.multiple');
 
-            // Database
+            /*
+            | Master Data Lookups
+            */
+
             Route::get('/parts', 'parts')
                 ->name('parts');
 
@@ -339,7 +386,12 @@ Route::middleware('auth')->group(function () {
             Route::get('/tools', 'tools')
                 ->name('tools');
         });
-
 });
+
+/*
+|--------------------------------------------------------------------------
+| Settings Routes
+|--------------------------------------------------------------------------
+*/
 
 require __DIR__.'/settings.php';
