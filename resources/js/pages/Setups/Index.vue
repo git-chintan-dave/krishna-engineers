@@ -14,7 +14,8 @@ import {bulkDestroy, create, destroy, index as setupsRoute,} from '@/routes/setu
 import {createSetupColumns} from '@/table/setups';
 import type {Setup, SetupFilters, SetupSort, SetupsResponse,} from '@/types/setup';
 import type {StatusFilter} from '@/types/listing';
-import {RotateCcw} from '@lucide/vue';
+import {FileUp, RotateCcw} from '@lucide/vue';
+import {view as setupsImportRoute} from "@/routes/setups/import";
 
 /*
 |--------------------------------------------------------------------------
@@ -101,6 +102,12 @@ const {
 */
 
 const actions = computed<ActionItem[]>(() => [
+    {
+        key: 'import',
+        label: 'Import',
+        icon: FileUp,
+        href: setupsImportRoute().url,
+    },
     {
         key: 'reset-preferences',
         label: 'Reset preferences',

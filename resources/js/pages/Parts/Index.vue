@@ -1,7 +1,7 @@
 ﻿<script lang="ts" setup>
 import {router} from '@inertiajs/vue3';
 import {computed, ref} from 'vue';
-import {RotateCcw} from '@lucide/vue';
+import {FileUp, RotateCcw} from '@lucide/vue';
 
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
@@ -16,6 +16,7 @@ import {bulkDestroy, create, destroy, index as partsRoute,} from '@/routes/parts
 import {createPartColumns} from '@/table/parts';
 import type {Part, PartFilters, PartSort, PartsResponse,} from '@/types/part';
 import type {StatusFilter} from '@/types/listing';
+import {view as partsImportRoute} from "@/routes/parts/import";
 
 /*
 |--------------------------------------------------------------------------
@@ -113,6 +114,12 @@ const {
 */
 
 const actions = computed<ActionItem[]>(() => [
+    {
+        key: 'import',
+        label: 'Import',
+        icon: FileUp,
+        href: partsImportRoute().url,
+    },
     {
         key: 'reset-preferences',
         label: 'Reset preferences',

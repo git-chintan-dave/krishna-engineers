@@ -44,6 +44,14 @@ Route::middleware('auth')->group(function () {
             [MachineController::class, 'bulkDestroy'],
         )->name('machines.bulk-destroy');
 
+
+        Route::get('machines/import', [MachineController::class, 'import'])
+            ->name('machines.import.view');
+
+        Route::post('machines/import', [MachineController::class, 'importStore'])
+            ->name('machines.import.store');
+
+
         Route::resource(
             'machines',
             MachineController::class,
@@ -54,6 +62,12 @@ Route::middleware('auth')->group(function () {
             'parts/bulk-delete',
             [PartController::class, 'bulkDestroy'],
         )->name('parts.bulk-destroy');
+
+        Route::get('parts/import', [PartController::class, 'import'])
+            ->name('parts.import.view');
+
+        Route::post('parts/import', [PartController::class, 'importStore'])
+            ->name('parts.import.store');
 
         Route::resource(
             'parts',
@@ -66,6 +80,12 @@ Route::middleware('auth')->group(function () {
             [SetupController::class, 'bulkDestroy'],
         )->name('setups.bulk-destroy');
 
+        Route::get('setups/import', [SetupController::class, 'import'])
+            ->name('setups.import.view');
+
+        Route::post('setups/import', [SetupController::class, 'importStore'])
+            ->name('setups.import.store');
+
         Route::resource(
             'setups',
             SetupController::class,
@@ -76,6 +96,12 @@ Route::middleware('auth')->group(function () {
             'part-setups/bulk-delete',
             [PartSetupController::class, 'bulkDestroy'],
         )->name('part-setups.bulk-destroy');
+
+        Route::get('part-setups/import', [PartSetupController::class, 'import'])
+            ->name('part-setups.import.view');
+
+        Route::post('part-setups/import', [PartSetupController::class, 'importStore'])
+            ->name('part-setups.import.store');
 
         Route::resource(
             'part-setups',
@@ -88,6 +114,12 @@ Route::middleware('auth')->group(function () {
             [SectionController::class, 'bulkDestroy'],
         )->name('sections.bulk-destroy');
 
+        Route::get('sections/import', [SectionController::class, 'import'])
+            ->name('sections.import.view');
+
+        Route::post('sections/import', [SectionController::class, 'importStore'])
+            ->name('sections.import.store');
+
         Route::resource(
             'sections',
             SectionController::class,
@@ -99,6 +131,12 @@ Route::middleware('auth')->group(function () {
             [SectionSizeController::class, 'bulkDestroy'],
         )->name('section-sizes.bulk-destroy');
 
+        Route::get('section-sizes/import', [SectionSizeController::class, 'import'])
+            ->name('section-sizes.import.view');
+
+        Route::post('section-sizes/import', [SectionSizeController::class, 'importStore'])
+            ->name('section-sizes.import.store');
+
         Route::resource(
             'section-sizes',
             SectionSizeController::class,
@@ -109,6 +147,12 @@ Route::middleware('auth')->group(function () {
             'tools/bulk-delete',
             [ToolController::class, 'bulkDestroy'],
         )->name('tools.bulk-destroy');
+
+        Route::get('tools/import', [ToolController::class, 'import'])
+            ->name('tools.import.view');
+
+        Route::post('tools/import', [ToolController::class, 'importStore'])
+            ->name('tools.import.store');
 
         Route::resource(
             'tools',
@@ -158,6 +202,12 @@ Route::middleware('auth')->group(function () {
             'employees/bulk-delete',
             [EmployeeController::class, 'bulkDestroy'],
         )->name('employees.bulk-destroy');
+
+        Route::get('employees/import', [EmployeeController::class, 'import'])
+            ->name('employees.import.view');
+
+        Route::post('employees/import', [EmployeeController::class, 'importStore'])
+            ->name('employees.import.store');
 
         Route::resource(
             'employees',

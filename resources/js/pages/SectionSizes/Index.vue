@@ -13,7 +13,8 @@ import {sectionSizePage} from '@/config/sectionSizes';
 import {bulkDestroy, create, destroy, index as sectionSizesRoute,} from '@/routes/section-sizes';
 import {createSectionSizeColumns} from '@/table/sectionSizes';
 import type {SectionSize, SectionSizeFilters, SectionSizeSort, SectionSizesResponse,} from '@/types/sectionSize';
-import {RotateCcw} from '@lucide/vue';
+import {FileUp, RotateCcw} from '@lucide/vue';
+import {view as sectionSizesImportRoute} from "@/routes/section-sizes/import";
 
 /*
 |--------------------------------------------------------------------------
@@ -103,6 +104,12 @@ const {
 */
 
 const actions = computed<ActionItem[]>(() => [
+    {
+        key: 'import',
+        label: 'Import',
+        icon: FileUp,
+        href: sectionSizesImportRoute().url,
+    },
     {
         key: 'reset-preferences',
         label: 'Reset preferences',

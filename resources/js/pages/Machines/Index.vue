@@ -14,7 +14,8 @@ import {bulkDestroy, create, destroy, index as machinesRoute,} from '@/routes/ma
 import {createMachineColumns} from '@/table/machines';
 import type {Machine, MachineFilters, MachineSort, MachinesResponse,} from '@/types/machine';
 import type {StatusFilter} from '@/types/listing';
-import {RotateCcw} from "@lucide/vue";
+import {FileUp, RotateCcw} from "@lucide/vue";
+import {view as machinesImportRoute} from "@/routes/machines/import";
 
 /*
 |--------------------------------------------------------------------------
@@ -98,6 +99,12 @@ const {
 */
 
 const actions = computed<ActionItem[]>(() => [
+    {
+        key: 'import',
+        label: 'Import',
+        icon: FileUp,
+        href: machinesImportRoute().url,
+    },
     {
         key: 'reset-preferences',
         label: 'Reset preferences',

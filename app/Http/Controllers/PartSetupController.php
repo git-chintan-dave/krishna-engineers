@@ -7,12 +7,15 @@ use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\PartSetups\IndexPartSetupRequest;
 use App\Http\Requests\PartSetups\PartSetupRequest;
 use App\Http\Resources\PartSetupResource;
+use App\Imports\PartSetupsImport;
 use App\Models\PartSetup;
 use App\Services\FileUploadService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PartSetupController extends Controller
 {
@@ -216,4 +219,33 @@ class PartSetupController extends Controller
             'bulk_deleted',
         );
     }
+
+
+    public function import()
+    {
+        return Inertia::render('PartSetups/Import', []);
+    }
+
+    public function importStore(Request $request)
+    {
+        $request->validate([
+            'file' => [
+                'required',
+                'file',
+                'mimes:xlsx,xls,csv',
+                'max:10240',
+            ],
+        ]);
+
+        $import = new PartSetupsImport();
+
+        Excel::import($import, $request->file('file'));
+
+        return $this->successResponse(
+            action: 'imported_with_counts',
+            created: $import->getCreatedCount(),
+            updated: $import->getUpdatedCount(),
+        );
+    }
+
 }

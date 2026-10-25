@@ -13,6 +13,7 @@ import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
 import {useListingTable} from '@/composables/useListingTable';
 import {employeePage} from '@/config/employees';
 import {bulkDestroy, create, destroy, index as employeesRoute,} from '@/routes/employees';
+import {view as employeesImportRoute} from '@/routes/employees/import';
 import {createEmployeeColumns} from '@/table/employees';
 import type {
     Employee,
@@ -23,7 +24,7 @@ import type {
     EmployeesResponse,
 } from '@/types/employee';
 import type {StatusFilter} from '@/types/listing';
-import {RotateCcw} from "@lucide/vue";
+import {FileUp, RotateCcw} from "@lucide/vue";
 
 /*
 |--------------------------------------------------------------------------
@@ -123,6 +124,12 @@ const {
 */
 
 const actions = computed<ActionItem[]>(() => [
+    {
+        key: 'import',
+        label: 'Import',
+        icon: FileUp,
+        href: employeesImportRoute().url,
+    },
     {
         key: 'reset-preferences',
         label: 'Reset preferences',

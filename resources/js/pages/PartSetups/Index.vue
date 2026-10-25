@@ -1,7 +1,7 @@
 ﻿<script lang="ts" setup>
 import {router} from '@inertiajs/vue3';
 import {computed, ref} from 'vue';
-import {RotateCcw} from '@lucide/vue';
+import {FileUp, RotateCcw} from '@lucide/vue';
 
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
@@ -15,6 +15,7 @@ import {partSetupPage} from '@/config/partSetups';
 import {bulkDestroy, create, destroy, index as partSetupsRoute,} from '@/routes/part-setups';
 import {createPartSetupColumns} from '@/table/partSetups';
 import type {PartSetup, PartSetupFilters, PartSetupSort, PartSetupsResponse,} from '@/types/partSetup';
+import {view as partSetupsImportRoute} from "@/routes/part-setups/import";
 
 /*
 |--------------------------------------------------------------------------
@@ -98,6 +99,12 @@ const {
 */
 
 const actions = computed<ActionItem[]>(() => [
+    {
+        key: 'import',
+        label: 'Import',
+        icon: FileUp,
+        href: partSetupsImportRoute().url,
+    },
     {
         key: 'reset-preferences',
         label: 'Reset preferences',

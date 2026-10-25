@@ -11,12 +11,16 @@ trait HasCrudResponses
     protected function successResponse(
         string $action,
         ?string $message = null,
+        int $created = 0,
+        int $updated = 0,
     ): RedirectResponse {
         return ResponseHelper::success(
             message: $message ?? FlashMessage::success(
-                $action,
-                self::MODULE_NAME,
-            ),
+            $action,
+            self::MODULE_NAME,
+            $created,
+            $updated,
+        ),
             route: self::INDEX_ROUTE,
         );
     }

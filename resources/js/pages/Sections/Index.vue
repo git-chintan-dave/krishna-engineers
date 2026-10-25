@@ -14,7 +14,8 @@ import {bulkDestroy, create, destroy, index as sectionsRoute,} from '@/routes/se
 import {createSectionColumns} from '@/table/sections';
 import type {Section, SectionFilters, SectionSort, SectionsResponse,} from '@/types/section';
 import type {StatusFilter} from '@/types/listing';
-import {RotateCcw} from '@lucide/vue';
+import {FileUp, RotateCcw} from '@lucide/vue';
+import {view as sectionsImportRoute} from "@/routes/sections/import";
 
 /*
 |--------------------------------------------------------------------------
@@ -101,6 +102,12 @@ const {
 */
 
 const actions = computed<ActionItem[]>(() => [
+    {
+        key: 'import',
+        label: 'Import',
+        icon: FileUp,
+        href: sectionsImportRoute().url,
+    },
     {
         key: 'reset-preferences',
         label: 'Reset preferences',

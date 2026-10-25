@@ -15,7 +15,8 @@ import {bulkDestroy, create, destroy, index as toolsRoute,} from '@/routes/tools
 import {createToolColumns} from '@/table/tools';
 import type {Tool, ToolFilters, ToolSort, ToolsResponse} from '@/types/tool';
 import type {StatusFilter} from '@/types/listing';
-import {RotateCcw} from '@lucide/vue';
+import {FileUp, RotateCcw} from '@lucide/vue';
+import {view as toolsImportRoute} from "@/routes/tools/import";
 
 /*
 |--------------------------------------------------------------------------
@@ -109,6 +110,12 @@ const {
 */
 
 const actions = computed<ActionItem[]>(() => [
+    {
+        key: 'import',
+        label: 'Import',
+        icon: FileUp,
+        href: toolsImportRoute().url,
+    },
     {
         key: 'reset-preferences',
         label: 'Reset preferences',

@@ -10,6 +10,8 @@ class FlashMessage
     public static function success(
         string $action,
         string $module,
+        int $created = 0,
+        int $updated = 0,
     ): string {
         return match ($action) {
             'added' => "{$module} added successfully.",
@@ -21,6 +23,7 @@ class FlashMessage
             'permissions_updated' => "{$module} permissions updated successfully.",
             'default_updated' => "Default {$module} updated successfully.",
             'imported' => "{$module} imported successfully.",
+            'imported_with_counts' => "{$module} imported successfully. Created: {$created}, Updated: {$updated}.",
             'exported' => "{$module} exported successfully.",
             'assigned' => "{$module} assigned successfully.",
             'unassigned' => "{$module} unassigned successfully.",

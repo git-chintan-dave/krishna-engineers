@@ -7,11 +7,14 @@ use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\Sections\IndexSectionRequest;
 use App\Http\Requests\Sections\SectionRequest;
 use App\Http\Resources\SectionResource;
+use App\Imports\SectionsImport;
 use App\Models\Section;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SectionController extends Controller
 {
@@ -144,4 +147,33 @@ class SectionController extends Controller
 
         return $this->successResponse('bulk_deleted');
     }
+
+
+    public function import()
+    {
+        return Inertia::render('Sections/Import', []);
+    }
+
+    public function importStore(Request $request)
+    {
+        $request->validate([
+            'file' => [
+                'required',
+                'file',
+                'mimes:xlsx,xls,csv',
+                'max:10240',
+            ],
+        ]);
+
+        $import = new SectionsImport();
+
+        Excel::import($import, $request->file('file'));
+
+        return $this->successResponse(
+            action: 'imported_with_counts',
+            created: $import->getCreatedCount(),
+            updated: $import->getUpdatedCount(),
+        );
+    }
+
 }
