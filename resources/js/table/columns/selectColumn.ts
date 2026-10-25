@@ -1,7 +1,7 @@
-import { h } from 'vue';
+import {h} from 'vue';
 
-import { Checkbox } from '@/components/ui/checkbox';
-import { COLUMN_WIDTHS } from '@/table/constants/columnWidths';
+import {Checkbox} from '@/components/ui/checkbox';
+import {COLUMN_DEFAULTS} from '@/table/constants/columns';
 
 /*
 |--------------------------------------------------------------------------
@@ -21,14 +21,14 @@ type SelectColumnOptions<TData = any> = {
 */
 
 export const createSelectColumn = <TData = any>({
-    resourceName,
-    isSelectable,
-}: SelectColumnOptions<TData>) => ({
+                                                    resourceName,
+                                                    isSelectable,
+                                                }: SelectColumnOptions<TData>) => ({
     id: 'select',
 
-    size: COLUMN_WIDTHS.select,
-    minSize: COLUMN_WIDTHS.select,
-    maxSize: COLUMN_WIDTHS.select,
+    size: COLUMN_DEFAULTS.select.size,
+    minSize: COLUMN_DEFAULTS.select.minSize,
+    maxSize: COLUMN_DEFAULTS.select.maxSize,
 
     header: ({ table }: any) =>
         h(Checkbox, {

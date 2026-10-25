@@ -7,6 +7,7 @@ import { createSelectColumn } from '@/table/columns/selectColumn';
 import { createStatusColumn } from '@/table/columns/statusColumn';
 import { createColumn } from '@/table/helpers/createColumn';
 import type { Section } from '@/types/section';
+import { COLUMN_DEFAULTS } from '@/table/constants/columns';
 
 const columnHelper = createColumnHelper<any, Section>();
 
@@ -19,18 +20,13 @@ export const createSectionColumns = (handleDelete: (uuid: string) => void) =>
         createColumn({
             accessorKey: 'name',
             header: 'Name',
-            size: 300,
+            ...COLUMN_DEFAULTS.flexiblePrimaryColumn,
             sortable: true,
         }),
 
-        createStatusColumn({
-            header: 'Status',
-        }),
+        createStatusColumn(),
 
-        createDateColumn({
-            accessorKey: 'created_at',
-            header: 'Created',
-        }),
+        createDateColumn(),
 
         createActionsColumn({
             editUrl: (uuid) => edit(uuid).url,

@@ -1,8 +1,8 @@
-import { h } from 'vue';
+import {h} from 'vue';
 
-import { Badge } from '@/components/ui/badge';
-import { COLUMN_WIDTHS } from '@/table/constants/columnWidths';
-import { createColumn } from '@/table/helpers/createColumn';
+import {Badge} from '@/components/ui/badge';
+import {COLUMN_DEFAULTS} from '@/table/constants/columns';
+import {createColumn} from '@/table/helpers/createColumn';
 
 /*
 |--------------------------------------------------------------------------
@@ -25,16 +25,16 @@ type StatusColumnOptions = {
 */
 
 export const createStatusColumn = ({
-    accessorKey = 'status',
-    header = 'Status',
-    getVariant,
-}: StatusColumnOptions = {}) =>
+                                       accessorKey = 'status',
+                                       header = COLUMN_DEFAULTS.status.header,
+                                       getVariant,
+                                   }: StatusColumnOptions = {}) =>
     createColumn({
         accessorKey,
         header,
-        size: COLUMN_WIDTHS.status,
-        minSize: COLUMN_WIDTHS.status,
-        maxSize: COLUMN_WIDTHS.status,
+        size: COLUMN_DEFAULTS.status.size,
+        minSize: COLUMN_DEFAULTS.status.minSize,
+        maxSize: COLUMN_DEFAULTS.status.maxSize,
         align: 'center',
         sortable: true,
         cell: ({ getValue }) => {
@@ -43,8 +43,8 @@ export const createStatusColumn = ({
             const variant = getVariant
                 ? getVariant(status)
                 : status === 'active'
-                  ? 'default'
-                  : 'secondary';
+                    ? 'default'
+                    : 'secondary';
 
             return h(
                 Badge,

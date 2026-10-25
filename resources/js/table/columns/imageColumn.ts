@@ -1,6 +1,7 @@
-import { h } from 'vue';
+import {h} from 'vue';
 
-import { createColumn } from '@/table/helpers/createColumn';
+import {COLUMN_DEFAULTS} from '@/table/constants/columns';
+import {createColumn} from '@/table/helpers/createColumn';
 
 /*
 |--------------------------------------------------------------------------
@@ -11,8 +12,7 @@ import { createColumn } from '@/table/helpers/createColumn';
 type ImageColumnOptions<TData> = {
     getImage: (row: TData) => string | null;
     getAlt?: (row: TData) => string;
-    title?: string;
-    size?: number;
+    header?: string;
 };
 
 /*
@@ -22,16 +22,17 @@ type ImageColumnOptions<TData> = {
 */
 
 export const createImageColumn = <TData>({
-    getImage,
-    getAlt = () => 'Image',
-    title = 'Image',
-    size = 100,
-}: ImageColumnOptions<TData>) =>
+                                             getImage,
+                                             getAlt = () => 'Image',
+                                             header = COLUMN_DEFAULTS.image.header,
+                                         }: ImageColumnOptions<TData>) =>
     createColumn<TData, string | null>({
         id: 'image',
         accessorFn: (row) => getImage(row),
-        header: title,
-        size,
+        header,
+        size: COLUMN_DEFAULTS.image.size,
+        minSize: COLUMN_DEFAULTS.image.minSize,
+        maxSize: COLUMN_DEFAULTS.image.maxSize,
         cell: ({ getValue, row }) => {
             const image = getValue();
 

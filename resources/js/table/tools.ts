@@ -1,12 +1,13 @@
-import { createColumnHelper } from '@tanstack/vue-table';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit } from '@/routes/tools';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createDateColumn } from '@/table/columns/dateColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import { createStatusColumn } from '@/table/columns/statusColumn';
-import { createColumn } from '@/table/helpers/createColumn';
-import type { Tool } from '@/types/tool';
+import {edit} from '@/routes/tools';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createDateColumn} from '@/table/columns/dateColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createStatusColumn} from '@/table/columns/statusColumn';
+import {createColumn} from '@/table/helpers/createColumn';
+import type {Tool} from '@/types/tool';
+import {COLUMN_DEFAULTS} from '@/table/constants/columns';
 
 const columnHelper = createColumnHelper<any, Tool>();
 
@@ -19,7 +20,7 @@ export const createToolColumns = (handleDelete: (uuid: string) => void) =>
         createColumn({
             accessorKey: 'name',
             header: 'Name',
-            size: 260,
+            ...COLUMN_DEFAULTS.flexiblePrimaryColumn,
             sortable: true,
         }),
 
@@ -27,31 +28,20 @@ export const createToolColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'type_label',
             sortKey: 'type',
             header: 'Type',
-            size: 160,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
         }),
 
         createColumn({
             accessorKey: 'quantity',
             header: 'Quantity',
-            size: 160,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
         }),
 
-        // createImageColumn<Tool>({
-        //     getImage: (tool) => tool.image,
-        //     getAlt: (tool) => tool.name,
-        //     size: 80,
-        // }),
+        createStatusColumn(),
 
-        createStatusColumn({
-            header: 'Status',
-        }),
-
-        createDateColumn({
-            accessorKey: 'created_at',
-            header: 'Created',
-        }),
+        createDateColumn(),
 
         createActionsColumn({
             editUrl: (uuid) => edit(uuid).url,

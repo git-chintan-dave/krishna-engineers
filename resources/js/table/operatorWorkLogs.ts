@@ -1,11 +1,12 @@
-import { createColumnHelper } from '@tanstack/vue-table';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit } from '@/routes/operator';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createDateColumn } from '@/table/columns/dateColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import { createColumn } from '@/table/helpers/createColumn';
-import type { OperatorWorkLog } from '@/types/operatorWorkLog';
+import {edit} from '@/routes/operator';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createDateColumn} from '@/table/columns/dateColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createColumn} from '@/table/helpers/createColumn';
+import {COLUMN_DEFAULTS} from '@/table/constants/columns';
+import type {OperatorWorkLog} from '@/types/operatorWorkLog';
 
 const columnHelper = createColumnHelper<any, OperatorWorkLog>();
 
@@ -16,10 +17,10 @@ export const createOperatorWorkLogColumns = (
     columnHelper.columns([
         ...(canManage
             ? [
-                  createSelectColumn({
-                      resourceName: 'operator-work-logs',
-                  }),
-              ]
+                createSelectColumn({
+                    resourceName: 'operator-work-logs',
+                }),
+            ]
             : []),
 
         createDateColumn({
@@ -29,15 +30,17 @@ export const createOperatorWorkLogColumns = (
 
         ...(canManage
             ? [
-                  createColumn({
-                      accessorKey: 'user.name',
-                      sortKey: 'user.name',
-                      header: 'Operator',
-                      size: 180,
-                      align: 'center',
-                      sortable: true,
-                  }),
-              ]
+                createColumn({
+                    accessorKey: 'user.name',
+                    sortKey: 'user.name',
+                    header: 'Operator',
+                    size: 180,
+                    minSize: 180,
+                    maxSize: 180,
+                    align: 'center',
+                    sortable: true,
+                }),
+            ]
             : []),
 
         createColumn({
@@ -45,6 +48,8 @@ export const createOperatorWorkLogColumns = (
             sortKey: 'shift',
             header: 'Shift',
             size: 100,
+            minSize: 100,
+            maxSize: 100,
             align: 'center',
             sortable: true,
         }),
@@ -54,6 +59,8 @@ export const createOperatorWorkLogColumns = (
             sortKey: 'machine.name',
             header: 'Machine',
             size: 160,
+            minSize: 160,
+            maxSize: 160,
             align: 'center',
             sortable: true,
         }),
@@ -62,7 +69,7 @@ export const createOperatorWorkLogColumns = (
             accessorKey: 'part.name',
             sortKey: 'part.name',
             header: 'Part',
-            size: 160,
+            ...COLUMN_DEFAULTS.flexiblePrimaryColumn,
             align: 'center',
             sortable: true,
         }),
@@ -72,6 +79,8 @@ export const createOperatorWorkLogColumns = (
             sortKey: 'setup.name',
             header: 'Setup',
             size: 100,
+            minSize: 100,
+            maxSize: 100,
             align: 'center',
             sortable: true,
         }),
@@ -80,6 +89,8 @@ export const createOperatorWorkLogColumns = (
             accessorKey: 'quantity',
             header: 'Quantity',
             size: 120,
+            minSize: 120,
+            maxSize: 120,
             align: 'center',
             sortable: true,
         }),
@@ -88,6 +99,8 @@ export const createOperatorWorkLogColumns = (
             accessorKey: 'rejection_quantity',
             header: 'Rejected',
             size: 120,
+            minSize: 120,
+            maxSize: 120,
             align: 'center',
             sortable: true,
         }),
@@ -96,6 +109,8 @@ export const createOperatorWorkLogColumns = (
             accessorKey: 'production_seconds',
             header: 'Production Time',
             size: 180,
+            minSize: 180,
+            maxSize: 180,
             align: 'center',
             sortable: true,
             cell: ({ row }) => row.original.production_seconds_formatted ?? '—',
@@ -104,8 +119,10 @@ export const createOperatorWorkLogColumns = (
         createColumn<OperatorWorkLog, number | null>({
             accessorKey: 'production_efficiency',
             header: 'Daily Efficiency',
-            align: 'center',
             size: 140,
+            minSize: 140,
+            maxSize: 140,
+            align: 'center',
             cell: ({ getValue }) => {
                 const efficiency = getValue();
 
@@ -115,11 +132,11 @@ export const createOperatorWorkLogColumns = (
 
         ...(canManage
             ? [
-                  createActionsColumn({
-                      editUrl: (uuid) => edit(uuid).url,
-                      resourceName: 'operator work log',
-                      handleDelete,
-                  }),
-              ]
+                createActionsColumn({
+                    editUrl: (uuid) => edit(uuid).url,
+                    resourceName: 'operator work log',
+                    handleDelete,
+                }),
+            ]
             : []),
     ]);

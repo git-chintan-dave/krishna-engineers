@@ -1,10 +1,10 @@
-import { Link } from '@inertiajs/vue3';
-import { CheckCircle2, Eye, Pencil, Trash2 } from '@lucide/vue';
-import { h, withDirectives } from 'vue';
+import {Link} from '@inertiajs/vue3';
+import {CheckCircle2, Eye, Pencil, Trash2} from '@lucide/vue';
+import {h, withDirectives} from 'vue';
 
-import { Button } from '@/components/ui/button';
+import {Button} from '@/components/ui/button';
 import vConfirm from '@/directives/confirm';
-import { COLUMN_WIDTHS } from '@/table/constants/columnWidths';
+import {COLUMN_DEFAULTS} from '@/table/constants/columns';
 
 /*
 |--------------------------------------------------------------------------
@@ -31,25 +31,25 @@ type ActionsColumnOptions = {
 */
 
 export const createActionsColumn = ({
-    editUrl,
-    detailsUrl,
-    markAsPaidUrl,
-    resourceName,
-    handleDelete,
-    handleMarkAsPaid,
-    showDelete,
-    showEdit,
-    showMarkAsPaid,
-}: ActionsColumnOptions) => {
+                                        editUrl,
+                                        detailsUrl,
+                                        markAsPaidUrl,
+                                        resourceName,
+                                        handleDelete,
+                                        handleMarkAsPaid,
+                                        showDelete,
+                                        showEdit,
+                                        showMarkAsPaid,
+                                    }: ActionsColumnOptions) => {
     const hasDetails = Boolean(detailsUrl);
     const hasMarkAsPaid = Boolean(markAsPaidUrl && handleMarkAsPaid);
 
     return {
         id: 'actions',
-        header: 'Actions',
-        size: COLUMN_WIDTHS.actions,
-        minSize: COLUMN_WIDTHS.actions,
-        maxSize: COLUMN_WIDTHS.actions,
+        header: COLUMN_DEFAULTS.actions.header,
+        size: COLUMN_DEFAULTS.actions.size,
+        minSize: COLUMN_DEFAULTS.actions.minSize,
+        maxSize: COLUMN_DEFAULTS.actions.maxSize,
         meta: {
             align: 'center',
         },

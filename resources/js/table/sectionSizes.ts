@@ -6,6 +6,7 @@ import { createDateColumn } from '@/table/columns/dateColumn';
 import { createSelectColumn } from '@/table/columns/selectColumn';
 import { createColumn } from '@/table/helpers/createColumn';
 import type { SectionSize } from '@/types/sectionSize';
+import { COLUMN_DEFAULTS } from '@/table/constants/columns';
 
 const columnHelper = createColumnHelper<any, SectionSize>();
 
@@ -21,7 +22,7 @@ export const createSectionSizeColumns = (
             accessorKey: 'section.name',
             sortKey: 'section.name',
             header: 'Section',
-            size: 160,
+            ...COLUMN_DEFAULTS.flexiblePrimaryColumn,
             sortable: true,
         }),
 
@@ -29,27 +30,26 @@ export const createSectionSizeColumns = (
             accessorKey: 'size',
             header: 'Size',
             size: 180,
+            minSize: 180,
+            maxSize: 180,
             sortable: true,
         }),
 
         createColumn({
             accessorKey: 'quantity',
             header: 'Quantity',
-            size: 160,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
         }),
 
         createColumn({
             accessorKey: 'weight',
             header: 'Weight',
-            size: 160,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
         }),
 
-        createDateColumn({
-            accessorKey: 'created_at',
-            header: 'Created',
-        }),
+        createDateColumn(),
 
         createActionsColumn({
             editUrl: (uuid) => edit(uuid).url,

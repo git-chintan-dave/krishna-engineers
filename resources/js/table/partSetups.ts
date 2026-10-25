@@ -1,12 +1,13 @@
-import { createColumnHelper } from '@tanstack/vue-table';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit } from '@/routes/part-setups';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createDateColumn } from '@/table/columns/dateColumn';
-import { createImageColumn } from '@/table/columns/imageColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import { createColumn } from '@/table/helpers/createColumn';
-import type { PartSetup } from '@/types/partSetup';
+import {edit} from '@/routes/part-setups';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createDateColumn} from '@/table/columns/dateColumn';
+import {createImageColumn} from '@/table/columns/imageColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createColumn} from '@/table/helpers/createColumn';
+import type {PartSetup} from '@/types/partSetup';
+import {COLUMN_DEFAULTS} from '@/table/constants/columns';
 
 const columnHelper = createColumnHelper<any, PartSetup>();
 
@@ -26,7 +27,7 @@ export const createPartSetupColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'part.name',
             sortKey: 'part.name',
             header: 'Part',
-            size: 160,
+            ...COLUMN_DEFAULTS.flexiblePrimaryColumn,
             sortable: true,
         }),
 
@@ -34,7 +35,7 @@ export const createPartSetupColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'setup.name',
             sortKey: 'setup.name',
             header: 'Setup',
-            size: 160,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
         }),
 
@@ -42,6 +43,8 @@ export const createPartSetupColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'machine_cycle_time_seconds',
             header: 'Machine Cycle Time',
             size: 180,
+            minSize: 180,
+            maxSize: 180,
             sortable: true,
             cell: ({ row }: { row: { original: PartSetup } }) =>
                 row.original.machine_cycle_time_formatted ?? '—',
@@ -51,6 +54,8 @@ export const createPartSetupColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'actual_cycle_time_seconds',
             header: 'Actual Cycle Time',
             size: 180,
+            minSize: 180,
+            maxSize: 180,
             sortable: true,
             cell: ({ row }: { row: { original: PartSetup } }) =>
                 row.original.actual_cycle_time_formatted ?? '—',
@@ -60,13 +65,9 @@ export const createPartSetupColumns = (handleDelete: (uuid: string) => void) =>
             getImage: (partSetup) => partSetup.image,
             getAlt: (partSetup) =>
                 `${partSetup.part?.name ?? 'Part'}-${partSetup.setup?.name ?? 'Setup'}`,
-            size: 80,
         }),
 
-        createDateColumn({
-            accessorKey: 'created_at',
-            header: 'Created',
-        }),
+        createDateColumn(),
 
         createActionsColumn({
             editUrl: (uuid) => edit(uuid).url,

@@ -5,6 +5,7 @@ import { createActionsColumn } from '@/table/columns/actionsColumn';
 import { createSelectColumn } from '@/table/columns/selectColumn';
 import { createStatusColumn } from '@/table/columns/statusColumn';
 import { createColumn } from '@/table/helpers/createColumn';
+import { COLUMN_DEFAULTS } from '@/table/constants/columns';
 import type { Employee } from '@/types/employee';
 
 const columnHelper = createColumnHelper<any, Employee>();
@@ -19,7 +20,7 @@ export const createEmployeeColumns = (handleDelete: (uuid: string) => void) =>
         createColumn({
             accessorKey: 'name',
             header: 'Name',
-            size: 260,
+            ...COLUMN_DEFAULTS.flexiblePrimaryColumn,
             sortable: true,
         }),
 
@@ -27,6 +28,8 @@ export const createEmployeeColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'employee_code',
             header: 'Employee Code',
             size: 160,
+            minSize: 160,
+            maxSize: 160,
             sortable: true,
         }),
 
@@ -34,6 +37,8 @@ export const createEmployeeColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'phone_number',
             header: 'Phone',
             size: 150,
+            minSize: 150,
+            maxSize: 150,
             sortable: true,
         }),
 
@@ -41,6 +46,8 @@ export const createEmployeeColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'role',
             header: 'Role',
             size: 170,
+            minSize: 170,
+            maxSize: 170,
             sortable: true,
             cell: ({ row }) => row.original.role_label ?? '—',
         }),
@@ -49,13 +56,13 @@ export const createEmployeeColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'shift',
             header: 'Shift',
             size: 120,
+            minSize: 120,
+            maxSize: 120,
             sortable: true,
             cell: ({ row }) => row.original.shift_label ?? '—',
         }),
 
-        createStatusColumn({
-            header: 'Status',
-        }),
+        createStatusColumn(),
 
         createActionsColumn({
             editUrl: (uuid) => edit(uuid).url,

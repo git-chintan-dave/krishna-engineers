@@ -1,12 +1,13 @@
-import { createColumnHelper } from '@tanstack/vue-table';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit } from '@/routes/setups';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createDateColumn } from '@/table/columns/dateColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import { createStatusColumn } from '@/table/columns/statusColumn';
-import { createColumn } from '@/table/helpers/createColumn';
-import type { Setup } from '@/types/setup';
+import {edit} from '@/routes/setups';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createDateColumn} from '@/table/columns/dateColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createStatusColumn} from '@/table/columns/statusColumn';
+import {createColumn} from '@/table/helpers/createColumn';
+import type {Setup} from '@/types/setup';
+import {COLUMN_DEFAULTS} from "@/table/constants/columns";
 
 const columnHelper = createColumnHelper<any, Setup>();
 
@@ -19,13 +20,11 @@ export const createSetupColumns = (handleDelete: (uuid: string) => void) =>
         createColumn({
             accessorKey: 'name',
             header: 'Name',
-            size: 300,
+            ...COLUMN_DEFAULTS.flexiblePrimaryColumn,
             sortable: true,
         }),
 
-        createStatusColumn({
-            header: 'Status',
-        }),
+        createStatusColumn(),
 
         createDateColumn({
             accessorKey: 'created_at',

@@ -36,7 +36,7 @@ export type RawMaterialTransaction = {
     };
 
     type: {
-        value: string;
+        value: RawMaterialTransactionType | null;
         label: string;
     };
 
