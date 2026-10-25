@@ -3,39 +3,36 @@
 namespace App\Concerns;
 
 use App\Models\User;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 
 trait ProfileValidationRules
 {
-    /**
-     * Get the validation rules used to validate user profiles.
-     *
-     * @return array<string, array<int, ValidationRule|array<mixed>|string>>
-     */
     protected function profileRules(?int $userId = null): array
     {
         return [
             'name' => $this->nameRules(),
             'email' => $this->emailRules($userId),
+            'phone_number' => [
+                'nullable',
+                'digits:10',
+                Rule::unique('users', 'phone_number')->ignore($userId),
+            ],
+            'alternate_phone_number' => [
+                'nullable',
+                'digits:10',
+            ],
+            'aadhar_number' => [
+                'nullable',
+                'digits:12',
+            ],
         ];
     }
 
-    /**
-     * Get the validation rules used to validate user names.
-     *
-     * @return array<int, ValidationRule|array<mixed>|string>
-     */
     protected function nameRules(): array
     {
         return ['required', 'string', 'max:255'];
     }
 
-    /**
-     * Get the validation rules used to validate user emails.
-     *
-     * @return array<int, ValidationRule|array<mixed>|string>
-     */
     protected function emailRules(?int $userId = null): array
     {
         return [

@@ -1,11 +1,10 @@
 <script lang="ts" setup>
-import { Form } from '@inertiajs/vue3';
-import { useTemplateRef } from 'vue';
-import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
+import {Form} from '@inertiajs/vue3';
+import {useTemplateRef} from 'vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
-import { Button } from '@/components/ui/button';
+import {Button} from '@/components/ui/button';
 import {
     Dialog,
     DialogClose,
@@ -16,7 +15,9 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+import {Label} from '@/components/ui/label';
+import {destroy as destroyProfile} from '@/routes/profile';
+
 
 const passwordInput = useTemplateRef('passwordInput');
 </script>
@@ -40,7 +41,7 @@ const passwordInput = useTemplateRef('passwordInput');
             <Dialog>
                 <DialogTrigger as-child>
                     <Button data-test="delete-user-button" variant="destructive"
-                        >Delete account
+                    >Delete account
                     </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -51,12 +52,12 @@ const passwordInput = useTemplateRef('passwordInput');
                         }"
                         class="space-y-6"
                         reset-on-success
-                        v-bind="ProfileController.destroy.form()"
+                        v-bind="destroyProfile()"
                         @error="() => passwordInput?.focus()"
                     >
                         <DialogHeader class="space-y-3">
                             <DialogTitle
-                                >Are you sure you want to delete your account?
+                            >Are you sure you want to delete your account?
                             </DialogTitle>
                             <DialogDescription>
                                 Once your account is deleted, all of its
@@ -69,7 +70,7 @@ const passwordInput = useTemplateRef('passwordInput');
 
                         <div class="grid gap-2">
                             <Label class="sr-only" for="password"
-                                >Password</Label
+                            >Password</Label
                             >
                             <PasswordInput
                                 id="password"

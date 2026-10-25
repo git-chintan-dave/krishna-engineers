@@ -1,4 +1,4 @@
-import { dashboard } from '@/routes';
+import {dashboard} from '@/routes';
 
 /*
 |--------------------------------------------------------------------------
@@ -13,7 +13,7 @@ type Breadcrumb = {
 
 type CrudBreadcrumbOptions = {
     resource: string;
-    resourceUrl: string;
+    resourceUrl?: string;
 };
 
 type CrudPage = 'listing' | 'create' | 'edit' | 'details' | 'import';
@@ -55,7 +55,9 @@ export const useCrudBreadcrumbs = (
         return breadcrumbs;
     }
 
-    breadcrumbs[1].href = options.resourceUrl;
+    if (options.resourceUrl) {
+        breadcrumbs[1].href = options.resourceUrl;
+    }
 
     breadcrumbs.push({
         title: pageTitles[page],
