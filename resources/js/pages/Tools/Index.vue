@@ -1,25 +1,21 @@
 ﻿<script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import {router} from '@inertiajs/vue3';
+import {computed, ref} from 'vue';
 
-import ListingActions from '@/components/common/ListingActions.vue';
+import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import AppToolTypeSelect from '@/components/selects/AppToolTypeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { toolPage } from '@/config/tools';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as toolsRoute,
-} from '@/routes/tools';
-import { createToolColumns } from '@/table/tools';
-import type { Tool, ToolFilters, ToolSort, ToolsResponse } from '@/types/tool';
-import type { StatusFilter } from '@/types/listing';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {toolPage} from '@/config/tools';
+import {bulkDestroy, create, destroy, index as toolsRoute,} from '@/routes/tools';
+import {createToolColumns} from '@/table/tools';
+import type {Tool, ToolFilters, ToolSort, ToolsResponse} from '@/types/tool';
+import type {StatusFilter} from '@/types/listing';
+import {RotateCcw} from '@lucide/vue';
 
 /*
 |--------------------------------------------------------------------------
@@ -54,21 +50,19 @@ defineOptions({
 */
 
 const filterType = ref<string | 'all'>(props.filters.type);
-
 const filterStatus = ref<StatusFilter>(props.filters.status);
 
-const handleTypeChange = (value: string | null) => {
+const handleTypeChange = (value: string | null): void => {
     filterType.value = value ?? 'all';
 };
 
-const handleStatusChange = (value: string | null) => {
+const handleStatusChange = (value: string | null): void => {
     filterStatus.value = (value as StatusFilter | null) ?? 'all';
 };
 
-const handleClearFilters = () => {
+const handleClearFilters = (): void => {
     filterType.value = 'all';
     filterStatus.value = 'all';
-
     clearFilters();
 };
 
@@ -104,10 +98,25 @@ const {
 
     additionalFilters: () => ({
         type: filterType.value !== 'all' ? filterType.value : undefined,
-
         status: filterStatus.value !== 'all' ? filterStatus.value : undefined,
     }),
 });
+
+/*
+|--------------------------------------------------------------------------
+| Actions
+|--------------------------------------------------------------------------
+*/
+
+const actions = computed<ActionItem[]>(() => [
+    {
+        key: 'reset-preferences',
+        label: 'Reset preferences',
+        icon: RotateCcw,
+        action: resetPreferences,
+        separatorBefore: true,
+    },
+]);
 
 /*
 |--------------------------------------------------------------------------
@@ -115,18 +124,23 @@ const {
 |--------------------------------------------------------------------------
 */
 
-const handleDeleteSelected = () => {
+const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);
 };
 </script>
 
 <template>
-    <ListingLayout :description="toolPage.description" :title="toolPage.title" @reset-preferences="resetPreferences">
+    <ListingLayout
+        :description="toolPage.description"
+        :title="toolPage.title"
+        @reset-preferences="resetPreferences"
+    >
         <!-- Actions -->
         <template #actions>
             <ListingActions
+                :actions="actions"
                 :create-label="toolPage.createLabel"
-                :create-url="create()"
+                :create-url="create().url"
                 :resource-label="toolPage.resourceLabel"
                 :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
@@ -150,7 +164,7 @@ const handleDeleteSelected = () => {
             >
                 <template #filters>
                     <!-- Tool Type -->
-                    <div class="w-full shrink-0 sm:w-40">
+                    <div class="w-full min-w-0">
                         <AppToolTypeSelect
                             :model-value="
                                 filterType === 'all' ? null : filterType
@@ -162,7 +176,7 @@ const handleDeleteSelected = () => {
                     </div>
 
                     <!-- Status -->
-                    <div class="w-full shrink-0 sm:w-48">
+                    <div class="w-full min-w-0">
                         <AppStatusSelect
                             :model-value="
                                 filterStatus === 'all' ? null : filterStatus

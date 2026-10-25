@@ -1,26 +1,22 @@
 <script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import {router} from '@inertiajs/vue3';
+import {RotateCcw} from '@lucide/vue';
+import {computed, ref} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
+import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppPartSelect from '@/components/selects/AppPartSelect.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppSectionSizeSelect from '@/components/selects/AppSectionSizeSelect.vue';
-import ListingActions from '@/components/common/ListingActions.vue';
-import ListingFilters from '@/components/common/ListingFilters.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { bandsawWorkLogPage } from '@/config/bandsawWorkLogs';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as bandsawWorkLogsRoute,
-} from '@/routes/bandsaw';
-import { createBandsawWorkLogColumns } from '@/table/bandsawWorkLogs';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {bandsawWorkLogPage} from '@/config/bandsawWorkLogs';
+import {bulkDestroy, create, destroy, index as bandsawWorkLogsRoute,} from '@/routes/bandsaw';
+import {createBandsawWorkLogColumns} from '@/table/bandsawWorkLogs';
 import type {
     BandsawWorkLog,
     BandsawWorkLogFilters,
@@ -62,15 +58,22 @@ defineOptions({
 */
 
 const filterWorkDate = ref(props.filters.workDate);
-
 const filterUserId = ref<number | 'all'>(props.filters.userId ?? 'all');
-
 const filterPartId = ref<number | 'all'>(props.filters.partId ?? 'all');
-
-const filterSectionId = ref<number | 'all'>(props.filters.sectionId ?? 'all');
-
+const filterSectionId = ref<number | 'all'>(
+    props.filters.sectionId ?? 'all',
+);
 const filterSectionSizeId = ref<number | 'all'>(
     props.filters.sectionSizeId ?? 'all',
+);
+
+const hasFilters = computed(
+    () =>
+        Boolean(filterWorkDate.value) ||
+        (props.canSelectBandsaw && filterUserId.value !== 'all') ||
+        filterPartId.value !== 'all' ||
+        filterSectionId.value !== 'all' ||
+        filterSectionSizeId.value !== 'all',
 );
 
 /*
@@ -79,40 +82,61 @@ const filterSectionSizeId = ref<number | 'all'>(
 |--------------------------------------------------------------------------
 */
 
-const columns = createBandsawWorkLogColumns((id) => {
-    router.delete(destroy(id).url);
-}, props.canSelectBandsaw);
+const columns = createBandsawWorkLogColumns(
+    (id) => {
+        router.delete(destroy(id).url);
+    },
+    props.canSelectBandsaw,
+);
 
-const { table, selectedCount, search, clearFilters, deleteSelected, resetPreferences, } =
-    useListingTable<BandsawWorkLog, BandsawWorkLogSort>({
-        data: () => props.bandsawWorkLogs,
-        columns,
-        filters: {
-            sort: props.filters.sort,
-            direction: props.filters.direction,
-        },
-        route: bandsawWorkLogsRoute.url(),
-        searchable: false,
-        additionalFilters: () => ({
-            work_date: filterWorkDate.value || undefined,
+const {
+    table,
+    selectedCount,
+    search,
+    clearFilters,
+    deleteSelected,
+    resetPreferences,
+} = useListingTable<BandsawWorkLog, BandsawWorkLogSort>({
+    data: () => props.bandsawWorkLogs,
+    columns,
+    filters: {
+        sort: props.filters.sort,
+        direction: props.filters.direction,
+    },
+    route: bandsawWorkLogsRoute.url(),
+    searchable: false,
+    additionalFilters: () => ({
+        work_date: filterWorkDate.value || undefined,
+        user_id:
+            filterUserId.value !== 'all' ? filterUserId.value : undefined,
+        part_id:
+            filterPartId.value !== 'all' ? filterPartId.value : undefined,
+        section_id:
+            filterSectionId.value !== 'all'
+                ? filterSectionId.value
+                : undefined,
+        section_size_id:
+            filterSectionSizeId.value !== 'all'
+                ? filterSectionSizeId.value
+                : undefined,
+    }),
+});
 
-            user_id:
-                filterUserId.value !== 'all' ? filterUserId.value : undefined,
+/*
+|--------------------------------------------------------------------------
+| Listing Actions
+|--------------------------------------------------------------------------
+*/
 
-            part_id:
-                filterPartId.value !== 'all' ? filterPartId.value : undefined,
-
-            section_id:
-                filterSectionId.value !== 'all'
-                    ? filterSectionId.value
-                    : undefined,
-
-            section_size_id:
-                filterSectionSizeId.value !== 'all'
-                    ? filterSectionSizeId.value
-                    : undefined,
-        }),
-    });
+const actions = computed<ActionItem[]>(() => [
+    {
+        key: 'reset-preferences',
+        label: 'Reset preferences',
+        icon: RotateCcw,
+        action: resetPreferences,
+        separatorBefore: true,
+    },
+]);
 
 /*
 |--------------------------------------------------------------------------
@@ -130,7 +154,6 @@ const handlePartChange = (value: number | null): void => {
 
 const handleSectionChange = (value: number | null): void => {
     filterSectionId.value = value ?? 'all';
-
     filterSectionSizeId.value = 'all';
 };
 
@@ -167,8 +190,9 @@ const handleDeleteSelected = (): void => {
     >
         <template #actions>
             <ListingActions
+                :actions="actions"
                 :create-label="bandsawWorkLogPage.createLabel"
-                :create-url="create()"
+                :create-url="create().url"
                 :resource-label="bandsawWorkLogPage.resourceLabel"
                 :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
@@ -178,26 +202,17 @@ const handleDeleteSelected = (): void => {
         <template #filters>
             <ListingFilters
                 :clear-button-label="bandsawWorkLogPage.clearButtonLabel"
-                :clear-disabled="
-                    !filterWorkDate &&
-                    filterUserId === 'all' &&
-                    filterPartId === 'all' &&
-                    filterSectionId === 'all' &&
-                    filterSectionSizeId === 'all'
-                "
+                :clear-disabled="!hasFilters"
                 :searchable="false"
                 @clear="handleClearFilters"
                 @search="search"
             >
                 <template #filters>
-                    <div class="w-full shrink-0 sm:w-40">
+                    <div class="w-full min-w-0">
                         <AppInput v-model="filterWorkDate" type="date" />
                     </div>
 
-                    <div
-                        v-if="canSelectBandsaw"
-                        class="w-full shrink-0 sm:w-64"
-                    >
+                    <div v-if="canSelectBandsaw" class="w-full min-w-0">
                         <AppEmployeeSelect
                             :model-value="
                                 filterUserId === 'all' ? null : filterUserId
@@ -210,7 +225,7 @@ const handleDeleteSelected = (): void => {
                         />
                     </div>
 
-                    <div class="w-full shrink-0 sm:w-40">
+                    <div class="w-full min-w-0">
                         <AppPartSelect
                             :model-value="
                                 filterPartId === 'all' ? null : filterPartId
@@ -222,7 +237,7 @@ const handleDeleteSelected = (): void => {
                         />
                     </div>
 
-                    <div class="w-full shrink-0 sm:w-40">
+                    <div class="w-full min-w-0">
                         <AppSectionSelect
                             :model-value="
                                 filterSectionId === 'all'
@@ -236,7 +251,7 @@ const handleDeleteSelected = (): void => {
                         />
                     </div>
 
-                    <div class="w-full shrink-0 sm:w-44">
+                    <div class="w-full min-w-0">
                         <AppSectionSizeSelect
                             :model-value="
                                 filterSectionSizeId === 'all'

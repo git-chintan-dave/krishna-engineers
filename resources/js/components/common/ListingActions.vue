@@ -1,9 +1,44 @@
 <script lang="ts" setup>
-import { type Href, Link } from '@inertiajs/vue3';
-import { Banknote, Download, FileUp, Plus, Trash2 } from '@lucide/vue';
+import {Link} from '@inertiajs/vue3';
+import {EllipsisVertical, Plus, Trash2} from '@lucide/vue';
+import type {Component} from 'vue';
 
 import vConfirm from '@/directives/confirm';
-import { Button } from '@/components/ui/button';
+import {Button} from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+/*
+|--------------------------------------------------------------------------
+| Types
+|--------------------------------------------------------------------------
+*/
+
+type ActionBase = {
+    key: string;
+    label: string;
+    icon: Component;
+    disabled?: boolean;
+    variant?: 'default' | 'destructive';
+    separatorBefore?: boolean;
+};
+
+export type ActionItem =
+    | (ActionBase & {
+    href: string;
+    method?: 'get' | 'post' | 'put' | 'patch' | 'delete';
+    action?: never;
+})
+    | (ActionBase & {
+    action: () => void;
+    href?: never;
+    method?: never;
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -13,18 +48,10 @@ import { Button } from '@/components/ui/button';
 
 withDefaults(
     defineProps<{
-        createUrl?: Href;
+        createUrl?: string;
         createLabel?: string;
 
-        importUrl?: Href;
-        importLabel?: string;
-
-        exportUrl?: Href;
-        exportLabel?: string;
-
-        generateUrl?: Href;
-        generateLabel?: string;
-        generateDisabled?: boolean;
+        actions?: ActionItem[];
 
         selectedCount?: number;
         resourceLabel?: string;
@@ -35,13 +62,7 @@ withDefaults(
     }>(),
     {
         createLabel: 'Add',
-
-        importLabel: 'Import',
-        exportLabel: 'Export',
-
-        generateLabel: 'Generate',
-        generateDisabled: false,
-
+        actions: () => [],
         selectedCount: 0,
         resourceLabel: 'items',
 
@@ -61,11 +82,22 @@ withDefaults(
 const emit = defineEmits<{
     deleteSelected: [];
 }>();
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
+
+const getActionClass = (variant?: ActionItem['variant']) => ({
+    'text-destructive focus:text-destructive':
+        variant === 'destructive',
+});
 </script>
 
 <template>
     <div
-        class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center"
+        class="flex w-full min-w-0 items-center gap-2 sm:w-auto sm:justify-end"
     >
         <!-- Delete Selected -->
         <Button
@@ -79,97 +111,106 @@ const emit = defineEmits<{
                 },
             }"
             :aria-label="`Delete ${selectedCount} selected ${resourceLabel}`"
-            class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
+            class="h-9 min-w-0 flex-1 cursor-pointer px-2.5 sm:flex-none sm:px-3"
             size="sm"
             type="button"
             variant="destructive"
         >
-            <Trash2 aria-hidden="true" class="size-4" />
+            <Trash2 aria-hidden="true" class="size-4 shrink-0" />
 
-            <span class="whitespace-nowrap">
-                Delete selected
+            <span class="truncate">
+                <span class="sm:hidden">
+                    Delete ({{ selectedCount }})
+                </span>
 
-                <span aria-hidden="true" class="ml-1 opacity-80">
-                    ({{ selectedCount }})
+                <span class="hidden sm:inline">
+                    Delete selected ({{ selectedCount }})
                 </span>
             </span>
         </Button>
 
-        <!-- Import -->
-        <Button
-            v-if="importUrl"
-            as-child
-            class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
-            size="sm"
-            variant="outline"
-        >
-            <Link :aria-label="importLabel" :href="importUrl">
-                <FileUp aria-hidden="true" class="size-4" />
-
-                <span class="whitespace-nowrap">
-                    {{ importLabel }}
-                </span>
-            </Link>
-        </Button>
-
-        <!-- Export -->
-        <Button
-            v-if="exportUrl"
-            as-child
-            class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
-            size="sm"
-            variant="outline"
-        >
-            <Link :aria-label="exportLabel" :href="exportUrl">
-                <Download aria-hidden="true" class="size-4" />
-
-                <span class="whitespace-nowrap">
-                    {{ exportLabel }}
-                </span>
-            </Link>
-        </Button>
-
-        <!-- Generate -->
-        <Button
-            v-if="generateUrl"
-            :disabled="generateDisabled"
-            as-child
-            class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
-            size="sm"
-            variant="outline"
-        >
-            <Link
-                :aria-disabled="generateDisabled"
-                :aria-label="generateLabel"
-                :href="generateUrl"
-                :tabindex="generateDisabled ? -1 : undefined"
-                method="post"
-            >
-                <Banknote aria-hidden="true" class="size-4" />
-
-                <span class="whitespace-nowrap">
-                    {{ generateLabel }}
-                </span>
-            </Link>
-        </Button>
-
-        <!-- Sync -->
-        <slot name="sync" />
-
-        <!-- Create -->
+        <!-- Add -->
         <Button
             v-if="createUrl"
             as-child
-            class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
+            class="h-9 min-w-0 flex-1 cursor-pointer px-3 sm:flex-none"
             size="sm"
         >
             <Link :aria-label="createLabel" :href="createUrl">
-                <Plus aria-hidden="true" class="size-4" />
-
-                <span class="whitespace-nowrap">
-                    {{ createLabel }}
-                </span>
+                <Plus aria-hidden="true" class="size-4 shrink-0" />
+                <span class="truncate">{{ createLabel }}</span>
             </Link>
         </Button>
+
+        <!-- More Actions -->
+        <DropdownMenu v-if="actions.length > 0">
+            <DropdownMenuTrigger as-child>
+                <Button
+                    aria-label="More actions"
+                    class="size-9 shrink-0 cursor-pointer"
+                    size="icon"
+                    type="button"
+                    variant="outline"
+                >
+                    <EllipsisVertical aria-hidden="true" class="size-4" />
+                </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent
+                align="end"
+                class="max-h-[min(70vh,32rem)] w-60 max-w-[calc(100vw-2rem)] overflow-y-auto"
+            >
+                <template
+                    v-for="item in actions"
+                    :key="item.key"
+                >
+                    <DropdownMenuSeparator v-if="item.separatorBefore" />
+
+                    <!-- Navigation Action -->
+                    <DropdownMenuItem
+                        v-if="'href' in item"
+                        as-child
+                        :disabled="item.disabled"
+                        :class="[
+                            'cursor-pointer',
+                            getActionClass(item.variant),
+                        ]"
+                    >
+                        <Link
+                            :href="item.href"
+                            :method="item.method ?? 'get'"
+                            class="flex w-full items-center gap-2"
+                        >
+                            <component
+                                :is="item.icon"
+                                aria-hidden="true"
+                                class="size-4 shrink-0"
+                            />
+
+                            <span class="truncate">{{ item.label }}</span>
+                        </Link>
+                    </DropdownMenuItem>
+
+                    <!-- Callback Action -->
+                    <DropdownMenuItem
+                        v-else
+                        :disabled="item.disabled"
+                        :class="[
+                            'cursor-pointer',
+                            getActionClass(item.variant),
+                        ]"
+                        @select="item.action()"
+                    >
+                        <component
+                            :is="item.icon"
+                            aria-hidden="true"
+                            class="size-4 shrink-0"
+                        />
+
+                        <span class="truncate">{{ item.label }}</span>
+                    </DropdownMenuItem>
+                </template>
+            </DropdownMenuContent>
+        </DropdownMenu>
     </div>
 </template>

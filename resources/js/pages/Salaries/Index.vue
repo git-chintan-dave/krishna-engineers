@@ -1,12 +1,13 @@
 ﻿<script lang="ts" setup>
 import {router} from '@inertiajs/vue3';
 import {computed, ref, watch} from 'vue';
+import {RotateCcw, Wallet} from '@lucide/vue';
 
+import AppInput from '@/components/common/AppInput.vue';
+import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppSalaryStatusSelect from '@/components/selects/AppSalaryStatusSelect.vue';
-import AppInput from '@/components/common/AppInput.vue';
-import ListingActions from '@/components/common/ListingActions.vue';
-import ListingFilters from '@/components/common/ListingFilters.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
 import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
@@ -54,10 +55,8 @@ const filterStatus = ref<SalaryFilters['status']>(props.filters.status);
 const filterStartDate = ref(props.filters.start_date);
 
 /**
- * Calculate the last calendar day of the selected start-date month.
- *
- * This avoids parsing YYYY-MM-DD as a UTC date, which can cause
- * timezone-related date shifts.
+ * Calculate the final calendar day of the selected month
+ * without parsing the date string as UTC.
  */
 const filterEndDate = computed(() => {
     if (!filterStartDate.value) {
@@ -88,7 +87,7 @@ const filterEndDate = computed(() => {
 });
 
 /**
- * Synchronize filter state when Inertia supplies new server-side filters.
+ * Synchronize local filter state with updated server-side filters.
  */
 watch(
     () => props.filters,
@@ -174,30 +173,43 @@ const handleClearFilters = (): void => {
 
 /*
 |--------------------------------------------------------------------------
-| Bulk Actions
-|--------------------------------------------------------------------------
-*/
-
-const handleDeleteSelected = (): void => {
-    deleteSelected(bulkDestroy().url);
-};
-
-/*
-|--------------------------------------------------------------------------
-| Generate Salary
+| Listing Actions
 |--------------------------------------------------------------------------
 */
 
 const generateButtonLabel = computed(() => {
     const now = new Date();
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-
     const monthName = lastMonth.toLocaleString(undefined, {
         month: 'long',
     });
 
     return `Generate ${monthName}'s Salary`;
 });
+
+const actions = computed<ActionItem[]>(() => [
+    ...(props.can_generate_last_month
+        ? [
+            {
+                key: 'generate-last-month',
+                label: generateButtonLabel.value,
+                icon: Wallet,
+                href: generateLastMonth().url,
+            },
+        ]
+        : []),
+    {
+        key: 'reset-preferences',
+        label: 'Reset preferences',
+        icon: RotateCcw,
+        action: resetPreferences,
+        separatorBefore: true,
+    },
+]);
+
+const handleDeleteSelected = (): void => {
+    deleteSelected(bulkDestroy().url);
+};
 </script>
 
 <template>
@@ -208,11 +220,9 @@ const generateButtonLabel = computed(() => {
     >
         <template #actions>
             <ListingActions
+                :actions="actions"
                 :create-label="salaryPage.createLabel"
-                :create-url="create()"
-                :generate-disabled="!can_generate_last_month"
-                :generate-label="generateButtonLabel"
-                :generate-url="generateLastMonth()"
+                :create-url="create().url"
                 :resource-label="salaryPage.resourceLabel"
                 :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
@@ -228,7 +238,7 @@ const generateButtonLabel = computed(() => {
                 @search="search"
             >
                 <template #filters>
-                    <div class="w-full shrink-0 sm:w-64">
+                    <div class="w-full min-w-0">
                         <AppEmployeeSelect
                             :model-value="
                                 filterEmployee === 'all'
@@ -242,7 +252,7 @@ const generateButtonLabel = computed(() => {
                         />
                     </div>
 
-                    <div class="w-full shrink-0 sm:w-40">
+                    <div class="w-full min-w-0">
                         <AppInput
                             v-model="filterStartDate"
                             placeholder="Start date"
@@ -250,7 +260,7 @@ const generateButtonLabel = computed(() => {
                         />
                     </div>
 
-                    <div class="w-full shrink-0 sm:w-40">
+                    <div class="w-full min-w-0">
                         <AppInput
                             :model-value="filterEndDate"
                             placeholder="End date"
@@ -259,7 +269,7 @@ const generateButtonLabel = computed(() => {
                         />
                     </div>
 
-                    <div class="w-full shrink-0 sm:w-36">
+                    <div class="w-full min-w-0">
                         <AppSalaryStatusSelect
                             :model-value="
                                 filterStatus === 'all'

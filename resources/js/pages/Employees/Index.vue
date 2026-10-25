@@ -1,23 +1,19 @@
 ﻿<script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import {router} from '@inertiajs/vue3';
+import {computed, ref} from 'vue';
 
-import ListingActions from '@/components/common/ListingActions.vue';
+import DataTable from '@/components/data-table/DataTable.vue';
+import ListingActions, {ActionItem} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import AppUserRoleSelect from '@/components/selects/AppUserRoleSelect.vue';
-import DataTable from '@/components/data-table/DataTable.vue';
+import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { employeePage } from '@/config/employees';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as employeesRoute,
-} from '@/routes/employees';
-import { createEmployeeColumns } from '@/table/employees';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {employeePage} from '@/config/employees';
+import {bulkDestroy, create, destroy, index as employeesRoute,} from '@/routes/employees';
+import {createEmployeeColumns} from '@/table/employees';
 import type {
     Employee,
     EmployeeFilters,
@@ -26,16 +22,26 @@ import type {
     EmployeeSort,
     EmployeesResponse,
 } from '@/types/employee';
-import type { StatusFilter } from '@/types/listing';
-import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
+import type {StatusFilter} from '@/types/listing';
+import {RotateCcw} from "@lucide/vue";
 
-// Props
+/*
+|--------------------------------------------------------------------------
+| Props
+|--------------------------------------------------------------------------
+*/
+
 const props = defineProps<{
     employees: EmployeesResponse;
     filters: EmployeeFilters;
 }>();
 
-// Page
+/*
+|--------------------------------------------------------------------------
+| Page
+|--------------------------------------------------------------------------
+*/
+
 defineOptions({
     layout: {
         breadcrumbs: useCrudBreadcrumbs('listing', {
@@ -45,11 +51,14 @@ defineOptions({
     },
 });
 
-// Filters
+/*
+|--------------------------------------------------------------------------
+| Filters
+|--------------------------------------------------------------------------
+*/
+
 const filterRole = ref<EmployeeRole | 'all'>(props.filters.role);
-
 const filterShift = ref<EmployeeShift | 'all'>(props.filters.shift);
-
 const filterStatus = ref<StatusFilter>(props.filters.status);
 
 const handleRoleChange = (value: string | null) => {
@@ -64,7 +73,20 @@ const handleStatusChange = (value: string | null) => {
     filterStatus.value = (value as StatusFilter | null) ?? 'all';
 };
 
-// Table
+const handleClearFilters = () => {
+    filterRole.value = 'all';
+    filterShift.value = 'all';
+    filterStatus.value = 'all';
+
+    clearFilters();
+};
+
+/*
+|--------------------------------------------------------------------------
+| Table
+|--------------------------------------------------------------------------
+*/
+
 const columns = createEmployeeColumns((uuid) => {
     router.delete(destroy(uuid).url);
 });
@@ -86,27 +108,30 @@ const {
         direction: props.filters.direction,
     },
     route: employeesRoute.url(),
-
     enableRowSelection: (row) => row.role !== 'super_admin',
-
     additionalFilters: () => ({
         role: filterRole.value !== 'all' ? filterRole.value : undefined,
-
         shift: filterShift.value !== 'all' ? filterShift.value : undefined,
-
         status: filterStatus.value !== 'all' ? filterStatus.value : undefined,
     }),
 });
 
-// Filter Actions
-const handleClearFilters = () => {
-    filterRole.value = 'all';
-    filterStatus.value = 'all';
+/*
+|--------------------------------------------------------------------------
+| Actions
+|--------------------------------------------------------------------------
+*/
 
-    clearFilters();
-};
+const actions = computed<ActionItem[]>(() => [
+    {
+        key: 'reset-preferences',
+        label: 'Reset preferences',
+        icon: RotateCcw,
+        action: resetPreferences,
+        separatorBefore: true,
+    },
+]);
 
-// Bulk Actions
 const handleDeleteSelected = () => {
     deleteSelected(bulkDestroy().url);
 };
@@ -120,8 +145,9 @@ const handleDeleteSelected = () => {
     >
         <template #actions>
             <ListingActions
+                :actions="actions"
                 :create-label="employeePage.createLabel"
-                :create-url="create()"
+                :create-url="create().url"
                 :resource-label="employeePage.resourceLabel"
                 :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
@@ -144,33 +170,27 @@ const handleDeleteSelected = () => {
                 @search="search"
             >
                 <template #filters>
-                    <div class="w-full shrink-0 sm:w-52">
+                    <div class="w-full min-w-0">
                         <AppUserRoleSelect
-                            :model-value="
-                                filterRole === 'all' ? null : filterRole
-                            "
+                            :model-value="filterRole === 'all' ? null : filterRole"
                             :placeholder="employeePage.rolePlaceholder"
                             clearable
                             @update:model-value="handleRoleChange"
                         />
                     </div>
 
-                    <div class="w-full shrink-0 sm:w-36">
+                    <div class="w-full min-w-0">
                         <AppUserShiftSelect
-                            :model-value="
-                                filterShift === 'all' ? null : filterShift
-                            "
+                            :model-value="filterShift === 'all' ? null : filterShift"
                             :placeholder="employeePage.shiftPlaceholder"
                             clearable
                             @update:model-value="handleShiftChange"
                         />
                     </div>
 
-                    <div class="w-full shrink-0 sm:w-48">
+                    <div class="w-full min-w-0">
                         <AppStatusSelect
-                            :model-value="
-                                filterStatus === 'all' ? null : filterStatus
-                            "
+                            :model-value="filterStatus === 'all' ? null : filterStatus"
                             :placeholder="employeePage.statusPlaceholder"
                             clearable
                             @update:model-value="handleStatusChange"

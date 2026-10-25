@@ -1,39 +1,29 @@
 <script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import {router} from '@inertiajs/vue3';
+import {computed, ref} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
+import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppMachineSelect from '@/components/selects/AppMachineSelect.vue';
 import AppPartSelect from '@/components/selects/AppPartSelect.vue';
 import AppSetupSelect from '@/components/selects/AppSetupSelect.vue';
 import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
-
-import ListingActions from '@/components/common/ListingActions.vue';
-import ListingFilters from '@/components/common/ListingFilters.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-
-import { operatorWorkLogPage } from '@/config/operatorWorkLogs';
-
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as operatorWorkLogsRoute,
-} from '@/routes/operator';
-
-import { createOperatorWorkLogColumns } from '@/table/operatorWorkLogs';
-
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {operatorWorkLogPage} from '@/config/operatorWorkLogs';
+import {bulkDestroy, create, destroy, index as operatorWorkLogsRoute,} from '@/routes/operator';
+import {createOperatorWorkLogColumns} from '@/table/operatorWorkLogs';
 import type {
     OperatorWorkLog,
     OperatorWorkLogFilters,
     OperatorWorkLogSort,
     OperatorWorkLogsResponse,
 } from '@/types/operatorWorkLog';
+import {RotateCcw} from '@lucide/vue';
 
 /*
 |--------------------------------------------------------------------------
@@ -98,17 +88,12 @@ defineOptions({
 */
 
 const filterWorkDate = ref<string>(props.filters.workDate ?? '');
-
 const filterShift = ref<string>(props.filters.shift ?? 'all');
-
 const filterUserId = ref<FilterId>(normalizeFilterId(props.filters.userId));
-
 const filterMachineId = ref<FilterId>(
     normalizeFilterId(props.filters.machineId),
 );
-
 const filterPartId = ref<FilterId>(normalizeFilterId(props.filters.partId));
-
 const filterSetupId = ref<FilterId>(normalizeFilterId(props.filters.setupId));
 
 /*
@@ -117,45 +102,45 @@ const filterSetupId = ref<FilterId>(normalizeFilterId(props.filters.setupId));
 |--------------------------------------------------------------------------
 */
 
-const columns = createOperatorWorkLogColumns((uuid) => {
-    router.delete(destroy(uuid).url);
-}, props.canSelectOperator);
+const columns = createOperatorWorkLogColumns(
+    (uuid) => {
+        router.delete(destroy(uuid).url);
+    },
+    props.canSelectOperator,
+);
 
-const { table, selectedCount, search, clearFilters, deleteSelected, resetPreferences, } =
-    useListingTable<OperatorWorkLog, OperatorWorkLogSort>({
-        data: () => props.operatorWorkLogs,
+const {
+    table,
+    selectedCount,
+    search,
+    clearFilters,
+    deleteSelected,
+    resetPreferences,
+} = useListingTable<OperatorWorkLog, OperatorWorkLogSort>({
+    data: () => props.operatorWorkLogs,
+    columns,
 
-        columns,
+    filters: {
+        sort: props.filters.sort,
+        direction: props.filters.direction,
+    },
 
-        filters: {
-            sort: props.filters.sort,
-            direction: props.filters.direction,
-        },
+    route: operatorWorkLogsRoute.url(),
+    searchable: false,
 
-        route: operatorWorkLogsRoute.url(),
-
-        searchable: false,
-
-        additionalFilters: () => ({
-            work_date: filterWorkDate.value || undefined,
-
-            shift: filterShift.value !== 'all' ? filterShift.value : undefined,
-
-            user_id:
-                filterUserId.value !== 'all' ? filterUserId.value : undefined,
-
-            machine_id:
-                filterMachineId.value !== 'all'
-                    ? filterMachineId.value
-                    : undefined,
-
-            part_id:
-                filterPartId.value !== 'all' ? filterPartId.value : undefined,
-
-            setup_id:
-                filterSetupId.value !== 'all' ? filterSetupId.value : undefined,
-        }),
-    });
+    additionalFilters: () => ({
+        work_date: filterWorkDate.value || undefined,
+        shift: filterShift.value !== 'all' ? filterShift.value : undefined,
+        user_id: filterUserId.value !== 'all' ? filterUserId.value : undefined,
+        machine_id:
+            filterMachineId.value !== 'all'
+                ? filterMachineId.value
+                : undefined,
+        part_id: filterPartId.value !== 'all' ? filterPartId.value : undefined,
+        setup_id:
+            filterSetupId.value !== 'all' ? filterSetupId.value : undefined,
+    }),
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -181,11 +166,6 @@ const handleMachineChange = (value: number | null): void => {
 
 const handlePartChange = (value: number | null): void => {
     filterPartId.value = value ?? 'all';
-
-    /*
-     * Setup belongs to the selected Part,
-     * so changing Part resets Setup.
-     */
     filterSetupId.value = 'all';
 };
 
@@ -206,6 +186,32 @@ const handleClearFilters = (): void => {
 
 /*
 |--------------------------------------------------------------------------
+| Actions
+|--------------------------------------------------------------------------
+*/
+
+const hasFilters = computed(
+    () =>
+        Boolean(filterWorkDate.value) ||
+        filterShift.value !== 'all' ||
+        (props.canSelectOperator && filterUserId.value !== 'all') ||
+        filterMachineId.value !== 'all' ||
+        filterPartId.value !== 'all' ||
+        filterSetupId.value !== 'all',
+);
+
+const actions = computed<ActionItem[]>(() => [
+    {
+        key: 'reset-preferences',
+        label: 'Reset preferences',
+        icon: RotateCcw,
+        action: resetPreferences,
+        separatorBefore: true,
+    },
+]);
+
+/*
+|--------------------------------------------------------------------------
 | Bulk Actions
 |--------------------------------------------------------------------------
 */
@@ -213,20 +219,6 @@ const handleClearFilters = (): void => {
 const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);
 };
-
-/*
-|--------------------------------------------------------------------------
-| Filter State
-|--------------------------------------------------------------------------
-*/
-
-const hasFilters = (): boolean =>
-    Boolean(filterWorkDate.value) ||
-    filterShift.value !== 'all' ||
-    filterUserId.value !== 'all' ||
-    filterMachineId.value !== 'all' ||
-    filterPartId.value !== 'all' ||
-    filterSetupId.value !== 'all';
 </script>
 
 <template>
@@ -236,11 +228,11 @@ const hasFilters = (): boolean =>
         @reset-preferences="resetPreferences"
     >
         <!-- Actions -->
-
         <template #actions>
             <ListingActions
+                :actions="actions"
                 :create-label="operatorWorkLogPage.createLabel"
-                :create-url="create()"
+                :create-url="create().url"
                 :resource-label="operatorWorkLogPage.resourceLabel"
                 :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
@@ -248,19 +240,17 @@ const hasFilters = (): boolean =>
         </template>
 
         <!-- Filters -->
-
         <template #filters>
             <ListingFilters
                 :clear-button-label="operatorWorkLogPage.clearButtonLabel"
-                :clear-disabled="!hasFilters()"
+                :clear-disabled="!hasFilters"
                 :searchable="false"
                 @clear="handleClearFilters"
                 @search="search"
             >
                 <template #filters>
                     <!-- Work Date -->
-
-                    <div class="w-full shrink-0 sm:w-40">
+                    <div class="w-full min-w-0">
                         <AppInput
                             :model-value="filterWorkDate"
                             :placeholder="
@@ -272,11 +262,7 @@ const hasFilters = (): boolean =>
                     </div>
 
                     <!-- Operator -->
-
-                    <div
-                        v-if="canSelectOperator"
-                        class="w-full shrink-0 sm:w-64"
-                    >
+                    <div v-if="canSelectOperator" class="w-full min-w-0">
                         <AppEmployeeSelect
                             :model-value="
                                 filterUserId === 'all' ? null : filterUserId
@@ -292,8 +278,7 @@ const hasFilters = (): boolean =>
                     </div>
 
                     <!-- Shift -->
-
-                    <div class="w-full shrink-0 sm:w-36">
+                    <div class="w-full min-w-0">
                         <AppUserShiftSelect
                             :model-value="
                                 filterShift === 'all' ? null : filterShift
@@ -305,8 +290,7 @@ const hasFilters = (): boolean =>
                     </div>
 
                     <!-- Machine -->
-
-                    <div class="w-full shrink-0 sm:w-40">
+                    <div class="w-full min-w-0">
                         <AppMachineSelect
                             :model-value="
                                 filterMachineId === 'all'
@@ -323,8 +307,7 @@ const hasFilters = (): boolean =>
                     </div>
 
                     <!-- Part -->
-
-                    <div class="w-full shrink-0 sm:w-40">
+                    <div class="w-full min-w-0">
                         <AppPartSelect
                             :model-value="
                                 filterPartId === 'all' ? null : filterPartId
@@ -337,8 +320,7 @@ const hasFilters = (): boolean =>
                     </div>
 
                     <!-- Setup -->
-
-                    <div class="w-full shrink-0 sm:w-48">
+                    <div class="w-full min-w-0">
                         <AppSetupSelect
                             :model-value="
                                 filterSetupId === 'all' ? null : filterSetupId
@@ -357,7 +339,6 @@ const hasFilters = (): boolean =>
         </template>
 
         <!-- Table -->
-
         <template #table>
             <DataTable
                 :columns-count="columns.length"

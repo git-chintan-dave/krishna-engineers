@@ -1,29 +1,20 @@
 ﻿<script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import {router} from '@inertiajs/vue3';
+import {computed, ref} from 'vue';
+import {RotateCcw} from '@lucide/vue';
 
-import ListingActions from '@/components/common/ListingActions.vue';
+import DataTable from '@/components/data-table/DataTable.vue';
+import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppPartSelect from '@/components/selects/AppPartSelect.vue';
 import AppSetupSelect from '@/components/selects/AppSetupSelect.vue';
-import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { partSetupPage } from '@/config/partSetups';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as partSetupsRoute,
-} from '@/routes/part-setups';
-import { createPartSetupColumns } from '@/table/partSetups';
-import type {
-    PartSetup,
-    PartSetupFilters,
-    PartSetupSort,
-    PartSetupsResponse,
-} from '@/types/partSetup';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {partSetupPage} from '@/config/partSetups';
+import {bulkDestroy, create, destroy, index as partSetupsRoute,} from '@/routes/part-setups';
+import {createPartSetupColumns} from '@/table/partSetups';
+import type {PartSetup, PartSetupFilters, PartSetupSort, PartSetupsResponse,} from '@/types/partSetup';
 
 /*
 |--------------------------------------------------------------------------
@@ -58,8 +49,14 @@ defineOptions({
 */
 
 const filterPart = ref<number | null>(props.filters.partId);
-
 const filterSetup = ref<number | null>(props.filters.setupId);
+
+const handleClearFilters = () => {
+    filterPart.value = null;
+    filterSetup.value = null;
+
+    clearFilters();
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -82,15 +79,12 @@ const {
 } = useListingTable<PartSetup, PartSetupSort>({
     data: () => props.partSetups,
     columns,
-
     filters: {
         search: props.filters.search,
         sort: props.filters.sort,
         direction: props.filters.direction,
     },
-
     route: partSetupsRoute.url(),
-
     additionalFilters: () => ({
         part_id: filterPart.value ?? undefined,
         setup_id: filterSetup.value ?? undefined,
@@ -99,22 +93,19 @@ const {
 
 /*
 |--------------------------------------------------------------------------
-| Filter Actions
+| Actions
 |--------------------------------------------------------------------------
 */
 
-const handleClearFilters = () => {
-    filterPart.value = null;
-    filterSetup.value = null;
-
-    clearFilters();
-};
-
-/*
-|--------------------------------------------------------------------------
-| Bulk Actions
-|--------------------------------------------------------------------------
-*/
+const actions = computed<ActionItem[]>(() => [
+    {
+        key: 'reset-preferences',
+        label: 'Reset preferences',
+        icon: RotateCcw,
+        action: resetPreferences,
+        separatorBefore: true,
+    },
+]);
 
 const handleDeleteSelected = () => {
     deleteSelected(bulkDestroy().url);
@@ -127,18 +118,17 @@ const handleDeleteSelected = () => {
         :title="partSetupPage.title"
         @reset-preferences="resetPreferences"
     >
-        <!-- Actions -->
         <template #actions>
             <ListingActions
+                :actions="actions"
                 :create-label="partSetupPage.createLabel"
-                :create-url="create()"
+                :create-url="create().url"
                 :resource-label="partSetupPage.resourceLabel"
                 :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
             />
         </template>
 
-        <!-- Filters -->
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
@@ -154,8 +144,7 @@ const handleDeleteSelected = () => {
                 @search="search"
             >
                 <template #filters>
-                    <!-- Part Filter -->
-                    <div class="w-full shrink-0 sm:w-48">
+                    <div class="w-full min-w-0">
                         <AppPartSelect
                             v-model="filterPart"
                             :placeholder="partSetupPage.partPlaceholder"
@@ -163,8 +152,7 @@ const handleDeleteSelected = () => {
                         />
                     </div>
 
-                    <!-- Setup Filter -->
-                    <div class="w-full shrink-0 sm:w-40">
+                    <div class="w-full min-w-0">
                         <AppSetupSelect
                             v-model="filterSetup"
                             :part-id="filterPart"
@@ -176,7 +164,6 @@ const handleDeleteSelected = () => {
             </ListingFilters>
         </template>
 
-        <!-- Table -->
         <template #table>
             <DataTable
                 :columns-count="columns.length"

@@ -1,35 +1,24 @@
-﻿<script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+﻿```vue
+<script lang="ts" setup>
+import {router} from '@inertiajs/vue3';
+import {computed, ref} from 'vue';
 
+import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppPartSelect from '@/components/selects/AppPartSelect.vue';
 import AppSetupSelect from '@/components/selects/AppSetupSelect.vue';
 import AppToolSelect from '@/components/selects/AppToolSelect.vue';
 import AppToolTransactionTypeSelect from '@/components/selects/AppToolTransactionTypeSelect.vue';
-import ListingActions from '@/components/common/ListingActions.vue';
-import ListingFilters from '@/components/common/ListingFilters.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-
-import { toolTransactionPage } from '@/config/toolTransactions';
-
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as toolTransactionsRoute,
-} from '@/routes/tool-transactions';
-
-import { createToolTransactionColumns } from '@/table/toolTransactions';
-
-import type {
-    ToolTransaction,
-    ToolTransactionType,
-} from '@/types/toolTransaction';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {toolTransactionPage} from '@/config/toolTransactions';
+import {bulkDestroy, create, destroy, index as toolTransactionsRoute,} from '@/routes/tool-transactions';
+import {createToolTransactionColumns} from '@/table/toolTransactions';
+import type {ToolTransaction, ToolTransactionType,} from '@/types/toolTransaction';
+import {RotateCcw} from '@lucide/vue';
 
 /*
 |--------------------------------------------------------------------------
@@ -95,7 +84,9 @@ const filterType = ref<ToolTransactionType | 'all'>(
     props.filters.type ?? 'all',
 );
 
-const filterFromUserId = ref<number | 'all'>(props.filters.fromUserId ?? 'all');
+const filterFromUserId = ref<number | 'all'>(
+    props.filters.fromUserId ?? 'all',
+);
 
 const filterToUserId = ref<number | 'all'>(props.filters.toUserId ?? 'all');
 
@@ -103,28 +94,31 @@ const filterPartId = ref<number | 'all'>(props.filters.partId ?? 'all');
 
 const filterSetupId = ref<number | 'all'>(props.filters.setupId ?? 'all');
 
-const handleToolChange = (value: number | null) => {
+const handleToolChange = (value: number | null): void => {
     filterToolId.value = value ?? 'all';
 };
 
-const handleTypeChange = (value: string | number | null) => {
+const handleTypeChange = (value: string | number | null): void => {
     filterType.value =
         typeof value === 'string' ? (value as ToolTransactionType) : 'all';
 };
 
-const handleFromUserChange = (value: number | null) => {
+const handleFromUserChange = (value: number | null): void => {
     filterFromUserId.value = value ?? 'all';
 };
 
-const handleToUserChange = (value: number | null) => {
+const handleToUserChange = (value: number | null): void => {
     filterToUserId.value = value ?? 'all';
 };
 
-const handlePartChange = (value: number | null) => {
+const handlePartChange = (value: number | null): void => {
     filterPartId.value = value ?? 'all';
+
+    // Clear the setup selection when its part changes.
+    filterSetupId.value = 'all';
 };
 
-const handleSetupChange = (value: number | null) => {
+const handleSetupChange = (value: number | null): void => {
     filterSetupId.value = value ?? 'all';
 };
 
@@ -149,28 +143,26 @@ const {
 } = useListingTable<ToolTransaction, ToolTransactionSort>({
     data: () => props.transactions,
     columns,
+
     filters: {
         search: props.filters.search ?? '',
         sort: props.filters.sort,
         direction: props.filters.direction,
     },
+
     route: toolTransactionsRoute.url(),
     searchable: false,
+
     additionalFilters: () => ({
         tool_id: filterToolId.value === 'all' ? undefined : filterToolId.value,
-
         type: filterType.value === 'all' ? undefined : filterType.value,
-
         from_user_id:
             filterFromUserId.value === 'all'
                 ? undefined
                 : filterFromUserId.value,
-
         to_user_id:
             filterToUserId.value === 'all' ? undefined : filterToUserId.value,
-
         part_id: filterPartId.value === 'all' ? undefined : filterPartId.value,
-
         setup_id:
             filterSetupId.value === 'all' ? undefined : filterSetupId.value,
     }),
@@ -182,15 +174,17 @@ const {
 |--------------------------------------------------------------------------
 */
 
-const hasAdditionalFilters = () =>
-    filterToolId.value !== 'all' ||
-    filterType.value !== 'all' ||
-    filterFromUserId.value !== 'all' ||
-    filterToUserId.value !== 'all' ||
-    filterPartId.value !== 'all' ||
-    filterSetupId.value !== 'all';
+const hasAdditionalFilters = computed(
+    () =>
+        filterToolId.value !== 'all' ||
+        filterType.value !== 'all' ||
+        filterFromUserId.value !== 'all' ||
+        filterToUserId.value !== 'all' ||
+        filterPartId.value !== 'all' ||
+        filterSetupId.value !== 'all',
+);
 
-const handleClearFilters = () => {
+const handleClearFilters = (): void => {
     filterToolId.value = 'all';
     filterType.value = 'all';
     filterFromUserId.value = 'all';
@@ -201,7 +195,23 @@ const handleClearFilters = () => {
     clearFilters();
 };
 
-const handleDeleteSelected = () => {
+const actions = computed<ActionItem[]>(() => [
+    {
+        key: 'reset-preferences',
+        label: 'Reset preferences',
+        icon: RotateCcw,
+        action: resetPreferences,
+        separatorBefore: true,
+    },
+]);
+
+/*
+|--------------------------------------------------------------------------
+| Bulk Actions
+|--------------------------------------------------------------------------
+*/
+
+const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);
 };
 </script>
@@ -212,21 +222,26 @@ const handleDeleteSelected = () => {
         :title="toolTransactionPage.title"
         @reset-preferences="resetPreferences"
     >
+        <!-- Actions -->
         <template #actions>
             <ListingActions
+                :actions="actions"
                 :create-label="toolTransactionPage.createLabel"
-                :create-url="create()"
+                :create-url="create().url"
                 :resource-label="toolTransactionPage.resourceLabel"
                 :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
             />
         </template>
 
+        <!-- Filters -->
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
                 :clear-button-label="toolTransactionPage.clearButtonLabel"
-                :clear-disabled="!searchQuery.trim() && !hasAdditionalFilters()"
+                :clear-disabled="
+                    !searchQuery.trim() && !hasAdditionalFilters
+                "
                 :search-button-label="toolTransactionPage.searchButtonLabel"
                 :search-placeholder="toolTransactionPage.searchPlaceholder"
                 :searchable="false"
@@ -234,88 +249,79 @@ const handleDeleteSelected = () => {
                 @search="search"
             >
                 <template #filters>
-                    <div class="w-full shrink-0 sm:w-48">
-                        <AppToolSelect
-                            :model-value="
-                                filterToolId === 'all' ? null : filterToolId
-                            "
-                            :placeholder="toolTransactionPage.toolPlaceholder"
-                            clearable
-                            searchable
-                            @update:model-value="handleToolChange"
-                        />
-                    </div>
+                    <AppToolSelect
+                        :model-value="
+                            filterToolId === 'all' ? null : filterToolId
+                        "
+                        :placeholder="toolTransactionPage.toolPlaceholder"
+                        class="w-full min-w-0"
+                        clearable
+                        searchable
+                        @update:model-value="handleToolChange"
+                    />
 
-                    <div class="w-full shrink-0 sm:w-48">
-                        <AppToolTransactionTypeSelect
-                            :model-value="
-                                filterType === 'all' ? null : filterType
-                            "
-                            :placeholder="toolTransactionPage.typePlaceholder"
-                            clearable
-                            searchable
-                            @update:model-value="handleTypeChange"
-                        />
-                    </div>
+                    <AppToolTransactionTypeSelect
+                        :model-value="filterType === 'all' ? null : filterType"
+                        :placeholder="toolTransactionPage.typePlaceholder"
+                        class="w-full min-w-0"
+                        clearable
+                        searchable
+                        @update:model-value="handleTypeChange"
+                    />
 
-                    <div class="w-full shrink-0 sm:w-64">
-                        <AppEmployeeSelect
-                            :model-value="
-                                filterFromUserId === 'all'
-                                    ? null
-                                    : filterFromUserId
-                            "
-                            :placeholder="
-                                toolTransactionPage.fromUserPlaceholder
-                            "
-                            clearable
-                            searchable
-                            @update:model-value="handleFromUserChange"
-                        />
-                    </div>
+                    <AppEmployeeSelect
+                        :model-value="
+                            filterFromUserId === 'all'
+                                ? null
+                                : filterFromUserId
+                        "
+                        :placeholder="toolTransactionPage.fromUserPlaceholder"
+                        class="w-full min-w-0"
+                        clearable
+                        searchable
+                        @update:model-value="handleFromUserChange"
+                    />
 
-                    <div class="w-full shrink-0 sm:w-64">
-                        <AppEmployeeSelect
-                            :model-value="
-                                filterToUserId === 'all' ? null : filterToUserId
-                            "
-                            :placeholder="toolTransactionPage.toUserPlaceholder"
-                            clearable
-                            searchable
-                            @update:model-value="handleToUserChange"
-                        />
-                    </div>
+                    <AppEmployeeSelect
+                        :model-value="
+                            filterToUserId === 'all' ? null : filterToUserId
+                        "
+                        :placeholder="toolTransactionPage.toUserPlaceholder"
+                        class="w-full min-w-0"
+                        clearable
+                        searchable
+                        @update:model-value="handleToUserChange"
+                    />
 
-                    <div class="w-full shrink-0 sm:w-48">
-                        <AppPartSelect
-                            :model-value="
-                                filterPartId === 'all' ? null : filterPartId
-                            "
-                            :placeholder="toolTransactionPage.partPlaceholder"
-                            clearable
-                            searchable
-                            @update:model-value="handlePartChange"
-                        />
-                    </div>
+                    <AppPartSelect
+                        :model-value="
+                            filterPartId === 'all' ? null : filterPartId
+                        "
+                        :placeholder="toolTransactionPage.partPlaceholder"
+                        class="w-full min-w-0"
+                        clearable
+                        searchable
+                        @update:model-value="handlePartChange"
+                    />
 
-                    <div class="w-full shrink-0 sm:w-48">
-                        <AppSetupSelect
-                            :model-value="
-                                filterSetupId === 'all' ? null : filterSetupId
-                            "
-                            :part-id="
-                                filterPartId === 'all' ? null : filterPartId
-                            "
-                            :placeholder="toolTransactionPage.setupPlaceholder"
-                            clearable
-                            searchable
-                            @update:model-value="handleSetupChange"
-                        />
-                    </div>
+                    <AppSetupSelect
+                        :model-value="
+                            filterSetupId === 'all' ? null : filterSetupId
+                        "
+                        :part-id="
+                            filterPartId === 'all' ? null : filterPartId
+                        "
+                        :placeholder="toolTransactionPage.setupPlaceholder"
+                        class="w-full min-w-0"
+                        clearable
+                        searchable
+                        @update:model-value="handleSetupChange"
+                    />
                 </template>
             </ListingFilters>
         </template>
 
+        <!-- Table -->
         <template #table>
             <DataTable
                 :columns-count="columns.length"
@@ -331,3 +337,4 @@ const handleDeleteSelected = () => {
         </template>
     </ListingLayout>
 </template>
+```

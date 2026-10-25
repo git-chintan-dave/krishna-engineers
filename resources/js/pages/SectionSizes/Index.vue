@@ -1,28 +1,19 @@
 ﻿<script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import {router} from '@inertiajs/vue3';
+import {computed, ref} from 'vue';
 
-import ListingActions from '@/components/common/ListingActions.vue';
+import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { sectionSizePage } from '@/config/sectionSizes';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as sectionSizesRoute,
-} from '@/routes/section-sizes';
-import { createSectionSizeColumns } from '@/table/sectionSizes';
-import type {
-    SectionSize,
-    SectionSizeFilters,
-    SectionSizeSort,
-    SectionSizesResponse,
-} from '@/types/sectionSize';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {sectionSizePage} from '@/config/sectionSizes';
+import {bulkDestroy, create, destroy, index as sectionSizesRoute,} from '@/routes/section-sizes';
+import {createSectionSizeColumns} from '@/table/sectionSizes';
+import type {SectionSize, SectionSizeFilters, SectionSizeSort, SectionSizesResponse,} from '@/types/sectionSize';
+import {RotateCcw} from '@lucide/vue';
 
 /*
 |--------------------------------------------------------------------------
@@ -58,13 +49,12 @@ defineOptions({
 
 const filterSectionId = ref<number | 'all'>(props.filters.sectionId);
 
-const handleSectionChange = (value: number | null) => {
+const handleSectionChange = (value: number | null): void => {
     filterSectionId.value = value ?? 'all';
 };
 
-const handleClearFilters = () => {
+const handleClearFilters = (): void => {
     filterSectionId.value = 'all';
-
     clearFilters();
 };
 
@@ -100,9 +90,27 @@ const {
 
     additionalFilters: () => ({
         section_id:
-            filterSectionId.value !== 'all' ? filterSectionId.value : undefined,
+            filterSectionId.value !== 'all'
+                ? filterSectionId.value
+                : undefined,
     }),
 });
+
+/*
+|--------------------------------------------------------------------------
+| Actions
+|--------------------------------------------------------------------------
+*/
+
+const actions = computed<ActionItem[]>(() => [
+    {
+        key: 'reset-preferences',
+        label: 'Reset preferences',
+        icon: RotateCcw,
+        action: resetPreferences,
+        separatorBefore: true,
+    },
+]);
 
 /*
 |--------------------------------------------------------------------------
@@ -110,7 +118,7 @@ const {
 |--------------------------------------------------------------------------
 */
 
-const handleDeleteSelected = () => {
+const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);
 };
 </script>
@@ -124,8 +132,9 @@ const handleDeleteSelected = () => {
         <!-- Actions -->
         <template #actions>
             <ListingActions
+                :actions="actions"
                 :create-label="sectionSizePage.createLabel"
-                :create-url="create()"
+                :create-url="create().url"
                 :resource-label="sectionSizePage.resourceLabel"
                 :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
@@ -146,7 +155,7 @@ const handleDeleteSelected = () => {
                 @search="search"
             >
                 <template #filters>
-                    <div class="w-full shrink-0 sm:w-48">
+                    <div class="w-full min-w-0">
                         <AppSectionSelect
                             :model-value="
                                 filterSectionId === 'all'

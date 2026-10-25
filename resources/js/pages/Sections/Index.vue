@@ -1,29 +1,20 @@
 ﻿<script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import {router} from '@inertiajs/vue3';
+import {computed, ref} from 'vue';
 
-import ListingActions from '@/components/common/ListingActions.vue';
+import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { sectionPage } from '@/config/sections';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as sectionsRoute,
-} from '@/routes/sections';
-import { createSectionColumns } from '@/table/sections';
-import type {
-    Section,
-    SectionFilters,
-    SectionSort,
-    SectionsResponse,
-} from '@/types/section';
-import type { StatusFilter } from '@/types/listing';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {sectionPage} from '@/config/sections';
+import {bulkDestroy, create, destroy, index as sectionsRoute,} from '@/routes/sections';
+import {createSectionColumns} from '@/table/sections';
+import type {Section, SectionFilters, SectionSort, SectionsResponse,} from '@/types/section';
+import type {StatusFilter} from '@/types/listing';
+import {RotateCcw} from '@lucide/vue';
 
 /*
 |--------------------------------------------------------------------------
@@ -59,13 +50,12 @@ defineOptions({
 
 const filterStatus = ref<StatusFilter>(props.filters.status);
 
-const handleStatusChange = (value: string | null) => {
+const handleStatusChange = (value: string | null): void => {
     filterStatus.value = (value as StatusFilter | null) ?? 'all';
 };
 
-const handleClearFilters = () => {
+const handleClearFilters = (): void => {
     filterStatus.value = 'all';
-
     clearFilters();
 };
 
@@ -106,11 +96,27 @@ const {
 
 /*
 |--------------------------------------------------------------------------
+| Actions
+|--------------------------------------------------------------------------
+*/
+
+const actions = computed<ActionItem[]>(() => [
+    {
+        key: 'reset-preferences',
+        label: 'Reset preferences',
+        icon: RotateCcw,
+        action: resetPreferences,
+        separatorBefore: true,
+    },
+]);
+
+/*
+|--------------------------------------------------------------------------
 | Bulk Actions
 |--------------------------------------------------------------------------
 */
 
-const handleDeleteSelected = () => {
+const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);
 };
 </script>
@@ -124,8 +130,9 @@ const handleDeleteSelected = () => {
         <!-- Actions -->
         <template #actions>
             <ListingActions
+                :actions="actions"
                 :create-label="sectionPage.createLabel"
-                :create-url="create()"
+                :create-url="create().url"
                 :resource-label="sectionPage.resourceLabel"
                 :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
@@ -144,7 +151,7 @@ const handleDeleteSelected = () => {
                 @search="search"
             >
                 <template #filters>
-                    <div class="w-full shrink-0 sm:w-48">
+                    <div class="w-full min-w-0">
                         <AppStatusSelect
                             :model-value="
                                 filterStatus === 'all' ? null : filterStatus

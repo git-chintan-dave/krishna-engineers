@@ -1,29 +1,20 @@
 ﻿<script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import {router} from '@inertiajs/vue3';
+import {computed, ref} from 'vue';
 
-import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
-import ListingActions from '@/components/common/ListingActions.vue';
-import ListingFilters from '@/components/common/ListingFilters.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
+import ListingActions, {ActionItem} from '@/components/common/ListingActions.vue';
+import ListingFilters from '@/components/common/ListingFilters.vue';
+import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { machinePage } from '@/config/machines';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as machinesRoute,
-} from '@/routes/machines';
-import { createMachineColumns } from '@/table/machines';
-import type {
-    Machine,
-    MachineFilters,
-    MachineSort,
-    MachinesResponse,
-} from '@/types/machine';
-import type { StatusFilter } from '@/types/listing';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingTable} from '@/composables/useListingTable';
+import {machinePage} from '@/config/machines';
+import {bulkDestroy, create, destroy, index as machinesRoute,} from '@/routes/machines';
+import {createMachineColumns} from '@/table/machines';
+import type {Machine, MachineFilters, MachineSort, MachinesResponse,} from '@/types/machine';
+import type {StatusFilter} from '@/types/listing';
+import {RotateCcw} from "@lucide/vue";
 
 /*
 |--------------------------------------------------------------------------
@@ -63,6 +54,11 @@ const handleStatusChange = (value: string | null) => {
     filterStatus.value = (value as StatusFilter | null) ?? 'all';
 };
 
+const handleClearFilters = () => {
+    filterStatus.value = 'all';
+    clearFilters();
+};
+
 /*
 |--------------------------------------------------------------------------
 | Table
@@ -84,15 +80,12 @@ const {
 } = useListingTable<Machine, MachineSort>({
     data: () => props.machines,
     columns,
-
     filters: {
         search: props.filters.search,
         sort: props.filters.sort,
         direction: props.filters.direction,
     },
-
     route: machinesRoute.url(),
-
     additionalFilters: () => ({
         status: filterStatus.value !== 'all' ? filterStatus.value : undefined,
     }),
@@ -100,21 +93,19 @@ const {
 
 /*
 |--------------------------------------------------------------------------
-| Filter Actions
+| Actions
 |--------------------------------------------------------------------------
 */
 
-const handleClearFilters = () => {
-    filterStatus.value = 'all';
-
-    clearFilters();
-};
-
-/*
-|--------------------------------------------------------------------------
-| Bulk Actions
-|--------------------------------------------------------------------------
-*/
+const actions = computed<ActionItem[]>(() => [
+    {
+        key: 'reset-preferences',
+        label: 'Reset preferences',
+        icon: RotateCcw,
+        action: resetPreferences,
+        separatorBefore: true,
+    },
+]);
 
 const handleDeleteSelected = () => {
     deleteSelected(bulkDestroy().url);
@@ -127,27 +118,16 @@ const handleDeleteSelected = () => {
         :title="machinePage.title"
         @reset-preferences="resetPreferences"
     >
-        <!--
-        |--------------------------------------------------------------------------
-        | Actions
-        |--------------------------------------------------------------------------
-        -->
-
         <template #actions>
             <ListingActions
+                :actions="actions"
                 :create-label="machinePage.createLabel"
-                :create-url="create()"
+                :create-url="create().url"
                 :resource-label="machinePage.resourceLabel"
                 :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
             />
         </template>
-
-        <!--
-        |--------------------------------------------------------------------------
-        | Filters
-        |--------------------------------------------------------------------------
-        -->
 
         <template #filters>
             <ListingFilters
@@ -160,25 +140,17 @@ const handleDeleteSelected = () => {
                 @search="search"
             >
                 <template #filters>
-                    <div class="w-full shrink-0 sm:w-48">
+                    <div class="w-full min-w-0">
                         <AppStatusSelect
-                            :model-value="
-                                filterStatus === 'all' ? null : filterStatus
-                            "
+                            :model-value="filterStatus === 'all' ? null : filterStatus"
+                            :placeholder="machinePage.statusPlaceholder ?? 'All statuses'"
                             clearable
-                            placeholder="All statuses"
                             @update:model-value="handleStatusChange"
                         />
                     </div>
                 </template>
             </ListingFilters>
         </template>
-
-        <!--
-        |--------------------------------------------------------------------------
-        | Table
-        |--------------------------------------------------------------------------
-        -->
 
         <template #table>
             <DataTable

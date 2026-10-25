@@ -1,17 +1,16 @@
-﻿
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import {router, usePage} from '@inertiajs/vue3';
-import {RefreshCw} from '@lucide/vue';
+import {FileUp, RefreshCw, RotateCcw} from '@lucide/vue';
 import {computed, ref} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
-import ListingActions from '@/components/common/ListingActions.vue';
+import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
 import {Button} from '@/components/ui/button';
-import {Popover, PopoverContent, PopoverTrigger,} from '@/components/ui/popover';
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from '@/components/ui/dialog';
 import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
 import {useListingTable} from '@/composables/useListingTable';
 import {attendancePage} from '@/config/attendances';
@@ -27,6 +26,7 @@ import type {Attendance, AttendanceFilters, AttendanceResponse, AttendanceSort,}
 */
 
 type SyncType = 'in_out' | 'punches';
+type SyncMessageType = 'success' | 'error' | null;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,10 +57,13 @@ defineOptions({
 const page = usePage();
 
 const auth = computed(() => page.props.auth);
+const userRole = computed(() => auth.value.user?.role);
 
 const canManageAttendance = computed(() =>
-    ['super_admin', 'supervisor'].includes(auth.value.user?.role),
+    ['super_admin', 'supervisor'].includes(userRole.value ?? ''),
 );
+
+const isSuperAdmin = computed(() => userRole.value === 'super_admin');
 
 /*
 |--------------------------------------------------------------------------
@@ -78,7 +81,7 @@ const handleEmployeeChange = (value: number | null) => {
 
 /*
 |--------------------------------------------------------------------------
-| Sync Popover
+| Attendance Sync
 |--------------------------------------------------------------------------
 */
 
@@ -89,7 +92,7 @@ const syncStartDate = ref('');
 const syncEndDate = ref('');
 const syncProcessing = ref(false);
 const syncMessage = ref('');
-const syncMessageType = ref<'success' | 'error' | null>(null);
+const syncMessageType = ref<SyncMessageType>(null);
 
 const syncDateError = computed(() => {
     if (!syncStartDate.value || !syncEndDate.value) {
@@ -119,22 +122,24 @@ const syncDisabled = computed(
     () => syncProcessing.value || Boolean(syncDateError.value),
 );
 
-const openSyncPopover = (open: boolean) => {
+const openSyncDialog = () => {
+    syncOpen.value = true;
+
+    const today = new Date();
+    const date = [
+        today.getFullYear(),
+        String(today.getMonth() + 1).padStart(2, '0'),
+        String(today.getDate()).padStart(2, '0'),
+    ].join('-');
+
+    syncStartDate.value ||= date;
+    syncEndDate.value ||= date;
+    syncMessage.value = '';
+    syncMessageType.value = null;
+};
+
+const handleSyncDialogOpenChange = (open: boolean) => {
     syncOpen.value = open;
-
-    if (open) {
-        const today = new Date();
-        const date = [
-            today.getFullYear(),
-            String(today.getMonth() + 1).padStart(2, '0'),
-            String(today.getDate()).padStart(2, '0'),
-        ].join('-');
-
-        syncStartDate.value ||= date;
-        syncEndDate.value ||= date;
-        syncMessage.value = '';
-        syncMessageType.value = null;
-    }
 };
 
 const handleSync = () => {
@@ -215,25 +220,64 @@ const columns = createAttendanceColumns(
     canManageAttendance.value,
 );
 
-const { table, selectedCount, search, clearFilters, deleteSelected, resetPreferences, } =
-    useListingTable<Attendance, AttendanceSort>({
-        data: () => props.attendances,
-        columns,
-        filters: {
-            sort: props.filters.sort,
-            direction: props.filters.direction,
-        },
-        route: attendancesRoute.url(),
-        searchable: false,
-        additionalFilters: () => ({
-            user_id:
-                filterEmployee.value !== 'all'
-                    ? filterEmployee.value
-                    : undefined,
-            start_date: filterStartDate.value || undefined,
-            end_date: filterEndDate.value || undefined,
-        }),
-    });
+const {
+    table,
+    selectedCount,
+    search,
+    clearFilters,
+    deleteSelected,
+    resetPreferences,
+} = useListingTable<Attendance, AttendanceSort>({
+    data: () => props.attendances,
+    columns,
+    filters: {
+        sort: props.filters.sort,
+        direction: props.filters.direction,
+    },
+    route: attendancesRoute.url(),
+    searchable: false,
+    additionalFilters: () => ({
+        user_id:
+            filterEmployee.value !== 'all'
+                ? filterEmployee.value
+                : undefined,
+        start_date: filterStartDate.value || undefined,
+        end_date: filterEndDate.value || undefined,
+    }),
+});
+
+/*
+|--------------------------------------------------------------------------
+| Listing Actions
+|--------------------------------------------------------------------------
+*/
+
+const actions = computed<ActionItem[]>(() => [
+    ...(isSuperAdmin.value
+        ? [
+            {
+                key: 'import',
+                label: 'Import',
+                icon: FileUp,
+                href: attendancesImportRoute().url,
+            },
+            {
+                key: 'sync',
+                label: 'Sync attendance',
+                icon: RefreshCw,
+                action: openSyncDialog,
+            },
+        ]
+        : []),
+
+    {
+        key: 'reset-preferences',
+        label: 'Reset preferences',
+        icon: RotateCcw,
+        action: resetPreferences,
+        separatorBefore: true,
+    },
+]);
 
 /*
 |--------------------------------------------------------------------------
@@ -268,248 +312,17 @@ const handleDeleteSelected = () => {
     <ListingLayout
         :description="attendancePage.description"
         :title="attendancePage.title"
-        @reset-preferences="resetPreferences"
     >
-        <!-- Actions -->
+        <!-- Header Actions -->
         <template #actions>
             <ListingActions
+                :actions="actions"
                 :create-label="attendancePage.createLabel"
                 :create-url="canManageAttendance ? create().url : undefined"
-                :import-url="
-                    auth.user?.role === 'super_admin'
-                        ? attendancesImportRoute().url
-                        : undefined
-                "
                 :resource-label="attendancePage.resourceLabel"
                 :selected-count="selectedCount"
-                import-label="Import"
                 @delete-selected="handleDeleteSelected"
-            >
-                <template #sync>
-                    <Popover :open="syncOpen" @update:open="openSyncPopover">
-                        <PopoverTrigger as-child>
-                            <Button
-                                v-if="auth.user?.role === 'super_admin'"
-                                class="h-9 w-full shrink-0 cursor-pointer sm:w-auto"
-                                size="sm"
-                                type="button"
-                                variant="outline"
-                            >
-                                <RefreshCw
-                                    aria-hidden="true"
-                                    class="size-4"
-                                />
-                                <span>Sync</span>
-                            </Button>
-                        </PopoverTrigger>
-
-                        <PopoverContent
-                            align="end"
-                            class="w-[min(24rem,calc(100vw-2rem))]"
-                        >
-                            <div class="space-y-4">
-                                <div class="space-y-1">
-                                    <h3 class="font-semibold">
-                                        Sync attendance
-                                    </h3>
-
-                                    <p class="text-sm text-muted-foreground">
-                                        Choose which eTimeOffice data to
-                                        import.
-                                    </p>
-                                </div>
-
-                                <!-- Sync type -->
-                                <fieldset class="space-y-3">
-                                    <legend class="text-sm font-medium">
-                                        Synchronization type
-                                    </legend>
-
-                                    <label
-                                        for="sync-type-in-out"
-                                        class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-muted/50"
-                                        :class="
-                                            syncType === 'in_out'
-                                                ? 'border-primary bg-muted/30'
-                                                : 'border-border'
-                                        "
-                                    >
-                                        <input
-                                            id="sync-type-in-out"
-                                            v-model="syncType"
-                                            class="mt-1 size-4 shrink-0 accent-primary"
-                                            name="sync-type"
-                                            type="radio"
-                                            value="in_out"
-                                            :disabled="syncProcessing"
-                                        />
-
-                                        <span class="space-y-1">
-                                            <span
-                                                class="block text-sm font-medium"
-                                            >
-                                                IN/OUT Summary
-                                            </span>
-
-                                            <span
-                                                class="block text-xs text-muted-foreground"
-                                            >
-                                                Imports the daily IN and OUT
-                                                times. Existing attendance is
-                                                skipped; breaks are not
-                                                imported.
-                                            </span>
-                                        </span>
-                                    </label>
-
-                                    <label
-                                        for="sync-type-punches"
-                                        class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-muted/50"
-                                        :class="
-                                            syncType === 'punches'
-                                                ? 'border-primary bg-muted/30'
-                                                : 'border-border'
-                                        "
-                                    >
-                                        <input
-                                            id="sync-type-punches"
-                                            v-model="syncType"
-                                            class="mt-1 size-4 shrink-0 accent-primary"
-                                            name="sync-type"
-                                            type="radio"
-                                            value="punches"
-                                            :disabled="syncProcessing"
-                                        />
-
-                                        <span class="space-y-1">
-                                            <span
-                                                class="block text-sm font-medium"
-                                            >
-                                                Detailed Punch Data
-                                            </span>
-
-                                            <span
-                                                class="block text-xs text-muted-foreground"
-                                            >
-                                                Imports individual punch times
-                                                and break intervals. Creates
-                                                missing attendance or updates
-                                                existing attendance with the
-                                                detailed data.
-                                            </span>
-                                        </span>
-                                    </label>
-                                </fieldset>
-
-                                <div
-                                    class="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground"
-                                    aria-live="polite"
-                                >
-                                    {{ syncDescription }}
-                                </div>
-
-                                <!-- Employee -->
-                                <div class="space-y-2">
-                                    <label
-                                        class="text-sm font-medium"
-                                        for="sync-employee"
-                                    >
-                                        Employee
-                                    </label>
-
-                                    <AppEmployeeSelect
-                                        id="sync-employee"
-                                        v-model="syncEmployee"
-                                        clearable
-                                        placeholder="All employees"
-                                        searchable
-                                    />
-
-                                    <p class="text-xs text-muted-foreground">
-                                        Leave empty to sync all employees.
-                                    </p>
-                                </div>
-
-                                <!-- Start date -->
-                                <div class="space-y-2">
-                                    <label
-                                        class="text-sm font-medium"
-                                        for="sync-start-date"
-                                    >
-                                        Start date
-                                    </label>
-
-                                    <AppInput
-                                        id="sync-start-date"
-                                        v-model="syncStartDate"
-                                        aria-label="Sync start date"
-                                        type="date"
-                                    />
-                                </div>
-
-                                <!-- End date -->
-                                <div class="space-y-2">
-                                    <label
-                                        class="text-sm font-medium"
-                                        for="sync-end-date"
-                                    >
-                                        End date
-                                    </label>
-
-                                    <AppInput
-                                        id="sync-end-date"
-                                        v-model="syncEndDate"
-                                        aria-label="Sync end date"
-                                        type="date"
-                                    />
-                                </div>
-
-                                <p
-                                    v-if="syncDateError"
-                                    class="text-sm text-destructive"
-                                >
-                                    {{ syncDateError }}
-                                </p>
-
-                                <div
-                                    v-if="syncMessage"
-                                    :class="
-                                        syncMessageType === 'success'
-                                            ? 'border-green-600/30 text-green-700 dark:text-green-400'
-                                            : 'border-destructive/30 text-destructive'
-                                    "
-                                    aria-live="polite"
-                                    class="max-h-40 overflow-y-auto whitespace-pre-wrap rounded-md border p-3 text-sm"
-                                    role="status"
-                                >
-                                    {{ syncMessage }}
-                                </div>
-
-                                <Button
-                                    :disabled="syncDisabled"
-                                    class="w-full cursor-pointer"
-                                    type="button"
-                                    @click="handleSync"
-                                >
-                                    <RefreshCw
-                                        :class="{
-                                            'animate-spin': syncProcessing,
-                                        }"
-                                        aria-hidden="true"
-                                        class="size-4"
-                                    />
-
-                                    {{
-                                        syncProcessing
-                                            ? 'Syncing...'
-                                            : syncButtonLabel
-                                    }}
-                                </Button>
-                            </div>
-                        </PopoverContent>
-                    </Popover>
-                </template>
-            </ListingActions>
+            />
         </template>
 
         <!-- Filters -->
@@ -529,7 +342,7 @@ const handleDeleteSelected = () => {
                 <template #filters>
                     <div
                         v-if="canManageAttendance"
-                        class="w-full shrink-0 sm:w-64"
+                        class="w-full min-w-0"
                     >
                         <AppEmployeeSelect
                             :model-value="
@@ -542,20 +355,20 @@ const handleDeleteSelected = () => {
                         />
                     </div>
 
-                    <div class="w-full shrink-0 sm:w-40">
+                    <div class="w-full min-w-0">
                         <AppInput
                             v-model="filterStartDate"
                             aria-label="Start date"
-                            placeholder="Start date"
+                            class="w-full min-w-0"
                             type="date"
                         />
                     </div>
 
-                    <div class="w-full shrink-0 sm:w-40">
+                    <div class="w-full min-w-0">
                         <AppInput
                             v-model="filterEndDate"
                             aria-label="End date"
-                            placeholder="End date"
+                            class="w-full min-w-0"
                             type="date"
                         />
                     </div>
@@ -578,4 +391,181 @@ const handleDeleteSelected = () => {
             />
         </template>
     </ListingLayout>
+
+    <!-- Sync Attendance Dialog -->
+    <Dialog
+        :open="syncOpen"
+        @update:open="handleSyncDialogOpenChange"
+    >
+        <DialogContent
+            class="max-h-[90vh] w-[calc(100%-2rem)] overflow-y-auto sm:max-w-lg"
+        >
+            <DialogHeader>
+                <DialogTitle>Sync attendance</DialogTitle>
+
+                <DialogDescription>
+                    Choose which eTimeOffice data to import.
+                </DialogDescription>
+            </DialogHeader>
+
+            <div class="space-y-4">
+                <!-- Sync Type -->
+                <fieldset class="space-y-3">
+                    <legend class="text-sm font-medium">
+                        Synchronization type
+                    </legend>
+
+                    <label
+                        for="sync-type-in-out"
+                        class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-muted/50"
+                        :class="
+                            syncType === 'in_out'
+                                ? 'border-primary bg-muted/30'
+                                : 'border-border'
+                        "
+                    >
+                        <input
+                            id="sync-type-in-out"
+                            v-model="syncType"
+                            class="mt-1 size-4 shrink-0 accent-primary"
+                            name="sync-type"
+                            type="radio"
+                            value="in_out"
+                            :disabled="syncProcessing"
+                        />
+
+                        <span class="space-y-1">
+                            <span class="block text-sm font-medium">
+                                IN/OUT Summary
+                            </span>
+
+                            <span class="block text-xs text-muted-foreground">
+                                Imports the daily IN and OUT times. Existing
+                                attendance is skipped; breaks are not imported.
+                            </span>
+                        </span>
+                    </label>
+
+                    <label
+                        for="sync-type-punches"
+                        class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-muted/50"
+                        :class="
+                            syncType === 'punches'
+                                ? 'border-primary bg-muted/30'
+                                : 'border-border'
+                        "
+                    >
+                        <input
+                            id="sync-type-punches"
+                            v-model="syncType"
+                            class="mt-1 size-4 shrink-0 accent-primary"
+                            name="sync-type"
+                            type="radio"
+                            value="punches"
+                            :disabled="syncProcessing"
+                        />
+
+                        <span class="space-y-1">
+                            <span class="block text-sm font-medium">
+                                Detailed Punch Data
+                            </span>
+
+                            <span class="block text-xs text-muted-foreground">
+                                Imports individual punch times and break
+                                intervals. Creates missing attendance or
+                                updates existing attendance with detailed data.
+                            </span>
+                        </span>
+                    </label>
+                </fieldset>
+
+                <div
+                    class="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground"
+                    aria-live="polite"
+                >
+                    {{ syncDescription }}
+                </div>
+
+                <!-- Employee -->
+                <div class="space-y-2">
+                    <label class="text-sm font-medium" for="sync-employee">
+                        Employee
+                    </label>
+
+                    <AppEmployeeSelect
+                        id="sync-employee"
+                        v-model="syncEmployee"
+                        clearable
+                        placeholder="All employees"
+                        searchable
+                    />
+
+                    <p class="text-xs text-muted-foreground">
+                        Leave empty to sync all employees.
+                    </p>
+                </div>
+
+                <!-- Start Date -->
+                <div class="space-y-2">
+                    <label class="text-sm font-medium" for="sync-start-date">
+                        Start date
+                    </label>
+
+                    <AppInput
+                        id="sync-start-date"
+                        v-model="syncStartDate"
+                        aria-label="Sync start date"
+                        type="date"
+                    />
+                </div>
+
+                <!-- End Date -->
+                <div class="space-y-2">
+                    <label class="text-sm font-medium" for="sync-end-date">
+                        End date
+                    </label>
+
+                    <AppInput
+                        id="sync-end-date"
+                        v-model="syncEndDate"
+                        aria-label="Sync end date"
+                        type="date"
+                    />
+                </div>
+
+                <p v-if="syncDateError" class="text-sm text-destructive">
+                    {{ syncDateError }}
+                </p>
+
+                <div
+                    v-if="syncMessage"
+                    :class="
+                        syncMessageType === 'success'
+                            ? 'border-green-600/30 text-green-700 dark:text-green-400'
+                            : 'border-destructive/30 text-destructive'
+                    "
+                    aria-live="polite"
+                    class="max-h-40 overflow-y-auto whitespace-pre-wrap rounded-md border p-3 text-sm"
+                    role="status"
+                >
+                    {{ syncMessage }}
+                </div>
+
+                <Button
+                    :disabled="syncDisabled"
+                    class="w-full cursor-pointer"
+                    type="button"
+                    @click="handleSync"
+                >
+                    <RefreshCw
+                        :class="{ 'animate-spin': syncProcessing }"
+                        aria-hidden="true"
+                        class="mr-2 size-4"
+                    />
+
+                    {{ syncProcessing ? 'Syncing...' : syncButtonLabel }}
+                </Button>
+            </div>
+        </DialogContent>
+    </Dialog>
 </template>
