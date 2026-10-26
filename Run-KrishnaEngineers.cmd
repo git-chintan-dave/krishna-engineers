@@ -1,95 +1,51 @@
 @echo off
 setlocal
-title Krishna Engineers - Installer and Updater
+
 cd /d "%~dp0"
 
-:: Request administrator privileges if needed
-net session >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Requesting administrator permission...
+title Krishna Engineers Launcher
 
-    set "VBS_FILE=%TEMP%\KrishnaEngineersAdmin_%RANDOM%.vbs"
+set "SCRIPT_PATH=%~dp0Run-KrishnaEngineers.ps1"
+set "PROJECT_ROOT=%~dp0"
+set "PS_PATH=%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe"
 
-    (
-        echo Set UAC = CreateObject^("Shell.Application"^)
-        echo UAC.ShellExecute "cmd.exe", "/c ""%~f0""", "%~dp0", "runas", 1
-    ) > "%VBS_FILE%"
+echo ============================================
+echo   Krishna Engineers Launcher
+echo ============================================
+echo.
+echo Project folder: "%PROJECT_ROOT%"
+echo.
 
-    cscript //nologo "%VBS_FILE%"
-    del "%VBS_FILE%" >nul 2>&1
-    exit /b
+if not exist "%SCRIPT_PATH%" (
+    echo ERROR: Run-KrishnaEngineers.ps1 was not found.
+    echo Expected path:
+    echo "%SCRIPT_PATH%"
+    echo.
+    pause
+    exit /b 1
 )
 
-:MENU
-cls
-echo ==================================================
-echo              KRISHNA ENGINEERS
-echo             Application Setup
-echo ==================================================
-echo.
-echo   1. Install application - First-time setup
-echo   2. Update existing application
-echo   3. Exit
-echo.
-choice /c 123 /n /m "Select an option [1-3]: "
-
-if errorlevel 3 goto END
-if errorlevel 2 goto UPDATE
-if errorlevel 1 goto INSTALL
-
-:INSTALL
-cls
-echo ==================================================
-echo             INSTALLING APPLICATION
-echo ==================================================
-echo.
-
-if not exist "%~dp0installer\Install-KrishnaEngineers.ps1" (
-    echo ERROR: Installation script was not found.
-    echo Expected: installer\Install-KrishnaEngineers.ps1
-    goto ERROR
+if not exist "%PS_PATH%" (
+    echo ERROR: Windows PowerShell was not found.
+    echo "%PS_PATH%"
+    echo.
+    pause
+    exit /b 1
 )
 
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0installer\Install-KrishnaEngineers.ps1"
-set "RESULT=%ERRORLEVEL%"
-goto RESULT
-
-:UPDATE
-cls
-echo ==================================================
-echo              UPDATING APPLICATION
-echo ==================================================
+echo Requesting administrator permission...
 echo.
 
-if not exist "%~dp0installer\Update-KrishnaEngineers.ps1" (
-    echo ERROR: Update script was not found.
-    echo Expected: installer\Update-KrishnaEngineers.ps1
-    goto ERROR
-)
+"%PS_PATH%" -NoLogo -NoProfile -ExecutionPolicy Bypass -Command ^
+    "$ErrorActionPreference = 'Stop'; try { $process = Start-Process -FilePath $env:PS_PATH -ArgumentList @('-NoLogo', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ('""' + $env:SCRIPT_PATH + '""')) -WorkingDirectory $env:PROJECT_ROOT -Verb RunAs -Wait -PassThru; exit $process.ExitCode } catch { Write-Host ('Failed to launch: ' + $_.Exception.Message) -ForegroundColor Red; exit 1 }"
 
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0installer\Update-KrishnaEngineers.ps1"
-set "RESULT=%ERRORLEVEL%"
-goto RESULT
+set "EXIT_CODE=%ERRORLEVEL%"
 
-:RESULT
 echo.
-echo ==================================================
-if "%RESULT%"=="0" (
-    echo Operation completed successfully.
-) else (
-    echo Operation failed. Exit code: %RESULT%
-    echo Review the errors above before retrying.
-)
-echo ==================================================
+echo ============================================
+echo Launcher exited with code: %EXIT_CODE%
+echo ============================================
 echo.
 pause
-goto END
 
-:ERROR
-echo.
-pause
-goto END
-
-:END
-endlocal
-exit /b
+exit /b %EXIT_CODE%
