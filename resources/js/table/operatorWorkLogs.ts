@@ -23,33 +23,30 @@ export const createOperatorWorkLogColumns = (
             ]
             : []),
 
-        createDateColumn({
-            accessorKey: 'work_date',
-            header: 'Work Date',
-        }),
-
         ...(canManage
             ? [
                 createColumn({
                     accessorKey: 'user.name',
                     sortKey: 'user.name',
                     header: 'Operator',
-                    size: 180,
-                    minSize: 180,
-                    maxSize: 180,
+                    ...COLUMN_DEFAULTS.smallColumn,
                     align: 'center',
                     sortable: true,
+                    primary: true,
                 }),
             ]
             : []),
+
+        createDateColumn({
+            accessorKey: 'work_date',
+            header: 'Work Date',
+        }),
 
         createColumn({
             accessorKey: 'shift_label',
             sortKey: 'shift',
             header: 'Shift',
-            size: 100,
-            minSize: 100,
-            maxSize: 100,
+            ...COLUMN_DEFAULTS.smallColumn,
             align: 'center',
             sortable: true,
         }),
@@ -58,9 +55,7 @@ export const createOperatorWorkLogColumns = (
             accessorKey: 'machine.name',
             sortKey: 'machine.name',
             header: 'Machine',
-            size: 160,
-            minSize: 160,
-            maxSize: 160,
+            ...COLUMN_DEFAULTS.smallColumn,
             align: 'center',
             sortable: true,
         }),
@@ -78,9 +73,7 @@ export const createOperatorWorkLogColumns = (
             accessorKey: 'setup.name',
             sortKey: 'setup.name',
             header: 'Setup',
-            size: 100,
-            minSize: 100,
-            maxSize: 100,
+            ...COLUMN_DEFAULTS.smallColumn,
             align: 'center',
             sortable: true,
         }),
@@ -88,9 +81,7 @@ export const createOperatorWorkLogColumns = (
         createColumn({
             accessorKey: 'quantity',
             header: 'Quantity',
-            size: 120,
-            minSize: 120,
-            maxSize: 120,
+            ...COLUMN_DEFAULTS.smallColumn,
             align: 'center',
             sortable: true,
         }),
@@ -98,9 +89,7 @@ export const createOperatorWorkLogColumns = (
         createColumn({
             accessorKey: 'rejection_quantity',
             header: 'Rejected',
-            size: 120,
-            minSize: 120,
-            maxSize: 120,
+            ...COLUMN_DEFAULTS.smallColumn,
             align: 'center',
             sortable: true,
         }),
@@ -108,9 +97,7 @@ export const createOperatorWorkLogColumns = (
         createColumn<OperatorWorkLog, number | null>({
             accessorKey: 'production_seconds',
             header: 'Production Time',
-            size: 180,
-            minSize: 180,
-            maxSize: 180,
+            ...COLUMN_DEFAULTS.wideColumn,
             align: 'center',
             sortable: true,
             cell: ({ row }) => row.original.production_seconds_formatted ?? '—',
@@ -119,9 +106,7 @@ export const createOperatorWorkLogColumns = (
         createColumn<OperatorWorkLog, number | null>({
             accessorKey: 'production_efficiency',
             header: 'Daily Efficiency',
-            size: 140,
-            minSize: 140,
-            maxSize: 140,
+            ...COLUMN_DEFAULTS.mediumColumn,
             align: 'center',
         }),
 

@@ -23,24 +23,23 @@ export const createBandsawWorkLogColumns = (
             ]
             : []),
 
-        createDateColumn({
-            accessorKey: 'work_date',
-            header: 'Work Date',
-        }),
-
         ...(canManage
             ? [
                 createColumn({
                     accessorKey: 'user.name',
                     sortKey: 'user.name',
                     header: 'Bandsaw',
-                    size: 180,
-                    minSize: 180,
-                    maxSize: 180,
+                    ...COLUMN_DEFAULTS.smallColumn,
                     sortable: true,
+                    primary: true,
                 }),
             ]
             : []),
+
+        createDateColumn({
+            accessorKey: 'work_date',
+            header: 'Work Date',
+        }),
 
         createColumn({
             accessorKey: 'part.name',
@@ -54,9 +53,7 @@ export const createBandsawWorkLogColumns = (
             accessorKey: 'section.name',
             sortKey: 'section.name',
             header: 'Section',
-            size: 140,
-            minSize: 140,
-            maxSize: 140,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
         }),
 
@@ -64,18 +61,14 @@ export const createBandsawWorkLogColumns = (
             accessorKey: 'section_size.size',
             sortKey: 'section_size.size',
             header: 'Section Size',
-            size: 140,
-            minSize: 140,
-            maxSize: 140,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
         }),
 
         createColumn({
             accessorKey: 'quantity',
             header: 'Quantity',
-            size: 100,
-            minSize: 100,
-            maxSize: 100,
+            ...COLUMN_DEFAULTS.smallColumn,
             sortable: true,
         }),
 
