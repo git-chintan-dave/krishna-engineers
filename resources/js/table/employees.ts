@@ -36,7 +36,7 @@ export const createEmployeeColumns = (handleDelete: (uuid: string) => void) =>
         createColumn({
             accessorKey: 'phone_number',
             header: 'Phone',
-            ...COLUMN_DEFAULTS.secondaryColumn,
+            ...COLUMN_DEFAULTS.smallColumn,
             sortable: true,
         }),
 
@@ -44,7 +44,7 @@ export const createEmployeeColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'role_label',
             sortKey: 'role',
             header: 'Role',
-            ...COLUMN_DEFAULTS.secondaryColumn,
+            ...COLUMN_DEFAULTS.smallColumn,
             sortable: true,
             align: 'center'
         }),
@@ -53,9 +53,16 @@ export const createEmployeeColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'shift_label',
             sortKey: 'shift',
             header: 'Shift',
-            ...COLUMN_DEFAULTS.secondaryColumn,
+            ...COLUMN_DEFAULTS.smallColumn,
             sortable: true,
             align: 'center'
+        }),
+
+        createColumn<Employee, number | null>({
+            accessorKey: 'production_efficiency',
+            header: 'Average Efficiency',
+            ...COLUMN_DEFAULTS.mediumColumn,
+            align: 'center',
         }),
 
         createStatusColumn(),
