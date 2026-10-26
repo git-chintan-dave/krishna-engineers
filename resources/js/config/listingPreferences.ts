@@ -1,4 +1,3 @@
-
 /*
 |--------------------------------------------------------------------------
 | Listing Preference Configuration
@@ -24,10 +23,7 @@ export const listingPreferencesConfig = {
     /**
      * Master switch for listing preference persistence/restoration.
      */
-    enabled: envBoolean(
-        import.meta.env.VITE_LISTING_PREFERENCES_ENABLED,
-        true,
-    ),
+    enabled: envBoolean(import.meta.env.VITE_LISTING_PREFERENCES_ENABLED, true),
 
     /**
      * Remember the selected page size.
@@ -40,10 +36,7 @@ export const listingPreferencesConfig = {
     /**
      * Remember the selected sort column and direction.
      */
-    sorting: envBoolean(
-        import.meta.env.VITE_LISTING_PREFERENCES_SORTING,
-        true,
-    ),
+    sorting: envBoolean(import.meta.env.VITE_LISTING_PREFERENCES_SORTING, true),
 
     /**
      * Disable all listing preferences for these paths.
@@ -72,10 +65,8 @@ export type ListingPreferenceFeatures = {
 
 const normalizePath = (route: string): string => {
     try {
-        const pathname = new URL(
-            route,
-            'http://listing-preferences.local',
-        ).pathname;
+        const pathname = new URL(route, 'http://listing-preferences.local')
+            .pathname;
 
         return pathname.replace(/\/+$/, '') || '/';
     } catch {
@@ -83,15 +74,11 @@ const normalizePath = (route: string): string => {
     }
 };
 
-const matchesRoute = (
-    route: string,
-    configuredRoutes: string[],
-): boolean => {
+const matchesRoute = (route: string, configuredRoutes: string[]): boolean => {
     const normalizedRoute = normalizePath(route);
 
     return configuredRoutes.some(
-        (configuredRoute) =>
-            normalizePath(configuredRoute) === normalizedRoute,
+        (configuredRoute) => normalizePath(configuredRoute) === normalizedRoute,
     );
 };
 

@@ -16,6 +16,7 @@ use App\Services\AttendanceService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -427,7 +428,7 @@ class AttendanceController extends Controller
 
     public function history(
         Request $request,
-    ): \Illuminate\Http\Resources\Json\AnonymousResourceCollection {
+    ): AnonymousResourceCollection {
         Gate::authorize(
             'viewAny',
             Attendance::class,

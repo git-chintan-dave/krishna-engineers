@@ -1,23 +1,42 @@
 ﻿<script lang="ts" setup>
-import {router, usePage} from '@inertiajs/vue3';
-import {FileUp, RefreshCw, RotateCcw} from '@lucide/vue';
-import {computed, ref} from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
+import { FileUp, RefreshCw, RotateCcw } from '@lucide/vue';
+import { computed, ref } from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
-import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingActions, {
+    type ActionItem,
+} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {Button} from '@/components/ui/button';
-import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from '@/components/ui/dialog';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {attendancePage} from '@/config/attendances';
-import {bulkDestroy, create, destroy, index as attendancesRoute, sync,} from '@/routes/attendances';
-import {view as attendancesImportRoute} from '@/routes/attendances/import';
-import {createAttendanceColumns} from '@/table/attendances';
-import type {Attendance, AttendanceFilters, AttendanceResponse, AttendanceSort,} from '@/types/attendance';
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { attendancePage } from '@/config/attendances';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as attendancesRoute,
+    sync,
+} from '@/routes/attendances';
+import { view as attendancesImportRoute } from '@/routes/attendances/import';
+import { createAttendanceColumns } from '@/table/attendances';
+import type {
+    Attendance,
+    AttendanceFilters,
+    AttendanceResponse,
+    AttendanceSort,
+} from '@/types/attendance';
 
 /*
 |--------------------------------------------------------------------------
@@ -238,9 +257,7 @@ const {
     searchable: false,
     additionalFilters: () => ({
         user_id:
-            filterEmployee.value !== 'all'
-                ? filterEmployee.value
-                : undefined,
+            filterEmployee.value !== 'all' ? filterEmployee.value : undefined,
         start_date: filterStartDate.value || undefined,
         end_date: filterEndDate.value || undefined,
     }),
@@ -255,19 +272,19 @@ const {
 const actions = computed<ActionItem[]>(() => [
     ...(isSuperAdmin.value
         ? [
-            {
-                key: 'import',
-                label: 'Import',
-                icon: FileUp,
-                href: attendancesImportRoute().url,
-            },
-            {
-                key: 'sync',
-                label: 'Sync attendance',
-                icon: RefreshCw,
-                action: openSyncDialog,
-            },
-        ]
+              {
+                  key: 'import',
+                  label: 'Import',
+                  icon: FileUp,
+                  href: attendancesImportRoute().url,
+              },
+              {
+                  key: 'sync',
+                  label: 'Sync attendance',
+                  icon: RefreshCw,
+                  action: openSyncDialog,
+              },
+          ]
         : []),
 
     {
@@ -340,10 +357,7 @@ const handleDeleteSelected = () => {
                 @search="handleSearch"
             >
                 <template #filters>
-                    <div
-                        v-if="canManageAttendance"
-                        class="w-full min-w-0"
-                    >
+                    <div v-if="canManageAttendance" class="w-full min-w-0">
                         <AppEmployeeSelect
                             :model-value="
                                 filterEmployee === 'all' ? null : filterEmployee
@@ -393,10 +407,7 @@ const handleDeleteSelected = () => {
     </ListingLayout>
 
     <!-- Sync Attendance Dialog -->
-    <Dialog
-        :open="syncOpen"
-        @update:open="handleSyncDialogOpenChange"
-    >
+    <Dialog :open="syncOpen" @update:open="handleSyncDialogOpenChange">
         <DialogContent
             class="max-h-[90vh] w-[calc(100%-2rem)] overflow-y-auto sm:max-w-lg"
         >
@@ -472,8 +483,8 @@ const handleDeleteSelected = () => {
 
                             <span class="block text-xs text-muted-foreground">
                                 Imports individual punch times and break
-                                intervals. Creates missing attendance or
-                                updates existing attendance with detailed data.
+                                intervals. Creates missing attendance or updates
+                                existing attendance with detailed data.
                             </span>
                         </span>
                     </label>
@@ -545,7 +556,7 @@ const handleDeleteSelected = () => {
                             : 'border-destructive/30 text-destructive'
                     "
                     aria-live="polite"
-                    class="max-h-40 overflow-y-auto whitespace-pre-wrap rounded-md border p-3 text-sm"
+                    class="max-h-40 overflow-y-auto rounded-md border p-3 text-sm whitespace-pre-wrap"
                     role="status"
                 >
                     {{ syncMessage }}

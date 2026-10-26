@@ -1,9 +1,11 @@
 ﻿```vue
 <script lang="ts" setup>
-import {router} from '@inertiajs/vue3';
-import {computed, ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
-import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingActions, {
+    type ActionItem,
+} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppPartSelect from '@/components/selects/AppPartSelect.vue';
@@ -12,13 +14,21 @@ import AppToolSelect from '@/components/selects/AppToolSelect.vue';
 import AppToolTransactionTypeSelect from '@/components/selects/AppToolTransactionTypeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {toolTransactionPage} from '@/config/toolTransactions';
-import {bulkDestroy, create, destroy, index as toolTransactionsRoute,} from '@/routes/tool-transactions';
-import {createToolTransactionColumns} from '@/table/toolTransactions';
-import type {ToolTransaction, ToolTransactionType,} from '@/types/toolTransaction';
-import {RotateCcw} from '@lucide/vue';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { toolTransactionPage } from '@/config/toolTransactions';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as toolTransactionsRoute,
+} from '@/routes/tool-transactions';
+import { createToolTransactionColumns } from '@/table/toolTransactions';
+import type {
+    ToolTransaction,
+    ToolTransactionType,
+} from '@/types/toolTransaction';
+import { RotateCcw } from '@lucide/vue';
 
 /*
 |--------------------------------------------------------------------------
@@ -84,9 +94,7 @@ const filterType = ref<ToolTransactionType | 'all'>(
     props.filters.type ?? 'all',
 );
 
-const filterFromUserId = ref<number | 'all'>(
-    props.filters.fromUserId ?? 'all',
-);
+const filterFromUserId = ref<number | 'all'>(props.filters.fromUserId ?? 'all');
 
 const filterToUserId = ref<number | 'all'>(props.filters.toUserId ?? 'all');
 
@@ -239,9 +247,7 @@ const handleDeleteSelected = (): void => {
             <ListingFilters
                 v-model:search="searchQuery"
                 :clear-button-label="toolTransactionPage.clearButtonLabel"
-                :clear-disabled="
-                    !searchQuery.trim() && !hasAdditionalFilters
-                "
+                :clear-disabled="!searchQuery.trim() && !hasAdditionalFilters"
                 :search-button-label="toolTransactionPage.searchButtonLabel"
                 :search-placeholder="toolTransactionPage.searchPlaceholder"
                 :searchable="false"
@@ -271,9 +277,7 @@ const handleDeleteSelected = (): void => {
 
                     <AppEmployeeSelect
                         :model-value="
-                            filterFromUserId === 'all'
-                                ? null
-                                : filterFromUserId
+                            filterFromUserId === 'all' ? null : filterFromUserId
                         "
                         :placeholder="toolTransactionPage.fromUserPlaceholder"
                         class="w-full min-w-0"
@@ -308,9 +312,7 @@ const handleDeleteSelected = (): void => {
                         :model-value="
                             filterSetupId === 'all' ? null : filterSetupId
                         "
-                        :part-id="
-                            filterPartId === 'all' ? null : filterPartId
-                        "
+                        :part-id="filterPartId === 'all' ? null : filterPartId"
                         :placeholder="toolTransactionPage.setupPlaceholder"
                         class="w-full min-w-0"
                         clearable

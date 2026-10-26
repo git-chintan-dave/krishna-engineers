@@ -1,21 +1,33 @@
 ﻿<script lang="ts" setup>
-import {router} from '@inertiajs/vue3';
-import {computed, ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
-import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingActions, {
+    type ActionItem,
+} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {setupPage} from '@/config/setups';
-import {bulkDestroy, create, destroy, index as setupsRoute,} from '@/routes/setups';
-import {createSetupColumns} from '@/table/setups';
-import type {Setup, SetupFilters, SetupSort, SetupsResponse,} from '@/types/setup';
-import type {StatusFilter} from '@/types/listing';
-import {FileUp, RotateCcw} from '@lucide/vue';
-import {view as setupsImportRoute} from "@/routes/setups/import";
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { setupPage } from '@/config/setups';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as setupsRoute,
+} from '@/routes/setups';
+import { createSetupColumns } from '@/table/setups';
+import type {
+    Setup,
+    SetupFilters,
+    SetupSort,
+    SetupsResponse,
+} from '@/types/setup';
+import type { StatusFilter } from '@/types/listing';
+import { FileUp, RotateCcw } from '@lucide/vue';
+import { view as setupsImportRoute } from '@/routes/setups/import';
 
 /*
 |--------------------------------------------------------------------------

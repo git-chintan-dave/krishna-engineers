@@ -15,7 +15,7 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class PartsImport implements ToCollection, WithHeadingRow, WithChunkReading, SkipsEmptyRows
+class PartsImport implements SkipsEmptyRows, ToCollection, WithChunkReading, WithHeadingRow
 {
     private int $created = 0;
 
@@ -58,8 +58,8 @@ class PartsImport implements ToCollection, WithHeadingRow, WithChunkReading, Ski
             }
 
             $key = mb_strtolower(trim($data['name']))
-                . '|'
-                . mb_strtolower(trim($data['section_name'] ?? ''));
+                .'|'
+                .mb_strtolower(trim($data['section_name'] ?? ''));
 
             if (isset($seenKeys[$key])) {
                 $this->errors[] = "Row {$rowNumber}: Duplicate part name and section combination in the file.";
@@ -148,8 +148,8 @@ class PartsImport implements ToCollection, WithHeadingRow, WithChunkReading, Ski
                 })
                 ->get(['id', 'name', 'section_id'])
                 ->keyBy(fn (Part $part) => mb_strtolower(trim($part->name))
-                    . '|'
-                    . ($part->section_id === null
+                    .'|'
+                    .($part->section_id === null
                         ? ''
                         : (string) $part->section_id));
 
@@ -158,8 +158,8 @@ class PartsImport implements ToCollection, WithHeadingRow, WithChunkReading, Ski
 
             foreach ($resolvedRows as $data) {
                 $key = mb_strtolower(trim($data['name']))
-                    . '|'
-                    . ($data['section_id'] === null
+                    .'|'
+                    .($data['section_id'] === null
                         ? ''
                         : (string) $data['section_id']);
 

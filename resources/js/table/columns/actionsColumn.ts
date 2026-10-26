@@ -1,10 +1,10 @@
-import {Link} from '@inertiajs/vue3';
-import {CheckCircle2, Eye, Pencil, RefreshCw, Trash2} from '@lucide/vue';
-import {h, withDirectives} from 'vue';
+import { Link } from '@inertiajs/vue3';
+import { CheckCircle2, Eye, Pencil, RefreshCw, Trash2 } from '@lucide/vue';
+import { h, withDirectives } from 'vue';
 
-import {Button} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import vConfirm from '@/directives/confirm';
-import {COLUMN_DEFAULTS} from '@/table/constants/columns';
+import { COLUMN_DEFAULTS } from '@/table/constants/columns';
 
 /*
 |--------------------------------------------------------------------------
@@ -37,22 +37,22 @@ type ActionsColumnOptions = {
 */
 
 export const createActionsColumn = ({
-                                        editUrl,
-                                        detailsUrl,
-                                        markAsPaidUrl,
-                                        regenerateUrl,
-                                        resourceName,
-                                        handleDelete,
-                                        handleMarkAsPaid,
-                                        handleRegenerate,
-                                        showDelete,
-                                        showEdit,
-                                        showMarkAsPaid,
-                                        showRegenerate,
-                                        size = COLUMN_DEFAULTS.actions.size,
-                                        minSize = COLUMN_DEFAULTS.actions.minSize,
-                                        maxSize = COLUMN_DEFAULTS.actions.maxSize,
-                                    }: ActionsColumnOptions) => {
+    editUrl,
+    detailsUrl,
+    markAsPaidUrl,
+    regenerateUrl,
+    resourceName,
+    handleDelete,
+    handleMarkAsPaid,
+    handleRegenerate,
+    showDelete,
+    showEdit,
+    showMarkAsPaid,
+    showRegenerate,
+    size = COLUMN_DEFAULTS.actions.size,
+    minSize = COLUMN_DEFAULTS.actions.minSize,
+    maxSize = COLUMN_DEFAULTS.actions.maxSize,
+}: ActionsColumnOptions) => {
     const hasMarkAsPaid = Boolean(markAsPaidUrl && handleMarkAsPaid);
     const hasRegenerate = Boolean(regenerateUrl && handleRegenerate);
 
@@ -66,7 +66,7 @@ export const createActionsColumn = ({
             align: 'center',
         },
         enableSorting: false,
-        cell: ({row}: any) => {
+        cell: ({ row }: any) => {
             const uuid = row.original.uuid;
             const name =
                 row.original.name ?? row.original.user?.name ?? 'record';
@@ -98,12 +98,12 @@ export const createActionsColumn = ({
                             asChild: true,
                         },
                         () =>
-                            h(Link, {href: detailsUrl(uuid)}, () => [
+                            h(Link, { href: detailsUrl(uuid) }, () => [
                                 h(Eye, {
                                     class: 'size-3.5',
                                     'aria-hidden': 'true',
                                 }),
-                                h('span', {class: 'sr-only'}, `View ${name}`),
+                                h('span', { class: 'sr-only' }, `View ${name}`),
                             ]),
                     ),
                 );
@@ -127,12 +127,12 @@ export const createActionsColumn = ({
                             asChild: true,
                         },
                         () =>
-                            h(Link, {href: editUrl(uuid)}, () => [
+                            h(Link, { href: editUrl(uuid) }, () => [
                                 h(Pencil, {
                                     class: 'size-3.5',
                                     'aria-hidden': 'true',
                                 }),
-                                h('span', {class: 'sr-only'}, `Edit ${name}`),
+                                h('span', { class: 'sr-only' }, `Edit ${name}`),
                             ]),
                     ),
                 );
@@ -162,7 +162,7 @@ export const createActionsColumn = ({
                                 }),
                                 h(
                                     'span',
-                                    {class: 'sr-only'},
+                                    { class: 'sr-only' },
                                     `Regenerate ${name}`,
                                 ),
                             ],
@@ -210,7 +210,7 @@ export const createActionsColumn = ({
                                 }),
                                 h(
                                     'span',
-                                    {class: 'sr-only'},
+                                    { class: 'sr-only' },
                                     `Mark ${name} as paid`,
                                 ),
                             ],
@@ -257,7 +257,7 @@ export const createActionsColumn = ({
                                 }),
                                 h(
                                     'span',
-                                    {class: 'sr-only'},
+                                    { class: 'sr-only' },
                                     `Delete ${name}`,
                                 ),
                             ],

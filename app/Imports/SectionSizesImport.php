@@ -12,7 +12,7 @@ use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class SectionSizesImport implements ToCollection, WithHeadingRow, SkipsEmptyRows
+class SectionSizesImport implements SkipsEmptyRows, ToCollection, WithHeadingRow
 {
     private int $created = 0;
 
@@ -92,7 +92,7 @@ class SectionSizesImport implements ToCollection, WithHeadingRow, SkipsEmptyRows
                 }
 
                 $sizeKey = mb_strtolower(trim($data['size']));
-                $uniqueKey = $section->id . ':' . $sizeKey;
+                $uniqueKey = $section->id.':'.$sizeKey;
 
                 if (isset($duplicateKeys[$uniqueKey])) {
                     $this->errors[] = "Row {$data['row_number']}: Duplicate size '{$data['size']}' for section '{$data['section_name']}' in the file.";
@@ -122,13 +122,13 @@ class SectionSizesImport implements ToCollection, WithHeadingRow, SkipsEmptyRows
             $existingSizes = SectionSize::query()
                 ->whereIn('section_id', $sectionIds)
                 ->get(['id', 'section_id', 'size'])
-                ->keyBy(fn (SectionSize $item) => $item->section_id . ':' . mb_strtolower(trim($item->size)));
+                ->keyBy(fn (SectionSize $item) => $item->section_id.':'.mb_strtolower(trim($item->size)));
 
             $now = now();
             $records = [];
 
             foreach ($resolvedRows as $data) {
-                $key = $data['section_id'] . ':' . mb_strtolower(trim($data['size']));
+                $key = $data['section_id'].':'.mb_strtolower(trim($data['size']));
                 $existing = $existingSizes->get($key);
 
                 $records[] = [

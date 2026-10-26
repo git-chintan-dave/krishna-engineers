@@ -1,7 +1,7 @@
-import {h} from 'vue';
+import { h } from 'vue';
 
-import {Checkbox} from '@/components/ui/checkbox';
-import {COLUMN_DEFAULTS} from '@/table/constants/columns';
+import { Checkbox } from '@/components/ui/checkbox';
+import { COLUMN_DEFAULTS } from '@/table/constants/columns';
 
 /*
 |--------------------------------------------------------------------------
@@ -21,9 +21,9 @@ type SelectColumnOptions<TData = any> = {
 */
 
 export const createSelectColumn = <TData = any>({
-                                                    resourceName,
-                                                    isSelectable,
-                                                }: SelectColumnOptions<TData>) => ({
+    resourceName,
+    isSelectable,
+}: SelectColumnOptions<TData>) => ({
     id: 'select',
 
     size: COLUMN_DEFAULTS.select.size,

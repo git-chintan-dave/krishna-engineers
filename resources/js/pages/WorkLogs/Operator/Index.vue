@@ -1,9 +1,11 @@
 <script lang="ts" setup>
-import {router} from '@inertiajs/vue3';
-import {computed, ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
-import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingActions, {
+    type ActionItem,
+} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppMachineSelect from '@/components/selects/AppMachineSelect.vue';
@@ -12,18 +14,23 @@ import AppSetupSelect from '@/components/selects/AppSetupSelect.vue';
 import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {operatorWorkLogPage} from '@/config/operatorWorkLogs';
-import {bulkDestroy, create, destroy, index as operatorWorkLogsRoute,} from '@/routes/operator';
-import {createOperatorWorkLogColumns} from '@/table/operatorWorkLogs';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { operatorWorkLogPage } from '@/config/operatorWorkLogs';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as operatorWorkLogsRoute,
+} from '@/routes/operator';
+import { createOperatorWorkLogColumns } from '@/table/operatorWorkLogs';
 import type {
     OperatorWorkLog,
     OperatorWorkLogFilters,
     OperatorWorkLogSort,
     OperatorWorkLogsResponse,
 } from '@/types/operatorWorkLog';
-import {RotateCcw} from '@lucide/vue';
+import { RotateCcw } from '@lucide/vue';
 
 /*
 |--------------------------------------------------------------------------
@@ -102,12 +109,9 @@ const filterSetupId = ref<FilterId>(normalizeFilterId(props.filters.setupId));
 |--------------------------------------------------------------------------
 */
 
-const columns = createOperatorWorkLogColumns(
-    (uuid) => {
-        router.delete(destroy(uuid).url);
-    },
-    props.canSelectOperator,
-);
+const columns = createOperatorWorkLogColumns((uuid) => {
+    router.delete(destroy(uuid).url);
+}, props.canSelectOperator);
 
 const {
     table,
@@ -133,9 +137,7 @@ const {
         shift: filterShift.value !== 'all' ? filterShift.value : undefined,
         user_id: filterUserId.value !== 'all' ? filterUserId.value : undefined,
         machine_id:
-            filterMachineId.value !== 'all'
-                ? filterMachineId.value
-                : undefined,
+            filterMachineId.value !== 'all' ? filterMachineId.value : undefined,
         part_id: filterPartId.value !== 'all' ? filterPartId.value : undefined,
         setup_id:
             filterSetupId.value !== 'all' ? filterSetupId.value : undefined,

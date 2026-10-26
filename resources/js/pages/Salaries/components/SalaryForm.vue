@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import axios from 'axios';
-import type {InertiaForm} from '@inertiajs/vue3';
-import {CalendarDays, IndianRupee, User} from '@lucide/vue';
-import {computed, ref, watch} from 'vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+import { CalendarDays, IndianRupee, User } from '@lucide/vue';
+import { computed, ref, watch } from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -10,12 +10,12 @@ import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AttendanceHistoryDialog from '@/components/attendance/AttendanceHistoryDialog.vue';
-import {Button} from '@/components/ui/button';
-import {useZodFormValidation} from '@/composables/useZodFormValidation';
-import {salaryPage} from '@/config/salaries';
-import {preview as previewSalary} from '@/routes/salaries';
-import {salarySchema} from '@/schemas/salarySchema';
-import type {Salary, SalaryFormData} from '@/types/salary';
+import { Button } from '@/components/ui/button';
+import { useZodFormValidation } from '@/composables/useZodFormValidation';
+import { salaryPage } from '@/config/salaries';
+import { preview as previewSalary } from '@/routes/salaries';
+import { salarySchema } from '@/schemas/salarySchema';
+import type { Salary, SalaryFormData } from '@/types/salary';
 
 /*
 |--------------------------------------------------------------------------
@@ -91,18 +91,16 @@ const isEdit = computed(() => Boolean(props.salary));
 | Salary Calculation
 |--------------------------------------------------------------------------
 */
-const showProductionEfficiency = computed(
-    () =>
-        props.salary
-            ? props.showProductionEfficiency
-            : previewData.value?.show_production_efficiency ?? false,
+const showProductionEfficiency = computed(() =>
+    props.salary
+        ? props.showProductionEfficiency
+        : (previewData.value?.show_production_efficiency ?? false),
 );
 
-const productionEfficiency = computed(
-    () =>
-        props.salary
-            ? props.productionEfficiency
-            : previewData.value?.production_efficiency ?? null,
+const productionEfficiency = computed(() =>
+    props.salary
+        ? props.productionEfficiency
+        : (previewData.value?.production_efficiency ?? null),
 );
 
 const baseSalary = computed(() =>
@@ -112,16 +110,16 @@ const baseSalary = computed(() =>
 const attendanceDays = computed(() =>
     Number(
         props.salary?.attendance_days ??
-        previewData.value?.attendance_days ??
-        0,
+            previewData.value?.attendance_days ??
+            0,
     ),
 );
 
 const totalUndertimeSeconds = computed(() =>
     Number(
         props.salary?.total_undertime_seconds ??
-        previewData.value?.total_undertime_seconds ??
-        0,
+            previewData.value?.total_undertime_seconds ??
+            0,
     ),
 );
 
@@ -137,17 +135,13 @@ const workingDays = computed(() =>
 
 const incentiveRate = computed(() =>
     Number(
-        props.salary?.incentive_rate ??
-        previewData.value?.incentive_rate ??
-        0,
+        props.salary?.incentive_rate ?? previewData.value?.incentive_rate ?? 0,
     ),
 );
 
 const deductionRate = computed(() =>
     Number(
-        props.salary?.deduction_rate ??
-        previewData.value?.deduction_rate ??
-        0,
+        props.salary?.deduction_rate ?? previewData.value?.deduction_rate ?? 0,
     ),
 );
 
@@ -179,7 +173,6 @@ const finalPayable = computed(() =>
 );
 
 const hasAdjustment = computed(() => adjustment.value > 0);
-
 
 const basePay = computed(() => baseSalary.value * workingDays.value);
 
@@ -216,7 +209,6 @@ const salarySummaryItems = computed(() => [
         type: 'deduction' as const,
     },
 ]);
-
 
 /*
 |--------------------------------------------------------------------------
@@ -280,19 +272,16 @@ const loadPreview = async (): Promise<void> => {
     previewLoading.value = true;
 
     try {
-        const response = await axios.get<SalaryPreview>(
-            previewSalary().url,
-            {
-                params: {
-                    user_id: props.form.user_id,
-                    salary_period_start: props.form.salary_period_start,
-                    salary_period_end: props.form.salary_period_end,
-                },
-                headers: {
-                    Accept: 'application/json',
-                },
+        const response = await axios.get<SalaryPreview>(previewSalary().url, {
+            params: {
+                user_id: props.form.user_id,
+                salary_period_start: props.form.salary_period_start,
+                salary_period_end: props.form.salary_period_end,
             },
-        );
+            headers: {
+                Accept: 'application/json',
+            },
+        });
 
         if (requestId !== previewRequestId) {
             return;
@@ -493,7 +482,9 @@ watch(
                                 id="salary-upad"
                                 v-model="props.form.upad"
                                 :disabled="processing"
-                                :error="frontendErrors.upad ?? props.errors.upad"
+                                :error="
+                                    frontendErrors.upad ?? props.errors.upad
+                                "
                                 :icon="IndianRupee"
                                 :placeholder="salaryPage.form.upadPlaceholder"
                                 min="0"
@@ -516,7 +507,9 @@ watch(
                                     props.errors.paid_loan
                                 "
                                 :icon="IndianRupee"
-                                :placeholder="salaryPage.form.paidLoanPlaceholder"
+                                :placeholder="
+                                    salaryPage.form.paidLoanPlaceholder
+                                "
                                 min="0"
                                 step="0.01"
                                 type="number"
@@ -537,7 +530,9 @@ watch(
                                     props.errors.adjustment
                                 "
                                 :icon="IndianRupee"
-                                :placeholder="salaryPage.form.adjustmentPlaceholder"
+                                :placeholder="
+                                    salaryPage.form.adjustmentPlaceholder
+                                "
                                 step="0.01"
                                 type="number"
                             />
@@ -596,13 +591,19 @@ watch(
                                     :class="{
                                         'text-green-600 dark:text-green-400':
                                             item.type === 'positive' ||
-                                            (item.type === 'adjustment' && item.amount > 0),
+                                            (item.type === 'adjustment' &&
+                                                item.amount > 0),
                                         'text-destructive':
-                                            item.type === 'deduction' || item.amount < 0,
+                                            item.type === 'deduction' ||
+                                            item.amount < 0,
                                     }"
                                 >
-                                    <template v-if="item.amount > 0">+</template>
-                                    <template v-else-if="item.amount < 0">−</template>
+                                    <template v-if="item.amount > 0"
+                                        >+</template
+                                    >
+                                    <template v-else-if="item.amount < 0"
+                                        >−</template
+                                    >
                                     ₹{{ formatCurrency(Math.abs(item.amount)) }}
                                 </p>
                             </div>
@@ -613,22 +614,31 @@ watch(
                                 >
                                     <div class="min-w-0">
                                         <p class="text-sm font-medium">
-                                            {{ salaryPage.form.finalPayableLabel }}
+                                            {{
+                                                salaryPage.form
+                                                    .finalPayableLabel
+                                            }}
                                         </p>
 
-                                        <p class="mt-1 text-xs text-muted-foreground">
+                                        <p
+                                            class="mt-1 text-xs text-muted-foreground"
+                                        >
                                             {{ workingDays }} payable days ·
                                             {{ attendanceDays }} attendance days
                                         </p>
                                     </div>
 
-                                    <div class="flex shrink-0 items-center gap-2">
+                                    <div
+                                        class="flex shrink-0 items-center gap-2"
+                                    >
                                         <IndianRupee
                                             aria-hidden="true"
                                             class="size-5 text-muted-foreground"
                                         />
 
-                                        <p class="text-2xl font-semibold tabular-nums">
+                                        <p
+                                            class="text-2xl font-semibold tabular-nums"
+                                        >
                                             {{ formatCurrency(finalPayable) }}
                                         </p>
                                     </div>
@@ -644,9 +654,7 @@ watch(
                 <div class="rounded-xl border bg-card p-5">
                     <div class="flex items-start justify-between gap-3">
                         <div>
-                            <h3 class="font-semibold">
-                                Attendance & Salary
-                            </h3>
+                            <h3 class="font-semibold">Attendance & Salary</h3>
 
                             <p class="mt-1 text-sm text-muted-foreground">
                                 Review the calculation for this salary period.
@@ -727,8 +735,8 @@ watch(
                             </AppField>
 
                             <p class="mt-2 text-xs text-muted-foreground">
-                                Automatically calculated from undertime. You
-                                can adjust this value before saving.
+                                Automatically calculated from undertime. You can
+                                adjust this value before saving.
                             </p>
                         </div>
 
@@ -747,34 +755,46 @@ watch(
                             v-if="showProductionEfficiency"
                             class="rounded-lg border bg-muted/30 p-4"
                         >
-                            <div class="flex items-center justify-between gap-4">
+                            <div
+                                class="flex items-center justify-between gap-4"
+                            >
                                 <div>
                                     <p class="text-sm font-medium">
                                         Production efficiency
                                     </p>
 
-                                    <p class="mt-1 text-xs text-muted-foreground">
+                                    <p
+                                        class="mt-1 text-xs text-muted-foreground"
+                                    >
                                         Production vs effective working time
                                     </p>
                                 </div>
 
-                                <span class="text-xl font-semibold tabular-nums">
+                                <span
+                                    class="text-xl font-semibold tabular-nums"
+                                >
                                     {{ productionEfficiency }}
                                 </span>
                             </div>
                         </div>
 
                         <div class="space-y-3 border-t pt-4">
-                            <div class="flex items-center justify-between gap-4">
+                            <div
+                                class="flex items-center justify-between gap-4"
+                            >
                                 <span class="text-sm text-muted-foreground">
                                     Base salary
                                 </span>
                                 <span class="tabular-nums">
-                                    ₹{{ formatCurrency(baseSalary * workingDays) }}
+                                    ₹{{
+                                        formatCurrency(baseSalary * workingDays)
+                                    }}
                                 </span>
                             </div>
 
-                            <div class="flex items-center justify-between gap-4">
+                            <div
+                                class="flex items-center justify-between gap-4"
+                            >
                                 <span class="text-sm text-muted-foreground">
                                     Incentive
                                 </span>
@@ -783,7 +803,9 @@ watch(
                                 </span>
                             </div>
 
-                            <div class="flex items-center justify-between gap-4">
+                            <div
+                                class="flex items-center justify-between gap-4"
+                            >
                                 <span class="text-sm text-muted-foreground">
                                     Deduction
                                 </span>

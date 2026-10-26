@@ -100,13 +100,9 @@ export const salarySchema = z
         |--------------------------------------------------------------------------
         */
 
-        const startDate = new Date(
-            `${data.salary_period_start}T00:00:00`,
-        );
+        const startDate = new Date(`${data.salary_period_start}T00:00:00`);
 
-        const endDate = new Date(
-            `${data.salary_period_end}T00:00:00`,
-        );
+        const endDate = new Date(`${data.salary_period_end}T00:00:00`);
 
         if (
             !Number.isNaN(startDate.getTime()) &&

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import {Check, Monitor, Moon, Sun} from '@lucide/vue';
-import {useAppearance} from '@/composables/useAppearance';
+import { Check, Monitor, Moon, Sun } from '@lucide/vue';
+import { useAppearance } from '@/composables/useAppearance';
 
 const { appearance, updateAppearance } = useAppearance();
 
@@ -20,7 +20,7 @@ const tabs = [
             :aria-pressed="appearance === value"
             :class="[
                 'group relative rounded-xl border p-3 text-left transition-all duration-200',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none',
                 appearance === value
                     ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
                     : 'border-border hover:border-primary/40 hover:bg-muted/40',
@@ -78,9 +78,7 @@ const tabs = [
                         <div
                             class="h-2 w-2/3 rounded-full"
                             :class="
-                                value === 'dark'
-                                    ? 'bg-zinc-700'
-                                    : 'bg-zinc-300'
+                                value === 'dark' ? 'bg-zinc-700' : 'bg-zinc-300'
                             "
                         />
                         <div class="flex gap-1.5">

@@ -40,8 +40,7 @@ class DownloadDatabaseSnapshotController
             // Locate the file created by this request.
             $snapshotPath = collect($storage->allFiles())
                 ->first(
-                    fn (string $path): bool =>
-                    str_starts_with(
+                    fn (string $path): bool => str_starts_with(
                         basename($path),
                         $snapshotName.'.'
                     )

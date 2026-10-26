@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import {Head} from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 
 import AppPageHeader from '@/components/common/AppPageHeader.vue';
 import ImportFile from '@/components/common/ImportFile.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {machinePage} from '@/config/machines';
-import {index as machines} from '@/routes/machines';
-import {store as submitImport} from '@/routes/machines/import';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { machinePage } from '@/config/machines';
+import { index as machines } from '@/routes/machines';
+import { store as submitImport } from '@/routes/machines/import';
 
 defineOptions({
     layout: {

@@ -177,7 +177,6 @@ class ToolController extends Controller
         return $this->successResponse('bulk_deleted');
     }
 
-
     public function import()
     {
         return Inertia::render('Tools/Import', []);
@@ -194,7 +193,7 @@ class ToolController extends Controller
             ],
         ]);
 
-        $import = new ToolsImport();
+        $import = new ToolsImport;
 
         Excel::import($import, $request->file('file'));
 
@@ -204,5 +203,4 @@ class ToolController extends Controller
             updated: $import->getUpdatedCount(),
         );
     }
-
 }

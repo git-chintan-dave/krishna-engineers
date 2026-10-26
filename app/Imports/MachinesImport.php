@@ -12,7 +12,7 @@ use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class MachinesImport implements ToCollection, WithHeadingRow, SkipsEmptyRows
+class MachinesImport implements SkipsEmptyRows, ToCollection, WithHeadingRow
 {
     private int $created = 0;
 

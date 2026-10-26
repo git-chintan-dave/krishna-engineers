@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import {Form} from '@inertiajs/vue3';
-import {ShieldCheck} from '@lucide/vue';
-import {onUnmounted, ref} from 'vue';
+import { Form } from '@inertiajs/vue3';
+import { ShieldCheck } from '@lucide/vue';
+import { onUnmounted, ref } from 'vue';
 
 import TwoFactorRecoveryCodes from '@/components/TwoFactorRecoveryCodes.vue';
 import TwoFactorSetupModal from '@/components/TwoFactorSetupModal.vue';
-import {Button} from '@/components/ui/button';
-import {useTwoFactorAuth} from '@/composables/useTwoFactorAuth';
-import {disable, enable} from '@/routes/two-factor';
+import { Button } from '@/components/ui/button';
+import { useTwoFactorAuth } from '@/composables/useTwoFactorAuth';
+import { disable, enable } from '@/routes/two-factor';
 
 export type Props = {
     canManageTwoFactor?: boolean;
@@ -29,7 +29,9 @@ onUnmounted(() => clearTwoFactorAuthData());
 
 <template>
     <div v-if="canManageTwoFactor" class="space-y-5">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div
+            class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
+        >
             <div class="flex items-start gap-3">
                 <div
                     class="flex size-10 shrink-0 items-center justify-center rounded-lg"
@@ -116,10 +118,7 @@ onUnmounted(() => clearTwoFactorAuthData());
                 whenever you sign in.
             </p>
 
-            <Form
-                v-slot="{ processing }"
-                v-bind="disable.form()"
-            >
+            <Form v-slot="{ processing }" v-bind="disable.form()">
                 <Button
                     type="submit"
                     variant="destructive"

@@ -1,21 +1,33 @@
 ﻿<script lang="ts" setup>
-import {router} from '@inertiajs/vue3';
-import {computed, ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 import DataTable from '@/components/data-table/DataTable.vue';
-import ListingActions, {ActionItem} from '@/components/common/ListingActions.vue';
+import ListingActions, {
+    ActionItem,
+} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {machinePage} from '@/config/machines';
-import {bulkDestroy, create, destroy, index as machinesRoute,} from '@/routes/machines';
-import {createMachineColumns} from '@/table/machines';
-import type {Machine, MachineFilters, MachineSort, MachinesResponse,} from '@/types/machine';
-import type {StatusFilter} from '@/types/listing';
-import {FileUp, RotateCcw} from "@lucide/vue";
-import {view as machinesImportRoute} from "@/routes/machines/import";
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { machinePage } from '@/config/machines';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as machinesRoute,
+} from '@/routes/machines';
+import { createMachineColumns } from '@/table/machines';
+import type {
+    Machine,
+    MachineFilters,
+    MachineSort,
+    MachinesResponse,
+} from '@/types/machine';
+import type { StatusFilter } from '@/types/listing';
+import { FileUp, RotateCcw } from '@lucide/vue';
+import { view as machinesImportRoute } from '@/routes/machines/import';
 
 /*
 |--------------------------------------------------------------------------
@@ -149,8 +161,12 @@ const handleDeleteSelected = () => {
                 <template #filters>
                     <div class="w-full min-w-0">
                         <AppStatusSelect
-                            :model-value="filterStatus === 'all' ? null : filterStatus"
-                            :placeholder="machinePage.statusPlaceholder ?? 'All statuses'"
+                            :model-value="
+                                filterStatus === 'all' ? null : filterStatus
+                            "
+                            :placeholder="
+                                machinePage.statusPlaceholder ?? 'All statuses'
+                            "
                             clearable
                             @update:model-value="handleStatusChange"
                         />

@@ -16,11 +16,7 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class ToolsImport implements
-    ToCollection,
-    WithHeadingRow,
-    WithChunkReading,
-    SkipsEmptyRows
+class ToolsImport implements SkipsEmptyRows, ToCollection, WithChunkReading, WithHeadingRow
 {
     private int $created = 0;
 
@@ -72,8 +68,8 @@ class ToolsImport implements
             }
 
             $key = mb_strtolower($type)
-                . '|'
-                . mb_strtolower(trim($data['name']));
+                .'|'
+                .mb_strtolower(trim($data['name']));
 
             if (isset($this->seenKeys[$key])) {
                 $errors[] = "Row {$rowNumber}: Duplicate Type + Name combination in the uploaded file.";
@@ -105,15 +101,15 @@ class ToolsImport implements
                 ->whereIn('name', array_unique(array_column($records, 'name')))
                 ->get(['id', 'type', 'name'])
                 ->keyBy(fn (Tool $tool) => mb_strtolower($tool->type)
-                    . '|'
-                    . mb_strtolower(trim($tool->name)));
+                    .'|'
+                    .mb_strtolower(trim($tool->name)));
 
             $insertRecords = [];
 
             foreach ($records as $record) {
                 $key = mb_strtolower($record['type'])
-                    . '|'
-                    . mb_strtolower($record['name']);
+                    .'|'
+                    .mb_strtolower($record['name']);
 
                 if ($existingTools->has($key)) {
                     $this->updated++;

@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import {Head} from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 
 import AppPageHeader from '@/components/common/AppPageHeader.vue';
 import ImportFile from '@/components/common/ImportFile.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {sectionSizePage} from '@/config/sectionSizes';
-import {index as sectionSizes} from '@/routes/section-sizes';
-import {store as submitImport} from '@/routes/section-sizes/import';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { sectionSizePage } from '@/config/sectionSizes';
+import { index as sectionSizes } from '@/routes/section-sizes';
+import { store as submitImport } from '@/routes/section-sizes/import';
 
 defineOptions({
     layout: {

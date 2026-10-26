@@ -149,7 +149,6 @@ class SectionSizeController extends Controller
         return $this->successResponse('bulk_deleted');
     }
 
-
     public function import()
     {
         return Inertia::render('SectionSizes/Import', []);
@@ -166,7 +165,7 @@ class SectionSizeController extends Controller
             ],
         ]);
 
-        $import = new SectionSizesImport();
+        $import = new SectionSizesImport;
 
         Excel::import($import, $request->file('file'));
 
@@ -176,5 +175,4 @@ class SectionSizeController extends Controller
             updated: $import->getUpdatedCount(),
         );
     }
-
 }

@@ -41,17 +41,17 @@ class SyncETimeOfficePunchData extends Command
             $fromDate = $this->parseDate(
                 $this->option('from')
                     ?: $defaultDate
-                    ->copy()
-                    ->startOfDay()
-                    ->format('d/m/Y_H:i')
+                        ->copy()
+                        ->startOfDay()
+                        ->format('d/m/Y_H:i')
             );
 
             $toDate = $this->parseDate(
                 $this->option('to')
                     ?: $defaultDate
-                    ->copy()
-                    ->endOfDay()
-                    ->format('d/m/Y_H:i')
+                        ->copy()
+                        ->endOfDay()
+                        ->format('d/m/Y_H:i')
             );
         } catch (InvalidArgumentException $exception) {
             $this->error($exception->getMessage());
@@ -70,11 +70,11 @@ class SyncETimeOfficePunchData extends Command
         $config = config('services.etimeoffice', []);
 
         foreach ([
-                     'base_url',
-                     'corporate_id',
-                     'username',
-                     'password',
-                 ] as $key) {
+            'base_url',
+            'corporate_id',
+            'username',
+            'password',
+        ] as $key) {
             if (blank($config[$key] ?? null)) {
                 $this->error(
                     "Missing eTimeOffice configuration: {$key}."
@@ -347,7 +347,7 @@ class SyncETimeOfficePunchData extends Command
      * Break  = 13:00 → 13:56
      * OUT    = 18:02
      *
-     * @param array<int, mixed> $punches
+     * @param  array<int, mixed>  $punches
      * @return array<int, array{
      *     employee_code: string,
      *     attendance_date: string,
@@ -437,7 +437,7 @@ class SyncETimeOfficePunchData extends Command
              */
             if ($count < 2 || $count % 2 !== 0) {
                 $this->warn(
-                    "Incomplete punch sequence for ".
+                    'Incomplete punch sequence for '.
                     "{$group['employee_code']} on ".
                     "{$group['attendance_date']}. ".
                     "Punch count: {$count}. Skipping."
@@ -474,7 +474,7 @@ class SyncETimeOfficePunchData extends Command
                     $breakEnd->lessThanOrEqualTo($breakStart)
                 ) {
                     $this->warn(
-                        "Invalid break sequence for ".
+                        'Invalid break sequence for '.
                         "{$group['employee_code']} on ".
                         "{$group['attendance_date']}."
                     );

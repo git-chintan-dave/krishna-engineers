@@ -1,21 +1,35 @@
 ﻿<script lang="ts" setup>
-import {router} from '@inertiajs/vue3';
-import {computed, ref, watch} from 'vue';
-import {RotateCcw, Wallet} from '@lucide/vue';
+import { router } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
+import { RotateCcw, Wallet } from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
-import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingActions, {
+    type ActionItem,
+} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppSalaryStatusSelect from '@/components/selects/AppSalaryStatusSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {salaryPage} from '@/config/salaries';
-import {bulkDestroy, create, destroy, generateLastMonth, index as salariesRoute,} from '@/routes/salaries';
-import {createSalaryColumns} from '@/table/salaries';
-import type {Salary, SalaryFilters, SalaryResponse, SalarySort, SalaryStatus,} from '@/types/salary';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { salaryPage } from '@/config/salaries';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    generateLastMonth,
+    index as salariesRoute,
+} from '@/routes/salaries';
+import { createSalaryColumns } from '@/table/salaries';
+import type {
+    Salary,
+    SalaryFilters,
+    SalaryResponse,
+    SalarySort,
+    SalaryStatus,
+} from '@/types/salary';
 
 /*
 |--------------------------------------------------------------------------
@@ -63,9 +77,7 @@ const filterEndDate = computed(() => {
         return '';
     }
 
-    const [year, month, day] = filterStartDate.value
-        .split('-')
-        .map(Number);
+    const [year, month, day] = filterStartDate.value.split('-').map(Number);
 
     if (!year || !month || !day) {
         return '';
@@ -105,9 +117,7 @@ const handleEmployeeChange = (value: number | null): void => {
 
 const handleStatusChange = (value: string | null): void => {
     filterStatus.value =
-        value === 'draft' || value === 'paid'
-            ? (value as SalaryStatus)
-            : 'all';
+        value === 'draft' || value === 'paid' ? (value as SalaryStatus) : 'all';
 };
 
 /*
@@ -138,13 +148,8 @@ const {
     searchable: false,
     additionalFilters: () => ({
         user_id:
-            filterEmployee.value !== 'all'
-                ? filterEmployee.value
-                : undefined,
-        status:
-            filterStatus.value !== 'all'
-                ? filterStatus.value
-                : undefined,
+            filterEmployee.value !== 'all' ? filterEmployee.value : undefined,
+        status: filterStatus.value !== 'all' ? filterStatus.value : undefined,
         start_date: filterStartDate.value || undefined,
         end_date: filterEndDate.value || undefined,
     }),
@@ -190,14 +195,14 @@ const generateButtonLabel = computed(() => {
 const actions = computed<ActionItem[]>(() => [
     ...(props.can_generate_last_month
         ? [
-            {
-                key: 'generate-last-month',
-                label: generateButtonLabel.value,
-                icon: Wallet,
-                href: generateLastMonth().url,
-                method: 'post' as const,
-            },
-        ]
+              {
+                  key: 'generate-last-month',
+                  label: generateButtonLabel.value,
+                  icon: Wallet,
+                  href: generateLastMonth().url,
+                  method: 'post' as const,
+              },
+          ]
         : []),
     {
         key: 'reset-preferences',
@@ -242,9 +247,7 @@ const handleDeleteSelected = (): void => {
                     <div class="w-full min-w-0">
                         <AppEmployeeSelect
                             :model-value="
-                                filterEmployee === 'all'
-                                    ? null
-                                    : filterEmployee
+                                filterEmployee === 'all' ? null : filterEmployee
                             "
                             :placeholder="salaryPage.employeePlaceholder"
                             clearable
@@ -273,9 +276,7 @@ const handleDeleteSelected = (): void => {
                     <div class="w-full min-w-0">
                         <AppSalaryStatusSelect
                             :model-value="
-                                filterStatus === 'all'
-                                    ? null
-                                    : filterStatus
+                                filterStatus === 'all' ? null : filterStatus
                             "
                             :placeholder="salaryPage.statusPlaceholder"
                             clearable

@@ -1,18 +1,24 @@
 <script lang="ts" setup>
-import {Link, usePage} from '@inertiajs/vue3';
-import {computed, ref} from 'vue';
-import {Database, LoaderCircle, LockKeyhole, Palette, UserRound,} from '@lucide/vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
+import {
+    Database,
+    LoaderCircle,
+    LockKeyhole,
+    Palette,
+    UserRound,
+} from '@lucide/vue';
 
 import Heading from '@/components/Heading.vue';
-import {Button} from '@/components/ui/button';
-import {Separator} from '@/components/ui/separator';
-import {useCurrentUrl} from '@/composables/useCurrentUrl';
-import {toUrl} from '@/lib/utils';
-import {edit as editAppearance} from '@/routes/appearance';
-import {edit as editProfile} from '@/routes/profile';
-import {edit as editSecurity} from '@/routes/security';
-import {download as downloadDatabase} from '@/routes/settings/database';
-import type {NavItem} from '@/types';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { useCurrentUrl } from '@/composables/useCurrentUrl';
+import { toUrl } from '@/lib/utils';
+import { edit as editAppearance } from '@/routes/appearance';
+import { edit as editProfile } from '@/routes/profile';
+import { edit as editSecurity } from '@/routes/security';
+import { download as downloadDatabase } from '@/routes/settings/database';
+import type { NavItem } from '@/types';
 
 /*
 |--------------------------------------------------------------------------
@@ -83,7 +89,9 @@ const downloadBackup = (): void => {
             title="Settings"
         />
 
-        <div class="grid grid-cols-1 gap-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-12">
+        <div
+            class="grid grid-cols-1 gap-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-12"
+        >
             <!-- Sidebar -->
             <aside class="space-y-5">
                 <div class="space-y-2">
@@ -117,7 +125,9 @@ const downloadBackup = (): void => {
                                     {{ item.title }}
                                 </span>
 
-                                <span class="font-mono text-xs text-muted-foreground">
+                                <span
+                                    class="font-mono text-xs text-muted-foreground"
+                                >
                                     #{{ index + 1 }}
                                 </span>
                             </Link>
@@ -152,8 +162,11 @@ const downloadBackup = (): void => {
                                         Database backup
                                     </p>
 
-                                    <p class="text-xs leading-relaxed text-muted-foreground">
-                                        Export a SQL snapshot for safekeeping or recovery.
+                                    <p
+                                        class="text-xs leading-relaxed text-muted-foreground"
+                                    >
+                                        Export a SQL snapshot for safekeeping or
+                                        recovery.
                                     </p>
                                 </div>
                             </div>
@@ -184,8 +197,11 @@ const downloadBackup = (): void => {
                                 }}
                             </Button>
 
-                            <p class="text-xs leading-relaxed text-muted-foreground">
-                                Only super administrators can access this operation.
+                            <p
+                                class="text-xs leading-relaxed text-muted-foreground"
+                            >
+                                Only super administrators can access this
+                                operation.
                             </p>
                         </div>
                     </div>

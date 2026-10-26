@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Schedule;
 
-//Schedule::command('etimeoffice:sync')
+// Schedule::command('etimeoffice:sync')
 //    ->hourly()
 //    ->withoutOverlapping();
 

@@ -131,7 +131,6 @@ class PartController extends Controller
         return $this->successResponse('bulk_deleted');
     }
 
-
     public function import()
     {
         return Inertia::render('Parts/Import', []);
@@ -148,7 +147,7 @@ class PartController extends Controller
             ],
         ]);
 
-        $import = new PartsImport();
+        $import = new PartsImport;
 
         Excel::import($import, $request->file('file'));
 
@@ -158,5 +157,4 @@ class PartController extends Controller
             updated: $import->getUpdatedCount(),
         );
     }
-
 }

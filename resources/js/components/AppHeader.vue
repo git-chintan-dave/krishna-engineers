@@ -1,14 +1,22 @@
 <script lang="ts" setup>
-import {Link, usePage} from '@inertiajs/vue3';
-import {ChevronRight, Menu} from '@lucide/vue';
-import {computed, reactive, ref, watch} from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import { ChevronRight, Menu } from '@lucide/vue';
+import { computed, reactive, ref, watch } from 'vue';
 
 import AppLogo from '@/components/AppLogo.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
-import {Avatar, AvatarFallback, AvatarImage,} from '@/components/ui/avatar';
-import {Button} from '@/components/ui/button';
-import {Collapsible, CollapsibleContent, CollapsibleTrigger,} from '@/components/ui/collapsible';
-import {DropdownMenu, DropdownMenuContent, DropdownMenuTrigger,} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -18,19 +26,30 @@ import {
     NavigationMenuTrigger,
     navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
-import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,} from '@/components/ui/sheet';
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '@/components/ui/tooltip';
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from '@/components/ui/sheet';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 import UserMenuContent from '@/components/UserMenuContent.vue';
 
-import {useCurrentUrl} from '@/composables/useCurrentUrl';
-import {useListingPreferenceNavigation} from '@/composables/useListingPreferenceNavigation';
-import {getInitials} from '@/composables/useInitials';
-import {getMainNavItems, rightNavItems} from '@/config/navigation';
-import {toUrl} from '@/lib/utils';
+import { useCurrentUrl } from '@/composables/useCurrentUrl';
+import { useListingPreferenceNavigation } from '@/composables/useListingPreferenceNavigation';
+import { getInitials } from '@/composables/useInitials';
+import { getMainNavItems, rightNavItems } from '@/config/navigation';
+import { toUrl } from '@/lib/utils';
 
-import type {BreadcrumbItem, NavItem} from '@/types';
-import {dashboard} from '@/routes';
+import type { BreadcrumbItem, NavItem } from '@/types';
+import { dashboard } from '@/routes';
 
 /*
 |--------------------------------------------------------------------------
@@ -74,13 +93,11 @@ const mainNavItems = computed(() =>
 
 const { isCurrentOrParentUrl } = useCurrentUrl();
 
-const { getNavigationHref } =
-    useListingPreferenceNavigation();
+const { getNavigationHref } = useListingPreferenceNavigation();
 
 const activeItemStyles = 'bg-accent text-accent-foreground';
 
-const hasChildren = (item: NavItem): boolean =>
-    Boolean(item.items?.length);
+const hasChildren = (item: NavItem): boolean => Boolean(item.items?.length);
 
 const isItemActive = (item: NavItem): boolean => {
     if (item.href && isCurrentOrParentUrl(item.href)) {
@@ -101,10 +118,7 @@ const mobileOpenGroups = reactive<Record<string, boolean>>({});
 const isMobileGroupOpen = (item: NavItem): boolean =>
     mobileOpenGroups[item.title] ?? false;
 
-const setMobileGroupOpen = (
-    item: NavItem,
-    open: boolean,
-): void => {
+const setMobileGroupOpen = (item: NavItem, open: boolean): void => {
     mobileOpenGroups[item.title] = open;
 };
 
@@ -156,10 +170,7 @@ watch(
                                 size="icon"
                                 variant="ghost"
                             >
-                                <Menu
-                                    aria-hidden="true"
-                                    class="size-5"
-                                />
+                                <Menu aria-hidden="true" class="size-5" />
                                 <span class="sr-only">
                                     Open navigation menu
                                 </span>
@@ -203,7 +214,9 @@ watch(
                                                         ? activeItemStyles
                                                         : ''
                                                 "
-                                                :href="getNavigationHref(item.href)"
+                                                :href="
+                                                    getNavigationHref(item.href)
+                                                "
                                                 class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
                                             >
                                                 <component
@@ -222,7 +235,10 @@ watch(
                                                 class="group/mobile-collapsible"
                                                 @update:open="
                                                     (open) =>
-                                                        setMobileGroupOpen(item, open)
+                                                        setMobileGroupOpen(
+                                                            item,
+                                                            open,
+                                                        )
                                                 "
                                             >
                                                 <CollapsibleTrigger as-child>
@@ -241,7 +257,9 @@ watch(
                                                             aria-hidden="true"
                                                             class="size-5 shrink-0"
                                                         />
-                                                        <span>{{ item.title }}</span>
+                                                        <span>{{
+                                                            item.title
+                                                        }}</span>
                                                         <ChevronRight
                                                             aria-hidden="true"
                                                             class="ml-auto size-4 shrink-0 transition-transform duration-200 group-data-[state=open]/mobile-collapsible:rotate-90"
@@ -257,25 +275,35 @@ watch(
                                                             v-for="subItem in item.items"
                                                             :key="subItem.title"
                                                             :class="
-                                                                isItemActive(subItem)
+                                                                isItemActive(
+                                                                    subItem,
+                                                                )
                                                                     ? activeItemStyles
                                                                     : ''
                                                             "
                                                             :href="
                                                                 subItem.href
-                                                                    ? getNavigationHref(subItem.href)
+                                                                    ? getNavigationHref(
+                                                                          subItem.href,
+                                                                      )
                                                                     : '#'
                                                             "
                                                             class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
                                                         >
                                                             <component
-                                                                :is="subItem.icon"
-                                                                v-if="subItem.icon"
+                                                                :is="
+                                                                    subItem.icon
+                                                                "
+                                                                v-if="
+                                                                    subItem.icon
+                                                                "
                                                                 aria-hidden="true"
                                                                 class="size-4 shrink-0"
                                                             />
                                                             <span>
-                                                                {{ subItem.title }}
+                                                                {{
+                                                                    subItem.title
+                                                                }}
                                                             </span>
                                                         </Link>
                                                     </div>
@@ -387,13 +415,17 @@ watch(
                                                 :key="subItem.title"
                                             >
                                                 <NavigationMenuLink
-                                                    :active="isItemActive(subItem)"
+                                                    :active="
+                                                        isItemActive(subItem)
+                                                    "
                                                     as-child
                                                 >
                                                     <Link
                                                         :href="
                                                             subItem.href
-                                                                ? getNavigationHref(subItem.href)
+                                                                ? getNavigationHref(
+                                                                      subItem.href,
+                                                                  )
                                                                 : '#'
                                                         "
                                                         class="flex flex-row flex-nowrap items-center gap-3 rounded-md px-3 py-2.5"

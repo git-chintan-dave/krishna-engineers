@@ -2,9 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Enums\Status;
-use App\Enums\UserRole;
-use App\Enums\UserShift;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -524,7 +521,7 @@ class EmployeeSeeder extends Seeder
                 'phone_number' => '8810824830',
                 'role' => 'operator',
                 'status' => 'active',
-            ]
+            ],
         ];
 
         foreach ($employees as $employeeData) {

@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import {Head} from '@inertiajs/vue3';
-import {Monitor,} from '@lucide/vue';
+import { Head } from '@inertiajs/vue3';
+import { Monitor } from '@lucide/vue';
 
-import {dashboard} from '@/routes';
+import { dashboard } from '@/routes';
 import AppearanceTabs from '@/components/AppearanceTabs.vue';
 import Heading from '@/components/Heading.vue';
 
@@ -33,8 +33,12 @@ defineOptions({
             variant="small"
         />
 
-        <section class="overflow-hidden rounded-xl border border-border bg-card">
-            <div class="flex items-start gap-3 border-b border-border px-5 py-4 sm:px-6">
+        <section
+            class="overflow-hidden rounded-xl border border-border bg-card"
+        >
+            <div
+                class="flex items-start gap-3 border-b border-border px-5 py-4 sm:px-6"
+            >
                 <div
                     class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
                 >

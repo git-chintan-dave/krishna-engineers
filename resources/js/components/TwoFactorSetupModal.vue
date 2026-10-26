@@ -1,19 +1,29 @@
 <script lang="ts" setup>
-import {Form} from '@inertiajs/vue3';
-import {useClipboard} from '@vueuse/core';
-import {Check, Copy, ScanLine, ShieldCheck} from '@lucide/vue';
-import {computed, nextTick, ref, useTemplateRef, watch} from 'vue';
+import { Form } from '@inertiajs/vue3';
+import { useClipboard } from '@vueuse/core';
+import { Check, Copy, ScanLine, ShieldCheck } from '@lucide/vue';
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
 import AlertError from '@/components/AlertError.vue';
 import InputError from '@/components/InputError.vue';
-import {Button} from '@/components/ui/button';
-import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from '@/components/ui/dialog';
-import {InputOTP, InputOTPGroup, InputOTPSlot,} from '@/components/ui/input-otp';
-import {Spinner} from '@/components/ui/spinner';
-import {useAppearance} from '@/composables/useAppearance';
-import {useTwoFactorAuth} from '@/composables/useTwoFactorAuth';
-import {confirm} from '@/routes/two-factor';
-import type {TwoFactorConfigContent} from '@/types';
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
+    InputOTP,
+    InputOTPGroup,
+    InputOTPSlot,
+} from '@/components/ui/input-otp';
+import { Spinner } from '@/components/ui/spinner';
+import { useAppearance } from '@/composables/useAppearance';
+import { useTwoFactorAuth } from '@/composables/useTwoFactorAuth';
+import { confirm } from '@/routes/two-factor';
+import type { TwoFactorConfigContent } from '@/types';
 
 type Props = {
     requiresConfirmation: boolean;
@@ -26,13 +36,8 @@ const isOpen = defineModel<boolean>('isOpen');
 const { resolvedAppearance } = useAppearance();
 const { copy, copied } = useClipboard();
 
-const {
-    qrCodeSvg,
-    manualSetupKey,
-    clearSetupData,
-    fetchSetupData,
-    errors,
-} = useTwoFactorAuth();
+const { qrCodeSvg, manualSetupKey, clearSetupData, fetchSetupData, errors } =
+    useTwoFactorAuth();
 
 const showVerificationStep = ref(false);
 const code = ref('');
@@ -120,7 +125,7 @@ watch(
     <Dialog :open="isOpen" @update:open="isOpen = $event">
         <DialogContent class="gap-0 overflow-hidden p-0 sm:max-w-md">
             <div
-                class="flex flex-col items-center border-b border-border px-6 pb-6 pt-7"
+                class="flex flex-col items-center border-b border-border px-6 pt-7 pb-6"
             >
                 <div
                     class="mb-4 flex size-14 items-center justify-center rounded-2xl border border-border bg-muted text-foreground shadow-sm"
@@ -146,10 +151,7 @@ watch(
                     <AlertError v-if="errors.length" :errors="errors" />
 
                     <template v-else>
-                        <div
-                            v-if="!props.twoFactorEnabled"
-                            class="space-y-5"
-                        >
+                        <div v-if="!props.twoFactorEnabled" class="space-y-5">
                             <div
                                 class="mx-auto flex size-64 max-w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-white p-4"
                             >
@@ -157,7 +159,9 @@ watch(
                                     v-if="!qrCodeSvg"
                                     class="flex size-full items-center justify-center"
                                 >
-                                    <Spinner class="size-7 text-muted-foreground" />
+                                    <Spinner
+                                        class="size-7 text-muted-foreground"
+                                    />
                                 </div>
 
                                 <div
@@ -246,10 +250,11 @@ watch(
                                     </Button>
                                 </div>
 
-                                <p class="text-xs leading-relaxed text-muted-foreground">
-                                    Keep this key private. Anyone who has it
-                                    may be able to generate your verification
-                                    codes.
+                                <p
+                                    class="text-xs leading-relaxed text-muted-foreground"
+                                >
+                                    Keep this key private. Anyone who has it may
+                                    be able to generate your verification codes.
                                 </p>
                             </div>
                         </div>
@@ -271,8 +276,8 @@ watch(
                             <p
                                 class="text-sm leading-relaxed text-muted-foreground"
                             >
-                                Your account requires an authenticator code
-                                when signing in.
+                                Your account requires an authenticator code when
+                                signing in.
                             </p>
                         </div>
 
@@ -304,16 +309,9 @@ watch(
                         @finish="code = ''"
                         @success="isOpen = false"
                     >
-                        <input
-                            :value="code"
-                            name="code"
-                            type="hidden"
-                        />
+                        <input :value="code" name="code" type="hidden" />
 
-                        <div
-                            ref="pinInputContainerRef"
-                            class="space-y-5"
-                        >
+                        <div ref="pinInputContainerRef" class="space-y-5">
                             <div
                                 class="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary"
                             >
@@ -327,14 +325,12 @@ watch(
                                 <p
                                     class="text-sm leading-relaxed text-muted-foreground"
                                 >
-                                    Enter the six-digit code currently shown
-                                    in your authenticator app.
+                                    Enter the six-digit code currently shown in
+                                    your authenticator app.
                                 </p>
                             </div>
 
-                            <div
-                                class="flex flex-col items-center gap-3 py-2"
-                            >
+                            <div class="flex flex-col items-center gap-3 py-2">
                                 <InputOTP
                                     id="otp"
                                     v-model="code"
@@ -356,10 +352,17 @@ watch(
                             </div>
 
                             <AlertError
-                                v-if="formErrors && Object.keys(formErrors).some((key) => key !== 'code')"
-                                :errors="Object.entries(formErrors)
-                                    .filter(([key]) => key !== 'code')
-                                    .map(([, message]) => String(message))"
+                                v-if="
+                                    formErrors &&
+                                    Object.keys(formErrors).some(
+                                        (key) => key !== 'code',
+                                    )
+                                "
+                                :errors="
+                                    Object.entries(formErrors)
+                                        .filter(([key]) => key !== 'code')
+                                        .map(([, message]) => String(message))
+                                "
                             />
 
                             <div class="flex gap-3">
@@ -377,8 +380,7 @@ watch(
                                     type="submit"
                                     class="flex-1"
                                     :disabled="
-                                        processing ||
-                                        !/^\d{6}$/.test(code)
+                                        processing || !/^\d{6}$/.test(code)
                                     "
                                 >
                                     <Spinner

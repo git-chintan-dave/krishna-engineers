@@ -1,13 +1,13 @@
-import {router} from '@inertiajs/vue3';
-import {createColumnHelper} from '@tanstack/vue-table';
+import { router } from '@inertiajs/vue3';
+import { createColumnHelper } from '@tanstack/vue-table';
 
-import {edit, markAsPaid, show, regenerate} from '@/routes/salaries';
-import {createActionsColumn} from '@/table/columns/actionsColumn';
-import {createSelectColumn} from '@/table/columns/selectColumn';
-import {createStatusColumn} from '@/table/columns/statusColumn';
-import {createColumn} from '@/table/helpers/createColumn';
-import {COLUMN_DEFAULTS} from '@/table/constants/columns';
-import type {Salary} from '@/types/salary';
+import { edit, markAsPaid, show, regenerate } from '@/routes/salaries';
+import { createActionsColumn } from '@/table/columns/actionsColumn';
+import { createSelectColumn } from '@/table/columns/selectColumn';
+import { createStatusColumn } from '@/table/columns/statusColumn';
+import { createColumn } from '@/table/helpers/createColumn';
+import { COLUMN_DEFAULTS } from '@/table/constants/columns';
+import type { Salary } from '@/types/salary';
 
 const columnHelper = createColumnHelper<any, Salary>();
 

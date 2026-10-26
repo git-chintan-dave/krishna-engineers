@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import {Link} from '@inertiajs/vue3';
-import {EllipsisVertical, Plus, Trash2} from '@lucide/vue';
-import type {Component} from 'vue';
+import { Link } from '@inertiajs/vue3';
+import { EllipsisVertical, Plus, Trash2 } from '@lucide/vue';
+import type { Component } from 'vue';
 
 import vConfirm from '@/directives/confirm';
-import {Button} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -30,15 +30,15 @@ type ActionBase = {
 
 export type ActionItem =
     | (ActionBase & {
-    href: string;
-    method?: 'get' | 'post' | 'put' | 'patch' | 'delete';
-    action?: never;
-})
+          href: string;
+          method?: 'get' | 'post' | 'put' | 'patch' | 'delete';
+          action?: never;
+      })
     | (ActionBase & {
-    action: () => void;
-    href?: never;
-    method?: never;
-});
+          action: () => void;
+          href?: never;
+          method?: never;
+      });
 
 /*
 |--------------------------------------------------------------------------
@@ -90,8 +90,7 @@ const emit = defineEmits<{
 */
 
 const getActionClass = (variant?: ActionItem['variant']) => ({
-    'text-destructive focus:text-destructive':
-        variant === 'destructive',
+    'text-destructive focus:text-destructive': variant === 'destructive',
 });
 </script>
 
@@ -119,9 +118,7 @@ const getActionClass = (variant?: ActionItem['variant']) => ({
             <Trash2 aria-hidden="true" class="size-4 shrink-0" />
 
             <span class="truncate">
-                <span class="sm:hidden">
-                    Delete ({{ selectedCount }})
-                </span>
+                <span class="sm:hidden"> Delete ({{ selectedCount }}) </span>
 
                 <span class="hidden sm:inline">
                     Delete selected ({{ selectedCount }})
@@ -160,12 +157,12 @@ const getActionClass = (variant?: ActionItem['variant']) => ({
                 align="end"
                 class="max-h-[min(70vh,32rem)] w-60 max-w-[calc(100vw-2rem)] overflow-y-auto"
             >
-                <template
-                    v-for="(item, index) in actions"
-                    :key="item.key"
-                >
+                <template v-for="(item, index) in actions" :key="item.key">
                     <DropdownMenuSeparator
-                        v-if="actions.length > 1 && (index > 0 || item.separatorBefore)"
+                        v-if="
+                            actions.length > 1 &&
+                            (index > 0 || item.separatorBefore)
+                        "
                     />
 
                     <!-- Navigation Action -->
@@ -198,9 +195,9 @@ const getActionClass = (variant?: ActionItem['variant']) => ({
                         v-else
                         :disabled="item.disabled"
                         :class="[
-            'cursor-pointer',
-            getActionClass(item.variant),
-        ]"
+                            'cursor-pointer',
+                            getActionClass(item.variant),
+                        ]"
                         @select="item.action()"
                     >
                         <component

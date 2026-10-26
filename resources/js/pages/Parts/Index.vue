@@ -1,22 +1,29 @@
 ﻿<script lang="ts" setup>
-import {router} from '@inertiajs/vue3';
-import {computed, ref} from 'vue';
-import {FileUp, RotateCcw} from '@lucide/vue';
+import { router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
+import { FileUp, RotateCcw } from '@lucide/vue';
 
 import DataTable from '@/components/data-table/DataTable.vue';
-import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingActions, {
+    type ActionItem,
+} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {partPage} from '@/config/parts';
-import {bulkDestroy, create, destroy, index as partsRoute,} from '@/routes/parts';
-import {createPartColumns} from '@/table/parts';
-import type {Part, PartFilters, PartSort, PartsResponse,} from '@/types/part';
-import type {StatusFilter} from '@/types/listing';
-import {view as partsImportRoute} from "@/routes/parts/import";
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { partPage } from '@/config/parts';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as partsRoute,
+} from '@/routes/parts';
+import { createPartColumns } from '@/table/parts';
+import type { Part, PartFilters, PartSort, PartsResponse } from '@/types/part';
+import type { StatusFilter } from '@/types/listing';
+import { view as partsImportRoute } from '@/routes/parts/import';
 
 /*
 |--------------------------------------------------------------------------
@@ -97,13 +104,8 @@ const {
     route: partsRoute.url(),
     additionalFilters: () => ({
         section_id:
-            filterSectionId.value !== 'all'
-                ? filterSectionId.value
-                : undefined,
-        status:
-            filterStatus.value !== 'all'
-                ? filterStatus.value
-                : undefined,
+            filterSectionId.value !== 'all' ? filterSectionId.value : undefined,
+        status: filterStatus.value !== 'all' ? filterStatus.value : undefined,
     }),
 });
 

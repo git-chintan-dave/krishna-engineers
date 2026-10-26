@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import {router} from '@inertiajs/vue3';
-import {ArrowLeft, CalendarDays, Printer} from '@lucide/vue';
-import {computed, ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { ArrowLeft, CalendarDays, Printer } from '@lucide/vue';
+import { computed, ref } from 'vue';
 
 import AttendanceHistoryDialog from '@/components/attendance/AttendanceHistoryDialog.vue';
-import {Button} from '@/components/ui/button';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {salaryPage} from '@/config/salaries';
-import {index as salaries} from '@/routes/salaries';
-import type {Salary} from '@/types/salary';
+import { Button } from '@/components/ui/button';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { salaryPage } from '@/config/salaries';
+import { index as salaries } from '@/routes/salaries';
+import type { Salary } from '@/types/salary';
 
 const props = defineProps<{
     salary: Salary;
@@ -140,7 +140,9 @@ const goBack = (): void => {
                                 class="mt-2 text-sm font-medium print:mt-1 print:text-xs"
                             >
                                 {{ salary.salary_period_start_formatted }}
-                                <span class="px-1 text-muted-foreground">–</span>
+                                <span class="px-1 text-muted-foreground"
+                                    >–</span
+                                >
                                 {{ salary.salary_period_end_formatted }}
                             </p>
                         </div>
@@ -151,7 +153,11 @@ const goBack = (): void => {
                 <div class="border-b px-6 py-5 sm:px-8 print:px-5 print:py-3">
                     <div
                         class="grid items-center"
-                        :class="show_production_efficiency ? 'grid-cols-4' : 'grid-cols-3'"
+                        :class="
+                            show_production_efficiency
+                                ? 'grid-cols-4'
+                                : 'grid-cols-3'
+                        "
                     >
                         <div class="min-w-0 text-center">
                             <p
@@ -195,7 +201,10 @@ const goBack = (): void => {
                             </p>
                         </div>
 
-                        <div class="min-w-0 text-center" v-if="show_production_efficiency">
+                        <div
+                            class="min-w-0 text-center"
+                            v-if="show_production_efficiency"
+                        >
                             <p
                                 class="text-xs font-medium tracking-wide text-muted-foreground uppercase print:text-[10px]"
                             >
@@ -250,7 +259,9 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Attendance Days</span>
-                                    <span class="text-right font-medium tabular-nums">
+                                    <span
+                                        class="text-right font-medium tabular-nums"
+                                    >
                                         {{ salary.attendance_days }}
                                     </span>
                                 </div>
@@ -259,8 +270,14 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Total Undertime</span>
-                                    <span class="text-right font-medium tabular-nums">
-                                        {{ formatDuration(totalUndertimeSeconds) }}
+                                    <span
+                                        class="text-right font-medium tabular-nums"
+                                    >
+                                        {{
+                                            formatDuration(
+                                                totalUndertimeSeconds,
+                                            )
+                                        }}
                                     </span>
                                 </div>
 
@@ -268,7 +285,9 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Calculated Late Days</span>
-                                    <span class="text-right font-medium tabular-nums">
+                                    <span
+                                        class="text-right font-medium tabular-nums"
+                                    >
                                         {{ calculatedLateDays }}
                                     </span>
                                 </div>
@@ -277,7 +296,9 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Late Days Deducted</span>
-                                    <span class="text-right font-medium tabular-nums">
+                                    <span
+                                        class="text-right font-medium tabular-nums"
+                                    >
                                         {{ salary.late_days }}
                                     </span>
                                 </div>
@@ -317,7 +338,9 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Base Salary</span>
-                                    <span class="text-right font-medium tabular-nums">
+                                    <span
+                                        class="text-right font-medium tabular-nums"
+                                    >
                                         {{ salary.base_salary_formatted }}
                                     </span>
                                 </div>
@@ -326,7 +349,9 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Incentive</span>
-                                    <span class="text-right font-medium tabular-nums">
+                                    <span
+                                        class="text-right font-medium tabular-nums"
+                                    >
                                         {{ salary.incentive_formatted }}
                                     </span>
                                 </div>
@@ -336,7 +361,9 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Adjustment</span>
-                                    <span class="text-right font-medium tabular-nums">
+                                    <span
+                                        class="text-right font-medium tabular-nums"
+                                    >
                                         {{ salary.adjustment_formatted }}
                                     </span>
                                 </div>
@@ -367,7 +394,9 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>UPAD</span>
-                                    <span class="text-right font-medium tabular-nums">
+                                    <span
+                                        class="text-right font-medium tabular-nums"
+                                    >
                                         {{ salary.upad_formatted }}
                                     </span>
                                 </div>
@@ -376,7 +405,9 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Paid Loan</span>
-                                    <span class="text-right font-medium tabular-nums">
+                                    <span
+                                        class="text-right font-medium tabular-nums"
+                                    >
                                         {{ salary.paid_loan_formatted }}
                                     </span>
                                 </div>
@@ -385,7 +416,9 @@ const goBack = (): void => {
                                     class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 text-sm print:px-3 print:py-2 print:text-xs"
                                 >
                                     <span>Deduction</span>
-                                    <span class="text-right font-medium tabular-nums">
+                                    <span
+                                        class="text-right font-medium tabular-nums"
+                                    >
                                         {{ salary.deduction_formatted }}
                                     </span>
                                 </div>

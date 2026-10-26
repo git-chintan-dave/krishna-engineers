@@ -51,11 +51,11 @@ class SyncETimeOfficePunches extends Command
         $config = config('services.etimeoffice', []);
 
         foreach ([
-                     'base_url',
-                     'corporate_id',
-                     'username',
-                     'password',
-                 ] as $key) {
+            'base_url',
+            'corporate_id',
+            'username',
+            'password',
+        ] as $key) {
             if (blank($config[$key] ?? null)) {
                 $this->error(
                     "Missing eTimeOffice configuration: {$key}."

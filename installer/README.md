@@ -80,21 +80,21 @@ The installer copies this configured `.env` file into the installation directory
 1. Open **PowerShell as Administrator**.
 2. Navigate to the extracted project's `installer` directory. For example:
 
-   ```powershell
-   cd "C:\Path\To\ExtractedProject\installer"
-   ```
+    ```powershell
+    cd "C:\Path\To\ExtractedProject\installer"
+    ```
 
 3. Allow PowerShell scripts to run for the current PowerShell session:
 
-   ```powershell
-   Set-ExecutionPolicy -Scope Process Bypass
-   ```
+    ```powershell
+    Set-ExecutionPolicy -Scope Process Bypass
+    ```
 
 4. Run the installer:
 
-   ```powershell
-   .\Install-KrishnaEngineers.ps1
-   ```
+    ```powershell
+    .\Install-KrishnaEngineers.ps1
+    ```
 
 The default installation path is:
 
@@ -176,21 +176,21 @@ Do not extract the update ZIP directly over the installed application.
 1. Open **PowerShell as Administrator**.
 2. Navigate to the extracted update's `installer` directory:
 
-   ```powershell
-   cd "C:\Path\To\ExtractedUpdate\installer"
-   ```
+    ```powershell
+    cd "C:\Path\To\ExtractedUpdate\installer"
+    ```
 
 3. Allow scripts for the current session:
 
-   ```powershell
-   Set-ExecutionPolicy -Scope Process Bypass
-   ```
+    ```powershell
+    Set-ExecutionPolicy -Scope Process Bypass
+    ```
 
 4. Run the update script:
 
-   ```powershell
-   .\Update-KrishnaEngineers.ps1
-   ```
+    ```powershell
+    .\Update-KrishnaEngineers.ps1
+    ```
 
 The default target is `C:\KrishnaEngineersApp`.
 

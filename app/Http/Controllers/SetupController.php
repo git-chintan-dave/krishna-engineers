@@ -104,7 +104,6 @@ class SetupController extends Controller
         return $this->successResponse('bulk_deleted');
     }
 
-
     public function import()
     {
         return Inertia::render('Setups/Import', []);
@@ -121,7 +120,7 @@ class SetupController extends Controller
             ],
         ]);
 
-        $import = new SetupsImport();
+        $import = new SetupsImport;
 
         Excel::import($import, $request->file('file'));
 
@@ -131,5 +130,4 @@ class SetupController extends Controller
             updated: $import->getUpdatedCount(),
         );
     }
-
 }

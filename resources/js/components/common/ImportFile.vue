@@ -1,10 +1,17 @@
 <script lang="ts" setup>
-import {useForm} from '@inertiajs/vue3';
-import {CheckCircle2, Download, FileSpreadsheet, Loader2, UploadCloud, X,} from '@lucide/vue';
-import {computed, ref} from 'vue';
+import { useForm } from '@inertiajs/vue3';
+import {
+    CheckCircle2,
+    Download,
+    FileSpreadsheet,
+    Loader2,
+    UploadCloud,
+    X,
+} from '@lucide/vue';
+import { computed, ref } from 'vue';
 
-import {Button} from '@/components/ui/button';
-import {Card, CardContent} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 /*
 |--------------------------------------------------------------------------
@@ -83,9 +90,7 @@ const selectedFileName = computed(() => form.file?.name ?? '');
 const acceptedFileLabels = computed(() =>
     props.acceptedFiles
         .split(',')
-        .map((extension) =>
-            extension.trim().replace('.', '').toUpperCase(),
-        )
+        .map((extension) => extension.trim().replace('.', '').toUpperCase())
         .join(', '),
 );
 
@@ -178,12 +183,8 @@ const submit = () => {
                     ]"
                     class="relative flex min-h-72 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 transition-colors"
                     @click="openFilePicker"
-                    @dragenter.prevent="
-                        !form.processing && (isDragging = true)
-                    "
-                    @dragover.prevent="
-                        !form.processing && (isDragging = true)
-                    "
+                    @dragenter.prevent="!form.processing && (isDragging = true)"
+                    @dragover.prevent="!form.processing && (isDragging = true)"
                     @dragleave.prevent="isDragging = false"
                     @drop.prevent="onDrop"
                 >
@@ -291,9 +292,7 @@ const submit = () => {
                     class="flex items-center justify-between gap-4 rounded-lg border bg-muted/30 p-4"
                 >
                     <div class="min-w-0">
-                        <p class="text-sm font-medium">
-                            Need a sample file?
-                        </p>
+                        <p class="text-sm font-medium">Need a sample file?</p>
 
                         <p class="mt-1 truncate text-xs text-muted-foreground">
                             {{ props.sampleFileName }}
@@ -328,10 +327,7 @@ const submit = () => {
                     </p>
 
                     <ul class="mt-2 list-disc space-y-1 pl-5">
-                        <li
-                            v-for="item in props.informationItems"
-                            :key="item"
-                        >
+                        <li v-for="item in props.informationItems" :key="item">
                             {{ item }}
                         </li>
                     </ul>

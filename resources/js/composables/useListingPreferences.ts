@@ -1,10 +1,7 @@
+import { computed, ref, watch } from 'vue';
+import type { SortingState } from '@tanstack/vue-table';
 
-import {computed, ref, watch} from 'vue';
-import type {SortingState} from '@tanstack/vue-table';
-
-import {
-    getListingPreferenceFeatures,
-} from '@/config/listingPreferences';
+import { getListingPreferenceFeatures } from '@/config/listingPreferences';
 
 /*
 |--------------------------------------------------------------------------
@@ -73,10 +70,7 @@ export function useListingPreferences(
     });
 
     const resolvePageSize = (value: unknown): number => {
-        return (
-            typeof value === 'number' &&
-            allowedPageSizes.includes(value)
-        )
+        return typeof value === 'number' && allowedPageSizes.includes(value)
             ? value
             : defaultPerPage;
     };
@@ -98,9 +92,7 @@ export function useListingPreferences(
     const resolveDirection = (
         value: unknown,
     ): ListingSortDirection | undefined => {
-        return value === 'asc' || value === 'desc'
-            ? value
-            : undefined;
+        return value === 'asc' || value === 'desc' ? value : undefined;
     };
 
     const parseStoredPreferences = (): Partial<ListingPreferences> => {
@@ -158,7 +150,7 @@ export function useListingPreferences(
                     : defaults.sort,
 
             direction: features.sorting
-                ? resolveDirection(stored.direction) ?? defaults.direction
+                ? (resolveDirection(stored.direction) ?? defaults.direction)
                 : defaults.direction,
         };
     };
@@ -218,10 +210,7 @@ export function useListingPreferences(
                     next.direction = value.direction;
                 }
 
-                window.localStorage.setItem(
-                    storageKey,
-                    JSON.stringify(next),
-                );
+                window.localStorage.setItem(storageKey, JSON.stringify(next));
             } catch {
                 // Storage may be unavailable or full.
             }
@@ -240,10 +229,7 @@ export function useListingPreferences(
     */
 
     const setPerPage = (value: number): void => {
-        if (
-            !features.perPage ||
-            !allowedPageSizes.includes(value)
-        ) {
+        if (!features.perPage || !allowedPageSizes.includes(value)) {
             return;
         }
 
@@ -255,7 +241,7 @@ export function useListingPreferences(
             return;
         }
 
-        sorting.value = value.map((item) => ({...item}));
+        sorting.value = value.map((item) => ({ ...item }));
     };
 
     /**
@@ -282,9 +268,7 @@ export function useListingPreferences(
         }
 
         if (typeof window !== 'undefined') {
-            window.localStorage.removeItem(
-                `${STORAGE_PREFIX}:${module}`,
-            );
+            window.localStorage.removeItem(`${STORAGE_PREFIX}:${module}`);
         }
     };
 

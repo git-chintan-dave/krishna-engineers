@@ -135,7 +135,7 @@ class EmployeeController extends Controller
             ],
         ]);
 
-        $import = new EmployeesImport();
+        $import = new EmployeesImport;
 
         Excel::import($import, $request->file('file'));
 

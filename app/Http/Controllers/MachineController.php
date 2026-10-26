@@ -104,7 +104,6 @@ class MachineController extends Controller
         return $this->successResponse('bulk_deleted');
     }
 
-
     public function import()
     {
         return Inertia::render('Machines/Import', []);
@@ -121,7 +120,7 @@ class MachineController extends Controller
             ],
         ]);
 
-        $import = new MachinesImport();
+        $import = new MachinesImport;
 
         Excel::import($import, $request->file('file'));
 
@@ -131,5 +130,4 @@ class MachineController extends Controller
             updated: $import->getUpdatedCount(),
         );
     }
-
 }

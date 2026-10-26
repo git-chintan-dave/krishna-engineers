@@ -1,6 +1,10 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
-import {optionalLongText, requiredDropdown, requiredNonNegativeInteger,} from '@/schemas/commonSchema';
+import {
+    optionalLongText,
+    requiredDropdown,
+    requiredNonNegativeInteger,
+} from '@/schemas/commonSchema';
 
 export const bandsawWorkLogSchema = z.object({
     user_id: requiredDropdown('a bandsaw operator'),

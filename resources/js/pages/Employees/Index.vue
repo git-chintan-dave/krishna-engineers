@@ -1,20 +1,27 @@
 ﻿<script lang="ts" setup>
-import {router} from '@inertiajs/vue3';
-import {computed, ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 import DataTable from '@/components/data-table/DataTable.vue';
-import ListingActions, {ActionItem} from '@/components/common/ListingActions.vue';
+import ListingActions, {
+    ActionItem,
+} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import AppUserRoleSelect from '@/components/selects/AppUserRoleSelect.vue';
 import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {employeePage} from '@/config/employees';
-import {bulkDestroy, create, destroy, index as employeesRoute,} from '@/routes/employees';
-import {view as employeesImportRoute} from '@/routes/employees/import';
-import {createEmployeeColumns} from '@/table/employees';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { employeePage } from '@/config/employees';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as employeesRoute,
+} from '@/routes/employees';
+import { view as employeesImportRoute } from '@/routes/employees/import';
+import { createEmployeeColumns } from '@/table/employees';
 import type {
     Employee,
     EmployeeFilters,
@@ -23,8 +30,8 @@ import type {
     EmployeeSort,
     EmployeesResponse,
 } from '@/types/employee';
-import type {StatusFilter} from '@/types/listing';
-import {FileUp, RotateCcw} from "@lucide/vue";
+import type { StatusFilter } from '@/types/listing';
+import { FileUp, RotateCcw } from '@lucide/vue';
 
 /*
 |--------------------------------------------------------------------------
@@ -179,7 +186,9 @@ const handleDeleteSelected = () => {
                 <template #filters>
                     <div class="w-full min-w-0">
                         <AppUserRoleSelect
-                            :model-value="filterRole === 'all' ? null : filterRole"
+                            :model-value="
+                                filterRole === 'all' ? null : filterRole
+                            "
                             :placeholder="employeePage.rolePlaceholder"
                             clearable
                             @update:model-value="handleRoleChange"
@@ -188,7 +197,9 @@ const handleDeleteSelected = () => {
 
                     <div class="w-full min-w-0">
                         <AppUserShiftSelect
-                            :model-value="filterShift === 'all' ? null : filterShift"
+                            :model-value="
+                                filterShift === 'all' ? null : filterShift
+                            "
                             :placeholder="employeePage.shiftPlaceholder"
                             clearable
                             @update:model-value="handleShiftChange"
@@ -197,7 +208,9 @@ const handleDeleteSelected = () => {
 
                     <div class="w-full min-w-0">
                         <AppStatusSelect
-                            :model-value="filterStatus === 'all' ? null : filterStatus"
+                            :model-value="
+                                filterStatus === 'all' ? null : filterStatus
+                            "
                             :placeholder="employeePage.statusPlaceholder"
                             clearable
                             @update:model-value="handleStatusChange"

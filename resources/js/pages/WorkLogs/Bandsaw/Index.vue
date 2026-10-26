@@ -1,10 +1,12 @@
 <script lang="ts" setup>
-import {router} from '@inertiajs/vue3';
-import {RotateCcw} from '@lucide/vue';
-import {computed, ref} from 'vue';
+import { router } from '@inertiajs/vue3';
+import { RotateCcw } from '@lucide/vue';
+import { computed, ref } from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
-import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingActions, {
+    type ActionItem,
+} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppPartSelect from '@/components/selects/AppPartSelect.vue';
@@ -12,11 +14,16 @@ import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppSectionSizeSelect from '@/components/selects/AppSectionSizeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {bandsawWorkLogPage} from '@/config/bandsawWorkLogs';
-import {bulkDestroy, create, destroy, index as bandsawWorkLogsRoute,} from '@/routes/bandsaw';
-import {createBandsawWorkLogColumns} from '@/table/bandsawWorkLogs';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { bandsawWorkLogPage } from '@/config/bandsawWorkLogs';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as bandsawWorkLogsRoute,
+} from '@/routes/bandsaw';
+import { createBandsawWorkLogColumns } from '@/table/bandsawWorkLogs';
 import type {
     BandsawWorkLog,
     BandsawWorkLogFilters,
@@ -60,9 +67,7 @@ defineOptions({
 const filterWorkDate = ref(props.filters.workDate);
 const filterUserId = ref<number | 'all'>(props.filters.userId ?? 'all');
 const filterPartId = ref<number | 'all'>(props.filters.partId ?? 'all');
-const filterSectionId = ref<number | 'all'>(
-    props.filters.sectionId ?? 'all',
-);
+const filterSectionId = ref<number | 'all'>(props.filters.sectionId ?? 'all');
 const filterSectionSizeId = ref<number | 'all'>(
     props.filters.sectionSizeId ?? 'all',
 );
@@ -82,12 +87,9 @@ const hasFilters = computed(
 |--------------------------------------------------------------------------
 */
 
-const columns = createBandsawWorkLogColumns(
-    (id) => {
-        router.delete(destroy(id).url);
-    },
-    props.canSelectBandsaw,
-);
+const columns = createBandsawWorkLogColumns((id) => {
+    router.delete(destroy(id).url);
+}, props.canSelectBandsaw);
 
 const {
     table,
@@ -107,14 +109,10 @@ const {
     searchable: false,
     additionalFilters: () => ({
         work_date: filterWorkDate.value || undefined,
-        user_id:
-            filterUserId.value !== 'all' ? filterUserId.value : undefined,
-        part_id:
-            filterPartId.value !== 'all' ? filterPartId.value : undefined,
+        user_id: filterUserId.value !== 'all' ? filterUserId.value : undefined,
+        part_id: filterPartId.value !== 'all' ? filterPartId.value : undefined,
         section_id:
-            filterSectionId.value !== 'all'
-                ? filterSectionId.value
-                : undefined,
+            filterSectionId.value !== 'all' ? filterSectionId.value : undefined,
         section_size_id:
             filterSectionSizeId.value !== 'all'
                 ? filterSectionSizeId.value

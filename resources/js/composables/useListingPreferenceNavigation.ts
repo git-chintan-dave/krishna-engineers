@@ -1,6 +1,6 @@
-import {onMounted, ref} from 'vue';
+import { onMounted, ref } from 'vue';
 
-import {getListingPreferenceFeatures} from '@/config/listingPreferences';
+import { getListingPreferenceFeatures } from '@/config/listingPreferences';
 
 /*
 |--------------------------------------------------------------------------
@@ -17,9 +17,9 @@ type SavedListingPreferences = {
 type NavigationHref =
     | string
     | {
-    url?: string;
-    href?: string;
-}
+          url?: string;
+          href?: string;
+      }
     | undefined;
 
 /*
@@ -50,9 +50,7 @@ export function useListingPreferenceNavigation() {
         isClientReady.value = true;
     });
 
-    const resolveNavigationHref = (
-        href: NavigationHref,
-    ): string => {
+    const resolveNavigationHref = (href: NavigationHref): string => {
         if (typeof href === 'string') {
             return href;
         }
@@ -70,9 +68,7 @@ export function useListingPreferenceNavigation() {
         return '';
     };
 
-    const getNavigationHref = (
-        href: NavigationHref,
-    ): string => {
+    const getNavigationHref = (href: NavigationHref): string => {
         const destination = resolveNavigationHref(href);
 
         if (
@@ -84,18 +80,14 @@ export function useListingPreferenceNavigation() {
         }
 
         try {
-            const url = new URL(
-                destination,
-                window.location.origin,
-            );
+            const url = new URL(destination, window.location.origin);
 
             // Never modify external links.
             if (url.origin !== window.location.origin) {
                 return destination;
             }
 
-            const path =
-                url.pathname.replace(/\/+$/, '') || '/';
+            const path = url.pathname.replace(/\/+$/, '') || '/';
 
             const features = getListingPreferenceFeatures(path);
 
@@ -121,8 +113,7 @@ export function useListingPreferenceNavigation() {
                 return destination;
             }
 
-            const preferences =
-                parsed as SavedListingPreferences;
+            const preferences = parsed as SavedListingPreferences;
 
             /*
              * Restore page size.
@@ -130,13 +121,9 @@ export function useListingPreferenceNavigation() {
             if (
                 features.perPage &&
                 typeof preferences.perPage === 'number' &&
-                ALLOWED_PAGE_SIZES.includes(
-                    preferences.perPage,
-                )
+                ALLOWED_PAGE_SIZES.includes(preferences.perPage)
             ) {
-                if (
-                    preferences.perPage === DEFAULT_PAGE_SIZE
-                ) {
+                if (preferences.perPage === DEFAULT_PAGE_SIZE) {
                     url.searchParams.delete('per_page');
                 } else {
                     url.searchParams.set(
@@ -153,10 +140,8 @@ export function useListingPreferenceNavigation() {
                 features.sorting &&
                 typeof preferences.sort === 'string' &&
                 preferences.sort.length > 0 &&
-                (
-                    preferences.direction === 'asc' ||
-                    preferences.direction === 'desc'
-                )
+                (preferences.direction === 'asc' ||
+                    preferences.direction === 'desc')
             ) {
                 const isDefaultSorting =
                     preferences.sort === DEFAULT_SORT &&
@@ -166,15 +151,9 @@ export function useListingPreferenceNavigation() {
                     url.searchParams.delete('sort');
                     url.searchParams.delete('direction');
                 } else {
-                    url.searchParams.set(
-                        'sort',
-                        preferences.sort,
-                    );
+                    url.searchParams.set('sort', preferences.sort);
 
-                    url.searchParams.set(
-                        'direction',
-                        preferences.direction,
-                    );
+                    url.searchParams.set('direction', preferences.direction);
                 }
             }
 
@@ -185,32 +164,22 @@ export function useListingPreferenceNavigation() {
             const hasNonDefaultPageSize =
                 features.perPage &&
                 typeof preferences.perPage === 'number' &&
-                ALLOWED_PAGE_SIZES.includes(
-                    preferences.perPage,
-                ) &&
+                ALLOWED_PAGE_SIZES.includes(preferences.perPage) &&
                 preferences.perPage !== DEFAULT_PAGE_SIZE;
 
             const hasNonDefaultSorting =
                 features.sorting &&
                 typeof preferences.sort === 'string' &&
                 preferences.sort.length > 0 &&
-                (
-                    preferences.direction === 'asc' ||
-                    preferences.direction === 'desc'
-                ) &&
+                (preferences.direction === 'asc' ||
+                    preferences.direction === 'desc') &&
                 !(
                     preferences.sort === DEFAULT_SORT &&
                     preferences.direction === DEFAULT_DIRECTION
                 );
 
-            if (
-                hasNonDefaultPageSize ||
-                hasNonDefaultSorting
-            ) {
-                url.searchParams.set(
-                    'page',
-                    String(DEFAULT_PAGE),
-                );
+            if (hasNonDefaultPageSize || hasNonDefaultSorting) {
+                url.searchParams.set('page', String(DEFAULT_PAGE));
             } else {
                 url.searchParams.delete('page');
             }

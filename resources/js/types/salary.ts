@@ -1,4 +1,3 @@
-
 import type { SalarySchemaData } from '@/schemas/salarySchema';
 import type { PaginatedResponse, SortDirection } from '@/types/listing';
 

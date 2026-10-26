@@ -1,21 +1,28 @@
 ﻿<script lang="ts" setup>
-import {router, usePage} from '@inertiajs/vue3';
-import {computed, ref} from 'vue';
-import {RotateCcw} from '@lucide/vue';
+import { router, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
+import { RotateCcw } from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
-import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingActions, {
+    type ActionItem,
+} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppRawMaterialTransactionTypeSelect from '@/components/selects/AppRawMaterialTransactionTypeSelect.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppSectionSizeSelect from '@/components/selects/AppSectionSizeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useListingTable} from '@/composables/useListingTable';
-import {rawMaterialTransactionPage} from '@/config/rawMaterialTransactions';
-import {bulkDestroy, create, destroy, index as rawMaterialTransactionsRoute,} from '@/routes/raw-material-transactions';
-import {createRawMaterialTransactionColumns} from '@/table/rawMaterialTransactions';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { useListingTable } from '@/composables/useListingTable';
+import { rawMaterialTransactionPage } from '@/config/rawMaterialTransactions';
+import {
+    bulkDestroy,
+    create,
+    destroy,
+    index as rawMaterialTransactionsRoute,
+} from '@/routes/raw-material-transactions';
+import { createRawMaterialTransactionColumns } from '@/table/rawMaterialTransactions';
 import type {
     RawMaterialTransaction,
     RawMaterialTransactionFilters,
@@ -51,9 +58,7 @@ defineOptions({
 
 const page = usePage();
 
-const canManage = computed(
-    () => page.props.auth.user?.role === 'super_admin',
-);
+const canManage = computed(() => page.props.auth.user?.role === 'super_admin');
 
 /*
 |--------------------------------------------------------------------------
@@ -61,9 +66,7 @@ const canManage = computed(
 |--------------------------------------------------------------------------
 */
 
-const filterSectionId = ref<number | 'all'>(
-    props.filters.sectionId ?? 'all',
-);
+const filterSectionId = ref<number | 'all'>(props.filters.sectionId ?? 'all');
 
 const filterSectionSizeId = ref<number | 'all'>(
     props.filters.sectionSizeId ?? 'all',
@@ -71,9 +74,7 @@ const filterSectionSizeId = ref<number | 'all'>(
 
 const filterType = ref(props.filters.type || 'all');
 
-const filterUserId = ref<number | 'all'>(
-    props.filters.userId ?? 'all',
-);
+const filterUserId = ref<number | 'all'>(props.filters.userId ?? 'all');
 
 const filterStartDate = ref(props.filters.startDate ?? '');
 const filterEndDate = ref(props.filters.endDate ?? '');
@@ -130,10 +131,7 @@ const {
     clearFilters,
     deleteSelected,
     resetPreferences,
-} = useListingTable<
-    RawMaterialTransaction,
-    RawMaterialTransactionSort
->({
+} = useListingTable<RawMaterialTransaction, RawMaterialTransactionSort>({
     data: () => props.transactions,
     columns,
     filters: {
@@ -145,21 +143,13 @@ const {
     searchable: false,
     additionalFilters: () => ({
         section_id:
-            filterSectionId.value !== 'all'
-                ? filterSectionId.value
-                : undefined,
+            filterSectionId.value !== 'all' ? filterSectionId.value : undefined,
         section_size_id:
             filterSectionSizeId.value !== 'all'
                 ? filterSectionSizeId.value
                 : undefined,
-        type:
-            filterType.value !== 'all'
-                ? filterType.value
-                : undefined,
-        user_id:
-            filterUserId.value !== 'all'
-                ? filterUserId.value
-                : undefined,
+        type: filterType.value !== 'all' ? filterType.value : undefined,
+        user_id: filterUserId.value !== 'all' ? filterUserId.value : undefined,
         start_date: filterStartDate.value || undefined,
         end_date: filterEndDate.value || undefined,
     }),

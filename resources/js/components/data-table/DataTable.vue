@@ -1,11 +1,18 @@
 <script lang="ts" setup>
-import {computed} from 'vue';
-import {FlexRender} from '@tanstack/vue-table';
-import {ChevronLeft, ChevronRight} from '@lucide/vue';
+import { computed } from 'vue';
+import { FlexRender } from '@tanstack/vue-table';
+import { ChevronLeft, ChevronRight } from '@lucide/vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import {Button} from '@/components/ui/button';
-import {Table as UiTable, TableBody, TableCell, TableHead, TableHeader, TableRow,} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import {
+    Table as UiTable,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 
 /*
 |--------------------------------------------------------------------------
@@ -105,10 +112,7 @@ const getColumnMinimumWidth = (column: TableColumn): number => {
 const tableMinWidth = computed(() =>
     props.table
         .getAllLeafColumns()
-        .reduce(
-            (total, column) => total + getColumnMinimumWidth(column),
-            0,
-        ),
+        .reduce((total, column) => total + getColumnMinimumWidth(column), 0),
 );
 
 const tableStyle = computed(() => ({
@@ -161,11 +165,9 @@ const paginationItems = computed<PaginationItem[]>(() => {
 
     const items: PaginationItem[] = [];
 
-    const addPage = (page: number) =>
-        items.push({ type: 'page', page });
+    const addPage = (page: number) => items.push({ type: 'page', page });
 
-    const addEllipsis = (key: string) =>
-        items.push({ type: 'ellipsis', key });
+    const addEllipsis = (key: string) => items.push({ type: 'ellipsis', key });
 
     addPage(1);
 
@@ -211,8 +213,7 @@ const loadingColumnIds = computed(() => {
 |--------------------------------------------------------------------------
 */
 
-const getColumnClass = (columnId: string) =>
-    props.columnWidths[columnId] ?? '';
+const getColumnClass = (columnId: string) => props.columnWidths[columnId] ?? '';
 
 const getColumnAlign = (column: any): ColumnAlign => {
     const align = column?.columnDef?.meta?.align;
@@ -259,13 +260,9 @@ const getColumnStyle = (column: any) => {
     }
 
     return {
-        ...(typeof size === 'number'
-            ? { width: `${size}px` }
-            : {}),
+        ...(typeof size === 'number' ? { width: `${size}px` } : {}),
         minWidth: `${minSize ?? 20}px`,
-        ...(typeof maxSize === 'number'
-            ? { maxWidth: `${maxSize}px` }
-            : {}),
+        ...(typeof maxSize === 'number' ? { maxWidth: `${maxSize}px` } : {}),
     };
 };
 
@@ -302,10 +299,7 @@ const handlePageSizeChange = (
     <div class="w-full min-w-0 overflow-hidden rounded-lg border bg-background">
         <!-- Table -->
         <div class="w-full min-w-0 overflow-x-auto overscroll-x-contain">
-            <UiTable
-                class="table-fixed"
-                :style="tableStyle"
-            >
+            <UiTable class="table-fixed" :style="tableStyle">
                 <TableHeader>
                     <TableRow
                         v-for="headerGroup in table.getHeaderGroups()"
@@ -317,7 +311,9 @@ const handlePageSizeChange = (
                             :key="header.id"
                             :class="[
                                 getColumnClass(header.column.id),
-                                getAlignmentClass(getColumnAlign(header.column)),
+                                getAlignmentClass(
+                                    getColumnAlign(header.column),
+                                ),
                                 'capitalize',
                             ]"
                             :style="getColumnStyle(header.column)"
@@ -334,18 +330,16 @@ const handlePageSizeChange = (
                 <TableBody>
                     <!-- Loading -->
                     <template v-if="loading">
-                        <TableRow
-                            v-for="row in 5"
-                            :key="`loading-${row}`"
-                        >
+                        <TableRow v-for="row in 5" :key="`loading-${row}`">
                             <TableCell
                                 v-for="(columnId, index) in loadingColumnIds"
                                 :key="index"
                                 :class="getColumnClass(columnId)"
                                 :style="
                                     getColumnStyle(
-                                        table.getHeaderGroups()[0]
-                                            ?.headers[index]?.column,
+                                        table.getHeaderGroups()[0]?.headers[
+                                            index
+                                        ]?.column,
                                     )
                                 "
                                 class="px-4 py-3"
@@ -485,9 +479,7 @@ const handlePageSizeChange = (
                             <template
                                 v-for="item in paginationItems"
                                 :key="
-                                    item.type === 'page'
-                                        ? item.page
-                                        : item.key
+                                    item.type === 'page' ? item.page : item.key
                                 "
                             >
                                 <Button

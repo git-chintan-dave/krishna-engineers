@@ -220,7 +220,6 @@ class PartSetupController extends Controller
         );
     }
 
-
     public function import()
     {
         return Inertia::render('PartSetups/Import', []);
@@ -237,7 +236,7 @@ class PartSetupController extends Controller
             ],
         ]);
 
-        $import = new PartSetupsImport();
+        $import = new PartSetupsImport;
 
         Excel::import($import, $request->file('file'));
 
@@ -247,5 +246,4 @@ class PartSetupController extends Controller
             updated: $import->getUpdatedCount(),
         );
     }
-
 }

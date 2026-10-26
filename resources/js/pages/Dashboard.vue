@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import {computed} from 'vue';
-import {usePage} from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
 import BandsawDashboard from '@/components/dashboard/BandsawDashboard.vue';
 import OperatorDashboard from '@/components/dashboard/OperatorDashboard.vue';

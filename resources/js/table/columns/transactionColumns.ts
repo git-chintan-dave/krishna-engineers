@@ -1,4 +1,3 @@
-
 import { h } from 'vue';
 
 import { Badge } from '@/components/ui/badge';
@@ -22,9 +21,7 @@ type TransactionTypeColumnOptions<TData, TType extends string> = {
     accessorKey?: string;
     header?: string;
     align?: ColumnAlign;
-    getType: (
-        row: TData,
-    ) => TransactionTypeOption<TType> | null | undefined;
+    getType: (row: TData) => TransactionTypeOption<TType> | null | undefined;
     getVariant?: (
         type: TType,
     ) => 'default' | 'secondary' | 'destructive' | 'outline';
@@ -112,8 +109,8 @@ export const createTransactionTypeColumn = <
                         align === 'left'
                             ? 'justify-start'
                             : align === 'right'
-                                ? 'justify-end'
-                                : 'justify-center',
+                              ? 'justify-end'
+                              : 'justify-center',
                     ],
                 },
                 [
@@ -170,8 +167,8 @@ export const createTransactionQuantityColumn = <TData>(
                         align === 'left'
                             ? 'text-left'
                             : align === 'right'
-                                ? 'text-right'
-                                : 'text-center',
+                              ? 'text-right'
+                              : 'text-center',
                         quantity < 0
                             ? 'font-medium text-destructive'
                             : 'font-normal',

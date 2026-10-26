@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import {Head} from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 
 import AppPageHeader from '@/components/common/AppPageHeader.vue';
 import ImportFile from '@/components/common/ImportFile.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {attendancePage} from '@/config/attendances';
-import {index as attendances} from '@/routes/attendances';
-import {store as submitImport} from '@/routes/attendances/import';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { attendancePage } from '@/config/attendances';
+import { index as attendances } from '@/routes/attendances';
+import { store as submitImport } from '@/routes/attendances/import';
 
 /*
 |--------------------------------------------------------------------------

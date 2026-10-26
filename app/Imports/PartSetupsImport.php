@@ -15,11 +15,7 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class PartSetupsImport implements
-    ToCollection,
-    WithHeadingRow,
-    WithChunkReading,
-    SkipsEmptyRows
+class PartSetupsImport implements SkipsEmptyRows, ToCollection, WithChunkReading, WithHeadingRow
 {
     private int $created = 0;
 

@@ -81,8 +81,8 @@ const fetchSetups = async (): Promise<void> => {
         options.value = Array.isArray(data)
             ? data
             : Array.isArray(data.data)
-                ? data.data
-                : [];
+              ? data.data
+              : [];
     } catch (error) {
         console.error('Failed to load setups:', error);
         options.value = [];

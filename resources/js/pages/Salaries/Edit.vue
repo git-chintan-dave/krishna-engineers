@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import {router, useForm} from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {salaryPage} from '@/config/salaries';
+import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import { salaryPage } from '@/config/salaries';
 import SalaryForm from '@/pages/Salaries/components/SalaryForm.vue';
-import {index as salaries, update} from '@/routes/salaries';
-import type {Salary, SalaryFormData} from '@/types/salary';
+import { index as salaries, update } from '@/routes/salaries';
+import type { Salary, SalaryFormData } from '@/types/salary';
 
 const props = defineProps<{
     salary: Salary;

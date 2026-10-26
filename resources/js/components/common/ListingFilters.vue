@@ -59,7 +59,7 @@ const mobileFiltersOpen = ref(false);
             v-if="hasCollapsibleContent"
             :aria-controls="panelId"
             :aria-expanded="mobileFiltersOpen"
-            class="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border bg-background px-4 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:hidden"
+            class="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border bg-background px-4 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none sm:hidden"
             type="button"
             @click="mobileFiltersOpen = !mobileFiltersOpen"
         >

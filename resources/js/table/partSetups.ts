@@ -1,13 +1,13 @@
-import {createColumnHelper} from '@tanstack/vue-table';
+import { createColumnHelper } from '@tanstack/vue-table';
 
-import {edit} from '@/routes/part-setups';
-import {createActionsColumn} from '@/table/columns/actionsColumn';
-import {createDateColumn} from '@/table/columns/dateColumn';
-import {createImageColumn} from '@/table/columns/imageColumn';
-import {createSelectColumn} from '@/table/columns/selectColumn';
-import {createColumn} from '@/table/helpers/createColumn';
-import type {PartSetup} from '@/types/partSetup';
-import {COLUMN_DEFAULTS} from '@/table/constants/columns';
+import { edit } from '@/routes/part-setups';
+import { createActionsColumn } from '@/table/columns/actionsColumn';
+import { createDateColumn } from '@/table/columns/dateColumn';
+import { createImageColumn } from '@/table/columns/imageColumn';
+import { createSelectColumn } from '@/table/columns/selectColumn';
+import { createColumn } from '@/table/helpers/createColumn';
+import type { PartSetup } from '@/types/partSetup';
+import { COLUMN_DEFAULTS } from '@/table/constants/columns';
 
 const columnHelper = createColumnHelper<any, PartSetup>();
 
@@ -47,7 +47,7 @@ export const createPartSetupColumns = (handleDelete: (uuid: string) => void) =>
             header: 'Machine Cycle Time',
             ...COLUMN_DEFAULTS.extraWideColumn,
             sortable: true,
-            align: "center",
+            align: 'center',
         }),
 
         createColumn({
@@ -56,7 +56,7 @@ export const createPartSetupColumns = (handleDelete: (uuid: string) => void) =>
             header: 'Actual Cycle Time',
             ...COLUMN_DEFAULTS.extraWideColumn,
             sortable: true,
-            align: "center",
+            align: 'center',
         }),
 
         createImageColumn<PartSetup>({

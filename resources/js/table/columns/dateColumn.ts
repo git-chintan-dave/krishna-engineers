@@ -19,9 +19,9 @@ type DateColumnOptions = {
 */
 
 export const createDateColumn = ({
-                                     accessorKey = 'created_at',
-                                     header = COLUMN_DEFAULTS.date.header,
-                                 }: DateColumnOptions = {}) =>
+    accessorKey = 'created_at',
+    header = COLUMN_DEFAULTS.date.header,
+}: DateColumnOptions = {}) =>
     createColumn({
         accessorKey,
         header,

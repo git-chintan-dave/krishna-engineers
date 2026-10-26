@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {usePage} from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 
 const page = usePage<{
     name: string;
@@ -14,9 +14,7 @@ const page = usePage<{
             src="/logo_new.svg"
         />
 
-        <span
-            class="truncate text-base leading-tight font-semibold"
-        >
+        <span class="truncate text-base leading-tight font-semibold">
             {{ page.props.name }}
         </span>
     </div>

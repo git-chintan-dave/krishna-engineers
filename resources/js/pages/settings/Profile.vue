@@ -1,16 +1,16 @@
 <script lang="ts" setup>
-import {Form, Head, Link, usePage} from '@inertiajs/vue3';
-import {computed} from 'vue';
-import {ArrowUpRight, Fingerprint, Phone, UserRound,} from '@lucide/vue';
+import { Form, Head, Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { ArrowUpRight, Fingerprint, Phone, UserRound } from '@lucide/vue';
 import DeleteUser from '@/components/DeleteUser.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
-import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
-import {Label} from '@/components/ui/label';
-import {send} from '@/routes/verification';
-import {dashboard} from "@/routes";
-import {update as updateProfile} from '@/routes/profile';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { send } from '@/routes/verification';
+import { dashboard } from '@/routes';
+import { update as updateProfile } from '@/routes/profile';
 
 defineOptions({
     layout: {
@@ -50,7 +50,9 @@ const user = computed(() => page.props.auth.user);
             <section
                 class="overflow-hidden rounded-xl border border-border bg-card"
             >
-                <div class="flex items-start gap-3 border-b border-border px-5 py-4 sm:px-6">
+                <div
+                    class="flex items-start gap-3 border-b border-border px-5 py-4 sm:px-6"
+                >
                     <div
                         class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
                     >
@@ -94,7 +96,10 @@ const user = computed(() => page.props.auth.user);
                         <InputError :message="errors.email" />
 
                         <div
-                            v-if="page.props.mustVerifyEmail && !user.email_verified_at"
+                            v-if="
+                                page.props.mustVerifyEmail &&
+                                !user.email_verified_at
+                            "
                             class="text-sm text-muted-foreground"
                         >
                             Email not verified.
@@ -108,7 +113,10 @@ const user = computed(() => page.props.auth.user);
                             </Link>
 
                             <p
-                                v-if="page.props.status === 'verification-link-sent'"
+                                v-if="
+                                    page.props.status ===
+                                    'verification-link-sent'
+                                "
                                 class="mt-2 font-medium text-green-600"
                             >
                                 Verification link sent successfully.
@@ -121,7 +129,9 @@ const user = computed(() => page.props.auth.user);
             <section
                 class="overflow-hidden rounded-xl border border-border bg-card"
             >
-                <div class="flex items-start gap-3 border-b border-border px-5 py-4 sm:px-6">
+                <div
+                    class="flex items-start gap-3 border-b border-border px-5 py-4 sm:px-6"
+                >
                     <div
                         class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
                     >
@@ -171,9 +181,7 @@ const user = computed(() => page.props.auth.user);
                             placeholder="Alternate phone number"
                             type="tel"
                         />
-                        <InputError
-                            :message="errors.alternate_phone_number"
-                        />
+                        <InputError :message="errors.alternate_phone_number" />
                     </div>
                 </div>
             </section>
@@ -181,7 +189,9 @@ const user = computed(() => page.props.auth.user);
             <section
                 class="overflow-hidden rounded-xl border border-border bg-card"
             >
-                <div class="flex items-start gap-3 border-b border-border px-5 py-4 sm:px-6">
+                <div
+                    class="flex items-start gap-3 border-b border-border px-5 py-4 sm:px-6"
+                >
                     <div
                         class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
                     >

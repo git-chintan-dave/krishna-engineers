@@ -1,15 +1,11 @@
+import { router } from '@inertiajs/vue3';
+import type { RequestPayload } from '@inertiajs/core';
+import type { RowData, SortingState } from '@tanstack/vue-table';
+import { onMounted, ref } from 'vue';
 
-import {router} from '@inertiajs/vue3';
-import type {RequestPayload} from '@inertiajs/core';
-import type {RowData, SortingState} from '@tanstack/vue-table';
-import {onMounted, ref} from 'vue';
-
-import {useDataTable} from '@/composables/useDataTable';
-import {useListingPreferences} from '@/composables/useListingPreferences';
-import type {
-    PaginatedResponse,
-    SortDirection,
-} from '@/types/listing';
+import { useDataTable } from '@/composables/useDataTable';
+import { useListingPreferences } from '@/composables/useListingPreferences';
+import type { PaginatedResponse, SortDirection } from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------
@@ -78,9 +74,7 @@ export function useListingTable<
     */
 
     const searchQuery = ref(
-        options.searchable === false
-            ? ''
-            : (options.filters.search ?? ''),
+        options.searchable === false ? '' : (options.filters.search ?? ''),
     );
 
     const defaultSorting: SortingState = [
@@ -99,8 +93,7 @@ export function useListingTable<
     };
 
     const hasExplicitSorting = (): boolean =>
-        hasQueryParameter('sort') ||
-        hasQueryParameter('direction');
+        hasQueryParameter('sort') || hasQueryParameter('direction');
 
     /*
     |--------------------------------------------------------------------------
@@ -116,7 +109,7 @@ export function useListingTable<
         allowedPageSizes: PAGE_SIZE_OPTIONS,
     });
 
-    const {features} = listingPreferences;
+    const { features } = listingPreferences;
 
     const hasExplicitPageSize = hasQueryParameter('per_page');
     const hasExplicitSort = hasExplicitSorting();
@@ -154,7 +147,7 @@ export function useListingTable<
             .map((item) => {
                 const column = options.columns.find((column) => {
                     const meta = column.meta as
-                        | {sortKey?: string}
+                        | { sortKey?: string }
                         | undefined;
 
                     return (
@@ -173,13 +166,10 @@ export function useListingTable<
                 };
             })
             .filter(
-                (item): item is {id: string; desc: boolean} =>
-                    item !== null,
+                (item): item is { id: string; desc: boolean } => item !== null,
             );
 
-        return savedSorting.length > 0
-            ? savedSorting
-            : defaultSorting;
+        return savedSorting.length > 0 ? savedSorting : defaultSorting;
     })();
 
     /*
@@ -188,16 +178,8 @@ export function useListingTable<
     |--------------------------------------------------------------------------
     */
 
-    const {
-        table,
-        sorting,
-        selectedRows,
-        selectedCount,
-        clearSelection,
-    } = useDataTable<TData>(
-        () => options.data().data,
-        options.columns,
-        {
+    const { table, sorting, selectedRows, selectedCount, clearSelection } =
+        useDataTable<TData>(() => options.data().data, options.columns, {
             manualPagination: true,
             manualSorting: true,
             pageCount: () => options.data().meta.last_page,
@@ -205,7 +187,7 @@ export function useListingTable<
             initialSorting,
             enableRowSelection: options.enableRowSelection,
 
-            onPaginationChange: ({pageIndex, pageSize}) => {
+            onPaginationChange: ({ pageIndex, pageSize }) => {
                 const meta = options.data().meta;
                 const nextPage = pageIndex + 1;
 
@@ -244,13 +226,11 @@ export function useListingTable<
                 }
 
                 const nextSort = getSortKey(currentSorting.id);
-                const nextDirection: SortDirection =
-                    currentSorting.desc ? 'desc' : 'asc';
+                const nextDirection: SortDirection = currentSorting.desc
+                    ? 'desc'
+                    : 'asc';
 
-                listingPreferences.setServerSorting(
-                    nextSort,
-                    nextDirection,
-                );
+                listingPreferences.setServerSorting(nextSort, nextDirection);
 
                 visit({
                     page: 1,
@@ -258,8 +238,7 @@ export function useListingTable<
                     direction: nextDirection,
                 });
             },
-        },
-    );
+        });
 
     /*
     |--------------------------------------------------------------------------
@@ -270,18 +249,14 @@ export function useListingTable<
     const getSortKey = (columnId: string): TSort => {
         const column = table.getAllColumns().find((item) => {
             const sortKey = (
-                item.columnDef.meta as
-                    | {sortKey?: string}
-                    | undefined
+                item.columnDef.meta as { sortKey?: string } | undefined
             )?.sortKey;
 
             return item.id === columnId || sortKey === columnId;
         });
 
         const sortKey = (
-            column?.columnDef.meta as
-                | {sortKey?: TSort}
-                | undefined
+            column?.columnDef.meta as { sortKey?: TSort } | undefined
         )?.sortKey;
 
         return (sortKey ?? column?.id ?? columnId) as TSort;
@@ -330,25 +305,21 @@ export function useListingTable<
     */
 
     function visit({
-                       page = DEFAULT_PAGE,
-                       perPage = listingPreferences.perPage.value,
-                       sort,
-                       direction,
-                       clearSorting = false,
-                       useServerDefaults = false,
-                   }: VisitOptions<TSort> = {}) {
+        page = DEFAULT_PAGE,
+        perPage = listingPreferences.perPage.value,
+        sort,
+        direction,
+        clearSorting = false,
+        useServerDefaults = false,
+    }: VisitOptions<TSort> = {}) {
         const additionalFilters = options.additionalFilters?.() ?? {};
 
         if (useServerDefaults) {
-            router.get(
-                options.route,
-                additionalFilters as RequestPayload,
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                    replace: true,
-                },
-            );
+            router.get(options.route, additionalFilters as RequestPayload, {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            });
 
             return;
         }
@@ -357,13 +328,13 @@ export function useListingTable<
 
         const sortingParams = clearSorting
             ? {
-                sort: undefined,
-                direction: undefined,
-            }
+                  sort: undefined,
+                  direction: undefined,
+              }
             : {
-                sort: sort ?? currentSorting.sort,
-                direction: direction ?? currentSorting.direction,
-            };
+                  sort: sort ?? currentSorting.sort,
+                  direction: direction ?? currentSorting.direction,
+              };
 
         const params: Record<string, unknown> = {
             ...sortingParams,
@@ -436,10 +407,8 @@ export function useListingTable<
             !hasExplicitSort &&
             Boolean(savedSort) &&
             Boolean(savedDirection) &&
-            (
-                savedSort !== options.filters.sort ||
-                savedDirection !== options.filters.direction
-            );
+            (savedSort !== options.filters.sort ||
+                savedDirection !== options.filters.direction);
 
         if (!restorePageSize && !restoreSorting) {
             return;
@@ -452,9 +421,9 @@ export function useListingTable<
                 : meta.per_page,
             ...(restoreSorting
                 ? {
-                    sort: savedSort as TSort,
-                    direction: savedDirection as SortDirection,
-                }
+                      sort: savedSort as TSort,
+                      direction: savedDirection as SortDirection,
+                  }
                 : {}),
         });
     });
@@ -465,17 +434,14 @@ export function useListingTable<
     |--------------------------------------------------------------------------
     */
 
-    const search = () => visit({page: 1});
+    const search = () => visit({ page: 1 });
 
     const clearFilters = () => {
         searchQuery.value = '';
-        visit({page: 1});
+        visit({ page: 1 });
     };
 
-    const deleteSelected = (
-        bulkDeleteUrl: string,
-        onSuccess?: () => void,
-    ) => {
+    const deleteSelected = (bulkDeleteUrl: string, onSuccess?: () => void) => {
         const ids = selectedRows.value.map((row) => row.id);
 
         if (!ids.length) {
@@ -483,7 +449,7 @@ export function useListingTable<
         }
 
         router.delete(bulkDeleteUrl, {
-            data: {ids},
+            data: { ids },
             onSuccess: () => {
                 clearSelection();
                 onSuccess?.();
@@ -493,7 +459,7 @@ export function useListingTable<
 
     const resetPreferences = () => {
         listingPreferences.reset();
-        visit({useServerDefaults: true});
+        visit({ useServerDefaults: true });
     };
 
     /*

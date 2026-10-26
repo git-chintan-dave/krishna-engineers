@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import axios from 'axios';
-import {CalendarDays, LoaderCircle} from '@lucide/vue';
-import {computed, ref, watch} from 'vue';
+import { CalendarDays, LoaderCircle } from '@lucide/vue';
+import { computed, ref, watch } from 'vue';
 
-import {Button} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 
 type AttendanceRecord = {
     id: number | string;
@@ -216,81 +216,76 @@ watch(open, (isOpen) => {
                     <div v-else class="overflow-x-auto rounded-lg border">
                         <table class="w-full min-w-[700px] text-sm">
                             <thead class="bg-muted/50 text-left">
-                            <tr>
-                                <th class="px-4 py-3 font-medium">
-                                    Date
-                                </th>
-                                <th class="px-4 py-3 font-medium">
-                                    Clock In
-                                </th>
-                                <th class="px-4 py-3 font-medium">
-                                    Clock Out
-                                </th>
-                                <th class="px-4 py-3 font-medium">
-                                    Total Hours
-                                </th>
-                                <th class="px-4 py-3 font-medium">
-                                    Break Time
-                                </th>
-                                <th class="px-4 py-3 font-medium">
-                                    Effective Hours
-                                </th>
-                                <th class="px-4 py-3 font-medium">
-                                    Late By
-                                </th>
-                            </tr>
+                                <tr>
+                                    <th class="px-4 py-3 font-medium">Date</th>
+                                    <th class="px-4 py-3 font-medium">
+                                        Clock In
+                                    </th>
+                                    <th class="px-4 py-3 font-medium">
+                                        Clock Out
+                                    </th>
+                                    <th class="px-4 py-3 font-medium">
+                                        Total Hours
+                                    </th>
+                                    <th class="px-4 py-3 font-medium">
+                                        Break Time
+                                    </th>
+                                    <th class="px-4 py-3 font-medium">
+                                        Effective Hours
+                                    </th>
+                                    <th class="px-4 py-3 font-medium">
+                                        Late By
+                                    </th>
+                                </tr>
                             </thead>
 
                             <tbody class="divide-y">
-                            <tr
-                                v-for="record in records"
-                                :key="record.id"
-                            >
-                                <td class="whitespace-nowrap px-4 py-3">
-                                    {{
-                                        record.attendance_date_formatted ??
-                                        formatDate(record.attendance_date)
-                                    }}
-                                </td>
-                                <td class="whitespace-nowrap px-4 py-3">
-                                    {{
-                                        record.start_at_formatted ??
-                                        record.start_at ??
-                                        '—'
-                                    }}
-                                </td>
-                                <td class="whitespace-nowrap px-4 py-3">
-                                    {{
-                                        record.end_at_formatted ??
-                                        record.end_at ??
-                                        '—'
-                                    }}
-                                </td>
-                                <td class="whitespace-nowrap px-4 py-3">
-                                    {{
-                                        record.total_working_seconds_formatted ??
-                                        '—'
-                                    }}
-                                </td>
-                                <td class="whitespace-nowrap px-4 py-3">
-                                    {{
-                                        record.break_seconds_formatted ??
-                                        '—'
-                                    }}
-                                </td>
-                                <td class="whitespace-nowrap px-4 py-3">
-                                    {{
-                                        record.effective_working_seconds_formatted ??
-                                        '—'
-                                    }}
-                                </td>
-                                <td class="whitespace-nowrap px-4 py-3">
-                                    {{
-                                        record.undertime_seconds_formatted ??
-                                        '—'
-                                    }}
-                                </td>
-                            </tr>
+                                <tr v-for="record in records" :key="record.id">
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        {{
+                                            record.attendance_date_formatted ??
+                                            formatDate(record.attendance_date)
+                                        }}
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        {{
+                                            record.start_at_formatted ??
+                                            record.start_at ??
+                                            '—'
+                                        }}
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        {{
+                                            record.end_at_formatted ??
+                                            record.end_at ??
+                                            '—'
+                                        }}
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        {{
+                                            record.total_working_seconds_formatted ??
+                                            '—'
+                                        }}
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        {{
+                                            record.break_seconds_formatted ??
+                                            '—'
+                                        }}
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        {{
+                                            record.effective_working_seconds_formatted ??
+                                            '—'
+                                        }}
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        {{
+                                            record.undertime_seconds_formatted ??
+                                            '—'
+                                        }}
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>

@@ -14,7 +14,6 @@ export const optionalLongText = (label: string) =>
         .nullable()
         .optional();
 
-
 export const requiredText = (label: string) =>
     z
         .string()
