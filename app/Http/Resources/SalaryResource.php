@@ -40,6 +40,7 @@ class SalaryResource extends JsonResource
             'salary_period_end' => $this->salary_period_end?->toDateString(),
             'salary_period_start_formatted' => $this->salary_period_start?->format('d M Y'),
             'salary_period_end_formatted' => $this->salary_period_end?->format('d M Y'),
+            'salary_period_formatted' => $this->salary_period_start?->format('d M Y'). ' - '.$this->salary_period_end?->format('d M Y'),
 
             // Salary Calculation
             'base_salary' => $this->base_salary,

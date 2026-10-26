@@ -1,7 +1,7 @@
-import { ArrowDown, ArrowUp, ChevronsUpDown } from '@lucide/vue';
-import { h } from 'vue';
+import {ArrowDown, ArrowUp, ChevronsUpDown} from '@lucide/vue';
+import {h} from 'vue';
 
-import type { ColumnAlign } from '@/table/types';
+import type {ColumnAlign} from '@/table/types';
 
 /*
 |--------------------------------------------------------------------------
@@ -43,19 +43,15 @@ type BaseColumnOptions<TData, TValue> = {
     meta?: Record<string, unknown>;
 };
 
-type AccessorKeyColumnOptions<TData, TValue> = BaseColumnOptions<
-    TData,
-    TValue
-> & {
+type AccessorKeyColumnOptions<TData, TValue> =
+    BaseColumnOptions<TData, TValue> & {
     accessorKey: string;
     accessorFn?: never;
     id?: never;
 };
 
-type AccessorFnColumnOptions<TData, TValue> = BaseColumnOptions<
-    TData,
-    TValue
-> & {
+type AccessorFnColumnOptions<TData, TValue> =
+    BaseColumnOptions<TData, TValue> & {
     accessorFn: (row: TData, index: number) => TValue;
     accessorKey?: never;
     id: string;
@@ -101,18 +97,22 @@ const formatCellValue = (value: unknown): string => {
     return String(value);
 };
 
-const getColumnWidth = (size?: number, minSize?: number, maxSize?: number) => ({
+const getColumnWidth = (
+    size?: number,
+    minSize?: number,
+    maxSize?: number,
+) => ({
     ...(size !== undefined ? { size } : {}),
     ...(minSize !== undefined
         ? { minSize }
         : size !== undefined
-          ? { minSize: size }
-          : {}),
+            ? { minSize: size }
+            : {}),
     ...(maxSize !== undefined
         ? { maxSize }
         : size !== undefined
-          ? { maxSize: size }
-          : {}),
+            ? { maxSize: size }
+            : {}),
 });
 
 /*
@@ -123,38 +123,43 @@ const getColumnWidth = (size?: number, minSize?: number, maxSize?: number) => ({
 
 const createHeader =
     (label: string, align: ColumnAlign) =>
-    ({ column }: SortableHeaderContext) =>
-        h(
-            'button',
-            {
-                type: 'button',
-                class: [
-                    'flex w-full min-w-0 items-center gap-2 cursor-pointer',
-                    'text-sm font-medium leading-5',
-                    'whitespace-normal break-words hover:text-foreground',
-                    getHeaderAlignmentClass(align),
+        ({ column }: SortableHeaderContext) => {
+            const sorted = column.getIsSorted();
+
+            const SortIcon =
+                sorted === 'asc'
+                    ? ArrowUp
+                    : sorted === 'desc'
+                        ? ArrowDown
+                        : ChevronsUpDown;
+
+            return h(
+                'button',
+                {
+                    type: 'button',
+                    class: [
+                        'flex w-full min-w-0 cursor-pointer items-center gap-2',
+                        'text-sm font-medium leading-5',
+                        'whitespace-normal break-words hover:text-foreground',
+                        getHeaderAlignmentClass(align),
+                    ],
+                    onClick: () =>
+                        column.toggleSorting(sorted === 'asc'),
+                },
+                [
+                    h(
+                        'span',
+                        {
+                            class: 'min-w-0 whitespace-normal break-words',
+                        },
+                        label,
+                    ),
+                    h(SortIcon, {
+                        class: 'size-4 shrink-0',
+                    }),
                 ],
-                onClick: () =>
-                    column.toggleSorting(column.getIsSorted() === 'asc'),
-            },
-            [
-                h(
-                    'span',
-                    {
-                        class: 'min-w-0 whitespace-normal break-words',
-                    },
-                    label,
-                ),
-                h(
-                    column.getIsSorted() === 'asc'
-                        ? ArrowUp
-                        : column.getIsSorted() === 'desc'
-                          ? ArrowDown
-                          : ChevronsUpDown,
-                    { class: 'size-4 shrink-0' },
-                ),
-            ],
-        );
+            );
+        };
 
 /*
 |--------------------------------------------------------------------------
@@ -181,8 +186,13 @@ export const createColumn = <TData, TValue = unknown>(
 
     const accessor =
         'accessorFn' in options && options.accessorFn
-            ? { id: options.id, accessorFn: options.accessorFn }
-            : { accessorKey: options.accessorKey };
+            ? {
+                id: options.id,
+                accessorFn: options.accessorFn,
+            }
+            : {
+                accessorKey: options.accessorKey,
+            };
 
     const columnMeta: ColumnMeta = {
         ...meta,
@@ -194,20 +204,22 @@ export const createColumn = <TData, TValue = unknown>(
         ...accessor,
         enableSorting,
         meta: columnMeta,
+
         header: sortable
             ? createHeader(header, align)
             : () =>
-                  h(
-                      'span',
-                      {
-                          class: [
-                              'block w-full text-sm font-medium leading-5',
-                              'whitespace-normal break-words',
-                              getHeaderAlignmentClass(align),
-                          ],
-                      },
-                      header,
-                  ),
+                h(
+                    'span',
+                    {
+                        class: [
+                            'block w-full text-sm font-medium leading-5',
+                            'whitespace-normal break-words',
+                            getHeaderAlignmentClass(align),
+                        ],
+                    },
+                    header,
+                ),
+
         cell:
             cell ??
             ((context: CellContext<TData, TValue>) =>
@@ -222,6 +234,7 @@ export const createColumn = <TData, TValue = unknown>(
                     },
                     formatCellValue(context.getValue()),
                 )),
+
         ...getColumnWidth(size, minSize, maxSize),
     };
 };

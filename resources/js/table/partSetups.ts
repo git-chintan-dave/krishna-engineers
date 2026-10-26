@@ -29,6 +29,7 @@ export const createPartSetupColumns = (handleDelete: (uuid: string) => void) =>
             header: 'Part',
             ...COLUMN_DEFAULTS.flexiblePrimaryColumn,
             sortable: true,
+            primary: true,
         }),
 
         createColumn({
@@ -37,28 +38,25 @@ export const createPartSetupColumns = (handleDelete: (uuid: string) => void) =>
             header: 'Setup',
             ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
+            primary: true,
         }),
 
         createColumn({
-            accessorKey: 'machine_cycle_time_seconds',
+            accessorKey: 'machine_cycle_time_formatted',
+            sortKey: 'machine_cycle_time_seconds',
             header: 'Machine Cycle Time',
-            size: 180,
-            minSize: 180,
-            maxSize: 180,
+            ...COLUMN_DEFAULTS.extraWideColumn,
             sortable: true,
-            cell: ({ row }: { row: { original: PartSetup } }) =>
-                row.original.machine_cycle_time_formatted ?? '—',
+            align: "center",
         }),
 
         createColumn({
-            accessorKey: 'actual_cycle_time_seconds',
+            accessorKey: 'actual_cycle_time_formatted',
+            sortKey: 'actual_cycle_time_seconds',
             header: 'Actual Cycle Time',
-            size: 180,
-            minSize: 180,
-            maxSize: 180,
+            ...COLUMN_DEFAULTS.extraWideColumn,
             sortable: true,
-            cell: ({ row }: { row: { original: PartSetup } }) =>
-                row.original.actual_cycle_time_formatted ?? '—',
+            align: "center",
         }),
 
         createImageColumn<PartSetup>({

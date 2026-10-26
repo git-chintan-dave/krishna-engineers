@@ -23,28 +23,25 @@ export const createToolTransactionColumns = (
             accessorKey: 'tool.name',
             sortKey: 'tool.name',
             header: 'Tool',
-            ...COLUMN_DEFAULTS.primaryColumn,
+            ...COLUMN_DEFAULTS.extraExtraWideColumn,
             sortable: true,
+            primary: true,
         }),
 
         createTransactionTypeColumn<ToolTransaction>({
             accessorKey: 'type',
-            size: 140,
             getType: (row) => row.type,
         }),
 
         createTransactionQuantityColumn<ToolTransaction>({
             getQuantity: (row) => row.quantity,
-            size: 120,
         }),
 
         createColumn<ToolTransaction, string>({
             accessorKey: 'from_user.name',
             sortKey: 'fromUser.name',
             header: 'From User',
-            size: 180,
-            minSize: 180,
-            maxSize: 180,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
         }),
 
@@ -52,9 +49,7 @@ export const createToolTransactionColumns = (
             accessorKey: 'to_user.name',
             sortKey: 'toUser.name',
             header: 'To User',
-            size: 180,
-            minSize: 180,
-            maxSize: 180,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
         }),
 
@@ -77,10 +72,9 @@ export const createToolTransactionColumns = (
         createColumn<ToolTransaction, boolean | null>({
             accessorKey: 'return_scrap',
             header: 'Return / Scrap',
-            size: 120,
-            minSize: 120,
-            maxSize: 120,
+            ...COLUMN_DEFAULTS.mediumColumn,
             sortable: true,
+            align: 'center',
             cell: ({ row }) => {
                 const value = row.original.return_scrap;
 

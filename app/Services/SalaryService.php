@@ -30,7 +30,8 @@ class SalaryService
      *     salaries: Collection<int, Salary>
      * }
      */
-    public function generateForAllEmployees(
+    public function generateForEmployees(
+        ?int $userId = null,
         ?CarbonInterface $referenceDate = null,
     ): array {
         $referenceDate = $referenceDate
@@ -45,12 +46,18 @@ class SalaryService
         $periodEnd = $periodStart->copy()->endOfMonth();
 
         return DB::transaction(function () use (
+            $userId,
             $periodStart,
             $periodEnd,
         ): array {
-            $employees = User::query()
-                ->where('status', 'active')
-                ->get();
+            $employeesQuery = User::query()
+                ->where('status', 'active');
+
+            if ($userId !== null) {
+                $employeesQuery->whereKey($userId);
+            }
+
+            $employees = $employeesQuery->get();
 
             $existingEmployeeIds = Salary::query()
                 ->whereDate(
@@ -61,6 +68,7 @@ class SalaryService
                     'salary_period_end',
                     $periodEnd->toDateString(),
                 )
+                ->whereIn('user_id', $employees->modelKeys())
                 ->pluck('user_id')
                 ->flip();
 
@@ -91,6 +99,47 @@ class SalaryService
                 'skipped' => $skipped,
                 'salaries' => $generated,
             ];
+        });
+    }
+
+    /**
+     * Regenerate an existing unpaid salary using the latest employee
+     * salary settings and attendance records.
+     *
+     * Preserve manually entered adjustments and the confirmed late days.
+     */
+    public function regenerate(Salary $salary): Salary
+    {
+        return DB::transaction(function () use ($salary): Salary {
+            $salary = Salary::query()
+                ->whereKey($salary->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($salary->isPaid()) {
+                throw new RuntimeException(
+                    'Paid salaries cannot be regenerated.',
+                );
+            }
+
+            $salary->loadMissing('user');
+
+            $attributes = $this->salaryCalculationAttributes(
+                user: $salary->user,
+                periodStart: $salary->salary_period_start,
+                periodEnd: $salary->salary_period_end,
+                lateDays: (int) $salary->late_days,
+                upad: (float) $salary->upad,
+                paidLoan: (float) $salary->paid_loan,
+                adjustment: (float) $salary->adjustment,
+            );
+
+            $salary->update([
+                ...$attributes,
+                'adjustment_reason' => $salary->adjustment_reason,
+            ]);
+
+            return $salary->refresh();
         });
     }
 

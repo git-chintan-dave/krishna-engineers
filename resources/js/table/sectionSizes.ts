@@ -24,15 +24,15 @@ export const createSectionSizeColumns = (
             header: 'Section',
             ...COLUMN_DEFAULTS.flexiblePrimaryColumn,
             sortable: true,
+            primary: true,
         }),
 
         createColumn({
             accessorKey: 'size',
             header: 'Size',
-            size: 180,
-            minSize: 180,
-            maxSize: 180,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
+            primary: true,
         }),
 
         createColumn({
@@ -40,6 +40,7 @@ export const createSectionSizeColumns = (
             header: 'Quantity',
             ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
+            align: 'center',
         }),
 
         createColumn({
@@ -47,6 +48,7 @@ export const createSectionSizeColumns = (
             header: 'Weight',
             ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
+            align: 'center',
         }),
 
         createDateColumn(),

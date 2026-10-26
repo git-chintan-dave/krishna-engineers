@@ -1,11 +1,11 @@
-import { createColumnHelper } from '@tanstack/vue-table';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit } from '@/routes/attendances';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import { createColumn } from '@/table/helpers/createColumn';
-import { COLUMN_DEFAULTS } from '@/table/constants/columns';
-import type { Attendance } from '@/types/attendance';
+import {edit} from '@/routes/attendances';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createColumn} from '@/table/helpers/createColumn';
+import {COLUMN_DEFAULTS} from '@/table/constants/columns';
+import type {Attendance} from '@/types/attendance';
 
 const columnHelper = createColumnHelper<any, Attendance>();
 
@@ -27,6 +27,7 @@ export const createAttendanceColumns = (
                     header: 'Employee',
                     ...COLUMN_DEFAULTS.primaryColumn,
                     sortable: true,
+                    primary: true,
                 }),
             ]
             : []),
@@ -34,21 +35,18 @@ export const createAttendanceColumns = (
         createColumn<Attendance, string | null>({
             accessorKey: 'attendance_date_formatted',
             sortKey: 'attendance_date',
-            header: 'Attendance Date',
-            size: 160,
-            minSize: 160,
-            maxSize: 160,
+            header: 'Date',
+            ...COLUMN_DEFAULTS.secondaryColumn,
             align: 'center',
             sortable: true,
+            primary: true,
         }),
 
         createColumn<Attendance, string | null>({
             accessorKey: 'start_at_formatted',
             sortKey: 'start_at',
             header: 'Clock In',
-            size: 150,
-            minSize: 150,
-            maxSize: 150,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             align: 'center',
             sortable: true,
         }),
@@ -57,9 +55,7 @@ export const createAttendanceColumns = (
             accessorKey: 'end_at_formatted',
             sortKey: 'end_at',
             header: 'Clock Out',
-            size: 150,
-            minSize: 150,
-            maxSize: 150,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             align: 'center',
             sortable: true,
         }),
@@ -68,9 +64,7 @@ export const createAttendanceColumns = (
             accessorKey: 'total_working_seconds_formatted',
             sortKey: 'total_working_seconds',
             header: 'Total hours',
-            size: 140,
-            minSize: 140,
-            maxSize: 140,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             align: 'center',
             sortable: true,
         }),
@@ -78,9 +72,7 @@ export const createAttendanceColumns = (
         createColumn<Attendance, number | null>({
             accessorKey: 'break_seconds_formatted',
             header: 'Break Time',
-            size: 140,
-            minSize: 140,
-            maxSize: 140,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             align: 'center',
             sortable: true,
         }),
@@ -89,9 +81,7 @@ export const createAttendanceColumns = (
             accessorKey: 'effective_working_seconds_formatted',
             sortKey: 'effective_working_seconds',
             header: 'Effective Hours',
-            size: 160,
-            minSize: 160,
-            maxSize: 160,
+            ...COLUMN_DEFAULTS.mediumColumn,
             align: 'center',
             sortable: true,
         }),
@@ -100,9 +90,7 @@ export const createAttendanceColumns = (
             accessorKey: 'undertime_seconds_formatted',
             sortKey: 'undertime_seconds',
             header: 'Late By',
-            size: 160,
-            minSize: 160,
-            maxSize: 160,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             align: 'center',
             sortable: true,
         }),

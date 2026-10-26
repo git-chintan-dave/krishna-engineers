@@ -295,8 +295,11 @@ Route::middleware('auth')->group(function () {
                 Route::post('/{salary}/mark-as-paid', 'markAsPaid')
                     ->name('salaries.mark-as-paid');
 
-                Route::post('/generate-last-month', 'generateLastMonth')
+                Route::post('/generate-last-month', 'generateSalary')
                     ->name('salaries.generate-last-month');
+
+                Route::post('/{salary}/regenerate', 'regenerate')
+                    ->name('salaries.regenerate');
             });
 
         Route::resource('salaries', SalaryController::class);

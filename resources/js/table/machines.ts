@@ -22,6 +22,7 @@ export const createMachineColumns = (handleDelete: (uuid: string) => void) =>
             header: 'Name',
             ...COLUMN_DEFAULTS.flexiblePrimaryColumn,
             sortable: true,
+            primary: true,
         }),
 
         createColumn({

@@ -23,6 +23,7 @@ export const createPartColumns = (handleDelete: (uuid: string) => void) =>
             header: 'Part Name',
             ...COLUMN_DEFAULTS.primaryColumn,
             sortable: true,
+            primary: true,
         }),
 
         createColumn({
@@ -37,7 +38,7 @@ export const createPartColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'new_part_name',
             sortKey: 'new_part_name',
             header: 'New Part Name',
-            ...COLUMN_DEFAULTS.wideColumn,
+            ...COLUMN_DEFAULTS.mediumColumn,
             sortable: true,
         }),
 
@@ -47,6 +48,7 @@ export const createPartColumns = (handleDelete: (uuid: string) => void) =>
             header: 'Cutting Size',
             ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
+            align: 'center',
         }),
 
         createColumn({
@@ -55,14 +57,16 @@ export const createPartColumns = (handleDelete: (uuid: string) => void) =>
             header: 'Part Weight',
             ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
+            align: 'center',
         }),
 
         createColumn({
             accessorKey: 'raw_material_weight',
             sortKey: 'raw_material_weight',
             header: 'Raw Material Weight',
-            ...COLUMN_DEFAULTS.wideColumn,
+            ...COLUMN_DEFAULTS.extraWideColumn,
             sortable: true,
+            align: 'center',
         }),
 
         createImageColumn<Part>({

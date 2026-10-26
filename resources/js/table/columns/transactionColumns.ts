@@ -1,68 +1,164 @@
-import {h} from 'vue';
 
-import {createColumn} from '@/table/helpers/createColumn';
-import type {ToolTransactionType,} from '@/types/toolTransaction';
+import { h } from 'vue';
+
+import { Badge } from '@/components/ui/badge';
+import { COLUMN_DEFAULTS } from '@/table/constants/columns';
+import { createColumn } from '@/table/helpers/createColumn';
+import type { ColumnAlign } from '@/table/types';
+import type { ToolTransactionType } from '@/types/toolTransaction';
+
+/*
+|--------------------------------------------------------------------------
+| Types
+|--------------------------------------------------------------------------
+*/
 
 type TransactionTypeOption<TType extends string> = {
     value?: TType | null;
     label?: string | null;
 };
 
-const getTypeClass = (type: ToolTransactionType) => {
+type TransactionTypeColumnOptions<TData, TType extends string> = {
+    accessorKey?: string;
+    header?: string;
+    align?: ColumnAlign;
+    getType: (
+        row: TData,
+    ) => TransactionTypeOption<TType> | null | undefined;
+    getVariant?: (
+        type: TType,
+    ) => 'default' | 'secondary' | 'destructive' | 'outline';
+};
+
+type TransactionQuantityColumnOptions<TData> = {
+    accessorKey?: string;
+    header?: string;
+    align?: ColumnAlign;
+    getQuantity: (row: TData) => number | null | undefined;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
+
+const getTypeVariant = (
+    type: ToolTransactionType,
+): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (type) {
         case 'opening':
-            return [
-                'bg-blue-50 text-blue-700',
-                'dark:bg-blue-950/40 dark:text-blue-400',
-            ];
+            return 'default';
 
         case 'purchase':
-            return [
-                'bg-green-50 text-green-700',
-                'dark:bg-green-950/40 dark:text-green-400',
-            ];
+            return 'secondary';
 
         case 'issue':
-            return [
-                'bg-orange-50 text-orange-700',
-                'dark:bg-orange-950/40 dark:text-orange-400',
-            ];
+            return 'destructive';
 
         case 'adjustment':
-            return [
-                'bg-slate-50 text-slate-700',
-                'dark:bg-slate-950/40 dark:text-slate-400',
-            ];
+            return 'outline';
+
+        default:
+            return 'secondary';
     }
 };
+
+/*
+|--------------------------------------------------------------------------
+| Transaction Type Column
+|--------------------------------------------------------------------------
+*/
 
 export const createTransactionTypeColumn = <
     TData,
     TType extends string = ToolTransactionType,
 >(
-    options: {
-        accessorKey: string;
-        header?: string;
-        size?: number;
-        getType: (row: TData) => TransactionTypeOption<TType> | null | undefined;
-    },
-) =>
-    createColumn<TData, string>({
-        accessorKey: options.accessorKey,
-        header: options.header ?? 'Type',
-        ...(options.size !== undefined
-            ? {
-                size: options.size,
-                minSize: options.size,
-                maxSize: options.size,
-            }
-            : {}),
+    options: TransactionTypeColumnOptions<TData, TType>,
+) => {
+    const {
+        accessorKey = 'type',
+        header = 'Type',
+        align = 'center',
+        getType,
+        getVariant,
+    } = options;
+
+    return createColumn<TData, string>({
+        accessorKey,
+        header,
+        size: COLUMN_DEFAULTS.status.size,
+        minSize: COLUMN_DEFAULTS.status.minSize,
+        maxSize: COLUMN_DEFAULTS.status.maxSize,
+        align,
         sortable: true,
         cell: ({ row }) => {
-            const typeOption = options.getType(row.original);
+            const typeOption = getType(row.original);
             const type = typeOption?.value;
 
             if (!type) {
+                return '—';
+            }
+
+            const variant = getVariant
+                ? getVariant(type)
+                : getTypeVariant(type as ToolTransactionType);
+
+            return h(
+                'div',
+                {
+                    class: [
+                        'flex w-full',
+                        align === 'left'
+                            ? 'justify-start'
+                            : align === 'right'
+                                ? 'justify-end'
+                                : 'justify-center',
+                    ],
+                },
+                [
+                    h(
+                        Badge,
+                        {
+                            variant,
+                            class: 'text-sm! font-normal! capitalize',
+                        },
+                        () => typeOption.label ?? type,
+                    ),
+                ],
+            );
+        },
+    });
+};
+
+/*
+|--------------------------------------------------------------------------
+| Transaction Quantity Column
+|--------------------------------------------------------------------------
+*/
+
+export const createTransactionQuantityColumn = <TData>(
+    options: TransactionQuantityColumnOptions<TData>,
+) => {
+    const {
+        accessorKey = 'quantity',
+        header = 'Quantity',
+        align = 'center',
+        getQuantity,
+    } = options;
+
+    return createColumn<TData, number>({
+        accessorKey,
+        header,
+        size: COLUMN_DEFAULTS.quantity.size,
+        minSize: COLUMN_DEFAULTS.quantity.minSize,
+        maxSize: COLUMN_DEFAULTS.quantity.maxSize,
+        align,
+        sortable: true,
+        cell: ({ row }) => {
+            const quantity = getQuantity(row.original);
+
+            if (quantity === null || quantity === undefined) {
                 return '—';
             }
 
@@ -70,44 +166,19 @@ export const createTransactionTypeColumn = <
                 'span',
                 {
                     class: [
-                        'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium',
-                        getTypeClass(type as ToolTransactionType),
-                    ],
-                },
-                typeOption.label ?? type,
-            );
-        },
-    });
-
-export const createTransactionQuantityColumn = <TData>(
-    options: {
-        getQuantity: (row: TData) => number;
-        size?: number;
-    },
-) =>
-    createColumn<TData, number>({
-        accessorKey: 'quantity',
-        header: 'Quantity',
-        ...(options.size !== undefined
-            ? {
-                size: options.size,
-                minSize: options.size,
-                maxSize: options.size,
-            }
-            : {}),
-        sortable: true,
-        cell: ({ row }) => {
-            const quantity = options.getQuantity(row.original);
-
-            return h(
-                'span',
-                {
-                    class:
+                        'block min-w-0 whitespace-normal break-words text-sm',
+                        align === 'left'
+                            ? 'text-left'
+                            : align === 'right'
+                                ? 'text-right'
+                                : 'text-center',
                         quantity < 0
                             ? 'font-medium text-destructive'
-                            : undefined,
+                            : 'font-normal',
+                    ],
                 },
                 String(quantity),
             );
         },
     });
+};

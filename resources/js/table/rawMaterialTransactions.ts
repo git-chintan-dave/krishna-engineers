@@ -31,6 +31,7 @@ export const createRawMaterialTransactionColumns = (
             header: 'Section',
             ...COLUMN_DEFAULTS.flexiblePrimaryColumn,
             sortable: true,
+            primary: true,
         }),
 
         createColumn<RawMaterialTransaction, string>({
@@ -39,26 +40,24 @@ export const createRawMaterialTransactionColumns = (
             header: 'Section Size',
             ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
+            primary: true,
         }),
 
         createTransactionTypeColumn<RawMaterialTransaction>({
             accessorKey: 'type',
-            size: 140,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             getType: (row) => row.type,
         }),
 
         createTransactionQuantityColumn<RawMaterialTransaction>({
             getQuantity: (row) => row.quantity,
-            size: 120,
         }),
 
         createColumn<RawMaterialTransaction, RawMaterialTransaction['user']>({
             accessorKey: 'user.name',
             sortKey: 'user.name',
             header: 'User',
-            size: 180,
-            minSize: 180,
-            maxSize: 180,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
         }),
 

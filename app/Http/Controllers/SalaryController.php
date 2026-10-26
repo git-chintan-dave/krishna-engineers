@@ -192,11 +192,14 @@ class SalaryController extends Controller
         return response()->json($preview);
     }
 
-    public function generateLastMonth(
+    public function generateSalary(
         SalaryService $salaryService,
+        ?int $userId = null,
     ): RedirectResponse {
         try {
-            $result = $salaryService->generateForAllEmployees();
+            $result = $salaryService->generateForEmployees(
+                userId: $userId,
+            );
 
             return $this->successResponse(
                 'generated',
@@ -205,6 +208,36 @@ class SalaryController extends Controller
                     $result['generated'],
                     $result['skipped'],
                 ),
+            );
+        } catch (RuntimeException $e) {
+            return $this->errorResponse(
+                'generated',
+                $e->getMessage(),
+            );
+        } catch (Throwable $e) {
+            report($e);
+
+            return $this->errorResponse('generated');
+        }
+    }
+
+    public function regenerate(
+        Salary $salary,
+        SalaryService $salaryService,
+    ): RedirectResponse {
+        try {
+            if ($salary->status === 'paid') {
+                return $this->errorResponse(
+                    'generated',
+                    'Paid salaries cannot be regenerated.',
+                );
+            }
+
+            $salaryService->regenerate($salary);
+
+            return $this->successResponse(
+                'generated',
+                'Salary regenerated successfully.',
             );
         } catch (RuntimeException $e) {
             return $this->errorResponse(

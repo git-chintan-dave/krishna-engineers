@@ -22,6 +22,7 @@ export const createToolColumns = (handleDelete: (uuid: string) => void) =>
             header: 'Name',
             ...COLUMN_DEFAULTS.flexiblePrimaryColumn,
             sortable: true,
+            primary: true,
         }),
 
         createColumn({
@@ -30,6 +31,7 @@ export const createToolColumns = (handleDelete: (uuid: string) => void) =>
             header: 'Type',
             ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
+            align: 'center',
         }),
 
         createColumn({
@@ -37,6 +39,7 @@ export const createToolColumns = (handleDelete: (uuid: string) => void) =>
             header: 'Quantity',
             ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
+            align: 'center',
         }),
 
         createStatusColumn(),

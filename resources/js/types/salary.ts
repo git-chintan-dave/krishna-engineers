@@ -22,6 +22,7 @@ export type Salary = {
 
     salary_period_start_formatted: string;
     salary_period_end_formatted: string;
+    salary_period_formatted: string;
 
     base_salary: string;
     base_salary_formatted: string;

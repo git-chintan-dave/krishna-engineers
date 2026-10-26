@@ -161,6 +161,44 @@ const finalPayable = computed(() =>
 
 const hasAdjustment = computed(() => adjustment.value > 0);
 
+
+const basePay = computed(() => baseSalary.value * workingDays.value);
+
+const salarySummaryItems = computed(() => [
+    {
+        label: 'Base salary',
+        detail: `${formatCurrency(baseSalary.value)} × ${workingDays.value} days`,
+        amount: basePay.value,
+        type: 'positive' as const,
+    },
+    {
+        label: 'Incentive',
+        amount: incentive.value,
+        type: 'positive' as const,
+    },
+    {
+        label: 'Adjustment',
+        amount: adjustment.value,
+        type: 'adjustment' as const,
+    },
+    {
+        label: 'UPAD',
+        amount: -upad.value,
+        type: 'deduction' as const,
+    },
+    {
+        label: 'Paid loan',
+        amount: -paidLoan.value,
+        type: 'deduction' as const,
+    },
+    {
+        label: 'Deduction',
+        amount: -deduction.value,
+        type: 'deduction' as const,
+    },
+]);
+
+
 /*
 |--------------------------------------------------------------------------
 | Formatting
@@ -240,6 +278,8 @@ const loadPreview = async (): Promise<void> => {
         if (requestId !== previewRequestId) {
             return;
         }
+
+        console.log('response.data', response.data)
 
         previewData.value = response.data;
 
@@ -508,34 +548,74 @@ watch(
                 </FormSection>
 
                 <!-- Salary Summary -->
+
+                <!-- Salary Summary -->
                 <FormSection
                     description="The amount updates automatically as you change the adjustments or late days."
                     title="Salary Summary"
                 >
                     <div class="rounded-xl border bg-muted/30 p-5">
-                        <div
-                            class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-                        >
-                            <div class="min-w-0">
-                                <p class="text-sm font-medium">
-                                    {{ salaryPage.form.finalPayableLabel }}
-                                </p>
+                        <div class="space-y-4">
+                            <div
+                                v-for="item in salarySummaryItems"
+                                :key="item.label"
+                                class="flex items-start justify-between gap-4"
+                            >
+                                <div class="min-w-0">
+                                    <p class="text-sm font-medium">
+                                        {{ item.label }}
+                                    </p>
 
-                                <p class="mt-1 text-sm text-muted-foreground">
-                                    Base salary × payable days + incentive +
-                                    adjustment − UPAD − paid loan − deduction.
+                                    <p
+                                        v-if="'detail' in item"
+                                        class="mt-0.5 text-xs text-muted-foreground"
+                                    >
+                                        {{ item.detail }}
+                                    </p>
+                                </div>
+
+                                <p
+                                    class="shrink-0 text-sm font-medium tabular-nums"
+                                    :class="{
+                                        'text-green-600 dark:text-green-400':
+                                            item.type === 'positive' ||
+                                            (item.type === 'adjustment' && item.amount > 0),
+                                        'text-destructive':
+                                            item.type === 'deduction' || item.amount < 0,
+                                    }"
+                                >
+                                    <template v-if="item.amount > 0">+</template>
+                                    <template v-else-if="item.amount < 0">−</template>
+                                    ₹{{ formatCurrency(Math.abs(item.amount)) }}
                                 </p>
                             </div>
 
-                            <div class="flex shrink-0 items-center gap-2">
-                                <IndianRupee
-                                    aria-hidden="true"
-                                    class="size-5 text-muted-foreground"
-                                />
+                            <div class="border-t pt-4">
+                                <div
+                                    class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                                >
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-medium">
+                                            {{ salaryPage.form.finalPayableLabel }}
+                                        </p>
 
-                                <p class="text-2xl font-semibold tabular-nums">
-                                    {{ formatCurrency(finalPayable) }}
-                                </p>
+                                        <p class="mt-1 text-xs text-muted-foreground">
+                                            {{ workingDays }} payable days ·
+                                            {{ attendanceDays }} attendance days
+                                        </p>
+                                    </div>
+
+                                    <div class="flex shrink-0 items-center gap-2">
+                                        <IndianRupee
+                                            aria-hidden="true"
+                                            class="size-5 text-muted-foreground"
+                                        />
+
+                                        <p class="text-2xl font-semibold tabular-nums">
+                                            {{ formatCurrency(finalPayable) }}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -14,7 +14,9 @@ type AttendanceRecord = {
     end_at?: string | null;
     start_at_formatted?: string | null;
     end_at_formatted?: string | null;
+    total_working_seconds_formatted?: string | null;
     break_seconds_formatted?: string | null;
+    effective_working_seconds_formatted?: string | null;
     undertime_seconds_formatted?: string | null;
 };
 
@@ -219,16 +221,22 @@ watch(open, (isOpen) => {
                                     Date
                                 </th>
                                 <th class="px-4 py-3 font-medium">
-                                    Start
+                                    Clock In
                                 </th>
                                 <th class="px-4 py-3 font-medium">
-                                    End
+                                    Clock Out
                                 </th>
                                 <th class="px-4 py-3 font-medium">
-                                    Break
+                                    Total Hours
                                 </th>
                                 <th class="px-4 py-3 font-medium">
-                                    Undertime
+                                    Break Time
+                                </th>
+                                <th class="px-4 py-3 font-medium">
+                                    Effective Hours
+                                </th>
+                                <th class="px-4 py-3 font-medium">
+                                    Late By
                                 </th>
                             </tr>
                             </thead>
@@ -260,7 +268,19 @@ watch(open, (isOpen) => {
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3">
                                     {{
+                                        record.total_working_seconds_formatted ??
+                                        '—'
+                                    }}
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-3">
+                                    {{
                                         record.break_seconds_formatted ??
+                                        '—'
+                                    }}
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-3">
+                                    {{
+                                        record.effective_working_seconds_formatted ??
                                         '—'
                                     }}
                                 </td>
@@ -275,12 +295,6 @@ watch(open, (isOpen) => {
                         </table>
                     </div>
                 </div>
-
-                <footer
-                    class="border-t px-5 py-3 text-xs text-muted-foreground"
-                >
-                    Showing up to 50 records, newest first.
-                </footer>
             </section>
         </div>
     </Teleport>

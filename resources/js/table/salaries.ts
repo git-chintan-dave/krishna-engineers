@@ -1,13 +1,13 @@
-import { router } from '@inertiajs/vue3';
-import { createColumnHelper } from '@tanstack/vue-table';
+import {router} from '@inertiajs/vue3';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit, markAsPaid, show } from '@/routes/salaries';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import { createStatusColumn } from '@/table/columns/statusColumn';
-import { createColumn } from '@/table/helpers/createColumn';
-import { COLUMN_DEFAULTS } from '@/table/constants/columns';
-import type { Salary } from '@/types/salary';
+import {edit, markAsPaid, show, regenerate} from '@/routes/salaries';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createStatusColumn} from '@/table/columns/statusColumn';
+import {createColumn} from '@/table/helpers/createColumn';
+import {COLUMN_DEFAULTS} from '@/table/constants/columns';
+import type {Salary} from '@/types/salary';
 
 const columnHelper = createColumnHelper<any, Salary>();
 
@@ -21,37 +21,26 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'user.name',
             sortKey: 'user.name',
             header: 'Employee',
-            ...COLUMN_DEFAULTS.primaryColumn,
+            ...COLUMN_DEFAULTS.mediumColumn,
             sortable: true,
+            primary: true,
         }),
 
         createColumn<Salary, string>({
-            accessorKey: 'salary_period_start',
+            accessorKey: 'salary_period_formatted',
             sortKey: 'salary_period_start',
             header: 'Salary Period',
-            size: 205,
-            minSize: 205,
-            maxSize: 205,
+            ...COLUMN_DEFAULTS.ultraWideColumn,
             sortable: true,
+            primary: true,
             align: 'center',
-            cell: ({ row }) => {
-                const start =
-                    row.original.salary_period_start_formatted ?? '—';
-
-                const end =
-                    row.original.salary_period_end_formatted ?? '—';
-
-                return `${start} - ${end}`;
-            },
         }),
 
         createColumn({
             accessorKey: 'working_days',
             sortKey: 'working_days',
             header: 'Payable Days',
-            size: 125,
-            minSize: 125,
-            maxSize: 125,
+            ...COLUMN_DEFAULTS.mediumColumn,
             sortable: true,
             align: 'center',
         }),
@@ -60,9 +49,7 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'base_salary_formatted',
             sortKey: 'base_salary',
             header: 'Base Salary',
-            size: 140,
-            minSize: 140,
-            maxSize: 140,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
             align: 'center',
         }),
@@ -71,9 +58,7 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'incentive_formatted',
             sortKey: 'incentive',
             header: 'Incentive',
-            size: 125,
-            minSize: 125,
-            maxSize: 125,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
             align: 'center',
         }),
@@ -82,9 +67,7 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'deduction_formatted',
             sortKey: 'deduction',
             header: 'Deduction',
-            size: 125,
-            minSize: 125,
-            maxSize: 125,
+            ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
             align: 'center',
         }),
@@ -93,9 +76,7 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             accessorKey: 'final_payable_formatted',
             sortKey: 'final_payable',
             header: 'Final Payable',
-            size: 155,
-            minSize: 155,
-            maxSize: 155,
+            ...COLUMN_DEFAULTS.mediumColumn,
             sortable: true,
             align: 'center',
         }),
@@ -109,13 +90,19 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             editUrl: (uuid) => edit(uuid).url,
             detailsUrl: (uuid) => show(uuid).url,
             markAsPaidUrl: (uuid) => markAsPaid(uuid).url,
+            regenerateUrl: (uuid) => regenerate(uuid).url,
             resourceName: 'salary',
             handleDelete,
             handleMarkAsPaid: (uuid) => {
                 router.post(markAsPaid(uuid).url);
             },
+            handleRegenerate: (uuid) => {
+                router.post(regenerate(uuid).url);
+            },
             showEdit: (row) => row.status === 'draft',
             showMarkAsPaid: (row) => row.status === 'draft',
             showDelete: (row) => row.status === 'draft',
+            showRegenerate: (row) => row.status !== 'paid',
+            ...COLUMN_DEFAULTS.wideColumn,
         }),
     ]);

@@ -15,10 +15,22 @@ export const COLUMN_DEFAULTS = {
         minSize: 200,
     },
 
+    smallColumn: {
+        size: 120,
+        minSize: 120,
+        maxSize: 120,
+    },
+
     secondaryColumn: {
         size: 140,
         minSize: 140,
         maxSize: 140,
+    },
+
+    mediumColumn: {
+        size: 160,
+        minSize: 160,
+        maxSize: 160,
     },
 
     wideColumn: {
@@ -33,6 +45,18 @@ export const COLUMN_DEFAULTS = {
         maxSize: 200,
     },
 
+    ultraWideColumn: {
+        size: 220,
+        minSize: 220,
+        maxSize: 220,
+    },
+
+    extraExtraWideColumn: {
+        size: 240,
+        minSize: 240,
+        maxSize: 240,
+    },
+
     image: {
         header: 'Image',
         size: 80,
@@ -45,6 +69,13 @@ export const COLUMN_DEFAULTS = {
         size: 100,
         minSize: 100,
         maxSize: 100,
+    },
+
+    quantity: {
+        header: 'Quantity',
+        size: 120,
+        minSize: 120,
+        maxSize: 120,
     },
 
     date: {
