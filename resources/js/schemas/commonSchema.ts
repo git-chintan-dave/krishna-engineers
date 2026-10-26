@@ -7,6 +7,14 @@ export const optionalText = (label: string) =>
         .nullable()
         .optional();
 
+export const optionalLongText = (label: string) =>
+    z
+        .string()
+        .max(5000, `${label} must not exceed 5000 characters.`)
+        .nullable()
+        .optional();
+
+
 export const requiredText = (label: string) =>
     z
         .string()

@@ -1,7 +1,8 @@
-import { z } from 'zod';
+import {z} from 'zod';
 
 import {
     durationSecondsSchema,
+    optionalLongText,
     requiredDropdown,
     requiredNonNegativeNumber,
     requiredStringDropdown,
@@ -21,11 +22,7 @@ export const operatorWorkLogSchema = z
         ),
         quantity: requiredNonNegativeNumber('Quantity'),
         rejection_quantity: requiredNonNegativeNumber('Rejection quantity'),
-        remarks: z
-            .string()
-            .max(5000, 'Remarks must not exceed 5000 characters.')
-            .nullable()
-            .optional(),
+        remarks: optionalLongText('Remarks'),
     })
     .superRefine((data, ctx) => {
         if (
