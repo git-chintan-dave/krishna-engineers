@@ -32,7 +32,11 @@ class PartRequest extends FormRequest
                     ->ignore($part),
             ],
 
-            'section_id' => [],
+            'section_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('sections', 'id'),
+            ],
 
             'image' => [
                 'nullable',

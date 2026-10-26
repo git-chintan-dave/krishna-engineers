@@ -78,7 +78,6 @@ const handleImageRemove = (): void => {
                 <AppField
                     :label="partPage.form.sectionLabel"
                     input-id="part-section"
-                    required
                 >
                     <AppSectionSelect
                         id="part-section"

@@ -12,6 +12,8 @@ import type {Salary} from '@/types/salary';
 
 const props = defineProps<{
     salary: Salary;
+    show_production_efficiency: boolean;
+    production_efficiency: string;
 }>();
 
 defineOptions({
@@ -147,8 +149,11 @@ const goBack = (): void => {
 
                 <!-- Employee Summary -->
                 <div class="border-b px-6 py-5 sm:px-8 print:px-5 print:py-3">
-                    <div class="grid grid-cols-3 items-center">
-                        <div class="min-w-0 text-left">
+                    <div
+                        class="grid items-center"
+                        :class="show_production_efficiency ? 'grid-cols-4' : 'grid-cols-3'"
+                    >
+                        <div class="min-w-0 text-center">
                             <p
                                 class="text-xs font-medium tracking-wide text-muted-foreground uppercase print:text-[10px]"
                             >
@@ -176,7 +181,7 @@ const goBack = (): void => {
                             </p>
                         </div>
 
-                        <div class="min-w-0 text-right">
+                        <div class="min-w-0 text-center">
                             <p
                                 class="text-xs font-medium tracking-wide text-muted-foreground uppercase print:text-[10px]"
                             >
@@ -187,6 +192,20 @@ const goBack = (): void => {
                                 class="mt-1 text-sm font-semibold print:mt-0.5 print:text-xs"
                             >
                                 {{ salary.working_days }}
+                            </p>
+                        </div>
+
+                        <div class="min-w-0 text-center" v-if="show_production_efficiency">
+                            <p
+                                class="text-xs font-medium tracking-wide text-muted-foreground uppercase print:text-[10px]"
+                            >
+                                Production efficiency
+                            </p>
+
+                            <p
+                                class="mt-1 text-sm font-semibold print:mt-0.5 print:text-xs"
+                            >
+                                {{ production_efficiency }}
                             </p>
                         </div>
                     </div>

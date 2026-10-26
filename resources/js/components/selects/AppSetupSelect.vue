@@ -58,19 +58,19 @@ const loading = ref(false);
 */
 
 const fetchSetups = async (): Promise<void> => {
-    if (!props.partId) {
-        options.value = [];
-        return;
-    }
-
     loading.value = true;
 
     try {
-        const params = new URLSearchParams({
-            part_id: String(props.partId),
-        });
+        const params = new URLSearchParams();
 
-        const response = await fetch(`/lookups/setups?${params.toString()}`);
+        if (props.partId) {
+            params.set('part_id', String(props.partId));
+        }
+
+        const query = params.toString();
+        const url = query ? `/lookups/setups?${query}` : '/lookups/setups';
+
+        const response = await fetch(url);
 
         if (!response.ok) {
             throw new Error('Failed to fetch setups.');
@@ -81,11 +81,10 @@ const fetchSetups = async (): Promise<void> => {
         options.value = Array.isArray(data)
             ? data
             : Array.isArray(data.data)
-              ? data.data
-              : [];
+                ? data.data
+                : [];
     } catch (error) {
         console.error('Failed to load setups:', error);
-
         options.value = [];
     } finally {
         loading.value = false;
@@ -139,7 +138,7 @@ watch(
 <template>
     <AppSelect
         :clearable="clearable"
-        :disabled="disabled || loading || !partId"
+        :disabled="disabled || loading"
         :error="error"
         :loading="loading"
         :model-value="modelValue"

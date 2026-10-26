@@ -78,6 +78,9 @@ export const requiredDropdown = (label: string) =>
         .int()
         .positive(`Please select a ${label}.`);
 
+export const optionalDropdown = () =>
+    z.number().int().positive().nullable().optional();
+
 export const requiredStringDropdown = (label: string) =>
     z
         .string({

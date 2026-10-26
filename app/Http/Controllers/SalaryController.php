@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\SalaryStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Concerns\HasCrudResponses;
 use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\Salaries\IndexSalaryRequest;
@@ -11,6 +12,7 @@ use App\Http\Requests\Salaries\SalaryRequest;
 use App\Http\Resources\SalaryResource;
 use App\Models\Salary;
 use App\Models\User;
+use App\Services\OperatorProductionEfficiencyService;
 use App\Services\SalaryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -103,10 +105,22 @@ class SalaryController extends Controller
     {
         Gate::authorize('view', $salary);
 
-        $salary->load('user:id,name,employee_code');
+        $salary->load('user:id,name,employee_code,role');
+
+        $isOperator = $salary->user->role === UserRole::OPERATOR;
+
+        $productionEfficiency = $isOperator
+            ? app(OperatorProductionEfficiencyService::class)->calculateForPeriod(
+                userId: $salary->user_id,
+                startDate: $salary->salary_period_start,
+                endDate: $salary->salary_period_end,
+            )
+            : null;
 
         return Inertia::render('Salaries/Show', [
             'salary' => new SalaryResource($salary),
+            'show_production_efficiency' => $isOperator,
+            'production_efficiency' => $productionEfficiency,
         ]);
     }
 
@@ -183,13 +197,30 @@ class SalaryController extends Controller
 
         $user = User::query()->findOrFail($data['user_id']);
 
+        $periodStart = Carbon::parse($data['salary_period_start']);
+        $periodEnd = Carbon::parse($data['salary_period_end']);
+
         $preview = $this->salaryService->preview(
             user: $user,
-            periodStart: Carbon::parse($data['salary_period_start']),
-            periodEnd: Carbon::parse($data['salary_period_end']),
+            periodStart: $periodStart,
+            periodEnd: $periodEnd,
         );
 
-        return response()->json($preview);
+        $isOperator = $user->role === UserRole::OPERATOR;
+
+        $productionEfficiency = $isOperator
+            ? app(OperatorProductionEfficiencyService::class)->calculateForPeriod(
+                userId: $user->id,
+                startDate: $periodStart,
+                endDate: $periodEnd,
+            )
+            : null;
+
+        return response()->json([
+            ...$preview,
+            'show_production_efficiency' => $isOperator,
+            'production_efficiency' => $productionEfficiency,
+        ]);
     }
 
     public function generateSalary(

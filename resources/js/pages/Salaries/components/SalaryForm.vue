@@ -35,6 +35,8 @@ type SalaryPreview = {
     deduction_rate: string | number;
     deduction: string | number;
     final_payable: string | number;
+    show_production_efficiency: boolean;
+    production_efficiency: number | null;
 };
 
 type SalaryField = keyof SalaryFormData;
@@ -52,12 +54,16 @@ const props = withDefaults(
         errors?: Partial<Record<SalaryField, string>>;
         processing?: boolean;
         submitLabel?: string;
+        showProductionEfficiency?: boolean;
+        productionEfficiency?: number | null;
     }>(),
     {
         salary: undefined,
         errors: () => ({}),
         processing: false,
         submitLabel: 'Save Salary',
+        showProductionEfficiency: false,
+        productionEfficiency: null,
     },
 );
 
@@ -85,6 +91,19 @@ const isEdit = computed(() => Boolean(props.salary));
 | Salary Calculation
 |--------------------------------------------------------------------------
 */
+const showProductionEfficiency = computed(
+    () =>
+        props.salary
+            ? props.showProductionEfficiency
+            : previewData.value?.show_production_efficiency ?? false,
+);
+
+const productionEfficiency = computed(
+    () =>
+        props.salary
+            ? props.productionEfficiency
+            : previewData.value?.production_efficiency ?? null,
+);
 
 const baseSalary = computed(() =>
     Number(props.salary?.base_salary ?? previewData.value?.base_salary ?? 0),
@@ -278,8 +297,6 @@ const loadPreview = async (): Promise<void> => {
         if (requestId !== previewRequestId) {
             return;
         }
-
-        console.log('response.data', response.data)
 
         previewData.value = response.data;
 
@@ -724,6 +741,27 @@ watch(
                             <span class="text-lg font-semibold tabular-nums">
                                 {{ workingDays }}
                             </span>
+                        </div>
+
+                        <div
+                            v-if="showProductionEfficiency"
+                            class="rounded-lg border bg-muted/30 p-4"
+                        >
+                            <div class="flex items-center justify-between gap-4">
+                                <div>
+                                    <p class="text-sm font-medium">
+                                        Production efficiency
+                                    </p>
+
+                                    <p class="mt-1 text-xs text-muted-foreground">
+                                        Production vs effective working time
+                                    </p>
+                                </div>
+
+                                <span class="text-xl font-semibold tabular-nums">
+                                    {{ productionEfficiency }}
+                                </span>
+                            </div>
                         </div>
 
                         <div class="space-y-3 border-t pt-4">

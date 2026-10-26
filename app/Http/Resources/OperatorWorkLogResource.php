@@ -22,8 +22,8 @@ class OperatorWorkLogResource extends JsonResource
 
         $productionEfficiency = $effectiveWorkingSeconds !== null
             ? app(OperatorProductionEfficiencyService::class)->calculate(
-                $dailyProductionSeconds,
-                $effectiveWorkingSeconds,
+                productionSeconds: $dailyProductionSeconds,
+                effectiveWorkingSeconds: $effectiveWorkingSeconds,
             )
             : null;
 

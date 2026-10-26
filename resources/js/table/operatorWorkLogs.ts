@@ -123,11 +123,6 @@ export const createOperatorWorkLogColumns = (
             minSize: 140,
             maxSize: 140,
             align: 'center',
-            cell: ({ getValue }) => {
-                const efficiency = getValue();
-
-                return efficiency == null ? '—' : `${efficiency.toFixed(2)}%`;
-            },
         }),
 
         ...(canManage

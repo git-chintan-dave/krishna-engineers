@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import {
+    optionalDropdown,
     optionalImage,
     optionalText,
     removeImageSchema,
@@ -12,7 +13,7 @@ import {
 export const partSchema = z.object({
     name: requiredText('Part name'),
     new_part_name: optionalText('New part name'),
-    section_id: requiredDropdown('section'),
+    section_id: optionalDropdown(),
     cutting_size: optionalText('Cutting size'),
     part_weight: optionalText('Part weight'),
     raw_material_weight: optionalText('Raw material weight'),

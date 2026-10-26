@@ -99,7 +99,6 @@ const handleImageRemove = (): void => {
                             frontendErrors.setup_id ?? props.errors.setup_id
                         "
                         :icon="Settings2"
-                        :part-id="props.form.part_id"
                         :placeholder="partSetupPage.form.setupPlaceholder"
                         clearable
                         searchable
