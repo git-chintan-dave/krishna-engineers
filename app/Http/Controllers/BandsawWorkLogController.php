@@ -50,19 +50,23 @@ class BandsawWorkLogController extends Controller
                 'part',
                 'sectionSize.section',
             ])
-            ->when($isBandsaw, fn (Builder $query): Builder => $query->forUser($user->id))
             ->when(
-                ! $isBandsaw,
-                fn (Builder $query): Builder => $query->filterQuery($filters),
+                $isBandsaw,
+                fn (Builder $query): Builder => $query->forUser($user->id),
             )
-            ->when($isBandsaw, fn (Builder $query): Builder => $query->filterQuery(
-                array_diff_key($filters, ['user_id' => true]),
-            ))
-            ->when($filters['section_id'] ?? null, fn (Builder $query, int $sectionId): Builder => $query
-                ->whereHas(
+            ->filterQuery(
+                $isBandsaw
+                    ? array_diff_key($filters, ['user_id' => true])
+                    : $filters,
+            )
+            ->when(
+                $filters['section_id'] ?? null,
+                fn (Builder $query, int $sectionId): Builder => $query->whereHas(
                     'sectionSize',
-                    fn (Builder $query): Builder => $query
-                        ->where('section_id', $sectionId),
+                    fn (Builder $query): Builder => $query->where(
+                        'section_id',
+                        $sectionId,
+                    ),
                 ),
             )
             ->paginate($filters['per_page'] ?? 10)

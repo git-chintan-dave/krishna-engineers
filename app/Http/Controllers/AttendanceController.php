@@ -56,15 +56,27 @@ class AttendanceController extends Controller
         $filters = $request->validated();
 
         $user = $request->user();
-        $isAdminOrSupervisor = in_array($user->role, [UserRole::SUPER_ADMIN, UserRole::SUPERVISOR]);
+
+        $isAdminOrSupervisor = in_array(
+            $user->role,
+            [UserRole::SUPER_ADMIN, UserRole::SUPERVISOR],
+            true,
+        );
 
         $attendances = Attendance::query()
             ->with([
                 'user:id,name,employee_code',
                 'breaks',
             ])
-            ->when(!$isAdminOrSupervisor, fn(Builder $query) => $query->forUser($user->id))
-            ->filterQuery($filters)
+            ->when(
+                !$isAdminOrSupervisor,
+                fn (Builder $query) => $query->forUser($user->id),
+            )
+            ->filterQuery(
+                $isAdminOrSupervisor
+                    ? $filters
+                    : array_diff_key($filters, ['user_id' => true]),
+            )
             ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();
 

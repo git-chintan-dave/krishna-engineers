@@ -36,6 +36,7 @@ class OperatorWorkLogController extends Controller
 
         $user = $request->user();
         $filters = $request->validated();
+
         $isOperator = $user->role === UserRole::OPERATOR;
 
         $query = $this->withDailyProductionMetrics(
@@ -45,23 +46,14 @@ class OperatorWorkLogController extends Controller
         );
 
         $operatorWorkLogs = $query
-            // Operators can only see their own work logs.
-            ->when(
-                $isOperator,
-                fn (Builder $query): Builder => $query->forUser($user->id),
-            )
-            // Apply all normal filters through HasFilter.
             ->when(
                 ! $isOperator,
-                fn (Builder $query): Builder => $query->filterQuery($filters),
+                fn (Builder $query) => $query->forUser($user->id),
             )
-            // Operators also use HasFilter, but their user_id must not
-            // override the mandatory user restriction above.
-            ->when(
-                $isOperator,
-                fn (Builder $query): Builder => $query->filterQuery(
-                    array_diff_key($filters, ['user_id' => true]),
-                ),
+            ->filterQuery(
+                $isOperator
+                    ? $filters
+                    : array_diff_key($filters, ['user_id' => true]),
             )
             ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();
