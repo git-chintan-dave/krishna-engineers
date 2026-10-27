@@ -1,96 +1,139 @@
 <script lang="ts" setup>
-import { Form, Head } from '@inertiajs/vue3';
+import {Form, Head, useForm} from '@inertiajs/vue3';
+import {LockKeyhole, UserRound,} from '@lucide/vue';
 
-import InputError from '@/components/InputError.vue';
-import PasswordInput from '@/components/PasswordInput.vue';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import { store } from '@/routes/login';
+import AppInput from '@/components/common/AppInput.vue';
+import AppField from '@/components/form/AppField.vue';
+import {Checkbox} from '@/components/ui/checkbox';
+import {Label} from '@/components/ui/label';
+import {useZodFormValidation} from '@/composables/useZodFormValidation';
+import {loginSchema} from '@/schemas/loginSchema';
+import {store} from '@/routes/login';
+import {Button} from "@/components/ui/button";
+import {Spinner} from '@/components/ui/spinner';
 
 defineOptions({
     layout: {
         title: 'Log in to your account',
-        description: 'Enter your employee code and password below to log in',
+        description:
+            'Enter your employee code and password below to log in',
     },
 });
 
-defineProps<{
+const props = defineProps<{
     status?: string;
 }>();
+
+const form = useForm({
+    employee_code: '',
+    password: '',
+    remember: false,
+});
+
+const { errors: frontendErrors, validate } = useZodFormValidation(
+    loginSchema,
+    () => form,
+);
+
+const handleSubmit = () => {
+    if (!validate()) {
+        return;
+    }
+
+    form.submit(store(), {
+        onFinish: () => {
+            form.reset('password');
+        },
+    });
+};
 </script>
 
 <template>
     <Head title="Log in" />
 
     <div
-        v-if="status"
+        v-if="props.status"
         class="mb-4 text-center text-sm font-medium text-green-600"
     >
-        {{ status }}
+        {{ props.status }}
     </div>
 
-    <Form
-        v-slot="{ errors, processing }"
-        :reset-on-success="['password']"
-        class="flex flex-col gap-6"
-        v-bind="store.form()"
-    >
-        <div class="grid gap-6">
-            <div class="grid gap-2">
-                <Label for="employee_code">Employee Code</Label>
-
-                <Input
-                    id="employee_code"
+    <form class="min-w-0 space-y-6" @submit.prevent="handleSubmit">
+        <div class="grid gap-5">
+            <!-- Employee Code -->
+            <AppField
+                label="Employee Code"
+                input-id="employee-code"
+                required
+            >
+                <AppInput
+                    id="employee-code"
                     v-focus
-                    :tabindex="1"
+                    v-model="form.employee_code"
+                    :disabled="form.processing"
+                    :error="
+                        frontendErrors.employee_code ??
+                        form.errors.employee_code
+                    "
+                    :icon="UserRound"
                     autocomplete="username"
                     inputmode="numeric"
-                    name="employee_code"
-                    placeholder="001"
-                    required
+                    placeholder="0001"
+                    tabindex="1"
                     type="text"
                 />
+            </AppField>
 
-                <InputError :message="errors.employee_code" />
-            </div>
-
-            <div class="grid gap-2">
-                <div class="flex items-center justify-between">
-                    <Label for="password">Password</Label>
-                </div>
-
-                <PasswordInput
-                    id="password"
-                    :tabindex="2"
+            <!-- Password -->
+            <AppField
+                label="Password"
+                input-id="employee-password"
+                required
+            >
+                <AppInput
+                    id="employee-password"
+                    v-model="form.password"
+                    :disabled="form.processing"
+                    :error="
+                        frontendErrors.password ??
+                        form.errors.password
+                    "
+                    :icon="LockKeyhole"
                     autocomplete="current-password"
-                    name="password"
                     placeholder="Password"
-                    required
+                    tabindex="2"
+                    type="password"
                 />
+            </AppField>
 
-                <InputError :message="errors.password" />
-            </div>
+            <!-- Remember Me -->
+            <div class="flex items-center">
+                <Label
+                    class="flex cursor-pointer items-center gap-3"
+                    for="remember"
+                >
+                    <Checkbox
+                        id="remember"
+                        v-model="form.remember"
+                        :disabled="form.processing"
+                        :tabindex="3"
+                    />
 
-            <div class="flex items-center justify-between">
-                <Label class="flex items-center space-x-3" for="remember">
-                    <Checkbox id="remember" :tabindex="3" name="remember" />
                     <span>Remember me</span>
                 </Label>
             </div>
 
+            <!-- Submit -->
             <Button
-                :disabled="processing"
+                :disabled="form.processing"
                 :tabindex="4"
-                class="mt-4 w-full"
+                class="mt-2 w-full"
                 data-test="login-button"
                 type="submit"
             >
-                <Spinner v-if="processing" />
-                Log in
+                <Spinner v-if="form.processing" />
+                <span>Log in</span>
             </Button>
         </div>
-    </Form>
+    </form>
 </template>

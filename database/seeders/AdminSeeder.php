@@ -17,7 +17,7 @@ class AdminSeeder extends Seeder
     {
         User::updateOrCreate(
             [
-                'employee_code' => '001',
+                'employee_code' => '0001',
             ],
             [
                 'name' => 'Dipesh Panchal',

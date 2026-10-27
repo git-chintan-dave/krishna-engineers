@@ -173,3 +173,16 @@ export const optionalImage = z
     .nullable();
 
 export const removeImageSchema = z.boolean().optional();
+
+export const passwordSchema = z
+    .string()
+    .min(8, 'Password must be at least 8 characters long');
+
+export const optionalPasswordSchema = z
+    .string()
+    .optional()
+    .or(z.literal(''))
+    .refine(
+        (value) => !value || value.length >= 8,
+        'Password must be at least 8 characters long',
+    );
