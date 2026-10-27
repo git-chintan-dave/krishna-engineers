@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Exceptions\AttendanceImportException;
 use App\Http\Controllers\Concerns\HasCrudResponses;
 use App\Http\Requests\Attendances\AttendanceImportRequest;
@@ -14,6 +15,7 @@ use App\Models\Attendance;
 use App\Models\User;
 use App\Services\AttendanceService;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -53,11 +55,15 @@ class AttendanceController extends Controller
 
         $filters = $request->validated();
 
+        $user = $request->user();
+        $isAdminOrSupervisor = in_array($user->role, [UserRole::SUPER_ADMIN, UserRole::SUPERVISOR]);
+
         $attendances = Attendance::query()
             ->with([
                 'user:id,name,employee_code',
                 'breaks',
             ])
+            ->when(!$isAdminOrSupervisor, fn(Builder $query) => $query->forUser($user->id))
             ->filterQuery($filters)
             ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();

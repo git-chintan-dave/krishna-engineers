@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\HasFilter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -90,5 +91,9 @@ class Attendance extends Model
             'break_seconds' => 'integer',
             'effective_working_seconds' => 'integer',
         ];
+    }
+
+    public function scopeForUser(Builder $query, int $userId): Builder {
+        return $query->where('user_id', $userId);
     }
 }
