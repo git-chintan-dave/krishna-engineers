@@ -46,14 +46,11 @@ class OperatorWorkLogController extends Controller
         );
 
         $operatorWorkLogs = $query
-            ->when(
-                ! $isOperator,
-                fn (Builder $query) => $query->forUser($user->id),
-            )
+            ->when($isOperator, fn (Builder $query) => $query->forUser($user->id),)
             ->filterQuery(
                 $isOperator
-                    ? $filters
-                    : array_diff_key($filters, ['user_id' => true]),
+                    ? array_diff_key($filters, ['user_id' => true])
+                    : $filters,
             )
             ->paginate($filters['per_page'] ?? 10)
             ->withQueryString();

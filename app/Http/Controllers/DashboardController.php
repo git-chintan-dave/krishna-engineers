@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Services\DashboardService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,10 +15,15 @@ class DashboardController extends Controller
     ): Response {
         $user = $request->user();
 
-        return Inertia::render('Dashboard', [
-            'todayShift' => Inertia::defer(
-                fn () => $dashboardService->todayShift($user),
-            ),
-        ]);
+        $props = $dashboardService->metadataForUser($user);
+
+        foreach ($dashboardService->deferredPropsForUser($user) as $key => $callback) {
+            $props[$key] = Inertia::defer(
+                $callback,
+                'dashboard-'.$key,
+            );
+        }
+
+        return Inertia::render('Dashboard', $props);
     }
 }

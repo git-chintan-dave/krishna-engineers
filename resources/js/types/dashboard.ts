@@ -1,86 +1,162 @@
-export type DashboardTrend = 'up' | 'down' | 'neutral';
+export type DashboardRole =
+    | 'super_admin'
+    | 'supervisor'
+    | 'operator'
+    | 'bandsaw'
+    | 'deburring_packaging';
+
+export type DashboardPeriod = 'today' | 'week' | 'month';
+
+export type AttendanceStatus =
+    | 'not_recorded'
+    | 'on_shift'
+    | 'on_break'
+    | 'completed';
 
 export interface DashboardStat {
     label: string;
-    value: string;
-    change: string;
-    trend: DashboardTrend;
+    value: string | number;
     description: string;
 }
 
-export interface DashboardProductionTrend {
-    date: string;
-    productionQuantity: number;
-    rejectionQuantity: number;
-}
-
-export interface DashboardMachinePerformance {
-    id: number;
-    referenceName: string;
-    name: string;
-    operator: string;
-    parts: number;
-    quantity: number;
-    productionTime: string;
-}
-
-export interface DashboardAttendanceSummary {
-    label: string;
-    value: number;
-}
-
-export interface DashboardOperatorPerformance {
-    id: number;
-    name: string;
-    quantity: number;
-    rejectionQuantity: number;
-    productionTime: string;
-    efficiency: number;
-}
-
-export interface DashboardInventoryAttention {
-    id: number;
-    type: 'low_stock' | 'tool_custody' | 'pending_return';
+export interface DashboardItem {
     title: string;
-    description: string;
+    subtitle?: string | null;
+    meta?: string | null;
 }
 
-export interface DashboardActivity {
-    id: number;
-    description: string;
-    time: string;
-    type:
-        | 'operator_work_log'
-        | 'bandsaw_work_log'
-        | 'tool'
-        | 'attendance'
-        | 'inventory';
+export interface DashboardSection {
+    title: string;
+    emptyMessage?: string;
+    items: DashboardItem[];
 }
 
-export interface DashboardQuickAction {
-    label: string;
-    description: string;
-    href: string;
-    icon: string;
+export interface AttendanceBreakSummary {
+    startAt: string | null;
+    endAt: string | null;
+    durationSeconds: number;
+    isOngoing: boolean;
 }
 
-//
-export interface TodayShift {
-    status: 'present' | 'not_recorded';
+export interface TodayShiftSummary {
+    status: AttendanceStatus;
     statusLabel: string;
     shiftLabel: string;
     checkIn: string | null;
     checkOut: string | null;
-    totalWorkingSeconds: number;
+    totalSeconds: number;
     breakSeconds: number;
     effectiveSeconds: number;
-    undertimeSeconds: number;
-    targetSeconds: number;
-    isComplete: boolean;
-    breaks: {
-        startAt: string | null;
-        endAt: string | null;
-        durationSeconds: number;
-        isOngoing: boolean;
+    activeBreak: boolean;
+    breaks: AttendanceBreakSummary[];
+}
+
+export interface MonthlyAttendanceSummary {
+    presentDays: number;
+    absentDays: number;
+    recordedDays: number;
+}
+
+export interface TrendPoint {
+    label: string;
+    goodQuantity: number;
+    rejectedQuantity: number;
+    totalQuantity: number;
+}
+
+export interface ProductionPeriodSummary {
+    goodQuantity: number;
+    rejectedQuantity: number;
+    totalQuantity: number;
+    productionSeconds: number;
+}
+
+export interface ProductionOverview {
+    today: ProductionPeriodSummary;
+    week: ProductionPeriodSummary;
+    month: ProductionPeriodSummary;
+    dailyTrend: TrendPoint[];
+    monthlyTrend: TrendPoint[];
+}
+
+export interface AttendanceOverview {
+    present: number;
+    notRecorded: number;
+    openShifts: number;
+    totalEmployees: number;
+}
+
+export interface OperatorPerformanceItem {
+    userId: number | string;
+    name: string;
+    employeeCode: string;
+    goodQuantity: number;
+    rejectedQuantity: number;
+    totalQuantity: number;
+    productionSeconds: number;
+    effectiveWorkingSeconds: number;
+    efficiency: number | null;
+    rank: number | null;
+}
+
+export interface OperatorPerformance {
+    today: OperatorPerformanceItem[];
+    week: OperatorPerformanceItem[];
+    month: OperatorPerformanceItem[];
+}
+
+export interface MachinePerformanceItem {
+    machineId: number | string;
+    machineName: string;
+    goodQuantity: number;
+    rejectedQuantity: number;
+    totalQuantity: number;
+    productionSeconds: number;
+}
+
+export interface PartPerformanceItem {
+    partId: number | string;
+    partName: string;
+    goodQuantity: number;
+    rejectedQuantity: number;
+    totalQuantity: number;
+}
+
+export interface InventoryAlert {
+    id: number | string;
+    name: string;
+    currentQuantity: number;
+    threshold: number;
+    type: 'tool' | 'raw_material';
+}
+
+export interface SalaryOverview {
+    lastPaidMonth: string | null;
+    lastPaidAmount: number;
+    currentMonthEstimate: number;
+    pendingAmount: number;
+    paidAmount: number;
+    pendingCount: number;
+    paidCount: number;
+    monthlyTrend: {
+        label: string;
+        paidAmount: number;
+        pendingAmount: number;
     }[];
+}
+
+export interface DashboardPayload {
+    title: string;
+    description: string;
+    todayShift: TodayShiftSummary;
+    monthlyAttendance: MonthlyAttendanceSummary;
+    stats: DashboardStat[];
+    productionOverview: ProductionOverview;
+    attendanceOverview: AttendanceOverview;
+    operatorPerformance: OperatorPerformance;
+    machinePerformance: MachinePerformanceItem[];
+    partPerformance: PartPerformanceItem[];
+    inventoryAlerts: InventoryAlert[];
+    salaryOverview?: SalaryOverview;
+    sections: DashboardSection[];
 }
