@@ -63,3 +63,24 @@ export interface DashboardQuickAction {
     href: string;
     icon: string;
 }
+
+//
+export interface TodayShift {
+    status: 'present' | 'not_recorded';
+    statusLabel: string;
+    shiftLabel: string;
+    checkIn: string | null;
+    checkOut: string | null;
+    totalWorkingSeconds: number;
+    breakSeconds: number;
+    effectiveSeconds: number;
+    undertimeSeconds: number;
+    targetSeconds: number;
+    isComplete: boolean;
+    breaks: {
+        startAt: string | null;
+        endAt: string | null;
+        durationSeconds: number;
+        isOngoing: boolean;
+    }[];
+}

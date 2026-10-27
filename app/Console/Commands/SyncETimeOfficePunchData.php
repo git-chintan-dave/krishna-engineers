@@ -29,29 +29,22 @@ class SyncETimeOfficePunchData extends Command
         try {
             /*
              * DownloadPunchData does not return today's data.
-             *
-             * Therefore the default is the previous complete day.
-             *
-             * Example:
-             * If command runs on 02/09/2026 at 00:30,
-             * it requests 01/09/2026 00:00 → 23:59.
+             * Default to the previous complete day.
              */
             $defaultDate = now()->subDay();
 
             $fromDate = $this->parseDate(
                 $this->option('from')
-                    ?: $defaultDate
-                        ->copy()
-                        ->startOfDay()
-                        ->format('d/m/Y_H:i')
+                    ?: $defaultDate->copy()
+                    ->startOfDay()
+                    ->format('d/m/Y_H:i')
             );
 
             $toDate = $this->parseDate(
                 $this->option('to')
-                    ?: $defaultDate
-                        ->copy()
-                        ->endOfDay()
-                        ->format('d/m/Y_H:i')
+                    ?: $defaultDate->copy()
+                    ->endOfDay()
+                    ->format('d/m/Y_H:i')
             );
         } catch (InvalidArgumentException $exception) {
             $this->error($exception->getMessage());
@@ -70,11 +63,11 @@ class SyncETimeOfficePunchData extends Command
         $config = config('services.etimeoffice', []);
 
         foreach ([
-            'base_url',
-            'corporate_id',
-            'username',
-            'password',
-        ] as $key) {
+                     'base_url',
+                     'corporate_id',
+                     'username',
+                     'password',
+                 ] as $key) {
             if (blank($config[$key] ?? null)) {
                 $this->error(
                     "Missing eTimeOffice configuration: {$key}."
@@ -113,8 +106,7 @@ class SyncETimeOfficePunchData extends Command
                 ->timeout(60)
                 ->retry(3, 1000)
                 ->get(
-                    rtrim($config['base_url'], '/').
-                    '/DownloadPunchData',
+                    rtrim($config['base_url'], '/').'/DownloadPunchData',
                     $parameters,
                 );
 
@@ -123,10 +115,10 @@ class SyncETimeOfficePunchData extends Command
             $data = $response->json();
 
             if (
-                ! is_array($data) ||
-                ($data['Error'] ?? true) !== false ||
-                ! isset($data['PunchData']) ||
-                ! is_array($data['PunchData'])
+                ! is_array($data)
+                || ($data['Error'] ?? true) !== false
+                || ! isset($data['PunchData'])
+                || ! is_array($data['PunchData'])
             ) {
                 $this->error(
                     'The eTimeOffice API returned an unsuccessful or unexpected response.'
@@ -147,17 +139,14 @@ class SyncETimeOfficePunchData extends Command
             report($exception);
 
             $this->error(
-                'Unable to fetch eTimeOffice punch records. '.
-                'Check the application logs.'
+                'Unable to fetch eTimeOffice punch records. Check the application logs.'
             );
 
             return self::FAILURE;
         }
 
-        $punchCount = count($data['PunchData']);
-
         $this->info(
-            "Fetched {$punchCount} raw punch record(s)."
+            'Fetched '.count($data['PunchData']).' raw punch record(s).'
         );
 
         $attendanceRecords = $this->normalizePunchRecords(
@@ -165,9 +154,7 @@ class SyncETimeOfficePunchData extends Command
         );
 
         if ($attendanceRecords === []) {
-            $this->info(
-                'No complete attendance records found.'
-            );
+            $this->info('No valid attendance records found.');
 
             return self::SUCCESS;
         }
@@ -188,14 +175,14 @@ class SyncETimeOfficePunchData extends Command
             ->values();
 
         /*
-         * Load full Attendance models because an existing attendance
-         * must be enriched with the detailed punch information.
+         * Load existing attendance records so detailed punches can
+         * enrich records created by the hourly attendance sync.
          */
         $existingAttendance = Attendance::query()
             ->whereIn('user_id', $userIds)
             ->whereBetween('attendance_date', [
-                $fromDate->format('Y-m-d'),
-                $toDate->format('Y-m-d'),
+                $fromDate->toDateString(),
+                $toDate->toDateString(),
             ])
             ->get()
             ->mapWithKeys(
@@ -213,31 +200,26 @@ class SyncETimeOfficePunchData extends Command
         $failed = 0;
 
         $this->info(
-            'Processing '.
-            count($attendanceRecords).
-            ' attendance record(s)...'
+            'Processing '.count($attendanceRecords).' attendance record(s)...'
         );
 
         foreach ($attendanceRecords as $record) {
             $employeeCode = $record['employee_code'];
+            $attendanceDate = $record['attendance_date'];
 
             /** @var User|null $user */
             $user = $usersByEmployeeCode->get($employeeCode);
 
             if (! $user) {
-                $this->warn(
-                    "Employee not found: {$employeeCode}"
-                );
+                $this->warn("Employee not found: {$employeeCode}");
 
                 $skipped++;
 
                 continue;
             }
 
-            $attendanceDate = $record['attendance_date'];
-
             $key = $this->attendanceKey(
-                $user->id,
+                (int) $user->id,
                 $attendanceDate,
             );
 
@@ -246,10 +228,6 @@ class SyncETimeOfficePunchData extends Command
 
             try {
                 if (! $attendance) {
-                    /*
-                     * If hourly sync has not created the attendance yet,
-                     * detailed punch sync creates it directly with breaks.
-                     */
                     $attendance = $attendanceService->import(
                         user: $user,
                         attendanceDate: $attendanceDate,
@@ -264,10 +242,9 @@ class SyncETimeOfficePunchData extends Command
 
                     $this->line(
                         "Created {$employeeCode} on {$attendanceDate}; ".
+                        'status: '.$this->attendanceStatus($record['end_at']).'; '.
                         'breaks: '.count($record['breaks']).'; '.
-                        'total break: '.
-                        gmdate(
-                            'H:i:s',
+                        'total break: '.$this->formatDuration(
                             $record['break_seconds'],
                         )
                     );
@@ -276,12 +253,12 @@ class SyncETimeOfficePunchData extends Command
                 }
 
                 /*
-                 * Existing attendance was most likely created by the
-                 * hourly DownloadInOutPunchData synchronization.
+                 * Update existing attendance with detailed punches.
                  *
-                 * Enrich it with the authoritative individual punches.
+                 * When the punch count is odd, end_at is deliberately
+                 * set to null because the employee has not clocked out.
                  */
-                $attendanceService->update(
+                $attendance = $attendanceService->update(
                     $attendance,
                     [
                         'start_at' => $record['start_at'],
@@ -290,14 +267,15 @@ class SyncETimeOfficePunchData extends Command
                     $record['breaks'],
                 );
 
+                $existingAttendance->put($key, $attendance);
+
                 $updated++;
 
                 $this->line(
                     "Updated {$employeeCode} on {$attendanceDate}; ".
+                    'status: '.$this->attendanceStatus($record['end_at']).'; '.
                     'breaks: '.count($record['breaks']).'; '.
-                    'total break: '.
-                    gmdate(
-                        'H:i:s',
+                    'total break: '.$this->formatDuration(
                         $record['break_seconds'],
                     )
                 );
@@ -312,8 +290,8 @@ class SyncETimeOfficePunchData extends Command
                 report($exception);
 
                 $this->error(
-                    "Failed to sync {$employeeCode} on ".
-                    "{$attendanceDate}."
+                    "Failed to sync {$employeeCode} on {$attendanceDate}: ".
+                    $exception->getMessage()
                 );
 
                 $failed++;
@@ -332,27 +310,26 @@ class SyncETimeOfficePunchData extends Command
     }
 
     /**
-     * Convert individual eTimeOffice punches into attendance records.
+     * Convert individual punches into attendance records.
      *
-     * Example:
+     * Punch interpretation:
      *
-     * 08:43
-     * 13:00
-     * 13:56
-     * 18:02
+     * 1 punch: IN
+     * 2 punches: IN, OUT
+     * 3 punches: IN, break start, break end
+     * 4 punches: IN, break start, break end, OUT
+     * 5 punches: IN, break start, break end, break start, break end
+     * 6 punches: IN, break start, break end, break start, break end, OUT
      *
-     * becomes:
-     *
-     * IN     = 08:43
-     * Break  = 13:00 → 13:56
-     * OUT    = 18:02
+     * Odd counts mean attendance is still open.
+     * Even counts mean attendance has an OUT punch.
      *
      * @param  array<int, mixed>  $punches
      * @return array<int, array{
      *     employee_code: string,
      *     attendance_date: string,
      *     start_at: Carbon,
-     *     end_at: Carbon,
+     *     end_at: Carbon|null,
      *     breaks: array<int, array{
      *         start_at: Carbon,
      *         end_at: Carbon,
@@ -392,14 +369,13 @@ class SyncETimeOfficePunchData extends Command
             }
 
             if (
-                ! $timestamp ||
-                $timestamp->format('d/m/Y H:i:s') !== $punchDate
+                ! $timestamp
+                || $timestamp->format('d/m/Y H:i:s') !== $punchDate
             ) {
                 continue;
             }
 
-            $attendanceDate = $timestamp->format('Y-m-d');
-
+            $attendanceDate = $timestamp->toDateString();
             $key = $employeeCode.':'.$attendanceDate;
 
             $groups[$key] ??= [
@@ -414,6 +390,10 @@ class SyncETimeOfficePunchData extends Command
         $records = [];
 
         foreach ($groups as $group) {
+            /*
+             * Remove duplicate timestamps and sort chronologically.
+             * API response order is not assumed to be chronological.
+             */
             $timestamps = collect($group['punches'])
                 ->unique(
                     fn (Carbon $timestamp) => $timestamp->timestamp
@@ -426,52 +406,67 @@ class SyncETimeOfficePunchData extends Command
             $count = $timestamps->count();
 
             /*
-             * Every attendance day must have:
-             *
-             * IN
-             * OUT
-             *
-             * and every intermediate pair represents a break.
-             *
-             * Therefore the number of punches must be even.
+             * Zero punches cannot form an attendance record.
+             * A single punch is valid and represents an open attendance.
              */
-            if ($count < 2 || $count % 2 !== 0) {
-                $this->warn(
-                    'Incomplete punch sequence for '.
-                    "{$group['employee_code']} on ".
-                    "{$group['attendance_date']}. ".
-                    "Punch count: {$count}. Skipping."
-                );
-
+            if ($count === 0) {
                 continue;
             }
 
             $startAt = $timestamps->first();
-            $endAt = $timestamps->last();
+
+            if (! $startAt) {
+                continue;
+            }
+
+            /*
+             * An even punch count ends with OUT.
+             * An odd punch count ends with IN, so end_at remains null.
+             */
+            $endAt = $count % 2 === 0
+                ? $timestamps->last()
+                : null;
 
             if (
-                ! $startAt ||
-                ! $endAt ||
-                $endAt->lessThanOrEqualTo($startAt)
+                $endAt !== null
+                && $endAt->lessThanOrEqualTo($startAt)
             ) {
+                $this->warn(
+                    'Invalid attendance sequence for '.
+                    "{$group['employee_code']} on ".
+                    "{$group['attendance_date']}."
+                );
+
                 continue;
             }
 
             $breaks = [];
             $breakSeconds = 0;
 
+            /*
+             * The first punch is IN.
+             *
+             * Every pair after the first punch is a break start/end.
+             * If the count is even, the final punch is OUT and is
+             * therefore excluded from break pairing.
+             *
+             * If the count is odd, the final punch completes a break
+             * and is included in the last pair.
+             */
+            $lastBreakPairIndex = $count - 1;
+
             for (
                 $index = 1;
-                $index < $count - 1;
+                $index < $lastBreakPairIndex;
                 $index += 2
             ) {
                 $breakStart = $timestamps->get($index);
                 $breakEnd = $timestamps->get($index + 1);
 
                 if (
-                    ! $breakStart ||
-                    ! $breakEnd ||
-                    $breakEnd->lessThanOrEqualTo($breakStart)
+                    ! $breakStart
+                    || ! $breakEnd
+                    || $breakEnd->lessThanOrEqualTo($breakStart)
                 ) {
                     $this->warn(
                         'Invalid break sequence for '.
@@ -513,8 +508,8 @@ class SyncETimeOfficePunchData extends Command
         string|Carbon $attendanceDate,
     ): string {
         $date = $attendanceDate instanceof Carbon
-            ? $attendanceDate->format('Y-m-d')
-            : $attendanceDate;
+            ? $attendanceDate->toDateString()
+            : Carbon::parse($attendanceDate)->toDateString();
 
         return "{$userId}:{$date}";
     }
@@ -531,15 +526,33 @@ class SyncETimeOfficePunchData extends Command
         }
 
         if (
-            ! $parsedDate ||
-            $parsedDate->format('d/m/Y_H:i') !== $date
+            ! $parsedDate
+            || $parsedDate->format('d/m/Y_H:i') !== $date
         ) {
             throw new InvalidArgumentException(
-                "Invalid date/time '{$date}'. ".
-                'Expected format: d/m/Y_H:i.'
+                "Invalid date/time '{$date}'. Expected format: d/m/Y_H:i."
             );
         }
 
         return $parsedDate;
+    }
+
+    private function attendanceStatus(?Carbon $endAt): string
+    {
+        return $endAt === null ? 'Open' : 'Completed';
+    }
+
+    private function formatDuration(int $seconds): string
+    {
+        $hours = intdiv($seconds, 3600);
+        $minutes = intdiv($seconds % 3600, 60);
+        $remainingSeconds = $seconds % 60;
+
+        return sprintf(
+            '%02d:%02d:%02d',
+            $hours,
+            $minutes,
+            $remainingSeconds,
+        );
     }
 }
