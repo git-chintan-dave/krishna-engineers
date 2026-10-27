@@ -71,14 +71,6 @@ export interface ProductionPeriodSummary {
     productionSeconds: number;
 }
 
-export interface ProductionOverview {
-    today: ProductionPeriodSummary;
-    week: ProductionPeriodSummary;
-    month: ProductionPeriodSummary;
-    dailyTrend: TrendPoint[];
-    monthlyTrend: TrendPoint[];
-}
-
 export interface AttendanceOverview {
     present: number;
     notRecorded: number;
@@ -130,19 +122,21 @@ export interface InventoryAlert {
     type: 'tool' | 'raw_material';
 }
 
+export interface SalaryMonthlyTrend {
+    label: string;
+    paidAmount: number;
+    pendingAmount: number;
+}
+
 export interface SalaryOverview {
     lastPaidMonth: string | null;
     lastPaidAmount: number;
     currentMonthEstimate: number;
     pendingAmount: number;
-    paidAmount: number;
     pendingCount: number;
+    paidAmount: number;
     paidCount: number;
-    monthlyTrend: {
-        label: string;
-        paidAmount: number;
-        pendingAmount: number;
-    }[];
+    monthlyTrend: SalaryMonthlyTrend[];
 }
 
 export interface DashboardPayload {
@@ -160,3 +154,32 @@ export interface DashboardPayload {
     salaryOverview?: SalaryOverview;
     sections: DashboardSection[];
 }
+
+export interface inventoryAlerts {
+    id: string;
+    type: 'raw_material' | 'tool';
+    name: string;
+    currentQuantity: number;
+    threshold: number;
+}
+
+export type ProductionSummary = {
+    totalQuantity: number;
+    goodQuantity: number;
+    rejectedQuantity: number;
+    productionSeconds: number;
+};
+
+export type ProductionTrendPoint = {
+    label: string;
+    totalQuantity: number;
+    goodQuantity: number;
+    rejectedQuantity: number;
+};
+
+export type ProductionOverview = {
+    today: ProductionSummary;
+    week: ProductionSummary;
+    month: ProductionSummary;
+    dailyTrend: ProductionTrendPoint[];
+};

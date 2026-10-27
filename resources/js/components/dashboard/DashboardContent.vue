@@ -2,6 +2,7 @@
 import {computed} from 'vue';
 
 import type {DashboardPayload, TodayShiftSummary} from '@/types/dashboard';
+import {RefreshCw} from "@lucide/vue";
 
 const props = defineProps<{
     dashboardData?: DashboardPayload;
@@ -93,28 +94,15 @@ function progressClass(status: TodayShiftSummary['status']): string {
 
             <button
                 type="button"
+                class="inline-flex h-9 items-center gap-2 rounded-md border border-border px-3 text-sm font-medium hover:bg-muted disabled:opacity-50"
                 :disabled="refreshing"
-                :aria-busy="refreshing"
-                class="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-60"
                 @click="$emit('refresh')"
             >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                <RefreshCw
                     class="size-4"
                     :class="{ 'animate-spin': refreshing }"
                     aria-hidden="true"
-                >
-                    <path d="M20 7v5h-5" />
-                    <path d="M4 17v-5h5" />
-                    <path d="M5.64 9A7 7 0 0 1 18.36 7L20 12" />
-                    <path d="M4 12l1.64 5A7 7 0 0 0 18.36 15" />
-                </svg>
+                />
 
                 {{ refreshing ? 'Refreshing…' : 'Refresh' }}
             </button>

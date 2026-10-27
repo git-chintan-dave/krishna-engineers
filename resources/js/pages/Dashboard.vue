@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import {computed, ref, watch} from 'vue';
+import {computed, ref, shallowRef, watch} from 'vue';
 import {router, usePage} from '@inertiajs/vue3';
 
+import SuperAdminDashboard from '@/components/dashboard/SuperAdminDashboard.vue';
 import SupervisorDashboard from '@/components/dashboard/SupervisorDashboard.vue';
 import OperatorDashboard from '@/components/dashboard/OperatorDashboard.vue';
 import BandsawDashboard from '@/components/dashboard/BandsawDashboard.vue';
@@ -9,14 +10,18 @@ import DeburringPackagingDashboard from '@/components/dashboard/DeburringPackagi
 
 import type {DashboardPayload, DashboardRole} from '@/types/dashboard';
 
-const page = usePage();
+type DashboardSection =
+    | 'salaryOverview'
+    | 'attendanceOverview'
+    | 'inventoryAlerts'
+    | 'productionOverview'
+    | 'todayShift'
+    | 'monthlyAttendance'
+    | 'stats'
+    | 'recentOperatorLogs'
+    | 'recentBandsawLogs';
 
-const roleDashboards = {
-    supervisor: SupervisorDashboard,
-    operator: OperatorDashboard,
-    bandsaw: BandsawDashboard,
-    deburring_packaging: DeburringPackagingDashboard,
-} satisfies Partial<Record<DashboardRole, unknown>>;
+const page = usePage();
 
 const pageProps = computed(() => page.props as Record<string, any>);
 
@@ -24,12 +29,33 @@ const role = computed(
     () => String(pageProps.value.auth?.user?.role ?? '') as DashboardRole,
 );
 
-const dashboardComponent = computed(() => roleDashboards[role.value] ?? null);
+const roleDashboards = {
+    super_admin: SuperAdminDashboard,
+    supervisor: SupervisorDashboard,
+    operator: OperatorDashboard,
+    bandsaw: BandsawDashboard,
+    deburring_packaging: DeburringPackagingDashboard,
+} satisfies Partial<Record<DashboardRole, unknown>>;
 
-const sectionKeys = computed<string[]>(() => {
-    const common = ['todayShift', 'monthlyAttendance'];
+const dashboardComponent = computed(
+    () => roleDashboards[role.value] ?? null,
+);
+
+const sectionKeys = computed<DashboardSection[]>(() => {
+    const common: DashboardSection[] = [
+        'todayShift',
+        'monthlyAttendance',
+    ];
 
     switch (role.value) {
+        case 'super_admin':
+            return [
+                'salaryOverview',
+                'attendanceOverview',
+                'inventoryAlerts',
+                'productionOverview',
+            ];
+
         case 'supervisor':
             return [
                 ...common,
@@ -40,18 +66,10 @@ const sectionKeys = computed<string[]>(() => {
             ];
 
         case 'operator':
-            return [
-                ...common,
-                'stats',
-                'recentOperatorLogs',
-            ];
+            return [...common, 'stats', 'recentOperatorLogs'];
 
         case 'bandsaw':
-            return [
-                ...common,
-                'stats',
-                'recentBandsawLogs',
-            ];
+            return [...common, 'stats', 'recentBandsawLogs'];
 
         case 'deburring_packaging':
             return common;
@@ -61,18 +79,10 @@ const sectionKeys = computed<string[]>(() => {
     }
 });
 
-/**
- * Reassemble the existing payload expected by role dashboard components.
- * Backend sections are supplied as independent top-level deferred props.
- */
 const dashboardData = computed<DashboardPayload | undefined>(() => {
     const props = pageProps.value;
 
-    const hasDashboardProps = sectionKeys.value.some(
-        (key) => key in props,
-    );
-
-    if (!hasDashboardProps) {
+    if (!sectionKeys.value.some((key) => props[key] !== undefined)) {
         return undefined;
     }
 
@@ -86,26 +96,38 @@ const dashboardData = computed<DashboardPayload | undefined>(() => {
         description: props.description,
         todayShift: props.todayShift,
         monthlyAttendance: props.monthlyAttendance,
-        stats: props.stats,
+        salaryOverview: props.salaryOverview,
+        inventoryAlerts: props.inventoryAlerts,
+        productionOverview: props.productionOverview,
         attendanceOverview: props.attendanceOverview,
+        stats: props.stats,
         sections,
     } as DashboardPayload;
 });
 
 const loading = ref(true);
 const refreshing = ref(false);
-const loadedSections = ref(new Set<string>());
+const loadedSections = shallowRef(new Set<DashboardSection>());
 
 watch(
-    [pageProps, sectionKeys],
-    ([props, keys]) => {
+    [role, pageProps, sectionKeys],
+    ([currentRole, props, keys], previous) => {
+        if (previous && currentRole !== previous[0]) {
+            loadedSections.value = new Set();
+            loading.value = true;
+        }
+
+        const loaded = new Set(loadedSections.value);
+
         for (const key of keys) {
-            if (key in props && props[key] !== undefined) {
-                loadedSections.value.add(key);
+            if (props[key] !== undefined) {
+                loaded.add(key);
             }
         }
 
-        if (keys.length === 0 || keys.every((key) => loadedSections.value.has(key))) {
+        loadedSections.value = loaded;
+
+        if (keys.length === 0 || keys.every((key) => loaded.has(key))) {
             loading.value = false;
         }
     },
@@ -113,13 +135,12 @@ watch(
 );
 
 function refreshSection(section: string): void {
-    if (!sectionKeys.value.includes(section)) {
+    if (!sectionKeys.value.includes(section as DashboardSection)) {
         return;
     }
 
     router.reload({
         only: [section],
-        preserveScroll: true,
         preserveState: true,
     });
 }
@@ -127,7 +148,6 @@ function refreshSection(section: string): void {
 function refreshDashboard(): void {
     router.reload({
         only: sectionKeys.value,
-        preserveScroll: true,
         preserveState: true,
         onStart: () => {
             refreshing.value = true;
@@ -141,20 +161,29 @@ function refreshDashboard(): void {
 </script>
 
 <template>
-    <component
-        :is="dashboardComponent"
-        v-if="dashboardComponent"
-        :dashboard-data="dashboardData"
-        :loading="loading"
-        :refreshing="refreshing"
-        @refresh="refreshDashboard"
-        @refresh-section="refreshSection"
-    />
-
-    <section v-else class="rounded-lg border border-border bg-card p-6">
-        <h1 class="text-lg font-semibold">Dashboard unavailable</h1>
-        <p class="mt-2 text-sm text-muted-foreground">
-            No dashboard is configured for your account role.
-        </p>
-    </section>
+    <main class="w-full min-w-0 space-y-6 overflow-x-hidden p-4 md:p-6">
+        <section v-if="dashboardComponent" class="min-w-0">
+            <component
+                :is="dashboardComponent"
+                :dashboard-data="dashboardData"
+                :salary-overview="pageProps.salaryOverview"
+                :inventory-alerts="pageProps.inventoryAlerts"
+                :production-overview="pageProps.productionOverview"
+                :attendance-overview="pageProps.attendanceOverview"
+                :loading="loading"
+                :refreshing="refreshing"
+                @refresh="refreshDashboard"
+                @refresh-section="refreshSection"
+            />
+        </section>
+        <section
+            v-else
+            class="min-w-0 rounded-lg border border-border bg-card p-6"
+        >
+            <h2 class="text-lg font-semibold">Dashboard unavailable</h2>
+            <p class="mt-2 text-sm text-muted-foreground">
+                No dashboard is configured for your account role.
+            </p>
+        </section>
+    </main>
 </template>

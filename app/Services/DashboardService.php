@@ -6,6 +6,9 @@ use App\Enums\Status;
 use App\Models\Attendance;
 use App\Models\BandsawWorkLog;
 use App\Models\OperatorWorkLog;
+use App\Models\Salary;
+use App\Models\SectionSize;
+use App\Models\Tool;
 use App\Models\User;
 use BackedEnum;
 use Carbon\Carbon;
@@ -20,12 +23,19 @@ class DashboardService
         private readonly OperatorProductionEfficiencyService $efficiencyService,
     ) {}
 
-    /**
-     * Return immediately available dashboard metadata.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard metadata and deferred props
+    |--------------------------------------------------------------------------
+    */
+
     public function metadataForUser(User $user): array
     {
         return match ($this->roleValue($user)) {
+            'super_admin' => [
+                'title' => 'Administration dashboard',
+                'description' => 'Management overview of workforce, production, attendance and operations.',
+            ],
             'supervisor' => [
                 'title' => 'Supervisor dashboard',
                 'description' => 'Workforce attendance and today’s production activity.',
@@ -65,11 +75,16 @@ class DashboardService
         ];
 
         return match ($role) {
+            'super_admin' => [
+                'salaryOverview' => fn (): array => $this->salaryOverview(),
+                'attendanceOverview' => fn (): array => $this->attendanceOverview(),
+                'inventoryAlerts' => fn (): array => $this->inventoryAlerts(),
+                'productionOverview' => fn (): array => $this->productionOverview(),
+            ],
+
             'supervisor' => [
                 ...$attendanceProps,
-
                 'stats' => fn (): array => $this->supervisorStats(),
-
                 'attendanceOverview' => fn (): array => $this->attendanceOverview(),
 
                 'recentOperatorLogs' => fn (): array => [
@@ -87,7 +102,6 @@ class DashboardService
 
             'operator' => [
                 ...$attendanceProps,
-
                 'stats' => fn (): array => $this->operatorStats($user, $today),
 
                 'recentOperatorLogs' => fn (): array => [
@@ -102,7 +116,6 @@ class DashboardService
 
             'bandsaw' => [
                 ...$attendanceProps,
-
                 'stats' => fn (): array => $this->bandsawStats($user, $today),
 
                 'recentBandsawLogs' => fn (): array => [
@@ -123,7 +136,7 @@ class DashboardService
 
     /*
     |--------------------------------------------------------------------------
-    | Supervisor stats
+    | Role-specific statistics
     |--------------------------------------------------------------------------
     */
 
@@ -192,12 +205,6 @@ class DashboardService
         ];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Operator stats
-    |--------------------------------------------------------------------------
-    */
-
     private function operatorStats(User $user, string $today): array
     {
         $logs = OperatorWorkLog::query()
@@ -244,12 +251,6 @@ class DashboardService
         ];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Bandsaw stats
-    |--------------------------------------------------------------------------
-    */
-
     private function bandsawStats(User $user, string $today): array
     {
         $logs = BandsawWorkLog::query()
@@ -273,13 +274,14 @@ class DashboardService
 
     /*
     |--------------------------------------------------------------------------
-    | Attendance overview (Supervisor)
+    | Attendance
     |--------------------------------------------------------------------------
     */
 
     private function attendanceOverview(): array
     {
         $today = today()->toDateString();
+        $tomorrow = $this->nextDate($today);
 
         $activeEmployees = User::query()
             ->where('status', Status::ACTIVE->value)
@@ -287,25 +289,28 @@ class DashboardService
 
         $records = Attendance::query()
             ->where('attendance_date', '>=', $today)
-            ->where('attendance_date', '<', $this->nextDate($today));
+            ->where('attendance_date', '<', $tomorrow);
 
-        $present = (clone $records)->distinct()->count('user_id');
-        $openShifts = (clone $records)->whereNull('end_at')->count();
+        $present = (clone $records)
+            ->distinct()
+            ->count('user_id');
+
+        $openShifts = (clone $records)
+            ->whereNull('end_at')
+            ->count();
 
         return [
             'activeEmployees' => $activeEmployees,
+            'totalEmployees' => $activeEmployees,
             'present' => $present,
             'notRecorded' => max(0, $activeEmployees - $present),
             'openShifts' => $openShifts,
-            'attendanceRate' => $this->percentage($present, $activeEmployees),
+            'attendanceRate' => $this->percentage(
+                $present,
+                $activeEmployees,
+            ),
         ];
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Monthly attendance
-    |--------------------------------------------------------------------------
-    */
 
     private function monthlyAttendance(int $userId): array
     {
@@ -345,12 +350,6 @@ class DashboardService
         ];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Today's attendance and shift
-    |--------------------------------------------------------------------------
-    */
-
     private function todayShift(User $user, string $today): array
     {
         $attendance = Attendance::query()
@@ -360,9 +359,7 @@ class DashboardService
             ->where('attendance_date', '<', $this->nextDate($today))
             ->first();
 
-        $shift = $this->enumValue($user->shift);
-
-        $shiftLabel = match ($shift) {
+        $shiftLabel = match ($this->enumValue($user->shift)) {
             'day' => 'Day shift',
             'night' => 'Night shift',
             '8_hr' => '8-hour shift',
@@ -444,7 +441,198 @@ class DashboardService
 
     /*
     |--------------------------------------------------------------------------
-    | Today's operator logs
+    | Production
+    |--------------------------------------------------------------------------
+    */
+
+    private function productionOverview(): array
+    {
+        $today = today();
+
+        $periods = [
+            'today' => [
+                $today->toDateString(),
+                $this->nextDate($today->toDateString()),
+            ],
+            'week' => [
+                $today->copy()->startOfWeek()->toDateString(),
+                $this->nextDate(
+                    $today->copy()->endOfWeek()->toDateString(),
+                ),
+            ],
+            'month' => [
+                $today->copy()->startOfMonth()->toDateString(),
+                $this->nextDate(
+                    $today->copy()->endOfMonth()->toDateString(),
+                ),
+            ],
+        ];
+
+        $summary = [];
+
+        foreach ($periods as $period => [$startDate, $endDate]) {
+            $totals = OperatorWorkLog::query()
+                ->where('work_date', '>=', $startDate)
+                ->where('work_date', '<', $endDate)
+                ->selectRaw('COALESCE(SUM(quantity), 0) AS total_quantity')
+                ->selectRaw('COALESCE(SUM(rejection_quantity), 0) AS rejected_quantity')
+                ->selectRaw('COALESCE(SUM(production_seconds), 0) AS production_seconds')
+                ->first();
+
+            $totalQuantity = (int) $totals->total_quantity;
+            $rejectedQuantity = (int) $totals->rejected_quantity;
+            $goodQuantity = $totalQuantity - $totals->rejected_quantity;
+
+            $summary[$period] = [
+                'totalQuantity' => $totalQuantity,
+                'goodQuantity' => $goodQuantity,
+                'rejectedQuantity' => $rejectedQuantity,
+                'productionSeconds' => (int) $totals->production_seconds,
+            ];
+        }
+
+        $dailyTrend = OperatorWorkLog::query()
+            ->where('work_date', '>=', $periods['month'][0])
+            ->where('work_date', '<', $periods['month'][1])
+            ->select('work_date')
+            ->selectRaw('COALESCE(SUM(quantity), 0) AS total_quantity')
+            ->selectRaw('COALESCE(SUM(quantity), 0) AS good_quantity')
+            ->selectRaw('COALESCE(SUM(rejection_quantity), 0) AS rejected_quantity')
+            ->groupBy('work_date')
+            ->orderBy('work_date')
+            ->get()
+            ->map(fn ($log): array => [
+                'label' => Carbon::parse($log->work_date)->format('d M'),
+                'totalQuantity' => (int) $log->total_quantity,
+                'goodQuantity' => (int) ($log->total_quantity - $log->rejected_quantity),
+                'rejectedQuantity' => (int) $log->rejected_quantity,
+            ])
+            ->values()
+            ->all();
+
+        return [
+            ...$summary,
+            'dailyTrend' => $dailyTrend,
+        ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Inventory
+    |--------------------------------------------------------------------------
+    */
+
+    private function inventoryAlerts(): array
+    {
+        $threshold = (int) config('inventory.low_stock_threshold', 10);
+
+        $rawMaterialAlerts = SectionSize::query()
+            ->with('section')
+            ->where('quantity', '<=', $threshold)
+            ->get()
+            ->map(fn (SectionSize $sectionSize): array => [
+                'id' => 'raw-material-'.$sectionSize->id,
+                'type' => 'raw_material',
+                'name' => collect([
+                    $sectionSize->section?->name,
+                    $sectionSize->size,
+                ])->filter()->implode(' - '),
+                'currentQuantity' => (int) $sectionSize->quantity,
+                'threshold' => $threshold,
+            ]);
+
+        $toolAlerts = Tool::query()
+            ->where('quantity', '<=', $threshold)
+            ->get()
+            ->map(fn (Tool $tool): array => [
+                'id' => 'tool-'.$tool->id,
+                'type' => 'tool',
+                'name' => $tool->name,
+                'currentQuantity' => (int) $tool->quantity,
+                'threshold' => $threshold,
+            ]);
+
+        return $rawMaterialAlerts
+            ->concat($toolAlerts)
+            ->sortBy('currentQuantity')
+            ->values()
+            ->all();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Salary
+    |--------------------------------------------------------------------------
+    */
+
+    private function salaryOverview(): array
+    {
+        $currentMonthStart = now()->startOfMonth();
+        $currentMonthEnd = now()->endOfMonth();
+
+        $salaryMonthStart = $currentMonthStart
+            ->copy()
+            ->subMonthNoOverflow()
+            ->startOfMonth();
+
+        $salaryMonthEnd = $salaryMonthStart->copy()->endOfMonth();
+
+        $sundayCount = $currentMonthStart->diffInDaysFiltered(
+            static fn ($date) => $date->isSunday(),
+            $currentMonthEnd->copy()->addDay(),
+        );
+
+        $workingDays = $currentMonthStart->daysInMonth - $sundayCount;
+
+        $totalEmployeeSalary = User::query()
+            ->whereNotNull('salary')
+            ->sum('salary');
+
+        $currentMonthEstimate = (float) $totalEmployeeSalary * $workingDays;
+
+        $salaryRecords = Salary::query()
+            ->whereDate(
+                'salary_period_start',
+                '<=',
+                $salaryMonthEnd->toDateString(),
+            )
+            ->whereDate(
+                'salary_period_end',
+                '>=',
+                $salaryMonthStart->toDateString(),
+            )
+            ->get([
+                'status',
+                'final_payable',
+            ]);
+
+        $paidSalaries = $salaryRecords->where('status', 'paid');
+        $pendingSalaries = $salaryRecords->where('status', '!=', 'paid');
+
+        $paidAmount = (float) $paidSalaries->sum('final_payable');
+        $pendingAmount = (float) $pendingSalaries->sum('final_payable');
+
+        return [
+            'lastPaidMonth' => $salaryMonthStart->format('F Y'),
+            'lastPaidAmount' => $paidAmount,
+            'currentMonthEstimate' => $currentMonthEstimate,
+            'pendingAmount' => $pendingAmount,
+            'pendingCount' => $pendingSalaries->count(),
+            'paidAmount' => $paidAmount,
+            'paidCount' => $paidSalaries->count(),
+            'monthlyTrend' => [
+                [
+                    'label' => $salaryMonthStart->format('F Y'),
+                    'paidAmount' => $paidAmount,
+                    'pendingAmount' => $pendingAmount,
+                ],
+            ],
+        ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Recent production logs
     |--------------------------------------------------------------------------
     */
 
@@ -458,7 +646,11 @@ class DashboardService
             ->join('parts', 'parts.id', '=', 'operator_work_logs.part_id')
             ->join('setups', 'setups.id', '=', 'operator_work_logs.setup_id')
             ->where('operator_work_logs.work_date', '>=', $date)
-            ->where('operator_work_logs.work_date', '<', $this->nextDate($date))
+            ->where(
+                'operator_work_logs.work_date',
+                '<',
+                $this->nextDate($date),
+            )
             ->when(
                 $userId !== null,
                 fn (Builder $query) => $query->where(
@@ -478,7 +670,7 @@ class DashboardService
                 'operator_work_logs.rejection_quantity',
                 'operator_work_logs.production_seconds',
             ])
-            ->map(fn ($row) => [
+            ->map(fn ($row): array => [
                 'title' => "{$row->part_name} · {$row->machine_name}",
                 'subtitle' => $userId === null
                     ? "{$row->employee_name} ({$row->employee_code}) · {$row->setup_name}"
@@ -491,12 +683,6 @@ class DashboardService
             ])
             ->all();
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Today's bandsaw logs
-    |--------------------------------------------------------------------------
-    */
 
     private function recentBandsawLogs(
         string $date,
@@ -511,9 +697,18 @@ class DashboardService
                 '=',
                 'bandsaw_work_logs.section_size_id',
             )
-            ->join('sections', 'sections.id', '=', 'section_sizes.section_id')
+            ->join(
+                'sections',
+                'sections.id',
+                '=',
+                'section_sizes.section_id',
+            )
             ->where('bandsaw_work_logs.work_date', '>=', $date)
-            ->where('bandsaw_work_logs.work_date', '<', $this->nextDate($date))
+            ->where(
+                'bandsaw_work_logs.work_date',
+                '<',
+                $this->nextDate($date),
+            )
             ->when(
                 $userId !== null,
                 fn (Builder $query) => $query->where(
@@ -531,7 +726,7 @@ class DashboardService
                 'section_sizes.size as section_size',
                 'bandsaw_work_logs.quantity',
             ])
-            ->map(fn ($row) => [
+            ->map(fn ($row): array => [
                 'title' => "{$row->part_name} · {$row->section_name} {$row->section_size}",
                 'subtitle' => $userId === null
                     ? "{$row->employee_name} ({$row->employee_code})"
@@ -543,7 +738,7 @@ class DashboardService
 
     /*
     |--------------------------------------------------------------------------
-    | Helpers
+    | Shared helpers
     |--------------------------------------------------------------------------
     */
 
