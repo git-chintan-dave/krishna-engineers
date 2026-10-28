@@ -11,7 +11,7 @@ import {COLUMN_DEFAULTS} from '@/table/constants/columns';
 
 type SelectColumnOptions<TData = any> = {
     resourceName: string;
-    isSelectable?: (row: TData) => boolean;
+    canSelectRow?: (row: TData) => boolean;
 };
 
 /*
@@ -37,7 +37,7 @@ const CHECKBOX_CLASS = [
 
 export const createSelectColumn = <TData = any>({
                                                     resourceName,
-                                                    isSelectable,
+                                                    canSelectRow,
                                                 }: SelectColumnOptions<TData>) => ({
     id: 'select',
 
@@ -56,21 +56,19 @@ export const createSelectColumn = <TData = any>({
             },
 
             ariaLabel: `Select all ${resourceName}`,
-
             class: CHECKBOX_CLASS,
         }),
 
     cell: ({ row }: any) => {
-        const selectable = isSelectable?.(row.original) ?? true;
-
-        if (!selectable) {
-            return null;
-        }
+        const selectable = canSelectRow?.(row.original) ?? true;
 
         return h(Checkbox, {
             modelValue: row.getIsSelected(),
+            disabled: !selectable,
 
             'onUpdate:modelValue': (value: boolean | 'indeterminate') => {
+                if (!selectable) return;
+
                 row.toggleSelected(!!value);
             },
 
@@ -80,7 +78,7 @@ export const createSelectColumn = <TData = any>({
     },
 
     enableRowSelection: (row: any) =>
-        isSelectable?.(row.original) ?? true,
+        canSelectRow?.(row.original) ?? true,
 
     enableSorting: false,
 });

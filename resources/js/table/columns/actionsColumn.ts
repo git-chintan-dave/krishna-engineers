@@ -1,10 +1,11 @@
-import { Link } from '@inertiajs/vue3';
-import { CheckCircle2, Eye, Pencil, RefreshCw, Trash2 } from '@lucide/vue';
-import { h, withDirectives } from 'vue';
+import {Link} from '@inertiajs/vue3';
+import {CheckCircle2, Eye, Pencil, RefreshCw, Trash2,} from '@lucide/vue';
+import {type Component, h, type VNode} from 'vue';
 
-import { Button } from '@/components/ui/button';
-import vConfirm from '@/directives/confirm';
-import { COLUMN_DEFAULTS } from '@/table/constants/columns';
+import {Button} from '@/components/ui/button';
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '@/components/ui/tooltip';
+import ActionsDropdown from '@/table/ActionsDropdown.vue';
+import {COLUMN_DEFAULTS} from '@/table/constants/columns';
 
 /*
 |--------------------------------------------------------------------------
@@ -12,23 +13,191 @@ import { COLUMN_DEFAULTS } from '@/table/constants/columns';
 |--------------------------------------------------------------------------
 */
 
-type ActionsColumnOptions = {
+type ActionsColumnOptions<TData = unknown> = {
     editUrl: (uuid: string) => string;
+    resourceName: string;
+    handleDelete: (uuid: string) => void;
+
     detailsUrl?: (uuid: string) => string;
     markAsPaidUrl?: (uuid: string) => string;
     regenerateUrl?: (uuid: string) => string;
-    resourceName: string;
-    handleDelete: (uuid: string) => void;
+
     handleMarkAsPaid?: (uuid: string) => void;
     handleRegenerate?: (uuid: string) => void;
-    showDelete?: (row: any) => boolean;
-    showEdit?: (row: any) => boolean;
-    showMarkAsPaid?: (row: any) => boolean;
-    showRegenerate?: (row: any) => boolean;
+
+    showDelete?: (row: TData) => boolean;
+    showEdit?: (row: TData) => boolean;
+    showMarkAsPaid?: (row: TData) => boolean;
+    showRegenerate?: (row: TData) => boolean;
+
     size?: number;
     minSize?: number;
     maxSize?: number;
 };
+
+type ConfirmationOptions = {
+    title: string;
+    description: string;
+    confirmText: string;
+};
+
+type SecondaryAction = {
+    key: string;
+    label: string;
+    icon: Component;
+    confirmation: ConfirmationOptions;
+    action: () => void;
+};
+
+type ActionRecord = {
+    uuid: string;
+    name?: string;
+    user?: {
+        name?: string;
+    };
+};
+
+/*
+|--------------------------------------------------------------------------
+| Constants
+|--------------------------------------------------------------------------
+*/
+
+const ICON_CLASS = 'size-3.5';
+const ICON_BUTTON_CLASS = 'size-8 shrink-0 cursor-pointer';
+
+const TOOLTIP_CONTENT_CLASS = [
+    'z-50 rounded-md border border-border',
+    'bg-popover px-3 py-1.5',
+    'text-xs font-medium text-popover-foreground',
+    'shadow-md',
+];
+
+const ACTION_STYLES = {
+    view: [
+        'bg-slate-50 text-slate-600',
+        'hover:bg-slate-100 hover:text-slate-700',
+        'dark:bg-slate-950/40 dark:text-slate-400',
+        'dark:hover:bg-slate-950/60 dark:hover:text-slate-300',
+    ],
+    edit: [
+        'bg-blue-50 text-blue-600',
+        'hover:bg-blue-100 hover:text-blue-700',
+        'dark:bg-blue-950/40 dark:text-blue-400',
+        'dark:hover:bg-blue-950/60 dark:hover:text-blue-300',
+    ],
+    delete: [
+        'bg-red-50 text-red-600',
+        'hover:bg-red-100 hover:text-red-700',
+        'dark:bg-red-950/40 dark:text-red-400',
+        'dark:hover:bg-red-950/60 dark:hover:text-red-300',
+    ],
+};
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
+
+function renderIcon(icon: Component, label: string): VNode[] {
+    return [
+        h(icon, {
+            class: ICON_CLASS,
+            'aria-hidden': 'true',
+        }),
+        h('span', { class: 'sr-only' }, label),
+    ];
+}
+
+function createIconButton(
+    icon: Component,
+    label: string,
+    colorClass: string[],
+    options: {
+        href?: string;
+        disabled?: boolean;
+        onClick?: () => void;
+    } = {},
+): VNode {
+    const button = h(
+        Button,
+        {
+            type: 'button',
+            variant: 'ghost',
+            size: 'icon',
+            class: [ICON_BUTTON_CLASS, ...colorClass],
+            disabled: options.disabled,
+            'aria-label': label,
+            onClick: (event: MouseEvent) => {
+                event.stopPropagation();
+                options.onClick?.();
+            },
+            ...(options.href ? { asChild: true } : {}),
+        },
+        options.href
+            ? {
+                default: () =>
+                    h(
+                        Link,
+                        { href: options.href! },
+                        {
+                            default: () => renderIcon(icon, label),
+                        },
+                    ),
+            }
+            : {
+                default: () => renderIcon(icon, label),
+            },
+    );
+
+    // Disabled buttons cannot reliably trigger tooltips themselves.
+    const trigger = options.disabled
+        ? h(
+            'span',
+            {
+                class: 'inline-flex',
+                tabindex: 0,
+                'aria-label': label,
+            },
+            [button],
+        )
+        : button;
+
+    return h(
+        TooltipProvider,
+        {},
+        {
+            default: () =>
+                h(
+                    Tooltip,
+                    {},
+                    {
+                        default: () => [
+                            h(
+                                TooltipTrigger,
+                                { asChild: true },
+                                {
+                                    default: () => trigger,
+                                },
+                            ),
+                            h(
+                                TooltipContent,
+                                {
+                                    side: 'top',
+                                    // sideOffset: 6,
+                                    // class: TOOLTIP_CONTENT_CLASS,
+                                },
+                                {
+                                    default: () => label,
+                                },
+                            ),
+                        ],
+                    },
+                ),
+        },
+    );
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -36,23 +205,23 @@ type ActionsColumnOptions = {
 |--------------------------------------------------------------------------
 */
 
-export const createActionsColumn = ({
-    editUrl,
-    detailsUrl,
-    markAsPaidUrl,
-    regenerateUrl,
-    resourceName,
-    handleDelete,
-    handleMarkAsPaid,
-    handleRegenerate,
-    showDelete,
-    showEdit,
-    showMarkAsPaid,
-    showRegenerate,
-    size = COLUMN_DEFAULTS.actions.size,
-    minSize = COLUMN_DEFAULTS.actions.minSize,
-    maxSize = COLUMN_DEFAULTS.actions.maxSize,
-}: ActionsColumnOptions) => {
+export const createActionsColumn = <TData = unknown>({
+                                                         editUrl,
+                                                         detailsUrl,
+                                                         markAsPaidUrl,
+                                                         regenerateUrl,
+                                                         resourceName,
+                                                         handleDelete,
+                                                         handleMarkAsPaid,
+                                                         handleRegenerate,
+                                                         showDelete,
+                                                         showEdit,
+                                                         showMarkAsPaid,
+                                                         showRegenerate,
+                                                         size = COLUMN_DEFAULTS.actions.size,
+                                                         minSize = COLUMN_DEFAULTS.actions.minSize,
+                                                         maxSize = COLUMN_DEFAULTS.actions.maxSize,
+                                                     }: ActionsColumnOptions<TData>) => {
     const hasMarkAsPaid = Boolean(markAsPaidUrl && handleMarkAsPaid);
     const hasRegenerate = Boolean(regenerateUrl && handleRegenerate);
 
@@ -66,230 +235,138 @@ export const createActionsColumn = ({
             align: 'center',
         },
         enableSorting: false,
-        cell: ({ row }: any) => {
-            const uuid = row.original.uuid;
-            const name =
-                row.original.name ?? row.original.user?.name ?? 'record';
 
-            const actions = [];
+        cell: ({ row }: { row: { original: TData } }) => {
+            const record = row.original as TData & ActionRecord;
+            const { uuid } = record;
 
-            const canEdit = showEdit?.(row.original) ?? true;
-            const canDelete = showDelete?.(row.original) ?? true;
+            const canEdit = showEdit?.(record) ?? true;
+            const canDelete = showDelete?.(record) ?? true;
+
             const canMarkAsPaid =
-                hasMarkAsPaid && (showMarkAsPaid?.(row.original) ?? true);
+                hasMarkAsPaid &&
+                (showMarkAsPaid?.(record) ?? true);
+
             const canRegenerate =
-                hasRegenerate && (showRegenerate?.(row.original) ?? true);
+                hasRegenerate &&
+                (showRegenerate?.(record) ?? true);
+
+            const primaryActions: VNode[] = [];
+
+            /*
+             * View
+             */
 
             if (detailsUrl) {
-                actions.push(
-                    h(
-                        Button,
+                primaryActions.push(
+                    createIconButton(
+                        Eye,
+                        'View',
+                        ACTION_STYLES.view,
                         {
-                            variant: 'ghost',
-                            size: 'icon',
-                            class: [
-                                'size-8 shrink-0 cursor-pointer',
-                                'bg-slate-50 text-slate-600',
-                                'hover:bg-slate-100 hover:text-slate-700',
-                                'dark:bg-slate-950/40 dark:text-slate-400',
-                                'dark:hover:bg-slate-950/60',
-                                'dark:hover:text-slate-300',
-                            ],
-                            asChild: true,
+                            href: detailsUrl(uuid),
                         },
-                        () =>
-                            h(Link, { href: detailsUrl(uuid) }, () => [
-                                h(Eye, {
-                                    class: 'size-3.5',
-                                    'aria-hidden': 'true',
-                                }),
-                                h('span', { class: 'sr-only' }, `View ${name}`),
-                            ]),
                     ),
                 );
             }
+
+            /*
+             * Edit
+             */
 
             if (canEdit) {
-                actions.push(
-                    h(
-                        Button,
+                primaryActions.push(
+                    createIconButton(
+                        Pencil,
+                        'Edit',
+                        ACTION_STYLES.edit,
                         {
-                            variant: 'ghost',
-                            size: 'icon',
-                            class: [
-                                'size-8 shrink-0 cursor-pointer',
-                                'bg-blue-50 text-blue-600',
-                                'hover:bg-blue-100 hover:text-blue-700',
-                                'dark:bg-blue-950/40 dark:text-blue-400',
-                                'dark:hover:bg-blue-950/60',
-                                'dark:hover:text-blue-300',
-                            ],
-                            asChild: true,
+                            href: editUrl(uuid),
                         },
-                        () =>
-                            h(Link, { href: editUrl(uuid) }, () => [
-                                h(Pencil, {
-                                    class: 'size-3.5',
-                                    'aria-hidden': 'true',
-                                }),
-                                h('span', { class: 'sr-only' }, `Edit ${name}`),
-                            ]),
                     ),
                 );
             }
 
-            if (canRegenerate && regenerateUrl && handleRegenerate) {
-                actions.push(
-                    withDirectives(
-                        h(
-                            Button,
-                            {
-                                variant: 'ghost',
-                                size: 'icon',
-                                class: [
-                                    'size-8 shrink-0 cursor-pointer',
-                                    'bg-amber-50 text-amber-600',
-                                    'hover:bg-amber-100 hover:text-amber-700',
-                                    'dark:bg-amber-950/40 dark:text-amber-400',
-                                    'dark:hover:bg-amber-950/60',
-                                    'dark:hover:text-amber-300',
-                                ],
-                            },
-                            () => [
-                                h(RefreshCw, {
-                                    class: 'size-3.5',
-                                    'aria-hidden': 'true',
-                                }),
-                                h(
-                                    'span',
-                                    { class: 'sr-only' },
-                                    `Regenerate ${name}`,
-                                ),
-                            ],
-                        ),
-                        [
-                            [
-                                vConfirm,
-                                {
-                                    action: () => handleRegenerate(uuid),
-                                    options: {
-                                        title: `Regenerate ${resourceName}?`,
-                                        description:
-                                            `This will recalculate and update the existing ${resourceName}. ` +
-                                            'This action is only available for unpaid records.',
-                                        confirmText: 'Regenerate',
-                                    },
-                                },
-                            ],
-                        ],
-                    ),
-                );
+            /*
+             * Delete
+             */
+
+            primaryActions.push(
+                createIconButton(
+                    Trash2,
+                    'Delete',
+                    ACTION_STYLES.delete,
+                    {
+                        disabled: !canDelete,
+                        onClick: canDelete
+                            ? () => handleDelete(uuid)
+                            : undefined,
+                    },
+                ),
+            );
+
+            /*
+             * Secondary actions
+             */
+
+            const secondaryActions: SecondaryAction[] = [];
+
+            if (canRegenerate && handleRegenerate) {
+                secondaryActions.push({
+                    key: 'regenerate',
+                    label: 'Regenerate',
+                    icon: RefreshCw,
+                    confirmation: {
+                        title: `Regenerate ${resourceName}?`,
+                        description:
+                            `This will recalculate and update the existing ${resourceName}. ` +
+                            'This action is only available for unpaid records.',
+                        confirmText: 'Regenerate',
+                    },
+                    action: () => handleRegenerate(uuid),
+                });
             }
 
-            if (canMarkAsPaid && markAsPaidUrl && handleMarkAsPaid) {
-                actions.push(
-                    withDirectives(
-                        h(
-                            Button,
-                            {
-                                variant: 'ghost',
-                                size: 'icon',
-                                class: [
-                                    'size-8 shrink-0 cursor-pointer',
-                                    'bg-emerald-50 text-emerald-600',
-                                    'hover:bg-emerald-100 hover:text-emerald-700',
-                                    'dark:bg-emerald-950/40 dark:text-emerald-400',
-                                    'dark:hover:bg-emerald-950/60',
-                                    'dark:hover:text-emerald-300',
-                                ],
-                            },
-                            () => [
-                                h(CheckCircle2, {
-                                    class: 'size-3.5',
-                                    'aria-hidden': 'true',
-                                }),
-                                h(
-                                    'span',
-                                    { class: 'sr-only' },
-                                    `Mark ${name} as paid`,
-                                ),
-                            ],
-                        ),
-                        [
-                            [
-                                vConfirm,
-                                {
-                                    action: () => handleMarkAsPaid(uuid),
-                                    options: {
-                                        title: `Mark ${resourceName} as paid?`,
-                                        description:
-                                            `This will mark the ${resourceName} as paid. ` +
-                                            'Paid records cannot be edited.',
-                                        confirmText: 'Mark as Paid',
-                                    },
-                                },
-                            ],
-                        ],
-                    ),
-                );
+            if (canMarkAsPaid && handleMarkAsPaid) {
+                secondaryActions.push({
+                    key: 'mark-as-paid',
+                    label: 'Mark as Paid',
+                    icon: CheckCircle2,
+                    confirmation: {
+                        title: `Mark ${resourceName} as paid?`,
+                        description:
+                            `This will mark the ${resourceName} as paid. ` +
+                            'Paid records cannot be edited.',
+                        confirmText: 'Mark as Paid',
+                    },
+                    action: () => handleMarkAsPaid(uuid),
+                });
             }
 
-            if (canDelete) {
-                actions.push(
-                    withDirectives(
-                        h(
-                            Button,
-                            {
-                                variant: 'ghost',
-                                size: 'icon',
-                                class: [
-                                    'size-8 shrink-0 cursor-pointer',
-                                    'bg-red-50 text-red-600',
-                                    'hover:bg-red-100 hover:text-red-700',
-                                    'dark:bg-red-950/40 dark:text-red-400',
-                                    'dark:hover:bg-red-950/60',
-                                ],
-                            },
-                            () => [
-                                h(Trash2, {
-                                    class: 'size-3.5',
-                                    'aria-hidden': 'true',
-                                }),
-                                h(
-                                    'span',
-                                    { class: 'sr-only' },
-                                    `Delete ${name}`,
-                                ),
-                            ],
-                        ),
-                        [
-                            [
-                                vConfirm,
-                                {
-                                    action: () => handleDelete(uuid),
-                                    options: {
-                                        title: `Delete ${resourceName}?`,
-                                        description:
-                                            'This action cannot be undone. ' +
-                                            `The ${resourceName} will be permanently deleted.`,
-                                        confirmText: 'Delete',
-                                    },
-                                },
-                            ],
-                        ],
-                    ),
+            if (secondaryActions.length > 0) {
+                if (primaryActions.length > 0) {
+                    primaryActions.push(
+                        h('span', {
+                            class: 'mx-0.5 h-5 w-px bg-border',
+                            'aria-hidden': 'true',
+                        }),
+                    );
+                }
+
+                primaryActions.push(
+                    h(ActionsDropdown, {
+                        name: record.name ?? record.user?.name ?? 'record',
+                        actions: secondaryActions,
+                    }),
                 );
             }
 
             return h(
                 'div',
                 {
-                    class: [
-                        'flex items-center justify-center',
-                        'gap-1 whitespace-nowrap text-sm',
-                    ],
+                    class: 'flex items-center justify-center gap-1 whitespace-nowrap',
                 },
-                actions,
+                primaryActions,
             );
         },
     };

@@ -1,12 +1,12 @@
-import { createColumnHelper } from '@tanstack/vue-table';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit } from '@/routes/employees';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import { createStatusColumn } from '@/table/columns/statusColumn';
-import { createColumn } from '@/table/helpers/createColumn';
-import { COLUMN_DEFAULTS } from '@/table/constants/columns';
-import type { Employee } from '@/types/employee';
+import {edit} from '@/routes/employees';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createStatusColumn} from '@/table/columns/statusColumn';
+import {createColumn} from '@/table/helpers/createColumn';
+import {COLUMN_DEFAULTS} from '@/table/constants/columns';
+import type {Employee} from '@/types/employee';
 
 const columnHelper = createColumnHelper<any, Employee>();
 
@@ -14,7 +14,7 @@ export const createEmployeeColumns = (handleDelete: (uuid: string) => void) =>
     columnHelper.columns([
         createSelectColumn({
             resourceName: 'employees',
-            isSelectable: (row: Employee) => row.role !== 'super_admin',
+            canSelectRow: (row: Employee) => row.role !== 'super_admin',
         }),
 
         createColumn({
