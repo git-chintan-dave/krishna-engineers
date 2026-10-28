@@ -1,15 +1,15 @@
-import { type Directive } from 'vue';
+import {type Directive} from 'vue';
 
-import { confirm, type ConfirmOptions } from '@/composables/useConfirm';
+import {confirm, type ConfirmOptions} from '@/composables/useConfirm';
 
 type ConfirmAction = () => void | Promise<void>;
 
 type ConfirmBinding =
     | ConfirmAction
     | {
-          action: ConfirmAction;
-          options?: ConfirmOptions;
-      };
+    action: ConfirmAction;
+    options?: ConfirmOptions;
+};
 
 type ConfirmElement = HTMLElement & {
     __confirmClick?: EventListener;
@@ -35,6 +35,20 @@ const getBinding = (
     };
 };
 
+export const executeConfirm = async (
+    binding: ConfirmBinding,
+): Promise<void> => {
+    const { action, options } = getBinding(binding);
+
+    const confirmed = await confirm(options);
+
+    if (!confirmed) {
+        return;
+    }
+
+    await action();
+};
+
 const vConfirm: Directive<HTMLElement, ConfirmBinding> = {
     mounted(el, binding) {
         const element = el as ConfirmElement;
@@ -49,15 +63,7 @@ const vConfirm: Directive<HTMLElement, ConfirmBinding> = {
                 return;
             }
 
-            const { action, options } = getBinding(element.__confirmBinding);
-
-            const confirmed = await confirm(options);
-
-            if (!confirmed) {
-                return;
-            }
-
-            await action();
+            await executeConfirm(element.__confirmBinding);
         };
 
         element.__confirmClick = handleClick;

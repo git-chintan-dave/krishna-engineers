@@ -12,6 +12,7 @@ import ListingLayout from '@/components/layouts/ListingLayout.vue';
 import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
 import {useListingEmptyState} from '@/composables/useListingEmptyState';
 import {useListingTable} from '@/composables/useListingTable';
+import {ACTION_SHORTCUTS, useActionShortcuts,} from '@/composables/useActionShortcuts';
 
 import {machinePage} from '@/config/machines';
 
@@ -38,11 +39,23 @@ defineOptions({
     },
 });
 
+/*
+|--------------------------------------------------------------------------
+| Filters
+|--------------------------------------------------------------------------
+*/
+
 const filterStatus = ref<StatusFilter>(props.filters.status);
 
 const handleStatusChange = (value: string | null): void => {
     filterStatus.value = (value as StatusFilter | null) ?? 'all';
 };
+
+/*
+|--------------------------------------------------------------------------
+| Table
+|--------------------------------------------------------------------------
+*/
 
 const columns = createMachineColumns((id) => {
     router.delete(destroy(id).url);
@@ -68,14 +81,21 @@ const {
     },
     route: machinesRoute.url(),
     additionalFilters: () => ({
-        status: filterStatus.value !== 'all'
-            ? filterStatus.value
-            : undefined,
+        status:
+            filterStatus.value !== 'all'
+                ? filterStatus.value
+                : undefined,
     }),
     onClearFilters: () => {
         filterStatus.value = 'all';
     },
 });
+
+/*
+|--------------------------------------------------------------------------
+| Empty State
+|--------------------------------------------------------------------------
+*/
 
 const emptyState = useListingEmptyState({
     hasAnyRecords: () => props.hasAnyRecords,
@@ -96,18 +116,26 @@ const emptyState = useListingEmptyState({
     },
 });
 
+/*
+|--------------------------------------------------------------------------
+| Actions
+|--------------------------------------------------------------------------
+*/
+
 const actions = computed<ActionItem[]>(() => [
     {
         key: 'import',
         label: 'Import',
         icon: FileUp,
         href: machinesImportRoute().url,
+        shortcut: ACTION_SHORTCUTS.import.label,
     },
     {
         key: 'reset-preferences',
         label: 'Reset preferences',
         icon: RotateCcw,
         action: resetPreferences,
+        shortcut: ACTION_SHORTCUTS.resetPreferences.label,
         separatorBefore: true,
     },
 ]);
@@ -115,6 +143,28 @@ const actions = computed<ActionItem[]>(() => [
 const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);
 };
+
+/*
+|--------------------------------------------------------------------------
+| Keyboard Shortcuts
+|--------------------------------------------------------------------------
+|
+| Add and bulk delete are registered by ListingActions.
+| This page registers only its page-specific actions.
+|
+*/
+
+useActionShortcuts(
+    computed(() => ({
+        import: {
+            handler: () => router.visit(machinesImportRoute().url),
+        },
+
+        resetPreferences: {
+            handler: resetPreferences,
+        },
+    })),
+);
 </script>
 
 <template>
@@ -147,8 +197,12 @@ const handleDeleteSelected = (): void => {
                 <template #filters>
                     <div class="w-full min-w-0">
                         <AppStatusSelect
-                            :model-value="filterStatus === 'all' ? null : filterStatus"
-                            :placeholder="machinePage.statusPlaceholder ?? 'All statuses'"
+                            :model-value="
+                                filterStatus === 'all' ? null : filterStatus
+                            "
+                            :placeholder="
+                                machinePage.statusPlaceholder ?? 'All statuses'
+                            "
                             clearable
                             @update:model-value="handleStatusChange"
                         />

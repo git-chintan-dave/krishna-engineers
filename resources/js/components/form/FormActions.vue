@@ -1,7 +1,10 @@
-<script lang="ts" setup>
-import { ArrowLeft, LoaderCircle, Save } from '@lucide/vue';
 
-import { Button } from '@/components/ui/button';
+<script lang="ts" setup>
+import {ArrowLeft, LoaderCircle, Save} from '@lucide/vue';
+import {ref} from 'vue';
+
+import {Button} from '@/components/ui/button';
+import {ACTION_SHORTCUTS, useActionShortcuts,} from '@/composables/useActionShortcuts';
 
 /*
 |--------------------------------------------------------------------------
@@ -18,7 +21,7 @@ const props = withDefaults(
     }>(),
     {
         submitLabel: 'Save',
-        cancelLabel: 'Cancel',
+        cancelLabel: 'Back',
         processing: false,
         disabled: false,
     },
@@ -33,37 +36,86 @@ const props = withDefaults(
 const emit = defineEmits<{
     cancel: [];
 }>();
+
+/*
+|--------------------------------------------------------------------------
+| Refs
+|--------------------------------------------------------------------------
+*/
+
+const container = ref<HTMLDivElement | null>(null);
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
+
+const handleBack = (): void => {
+    if (!props.processing) {
+        emit('cancel');
+    }
+};
+
+const handleSave = (): void => {
+    if (props.processing || props.disabled) {
+        return;
+    }
+
+    container.value?.closest('form')?.requestSubmit();
+};
+
+/*
+|--------------------------------------------------------------------------
+| Keyboard Shortcuts
+|--------------------------------------------------------------------------
+*/
+
+useActionShortcuts(() => ({
+    back: {
+        handler: handleBack,
+        enabled: () => !props.processing,
+    },
+
+    save: {
+        handler: handleSave,
+        enabled: () => !props.processing && !props.disabled,
+    },
+}));
 </script>
 
 <template>
-    <div class="flex min-w-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <!--
-        |--------------------------------------------------------------------------
-        | Cancel
-        |--------------------------------------------------------------------------
-        -->
-
+    <div
+        ref="container"
+        class="flex min-w-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end"
+    >
+        <!-- Back -->
         <Button
             :disabled="processing"
-            class="w-full shrink-0 cursor-pointer sm:w-auto"
+            class="w-full shrink-0 cursor-pointer gap-1.5 sm:w-auto"
             type="button"
             variant="outline"
-            @click="emit('cancel')"
+            @click="handleBack"
         >
-            <ArrowLeft aria-hidden="true" class="size-4" />
+            <ArrowLeft
+                aria-hidden="true"
+                class="size-4"
+            />
 
-            {{ cancelLabel }}
+            <span>{{ cancelLabel }}</span>
+
+            <kbd
+                class="ml-1 hidden font-mono text-[10px] font-normal leading-none text-muted-foreground md:inline"
+                aria-hidden="true"
+            >
+                {{ ACTION_SHORTCUTS.back.label }}
+            </kbd>
         </Button>
 
-        <!--
-        |--------------------------------------------------------------------------
-        | Submit
-        |--------------------------------------------------------------------------
-        -->
-
+        <!-- Save -->
         <Button
             :disabled="processing || disabled"
-            class="w-full shrink-0 cursor-pointer sm:w-auto"
+            class="w-full shrink-0 cursor-pointer gap-1.5 sm:w-auto"
             type="submit"
         >
             <LoaderCircle
@@ -72,9 +124,20 @@ const emit = defineEmits<{
                 class="size-4 animate-spin"
             />
 
-            <Save v-else aria-hidden="true" class="size-4" />
+            <Save
+                v-else
+                aria-hidden="true"
+                class="size-4"
+            />
 
-            {{ submitLabel }}
+            <span>{{ submitLabel }}</span>
+
+            <kbd
+                class="ml-1 hidden font-mono text-[10px] font-normal leading-none text-primary-foreground/75 md:inline"
+                aria-hidden="true"
+            >
+                {{ ACTION_SHORTCUTS.save.label }}
+            </kbd>
         </Button>
     </div>
 </template>

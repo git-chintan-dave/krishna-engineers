@@ -273,19 +273,21 @@ const {
 const actions = computed<ActionItem[]>(() => [
     ...(isSuperAdmin.value
         ? [
-              {
-                  key: 'import',
-                  label: 'Import',
-                  icon: FileUp,
-                  href: attendancesImportRoute().url,
-              },
-              {
-                  key: 'sync',
-                  label: 'Sync attendance',
-                  icon: RefreshCw,
-                  action: openSyncDialog,
-              },
-          ]
+            {
+                key: 'import',
+                label: 'Import',
+                icon: FileUp,
+                href: attendancesImportRoute().url,
+                shortcut: 'I',
+            },
+            {
+                key: 'sync',
+                label: 'Sync attendance',
+                icon: RefreshCw,
+                action: openSyncDialog,
+                shortcut: 'S',
+            },
+        ]
         : []),
 
     {
@@ -293,6 +295,7 @@ const actions = computed<ActionItem[]>(() => [
         label: 'Reset preferences',
         icon: RotateCcw,
         action: resetPreferences,
+        shortcut: 'R',
         separatorBefore: true,
     },
 ]);

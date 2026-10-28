@@ -1,17 +1,23 @@
+
 <script lang="ts" setup>
-import {Link} from '@inertiajs/vue3';
+import {Link, router} from '@inertiajs/vue3';
 import {EllipsisVertical, Plus, Trash2} from '@lucide/vue';
 import type {Component} from 'vue';
 
-import vConfirm from '@/directives/confirm';
+import vConfirm, {executeConfirm,} from '@/directives/confirm';
+
 import {Button} from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuLabel,
     DropdownMenuSeparator,
+    DropdownMenuShortcut,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+
+import {ACTION_SHORTCUTS, useActionShortcuts,} from '@/composables/useActionShortcuts';
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +29,7 @@ type ActionBase = {
     key: string;
     label: string;
     icon: Component;
+    shortcut?: string;
     disabled?: boolean;
     variant?: 'default' | 'destructive';
     separatorBefore?: boolean;
@@ -46,16 +53,14 @@ export type ActionItem =
 |--------------------------------------------------------------------------
 */
 
-withDefaults(
+const props = withDefaults(
     defineProps<{
         createUrl?: string;
         createLabel?: string;
-
         actions?: ActionItem[];
-
+        actionsLabel?: string;
         selectedCount?: number;
         resourceLabel?: string;
-
         deleteTitle?: string;
         deleteDescription?: string;
         deleteConfirmLabel?: string;
@@ -63,9 +68,9 @@ withDefaults(
     {
         createLabel: 'Add',
         actions: () => [],
+        actionsLabel: 'Actions',
         selectedCount: 0,
         resourceLabel: 'items',
-
         deleteTitle: '',
         deleteDescription:
             'This action cannot be undone. The selected records will be permanently deleted.',
@@ -90,8 +95,63 @@ const emit = defineEmits<{
 */
 
 const getActionClass = (variant?: ActionItem['variant']) => ({
-    'text-destructive focus:text-destructive': variant === 'destructive',
+    'text-destructive focus:text-destructive':
+        variant === 'destructive',
 });
+
+const handleAdd = (): void => {
+    if (props.createUrl) {
+        router.visit(props.createUrl);
+    }
+};
+
+const handleDeleteSelected = (): void => {
+    if (props.selectedCount > 0) {
+        emit('deleteSelected');
+    }
+};
+
+const triggerDeleteSelected = async (): Promise<void> => {
+    if (props.selectedCount <= 0) {
+        return;
+    }
+
+    await executeConfirm({
+        action: handleDeleteSelected,
+        options: {
+            title:
+                props.deleteTitle ||
+                `Delete selected ${props.resourceLabel}?`,
+            description: props.deleteDescription,
+            confirmText: props.deleteConfirmLabel,
+        },
+    });
+};
+
+/*
+|--------------------------------------------------------------------------
+| Keyboard Shortcuts
+|--------------------------------------------------------------------------
+|
+| Add and bulk delete are handled by this component.
+| Page-specific shortcuts are registered by the parent listing page.
+|
+*/
+
+useActionShortcuts(() => ({
+    ...(props.createUrl
+        ? {
+            add: {
+                handler: handleAdd,
+            },
+        }
+        : {}),
+
+    bulkDelete: {
+        handler: triggerDeleteSelected,
+        enabled: () => props.selectedCount > 0,
+    },
+}));
 </script>
 
 <template>
@@ -102,40 +162,70 @@ const getActionClass = (variant?: ActionItem['variant']) => ({
         <Button
             v-if="selectedCount > 0"
             v-confirm="{
-                action: () => emit('deleteSelected'),
+                action: handleDeleteSelected,
                 options: {
-                    title: deleteTitle || `Delete selected ${resourceLabel}?`,
+                    title:
+                        deleteTitle ||
+                        `Delete selected ${resourceLabel}?`,
                     description: deleteDescription,
                     confirmText: deleteConfirmLabel,
                 },
             }"
             :aria-label="`Delete ${selectedCount} selected ${resourceLabel}`"
-            class="h-9 min-w-0 flex-1 cursor-pointer px-2.5 sm:flex-none sm:px-3"
+            class="h-9 min-w-0 flex-1 cursor-pointer gap-1.5 px-3 sm:flex-none"
             size="sm"
             type="button"
             variant="destructive"
         >
-            <Trash2 aria-hidden="true" class="size-4 shrink-0" />
+            <Trash2
+                aria-hidden="true"
+                class="size-4 shrink-0"
+            />
 
             <span class="truncate">
-                <span class="sm:hidden"> Delete ({{ selectedCount }}) </span>
+                <span class="sm:hidden">
+                    Delete ({{ selectedCount }})
+                </span>
 
                 <span class="hidden sm:inline">
                     Delete selected ({{ selectedCount }})
                 </span>
             </span>
+
+            <kbd
+                class="ml-1 hidden shrink-0 font-mono text-[10px] font-normal leading-none text-current/80 md:inline"
+                aria-hidden="true"
+            >
+                {{ ACTION_SHORTCUTS.bulkDelete.label }}
+            </kbd>
         </Button>
 
         <!-- Add -->
         <Button
             v-if="createUrl"
             as-child
-            class="h-9 min-w-0 flex-1 cursor-pointer px-3 sm:flex-none"
+            class="h-9 min-w-0 flex-1 cursor-pointer gap-1.5 px-3 sm:flex-none"
             size="sm"
         >
-            <Link :aria-label="createLabel" :href="createUrl">
-                <Plus aria-hidden="true" class="size-4 shrink-0" />
-                <span class="truncate">{{ createLabel }}</span>
+            <Link
+                :aria-label="createLabel"
+                :href="createUrl"
+            >
+                <Plus
+                    aria-hidden="true"
+                    class="size-4 shrink-0"
+                />
+
+                <span class="truncate">
+                    {{ createLabel }}
+                </span>
+
+                <kbd
+                    class="ml-1 hidden shrink-0 font-mono text-[10px] font-normal leading-none text-current/70 md:inline"
+                    aria-hidden="true"
+                >
+                    {{ ACTION_SHORTCUTS.add.label }}
+                </kbd>
             </Link>
         </Button>
 
@@ -143,26 +233,33 @@ const getActionClass = (variant?: ActionItem['variant']) => ({
         <DropdownMenu v-if="actions.length > 0">
             <DropdownMenuTrigger as-child>
                 <Button
-                    aria-label="More actions"
+                    :aria-label="actionsLabel || 'More actions'"
                     class="size-9 shrink-0 cursor-pointer"
                     size="icon"
                     type="button"
                     variant="outline"
                 >
-                    <EllipsisVertical aria-hidden="true" class="size-4" />
+                    <EllipsisVertical
+                        aria-hidden="true"
+                        class="size-4"
+                    />
                 </Button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent
                 align="end"
-                class="max-h-[min(70vh,32rem)] w-60 max-w-[calc(100vw-2rem)] overflow-y-auto"
+                class="max-h-[min(70vh,32rem)] w-64 max-w-[calc(100vw-2rem)] overflow-y-auto"
             >
-                <template v-for="(item, index) in actions" :key="item.key">
+                <DropdownMenuLabel v-if="actionsLabel">
+                    {{ actionsLabel }}
+                </DropdownMenuLabel>
+
+                <template
+                    v-for="(item, index) in actions"
+                    :key="item.key"
+                >
                     <DropdownMenuSeparator
-                        v-if="
-                            actions.length > 1 &&
-                            (index > 0 || item.separatorBefore)
-                        "
+                        v-if="index > 0 && item.separatorBefore"
                     />
 
                     <!-- Navigation Action -->
@@ -178,7 +275,7 @@ const getActionClass = (variant?: ActionItem['variant']) => ({
                         <Link
                             :href="item.href"
                             :method="item.method ?? 'get'"
-                            class="flex w-full items-center gap-2"
+                            class="flex w-full min-w-0 items-center gap-2"
                         >
                             <component
                                 :is="item.icon"
@@ -186,7 +283,16 @@ const getActionClass = (variant?: ActionItem['variant']) => ({
                                 class="size-4 shrink-0"
                             />
 
-                            <span class="truncate">{{ item.label }}</span>
+                            <span class="min-w-0 flex-1 truncate">
+                                {{ item.label }}
+                            </span>
+
+                            <DropdownMenuShortcut
+                                v-if="item.shortcut"
+                                class="font-mono text-[10px] tracking-normal"
+                            >
+                                {{ item.shortcut }}
+                            </DropdownMenuShortcut>
                         </Link>
                     </DropdownMenuItem>
 
@@ -206,7 +312,16 @@ const getActionClass = (variant?: ActionItem['variant']) => ({
                             class="size-4 shrink-0"
                         />
 
-                        <span class="truncate">{{ item.label }}</span>
+                        <span class="min-w-0 flex-1 truncate">
+                            {{ item.label }}
+                        </span>
+
+                        <DropdownMenuShortcut
+                            v-if="item.shortcut"
+                            class="font-mono text-[10px] tracking-normal"
+                        >
+                            {{ item.shortcut }}
+                        </DropdownMenuShortcut>
                     </DropdownMenuItem>
                 </template>
             </DropdownMenuContent>
