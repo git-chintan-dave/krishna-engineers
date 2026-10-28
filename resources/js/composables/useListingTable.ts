@@ -1,11 +1,11 @@
-import { router } from '@inertiajs/vue3';
-import type { RequestPayload } from '@inertiajs/core';
-import type { RowData, SortingState } from '@tanstack/vue-table';
-import { onMounted, ref } from 'vue';
+import {router} from '@inertiajs/vue3';
+import type {RequestPayload} from '@inertiajs/core';
+import type {RowData, SortingState} from '@tanstack/vue-table';
+import {onMounted, ref, watch} from 'vue';
 
-import { useDataTable } from '@/composables/useDataTable';
-import { useListingPreferences } from '@/composables/useListingPreferences';
-import type { PaginatedResponse, SortDirection } from '@/types/listing';
+import {useDataTable} from '@/composables/useDataTable';
+import {useListingPreferences} from '@/composables/useListingPreferences';
+import type {PaginatedResponse, SortDirection} from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------
@@ -21,13 +21,14 @@ type ListingFilters<TSort extends string> = {
     search?: string;
     sort: TSort;
     direction: SortDirection;
+    perPage?: number;
 };
 
 type ListingOptions<
     TData extends RowData & Identifiable,
     TSort extends string,
 > = {
-    data: () => PaginatedResponse<TData>;
+    data: () => PaginatedResponse<TData> | undefined;
     columns: any[];
     filters: ListingFilters<TSort>;
     route: string;
@@ -43,6 +44,12 @@ type VisitOptions<TSort extends string> = {
     direction?: SortDirection;
     clearSorting?: boolean;
     useServerDefaults?: boolean;
+};
+
+type PaginationMeta = {
+    current_page: number;
+    per_page: number;
+    last_page: number;
 };
 
 /*
@@ -67,6 +74,27 @@ export function useListingTable<
     TData extends RowData & Identifiable,
     TSort extends string,
 >(options: ListingOptions<TData, TSort>) {
+    /*
+    |--------------------------------------------------------------------------
+    | Response Helpers
+    |--------------------------------------------------------------------------
+    */
+
+    const getResponse = () => options.data();
+
+    const getMeta = (): PaginationMeta => {
+        const meta = getResponse()?.meta;
+
+        return {
+            current_page: meta?.current_page ?? DEFAULT_PAGE,
+            per_page:
+                meta?.per_page ??
+                options.filters.perPage ??
+                DEFAULT_PER_PAGE,
+            last_page: meta?.last_page ?? DEFAULT_PAGE,
+        };
+    };
+
     /*
     |--------------------------------------------------------------------------
     | Initial State
@@ -102,7 +130,10 @@ export function useListingTable<
     */
 
     const listingPreferences = useListingPreferences(options.route, {
-        defaultPerPage: options.data().meta.per_page,
+        defaultPerPage:
+            getResponse()?.meta.per_page ??
+            options.filters.perPage ??
+            DEFAULT_PER_PAGE,
         defaultSorting,
         defaultSort: options.filters.sort,
         defaultDirection: options.filters.direction,
@@ -121,7 +152,7 @@ export function useListingTable<
     */
 
     if (hasExplicitPageSize) {
-        listingPreferences.setPerPage(options.data().meta.per_page);
+        listingPreferences.setPerPage(getMeta().per_page);
     }
 
     if (hasExplicitSort) {
@@ -135,7 +166,7 @@ export function useListingTable<
 
     const initialPageSize =
         hasExplicitPageSize || !features.perPage
-            ? options.data().meta.per_page
+            ? getMeta().per_page
             : listingPreferences.perPage.value;
 
     const initialSorting: SortingState = (() => {
@@ -166,7 +197,8 @@ export function useListingTable<
                 };
             })
             .filter(
-                (item): item is { id: string; desc: boolean } => item !== null,
+                (item): item is { id: string; desc: boolean } =>
+                    item !== null,
             );
 
         return savedSorting.length > 0 ? savedSorting : defaultSorting;
@@ -179,66 +211,77 @@ export function useListingTable<
     */
 
     const { table, sorting, selectedRows, selectedCount, clearSelection } =
-        useDataTable<TData>(() => options.data().data, options.columns, {
-            manualPagination: true,
-            manualSorting: true,
-            pageCount: () => options.data().meta.last_page,
-            initialPageSize,
-            initialSorting,
-            enableRowSelection: options.enableRowSelection,
+        useDataTable<TData>(
+            () => getResponse()?.data ?? [],
+            options.columns,
+            {
+                manualPagination: true,
+                manualSorting: true,
+                pageCount: () => getMeta().last_page,
+                initialPageSize,
+                initialSorting,
+                enableRowSelection: options.enableRowSelection,
 
-            onPaginationChange: ({ pageIndex, pageSize }) => {
-                const meta = options.data().meta;
-                const nextPage = pageIndex + 1;
+                onPaginationChange: ({ pageIndex, pageSize }) => {
+                    // Deferred data may not have arrived yet.
+                    if (!getResponse()) {
+                        return;
+                    }
 
-                listingPreferences.setPerPage(pageSize);
+                    const meta = getMeta();
+                    const nextPage = pageIndex + 1;
 
-                if (
-                    nextPage === meta.current_page &&
-                    pageSize === meta.per_page
-                ) {
-                    return;
-                }
+                    listingPreferences.setPerPage(pageSize);
 
-                visit({
-                    page: nextPage,
-                    perPage: pageSize,
-                });
-            },
+                    if (
+                        nextPage === meta.current_page &&
+                        pageSize === meta.per_page
+                    ) {
+                        return;
+                    }
 
-            onSortingChange: (nextSorting) => {
-                listingPreferences.setSorting(nextSorting);
+                    visit({
+                        page: nextPage,
+                        perPage: pageSize,
+                    });
+                },
 
-                const currentSorting = nextSorting[0];
+                onSortingChange: (nextSorting) => {
+                    listingPreferences.setSorting(nextSorting);
 
-                if (!currentSorting) {
+                    const currentSorting = nextSorting[0];
+
+                    if (!currentSorting) {
+                        listingPreferences.setServerSorting(
+                            options.filters.sort,
+                            options.filters.direction,
+                        );
+
+                        visit({
+                            page: 1,
+                            clearSorting: true,
+                        });
+
+                        return;
+                    }
+
+                    const nextSort = getSortKey(currentSorting.id);
+                    const nextDirection: SortDirection =
+                        currentSorting.desc ? 'desc' : 'asc';
+
                     listingPreferences.setServerSorting(
-                        options.filters.sort,
-                        options.filters.direction,
+                        nextSort,
+                        nextDirection,
                     );
 
                     visit({
                         page: 1,
-                        clearSorting: true,
+                        sort: nextSort,
+                        direction: nextDirection,
                     });
-
-                    return;
-                }
-
-                const nextSort = getSortKey(currentSorting.id);
-                const nextDirection: SortDirection = currentSorting.desc
-                    ? 'desc'
-                    : 'asc';
-
-                listingPreferences.setServerSorting(nextSort, nextDirection);
-
-                visit({
-                    page: 1,
-                    sort: nextSort,
-                    direction: nextDirection,
-                });
+                },
             },
-        });
+        );
 
     /*
     |--------------------------------------------------------------------------
@@ -305,13 +348,13 @@ export function useListingTable<
     */
 
     function visit({
-        page = DEFAULT_PAGE,
-        perPage = listingPreferences.perPage.value,
-        sort,
-        direction,
-        clearSorting = false,
-        useServerDefaults = false,
-    }: VisitOptions<TSort> = {}) {
+                       page = DEFAULT_PAGE,
+                       perPage = listingPreferences.perPage.value,
+                       sort,
+                       direction,
+                       clearSorting = false,
+                       useServerDefaults = false,
+                   }: VisitOptions<TSort> = {}) {
         const additionalFilters = options.additionalFilters?.() ?? {};
 
         if (useServerDefaults) {
@@ -328,13 +371,13 @@ export function useListingTable<
 
         const sortingParams = clearSorting
             ? {
-                  sort: undefined,
-                  direction: undefined,
-              }
+                sort: undefined,
+                direction: undefined,
+            }
             : {
-                  sort: sort ?? currentSorting.sort,
-                  direction: direction ?? currentSorting.direction,
-              };
+                sort: sort ?? currentSorting.sort,
+                direction: direction ?? currentSorting.direction,
+            };
 
         const params: Record<string, unknown> = {
             ...sortingParams,
@@ -387,12 +430,23 @@ export function useListingTable<
 
     /*
     |--------------------------------------------------------------------------
-    | Restore Preferences When Necessary
+    | Restore Preferences
     |--------------------------------------------------------------------------
     */
 
-    onMounted(() => {
-        const meta = options.data().meta;
+    let preferencesInitialized = false;
+
+    const restorePreferencesIfNecessary = () => {
+        const response = getResponse();
+
+        // Wait until deferred data has arrived.
+        if (!response || preferencesInitialized) {
+            return;
+        }
+
+        preferencesInitialized = true;
+
+        const meta = response.meta;
 
         const restorePageSize =
             features.perPage &&
@@ -415,18 +469,30 @@ export function useListingTable<
         }
 
         visit({
-            page: 1,
+            page: DEFAULT_PAGE,
             perPage: restorePageSize
                 ? listingPreferences.perPage.value
                 : meta.per_page,
             ...(restoreSorting
                 ? {
-                      sort: savedSort as TSort,
-                      direction: savedDirection as SortDirection,
-                  }
+                    sort: savedSort as TSort,
+                    direction: savedDirection as SortDirection,
+                }
                 : {}),
         });
-    });
+    };
+
+    onMounted(restorePreferencesIfNecessary);
+
+    // Handles deferred props arriving after the component has mounted.
+    watch(
+        () => options.data(),
+        (response) => {
+            if (response) {
+                restorePreferencesIfNecessary();
+            }
+        },
+    );
 
     /*
     |--------------------------------------------------------------------------
@@ -434,14 +500,17 @@ export function useListingTable<
     |--------------------------------------------------------------------------
     */
 
-    const search = () => visit({ page: 1 });
+    const search = () => visit({ page: DEFAULT_PAGE });
 
     const clearFilters = () => {
         searchQuery.value = '';
-        visit({ page: 1 });
+        visit({ page: DEFAULT_PAGE });
     };
 
-    const deleteSelected = (bulkDeleteUrl: string, onSuccess?: () => void) => {
+    const deleteSelected = (
+        bulkDeleteUrl: string,
+        onSuccess?: () => void,
+    ) => {
         const ids = selectedRows.value.map((row) => row.id);
 
         if (!ids.length) {

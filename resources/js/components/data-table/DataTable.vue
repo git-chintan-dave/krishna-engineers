@@ -1,18 +1,12 @@
 <script lang="ts" setup>
-import { computed } from 'vue';
-import { FlexRender } from '@tanstack/vue-table';
-import { ChevronLeft, ChevronRight } from '@lucide/vue';
+import {type Component, computed} from 'vue';
+import {FlexRender, type Table} from '@tanstack/vue-table';
+import {ChevronLeft, ChevronRight} from '@lucide/vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import { Button } from '@/components/ui/button';
-import {
-    Table as UiTable,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import {Button} from '@/components/ui/button';
+import {Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle,} from '@/components/ui/empty';
+import {Table as UiTable, TableBody, TableCell, TableHead, TableHeader, TableRow,} from '@/components/ui/table';
 
 /*
 |--------------------------------------------------------------------------
@@ -22,31 +16,33 @@ import {
 
 type ColumnAlign = 'left' | 'center' | 'right';
 
+export type RowHighlight =
+    | 'danger'
+    | 'warning'
+    | 'success'
+    | 'info'
+    | 'primary'
+    | 'muted';
+
+export type RowHighlightResolver<TData> = (
+    row: TData,
+) => RowHighlight | undefined;
+
 type TableColumn = {
     id: string;
     columnDef: {
         size?: number;
         minSize?: number;
         maxSize?: number;
-        meta?: Record<string, unknown>;
     };
 };
 
-type TableInstance = {
-    getHeaderGroups: () => any[];
-    getAllLeafColumns: () => TableColumn[];
-    getRowModel: () => { rows: any[] };
-    getCanPreviousPage: () => boolean;
-    getCanNextPage: () => boolean;
-    getPageCount: () => number;
-    previousPage: () => void;
-    nextPage: () => void;
-    setPageIndex: (pageIndex: number) => void;
-    setPageSize: (pageSize: number) => void;
-    setPagination: (pagination: {
-        pageIndex: number;
-        pageSize: number;
-    }) => void;
+type EmptyStateConfig = {
+    title: string;
+    description?: string;
+    actionLabel?: string;
+    onAction?: () => void;
+    icon?: Component;
 };
 
 type PaginationItem =
@@ -54,7 +50,7 @@ type PaginationItem =
     | { type: 'ellipsis'; key: string };
 
 type Props = {
-    table: TableInstance;
+    table: Table<any>;
     columnsCount: number;
     total: number;
     pageIndex: number;
@@ -64,7 +60,14 @@ type Props = {
     pageSizeOptions?: number[];
     columnWidths?: Record<string, string>;
     emptyText?: string;
+    emptyState?: EmptyStateConfig;
     itemLabel?: string;
+
+    /**
+     * Resolve the semantic highlight for each row.
+     * Return undefined for a normal row.
+     */
+    rowHighlight?: RowHighlightResolver<any>;
 };
 
 /*
@@ -89,14 +92,6 @@ const props = withDefaults(defineProps<Props>(), {
 |--------------------------------------------------------------------------
 | Table Width
 |--------------------------------------------------------------------------
-|
-| Columns with an explicit size reserve that width.
-| Columns without a size reserve their minimum width.
-| Unconfigured columns use TanStack's default size of 150px.
-|
-| The table can grow to fill its container, but it cannot become
-| narrower than the sum of the minimum widths of its columns.
-|
 */
 
 const getColumnMinimumWidth = (column: TableColumn): number => {
@@ -112,7 +107,10 @@ const getColumnMinimumWidth = (column: TableColumn): number => {
 const tableMinWidth = computed(() =>
     props.table
         .getAllLeafColumns()
-        .reduce((total, column) => total + getColumnMinimumWidth(column), 0),
+        .reduce(
+            (total, column) => total + getColumnMinimumWidth(column),
+            0,
+        ),
 );
 
 const tableStyle = computed(() => ({
@@ -165,9 +163,11 @@ const paginationItems = computed<PaginationItem[]>(() => {
 
     const items: PaginationItem[] = [];
 
-    const addPage = (page: number) => items.push({ type: 'page', page });
+    const addPage = (page: number) =>
+        items.push({ type: 'page', page });
 
-    const addEllipsis = (key: string) => items.push({ type: 'ellipsis', key });
+    const addEllipsis = (key: string) =>
+        items.push({ type: 'ellipsis', key });
 
     addPage(1);
 
@@ -213,7 +213,8 @@ const loadingColumnIds = computed(() => {
 |--------------------------------------------------------------------------
 */
 
-const getColumnClass = (columnId: string) => props.columnWidths[columnId] ?? '';
+const getColumnClass = (columnId: string) =>
+    props.columnWidths[columnId] ?? '';
 
 const getColumnAlign = (column: any): ColumnAlign => {
     const align = column?.columnDef?.meta?.align;
@@ -235,11 +236,82 @@ const getPlaceholderAlignmentClass = (align: ColumnAlign) => ({
 
 /*
 |--------------------------------------------------------------------------
+| Row Highlight
+|--------------------------------------------------------------------------
+*/
+
+const getRowHighlightClass = (
+    highlight?: RowHighlight,
+): string => {
+    switch (highlight) {
+        case 'danger':
+            return [
+                'bg-destructive/10',
+                'hover:bg-destructive/15',
+                'data-[state=selected]:bg-destructive/20',
+            ].join(' ');
+
+        case 'warning':
+            return [
+                'bg-yellow-500/10',
+                'hover:bg-yellow-500/15',
+                'data-[state=selected]:bg-yellow-500/20',
+            ].join(' ');
+
+        case 'success':
+            return [
+                'bg-green-500/10',
+                'hover:bg-green-500/15',
+                'data-[state=selected]:bg-green-500/20',
+            ].join(' ');
+
+        case 'info':
+            return [
+                'bg-blue-500/10',
+                'hover:bg-blue-500/15',
+                'data-[state=selected]:bg-blue-500/20',
+            ].join(' ');
+
+        case 'primary':
+            return [
+                'bg-primary/10',
+                'hover:bg-primary/15',
+                'data-[state=selected]:bg-primary/20',
+            ].join(' ');
+
+        case 'muted':
+            return [
+                'bg-muted/50',
+                'hover:bg-muted/70',
+                'data-[state=selected]:bg-muted/70',
+            ].join(' ');
+
+        default:
+            return '';
+    }
+};
+
+const getRowClass = (row: any) => {
+    const highlight = props.rowHighlight?.(row.original);
+
+    return [
+        'group transition-colors',
+        getRowHighlightClass(highlight),
+    ];
+};
+
+/*
+|--------------------------------------------------------------------------
 | Column Styles
 |--------------------------------------------------------------------------
 */
 
-const FIXED_COLUMN_IDS = ['select', 'status', 'created_at', 'actions'];
+const FIXED_COLUMN_IDS = [
+    'select',
+    'status',
+    'created_at',
+    'actions',
+];
 
 const getColumnStyle = (column: any) => {
     const columnId = column?.id;
@@ -251,7 +323,10 @@ const getColumnStyle = (column: any) => {
 
     const { size, minSize, maxSize } = columnDef;
 
-    if (FIXED_COLUMN_IDS.includes(columnId) && typeof size === 'number') {
+    if (
+        FIXED_COLUMN_IDS.includes(columnId) &&
+        typeof size === 'number'
+    ) {
         return {
             width: `${size}px`,
             minWidth: `${size}px`,
@@ -260,9 +335,13 @@ const getColumnStyle = (column: any) => {
     }
 
     return {
-        ...(typeof size === 'number' ? { width: `${size}px` } : {}),
+        ...(typeof size === 'number'
+            ? { width: `${size}px` }
+            : {}),
         minWidth: `${minSize ?? 20}px`,
-        ...(typeof maxSize === 'number' ? { maxWidth: `${maxSize}px` } : {}),
+        ...(typeof maxSize === 'number'
+            ? { maxWidth: `${maxSize}px` }
+            : {}),
     };
 };
 
@@ -330,7 +409,10 @@ const handlePageSizeChange = (
                 <TableBody>
                     <!-- Loading -->
                     <template v-if="loading">
-                        <TableRow v-for="row in 5" :key="`loading-${row}`">
+                        <TableRow
+                            v-for="row in 5"
+                            :key="`loading-${row}`"
+                        >
                             <TableCell
                                 v-for="(columnId, index) in loadingColumnIds"
                                 :key="index"
@@ -364,14 +446,18 @@ const handlePageSizeChange = (
                     </template>
 
                     <!-- Data -->
-                    <template v-else-if="table.getRowModel().rows.length">
+                    <template
+                        v-else-if="table.getRowModel().rows.length"
+                    >
                         <TableRow
                             v-for="row in table.getRowModel().rows"
                             :key="row.id"
                             :data-state="
-                                row.getIsSelected() ? 'selected' : undefined
+                                row.getIsSelected()
+                                    ? 'selected'
+                                    : undefined
                             "
-                            class="group transition-colors hover:bg-muted/30 data-[state=selected]:bg-muted/50"
+                            :class="getRowClass(row)"
                         >
                             <TableCell
                                 v-for="cell in row.getAllCells()"
@@ -394,11 +480,56 @@ const handlePageSizeChange = (
                     <TableRow v-else>
                         <TableCell
                             :colspan="columnsCount"
-                            class="h-32 px-4 text-center"
+                            class="p-0"
                         >
-                            <span class="text-sm text-muted-foreground">
-                                {{ emptyText }}
-                            </span>
+                            <Empty
+                                v-if="emptyState"
+                                class="min-h-64 rounded-none border-0 px-6 py-10"
+                            >
+                                <EmptyHeader>
+                                    <EmptyMedia
+                                        v-if="emptyState.icon"
+                                        variant="icon"
+                                    >
+                                        <component
+                                            :is="emptyState.icon"
+                                            class="size-6"
+                                            aria-hidden="true"
+                                        />
+                                    </EmptyMedia>
+
+                                    <EmptyTitle>
+                                        {{ emptyState.title }}
+                                    </EmptyTitle>
+
+                                    <EmptyDescription
+                                        v-if="emptyState.description"
+                                    >
+                                        {{ emptyState.description }}
+                                    </EmptyDescription>
+                                </EmptyHeader>
+
+                                <EmptyContent
+                                    v-if="emptyState.actionLabel && emptyState.onAction"
+                                >
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        @click="emptyState.onAction"
+                                    >
+                                        {{ emptyState.actionLabel }}
+                                    </Button>
+                                </EmptyContent>
+                            </Empty>
+
+                            <div
+                                v-else
+                                class="flex min-h-32 items-center justify-center px-4 text-center"
+                            >
+                                <span class="text-sm text-muted-foreground">
+                                    {{ emptyText }}
+                                </span>
+                            </div>
                         </TableCell>
                     </TableRow>
                 </TableBody>
@@ -406,7 +537,10 @@ const handlePageSizeChange = (
         </div>
 
         <!-- Pagination -->
-        <div class="border-t px-4 py-3 sm:px-5">
+        <div
+            v-if="total > 0"
+            class="border-t px-4 py-3 sm:px-5"
+        >
             <div class="flex flex-col gap-4">
                 <!-- Summary -->
                 <div class="min-w-0">
@@ -462,7 +596,8 @@ const handlePageSizeChange = (
                         >
                             <Button
                                 :disabled="
-                                    loading || !table.getCanPreviousPage()
+                                    loading ||
+                                    !table.getCanPreviousPage()
                                 "
                                 aria-label="Previous page"
                                 class="size-8 shrink-0 cursor-pointer"
@@ -479,7 +614,9 @@ const handlePageSizeChange = (
                             <template
                                 v-for="item in paginationItems"
                                 :key="
-                                    item.type === 'page' ? item.page : item.key
+                                    item.type === 'page'
+                                        ? item.page
+                                        : item.key
                                 "
                             >
                                 <Button
@@ -498,7 +635,9 @@ const handlePageSizeChange = (
                                     "
                                     class="size-8 shrink-0 cursor-pointer"
                                     size="icon"
-                                    @click="table.setPageIndex(item.page - 1)"
+                                    @click="
+                                        table.setPageIndex(item.page - 1)
+                                    "
                                 >
                                     {{ item.page }}
                                 </Button>
@@ -513,7 +652,9 @@ const handlePageSizeChange = (
                             </template>
 
                             <Button
-                                :disabled="loading || !table.getCanNextPage()"
+                                :disabled="
+                                    loading || !table.getCanNextPage()
+                                "
                                 aria-label="Next page"
                                 class="size-8 shrink-0 cursor-pointer"
                                 size="icon"

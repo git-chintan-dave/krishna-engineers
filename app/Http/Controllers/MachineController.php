@@ -30,13 +30,16 @@ class MachineController extends Controller
 
         $filters = $request->validated();
 
-        $machines = Machine::query()
-            ->filterQuery($filters)
-            ->paginate($filters['per_page'] ?? 10)
-            ->withQueryString();
-
         return Inertia::render('Machines/Index', [
-            'machines' => MachineResource::collection($machines),
+            'machines' => Inertia::defer(function () use ($filters) {
+                $machines = Machine::query()
+                    ->filterQuery($filters)
+                    ->paginate($filters['per_page'] ?? 10)
+                    ->withQueryString();
+
+                return MachineResource::collection($machines);
+            }),
+            'hasAnyRecords' => Machine::query()->exists(),
             'filters' => [
                 'search' => $filters['search'] ?? '',
                 'status' => $filters['status'] ?? 'all',
