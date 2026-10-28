@@ -4,7 +4,6 @@ import type {Component} from 'vue';
 
 import {Button} from '@/components/ui/button';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,} from '@/components/ui/dropdown-menu';
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '@/components/ui/tooltip';
 import vConfirm from '@/directives/confirm';
 
 type ConfirmationOptions = {
@@ -29,31 +28,21 @@ defineProps<{
 
 <template>
     <DropdownMenu v-if="actions.length > 0">
-        <TooltipProvider>
-            <Tooltip>
-                <TooltipTrigger as-child>
-                    <DropdownMenuTrigger as-child>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            class="size-8 shrink-0 cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground"
-                            :aria-label="`More actions for ${name}`"
-                            @click.stop
-                        >
-                            <MoreHorizontal
-                                aria-hidden="true"
-                                class="size-4"
-                            />
-                        </Button>
-                    </DropdownMenuTrigger>
-                </TooltipTrigger>
-
-                <TooltipContent side="top">
-                    More actions
-                </TooltipContent>
-            </Tooltip>
-        </TooltipProvider>
+        <DropdownMenuTrigger as-child>
+            <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                class="size-8 shrink-0 cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground"
+                :aria-label="`More actions for ${name}`"
+                @click.stop
+            >
+                <MoreHorizontal
+                    aria-hidden="true"
+                    class="size-4"
+                />
+            </Button>
+        </DropdownMenuTrigger>
 
         <DropdownMenuContent
             align="end"

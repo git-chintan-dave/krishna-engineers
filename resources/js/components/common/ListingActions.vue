@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { Link } from '@inertiajs/vue3';
-import { EllipsisVertical, Plus, Trash2 } from '@lucide/vue';
-import type { Component } from 'vue';
+import {Link} from '@inertiajs/vue3';
+import {EllipsisVertical, Plus, Trash2} from '@lucide/vue';
+import type {Component} from 'vue';
 
 import vConfirm from '@/directives/confirm';
-import { Button } from '@/components/ui/button';
+import {Button} from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -30,15 +30,15 @@ type ActionBase = {
 
 export type ActionItem =
     | (ActionBase & {
-          href: string;
-          method?: 'get' | 'post' | 'put' | 'patch' | 'delete';
-          action?: never;
-      })
+    href: string;
+    method?: 'get' | 'post' | 'put' | 'patch' | 'delete';
+    action?: never;
+})
     | (ActionBase & {
-          action: () => void;
-          href?: never;
-          method?: never;
-      });
+    action: () => void;
+    href?: never;
+    method?: never;
+});
 
 /*
 |--------------------------------------------------------------------------
