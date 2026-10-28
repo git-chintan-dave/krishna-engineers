@@ -455,16 +455,11 @@ const handlePageSizeChange = (
                             :key="header.id"
                             :class="[
                                 getColumnClass(header.column.id),
-                                getAlignmentClass(
-                                    getColumnAlign(header.column),
-                                ),
-                                header.column.id === SELECT_COLUMN_ID
-                                    ? 'bg-transparent'
-                                    : 'bg-muted/30 hover:bg-muted/30',
-                                'capitalize',
+                                getAlignmentClass(getColumnAlign(header.column)),
+                                'bg-muted/80 text-foreground capitalize',
                             ]"
                             :style="getColumnStyle(header.column)"
-                            class="h-11 px-4 font-medium tracking-wide whitespace-nowrap text-muted-foreground"
+                            class="h-11 px-4 font-medium tracking-wide whitespace-nowrap"
                         >
                             <FlexRender
                                 v-if="!header.isPlaceholder"
