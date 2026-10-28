@@ -18,23 +18,23 @@ import {
     Wrench,
 } from '@lucide/vue';
 
-import { dashboard } from '@/routes';
-import { index as machines } from '@/routes/machines';
-import { index as setups } from '@/routes/setups';
-import { index as parts } from '@/routes/parts';
-import { index as partSetups } from '@/routes/part-setups';
-import { index as sections } from '@/routes/sections';
-import { index as sectionSizes } from '@/routes/section-sizes';
-import { index as tools } from '@/routes/tools';
-import { index as rawMaterialTransactions } from '@/routes/raw-material-transactions';
-import { index as toolTransactions } from '@/routes/tool-transactions';
-import { index as employees } from '@/routes/employees';
-import { index as attendance } from '@/routes/attendances';
-import { index as salaries } from '@/routes/salaries';
-import { index as operatorWorkLogs } from '@/routes/operator';
-import { index as bandsawWorkLogs } from '@/routes/bandsaw';
+import {dashboard} from '@/routes';
+import {index as machines} from '@/routes/machines';
+import {index as setups} from '@/routes/setups';
+import {index as parts} from '@/routes/parts';
+import {index as partSetups} from '@/routes/part-setups';
+import {index as sections} from '@/routes/sections';
+import {index as sectionSizes} from '@/routes/section-sizes';
+import {index as tools} from '@/routes/tools';
+import {index as rawMaterialTransactions} from '@/routes/raw-material-transactions';
+import {index as toolTransactions} from '@/routes/tool-transactions';
+import {index as employees} from '@/routes/employees';
+import {index as attendance} from '@/routes/attendances';
+import {index as salaries} from '@/routes/salaries';
+import {index as operatorWorkLogs} from '@/routes/operator';
+import {index as bandsawWorkLogs} from '@/routes/bandsaw';
 
-import type { NavItem } from '@/types';
+import type {NavItem} from '@/types';
 
 const dashboardItem: NavItem = {
     title: 'Dashboard',
@@ -220,6 +220,21 @@ export function getMainNavItems(role?: string): NavItem[] {
                 },
             ];
     }
+}
+
+
+/**
+ * Returns a submenu item by its zero-based index for a main navigation item.
+ */
+export function getSubNavItem(
+    mainItem: NavItem,
+    subItemIndex: number,
+): NavItem | undefined {
+    if (!mainItem.items || subItemIndex < 0) {
+        return undefined;
+    }
+
+    return mainItem.items[subItemIndex];
 }
 
 /**

@@ -33,7 +33,8 @@ export type ActionShortcutHandlers = Partial<
 /**
  * Shared keyboard shortcut definitions.
  *
- * Alt + Shift combinations reduce conflicts with browser shortcuts.
+ * Alt + Shift combinations are used to reduce conflicts with common
+ * browser and operating-system shortcuts.
  */
 export const ACTION_SHORTCUTS: Record<
     ActionShortcutName,
@@ -118,10 +119,23 @@ function isEditableTarget(target: EventTarget | null): boolean {
         return false;
     }
 
-    return Boolean(
+    if (
         target.isContentEditable ||
+        target.closest('[contenteditable="true"]')
+    ) {
+        return true;
+    }
+
+    return Boolean(
         target.closest(
-            'input, textarea, select, [contenteditable="true"], [role="textbox"]',
+            [
+                'input',
+                'textarea',
+                'select',
+                '[role="textbox"]',
+                '[role="combobox"]',
+                '[role="spinbutton"]',
+            ].join(','),
         ),
     );
 }
@@ -162,20 +176,17 @@ export function useActionShortcuts(
                 continue;
             }
 
-            // Allow registered shortcuts inside inputs and search fields.
-            // Do not intercept shortcuts while typing unless one matches.
-            if (
-                isEditableTarget(event.target) &&
-                !matchesShortcut(event, shortcut)
-            ) {
-                continue;
-            }
-
+            // A disabled action must not execute or consume the shortcut.
             if (
                 action.enabled !== undefined &&
                 !toValue(action.enabled)
             ) {
-                return;
+                continue;
+            }
+
+            // Do not interfere with typing or editing form controls.
+            if (isEditableTarget(event.target)) {
+                continue;
             }
 
             event.preventDefault();
