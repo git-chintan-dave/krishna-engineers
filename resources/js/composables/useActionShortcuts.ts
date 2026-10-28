@@ -7,6 +7,8 @@ export type ActionShortcutName =
     | 'resetPreferences'
     | 'import'
     | 'sync'
+    | 'search'
+    | 'clearSearch'
     | 'generateSalary'
     | 'back'
     | 'save';
@@ -84,6 +86,24 @@ export const ACTION_SHORTCUTS: Record<
         meta: false,
         label: 'Alt + Shift + S',
         symbol: 'Alt + Shift + S',
+    },
+    search: {
+        key: 'e',
+        alt: true,
+        shift: true,
+        ctrl: false,
+        meta: false,
+        label: 'Alt + Shift + E',
+        symbol: 'Alt + Shift + E',
+    },
+    clearSearch: {
+        key: 'x',
+        alt: true,
+        shift: true,
+        ctrl: false,
+        meta: false,
+        label: 'Alt + Shift + X',
+        symbol: 'Alt + Shift + X',
     },
     generateSalary: {
         key: 'g',
@@ -166,6 +186,7 @@ export function useActionShortcuts(
         }
 
         const registeredActions = toValue(actions);
+        const isEditing = isEditableTarget(event.target);
 
         for (const [name, action] of Object.entries(
             registeredActions,
@@ -184,8 +205,12 @@ export function useActionShortcuts(
                 continue;
             }
 
-            // Do not interfere with typing or editing form controls.
-            if (isEditableTarget(event.target)) {
+            // Search shortcuts are allowed while editing form controls.
+            if (
+                isEditing &&
+                name !== 'search' &&
+                name !== 'clearSearch'
+            ) {
                 continue;
             }
 

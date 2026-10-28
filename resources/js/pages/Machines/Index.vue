@@ -159,9 +159,17 @@ useActionShortcuts(
         import: {
             handler: () => router.visit(machinesImportRoute().url),
         },
-
         resetPreferences: {
             handler: resetPreferences,
+        },
+        search: {
+            handler: search,
+        },
+        clearSearch: {
+            handler: () => {
+                searchQuery.value = '';
+            },
+            enabled: computed(() => searchQuery.value.trim().length > 0),
         },
     })),
 );

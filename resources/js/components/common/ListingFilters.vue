@@ -1,9 +1,11 @@
 <script lang="ts" setup>
-import { computed, ref, useId, useSlots } from 'vue';
-import { ChevronDown, SlidersHorizontal } from '@lucide/vue';
+import {computed, ref, useId, useSlots} from 'vue';
+import {ChevronDown, SlidersHorizontal} from '@lucide/vue';
 
 import AppSearch from '@/components/common/AppSearch.vue';
-import { Button } from '@/components/ui/button';
+import {Button} from '@/components/ui/button';
+
+import {ACTION_SHORTCUTS, useActionShortcuts} from '@/composables/useActionShortcuts';
 
 const props = withDefaults(
     defineProps<{
@@ -45,11 +47,33 @@ const isClearDisabled = computed(
 );
 
 const hasFilters = computed(() => Boolean(slots.filters));
+
 const hasCollapsibleContent = computed(
     () => props.searchable || hasFilters.value,
 );
 
 const mobileFiltersOpen = ref(false);
+
+/*
+|--------------------------------------------------------------------------
+| Keyboard Shortcuts
+|--------------------------------------------------------------------------
+*/
+
+useActionShortcuts(
+    computed(() => ({
+        search: {
+            handler: () => emit('search'),
+            enabled: computed(
+                () => props.searchable && !props.searchDisabled,
+            ),
+        },
+        clearSearch: {
+            handler: () => emit('clear'),
+            enabled: computed(() => !isClearDisabled.value),
+        },
+    })),
+);
 </script>
 
 <template>
@@ -116,7 +140,12 @@ const mobileFiltersOpen = ref(false);
                     type="button"
                     @click="emit('search')"
                 >
-                    {{ searchButtonLabel }}
+                    <span>{{ searchButtonLabel }}</span>
+                    <kbd
+                        class="ml-2 hidden rounded border border-current/20 px-1.5 py-0.5 text-[10px] font-normal opacity-70 sm:inline-block"
+                    >
+                        {{ ACTION_SHORTCUTS.search.label }}
+                    </kbd>
                 </Button>
 
                 <Button
@@ -127,9 +156,15 @@ const mobileFiltersOpen = ref(false);
                     variant="outline"
                     @click="emit('clear')"
                 >
-                    {{ clearButtonLabel }}
+                    <span>{{ clearButtonLabel }}</span>
+                    <kbd
+                        class="ml-2 hidden rounded border border-current/20 px-1.5 py-0.5 text-[10px] font-normal opacity-70 sm:inline-block"
+                    >
+                        {{ ACTION_SHORTCUTS.clearSearch.label }}
+                    </kbd>
                 </Button>
             </div>
+
         </div>
     </div>
 </template>
