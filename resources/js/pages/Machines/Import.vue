@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import {Head, router} from '@inertiajs/vue3';
+import {Head} from '@inertiajs/vue3';
 
 import AppPageHeader from '@/components/common/AppPageHeader.vue';
 import ImportFile from '@/components/common/ImportFile.vue';
 import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
-import {useActionShortcuts} from '@/composables/useActionShortcuts';
+
 import {machinePage} from '@/config/machines';
+
 import {index as machines} from '@/routes/machines';
 import {store as submitImport} from '@/routes/machines/import';
 
@@ -17,12 +18,6 @@ defineOptions({
         }),
     },
 });
-
-useActionShortcuts(() => ({
-    back: {
-        handler: () => router.visit(machines().url),
-    },
-}));
 </script>
 
 <template>
@@ -37,6 +32,7 @@ useActionShortcuts(() => ({
         <ImportFile
             accepted-files=".xlsx,.xls,.csv"
             description="Upload the machine spreadsheet to import machine records."
+            :index-url="machines().url"
             :information-items="[
                 'Name is required.',
                 'Number is optional and identifies an existing machine when provided.',

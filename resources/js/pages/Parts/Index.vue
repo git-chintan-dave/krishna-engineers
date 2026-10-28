@@ -4,24 +4,25 @@ import {computed, ref} from 'vue';
 import {Database, FileUp, RotateCcw, SearchX} from '@lucide/vue';
 
 import DataTable from '@/components/data-table/DataTable.vue';
-import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingActions, {type ActionItem} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
 
+import {ACTION_SHORTCUTS, useActionShortcuts} from '@/composables/useActionShortcuts';
 import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
 import {useListingEmptyState} from '@/composables/useListingEmptyState';
 import {useListingTable} from '@/composables/useListingTable';
 
 import {partPage} from '@/config/parts';
 
-import {bulkDestroy, create, destroy, index as partsRoute,} from '@/routes/parts';
+import {bulkDestroy, create, destroy, index as partsRoute} from '@/routes/parts';
 import {view as partsImportRoute} from '@/routes/parts/import';
 
 import {createPartColumns} from '@/table/parts';
 
-import type {Part, PartFilters, PartSort, PartsResponse,} from '@/types/part';
+import type {Part, PartFilters, PartSort, PartsResponse} from '@/types/part';
 import type {StatusFilter} from '@/types/listing';
 
 const props = defineProps<{
@@ -112,15 +113,28 @@ const actions = computed<ActionItem[]>(() => [
         label: 'Import',
         icon: FileUp,
         href: partsImportRoute().url,
+        shortcut: ACTION_SHORTCUTS.import.label,
     },
     {
         key: 'reset-preferences',
         label: 'Reset preferences',
         icon: RotateCcw,
         action: resetPreferences,
+        shortcut: ACTION_SHORTCUTS.resetPreferences.label,
         separatorBefore: true,
     },
 ]);
+
+useActionShortcuts(
+    computed(() => ({
+        import: {
+            handler: () => router.visit(partsImportRoute().url),
+        },
+        resetPreferences: {
+            handler: resetPreferences,
+        },
+    })),
+);
 
 const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);

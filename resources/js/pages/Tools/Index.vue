@@ -3,27 +3,28 @@ import {Deferred, router} from '@inertiajs/vue3';
 import {computed, ref} from 'vue';
 import {Database, FileUp, RotateCcw, SearchX} from '@lucide/vue';
 
-import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingActions, {type ActionItem} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import AppToolTypeSelect from '@/components/selects/AppToolTypeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
 
+import {ACTION_SHORTCUTS, useActionShortcuts} from '@/composables/useActionShortcuts';
 import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
 import {useListingEmptyState} from '@/composables/useListingEmptyState';
 import {useListingTable} from '@/composables/useListingTable';
 
 import {toolPage} from '@/config/tools';
 
-import {bulkDestroy, create, destroy, index as toolsRoute,} from '@/routes/tools';
+import {bulkDestroy, create, destroy, index as toolsRoute} from '@/routes/tools';
 import {view as toolsImportRoute} from '@/routes/tools/import';
 
 import {createToolColumns} from '@/table/tools';
 
-import {getQuantityRowHighlight} from "@/lib/row-highlights";
+import {getQuantityRowHighlight} from '@/lib/row-highlights';
 
-import type {Tool, ToolFilters, ToolSort, ToolsResponse,} from '@/types/tool';
+import type {Tool, ToolFilters, ToolSort, ToolsResponse} from '@/types/tool';
 import type {StatusFilter} from '@/types/listing';
 
 const props = defineProps<{
@@ -114,15 +115,28 @@ const actions = computed<ActionItem[]>(() => [
         label: 'Import',
         icon: FileUp,
         href: toolsImportRoute().url,
+        shortcut: ACTION_SHORTCUTS.import.label,
     },
     {
         key: 'reset-preferences',
         label: 'Reset preferences',
         icon: RotateCcw,
         action: resetPreferences,
+        shortcut: ACTION_SHORTCUTS.resetPreferences.label,
         separatorBefore: true,
     },
 ]);
+
+useActionShortcuts(
+    computed(() => ({
+        import: {
+            handler: () => router.visit(toolsImportRoute().url),
+        },
+        resetPreferences: {
+            handler: resetPreferences,
+        },
+    })),
+);
 
 const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);

@@ -67,6 +67,7 @@ const handleSubmit = () => {
                         :error="frontendErrors.name ?? props.errors.name"
                         :icon="Settings2"
                         :placeholder="setupPage.form.namePlaceholder"
+                        autofocus
                     />
                 </AppField>
 

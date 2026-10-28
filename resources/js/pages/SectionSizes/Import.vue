@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { Head } from '@inertiajs/vue3';
+import {Head} from '@inertiajs/vue3';
 
 import AppPageHeader from '@/components/common/AppPageHeader.vue';
 import ImportFile from '@/components/common/ImportFile.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { sectionSizePage } from '@/config/sectionSizes';
-import { index as sectionSizes } from '@/routes/section-sizes';
-import { store as submitImport } from '@/routes/section-sizes/import';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {sectionSizePage} from '@/config/sectionSizes';
+import {index as sectionSizes} from '@/routes/section-sizes';
+import {store as submitImport} from '@/routes/section-sizes/import';
 
 defineOptions({
     layout: {
@@ -30,6 +30,7 @@ defineOptions({
         <ImportFile
             accepted-files=".xlsx,.xls,.csv"
             description="Upload the section size spreadsheet."
+            :index-url="sectionSizes().url"
             :information-items="[
                 'Section Name and Size are required.',
                 'Section names are matched case-insensitively and must exist in the system.',

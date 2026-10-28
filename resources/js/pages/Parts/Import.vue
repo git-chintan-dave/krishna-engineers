@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { Head } from '@inertiajs/vue3';
+import {Head} from '@inertiajs/vue3';
 
 import AppPageHeader from '@/components/common/AppPageHeader.vue';
 import ImportFile from '@/components/common/ImportFile.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { partPage } from '@/config/parts';
-import { index as parts } from '@/routes/parts';
-import { store as submitImport } from '@/routes/parts/import';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {partPage} from '@/config/parts';
+import {index as parts} from '@/routes/parts';
+import {store as submitImport} from '@/routes/parts/import';
 
 defineOptions({
     layout: {
@@ -30,6 +30,7 @@ defineOptions({
         <ImportFile
             accepted-files=".xlsx,.xls,.csv"
             description="Upload the parts spreadsheet to import part records."
+            :index-url="parts().url"
             :information-items="[
                 'Name is required.',
                 'New Part Name, Section, Cutting Size, Part Weight, and Raw Material Weight are optional.',

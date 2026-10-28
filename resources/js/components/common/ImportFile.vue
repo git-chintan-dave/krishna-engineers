@@ -1,17 +1,11 @@
 <script lang="ts" setup>
-import { useForm } from '@inertiajs/vue3';
-import {
-    CheckCircle2,
-    Download,
-    FileSpreadsheet,
-    Loader2,
-    UploadCloud,
-    X,
-} from '@lucide/vue';
-import { computed, ref } from 'vue';
+import {router, useForm} from '@inertiajs/vue3';
+import {CheckCircle2, Download, FileSpreadsheet, Loader2, UploadCloud, X,} from '@lucide/vue';
+import {computed, ref} from 'vue';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {Card, CardContent} from '@/components/ui/card';
+import {useActionShortcuts,} from '@/composables/useActionShortcuts';
 
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +27,7 @@ const props = withDefaults(
         informationTitle?: string;
         informationItems?: string[];
         submitUrl: string;
+        indexUrl?: string;
     }>(),
     {
         title: 'Import',
@@ -47,6 +42,7 @@ const props = withDefaults(
         sampleFileName: 'samples.xlsx',
         informationTitle: 'Before importing',
         informationItems: () => [],
+        indexUrl: undefined,
     },
 );
 
@@ -96,17 +92,40 @@ const acceptedFileLabels = computed(() =>
 
 /*
 |--------------------------------------------------------------------------
+| Keyboard Shortcuts
+|--------------------------------------------------------------------------
+*/
+
+useActionShortcuts(() => ({
+    back: {
+        handler: () => {
+            if (props.indexUrl && !form.processing) {
+                router.visit(props.indexUrl);
+            }
+        },
+    },
+    save: {
+        handler: () => {
+            if (form.file && !form.processing) {
+                submit();
+            }
+        },
+    },
+}));
+
+/*
+|--------------------------------------------------------------------------
 | File Selection
 |--------------------------------------------------------------------------
 */
 
-const openFilePicker = () => {
+const openFilePicker = (): void => {
     if (!form.processing) {
         fileInput.value?.click();
     }
 };
 
-const setFile = (file: File | null) => {
+const setFile = (file: File | null): void => {
     if (!file || form.processing) {
         return;
     }
@@ -115,13 +134,13 @@ const setFile = (file: File | null) => {
     form.clearErrors('file');
 };
 
-const onFileChange = (event: Event) => {
+const onFileChange = (event: Event): void => {
     const target = event.target as HTMLInputElement;
 
     setFile(target.files?.[0] ?? null);
 };
 
-const onDrop = (event: DragEvent) => {
+const onDrop = (event: DragEvent): void => {
     isDragging.value = false;
 
     if (form.processing) {
@@ -131,12 +150,13 @@ const onDrop = (event: DragEvent) => {
     setFile(event.dataTransfer?.files?.[0] ?? null);
 };
 
-const removeFile = () => {
+const removeFile = (): void => {
     if (form.processing) {
         return;
     }
 
     form.reset('file');
+    form.clearErrors('file');
 
     if (fileInput.value) {
         fileInput.value.value = '';
@@ -149,7 +169,7 @@ const removeFile = () => {
 |--------------------------------------------------------------------------
 */
 
-const submit = () => {
+const submit = (): void => {
     if (!form.file || form.processing) {
         return;
     }
@@ -159,6 +179,10 @@ const submit = () => {
         preserveScroll: true,
         onSuccess: () => {
             emit('success');
+
+            if (props.indexUrl) {
+                router.visit(props.indexUrl);
+            }
         },
     });
 };
@@ -168,11 +192,7 @@ const submit = () => {
     <Card>
         <CardContent class="space-y-6 p-6">
             <form class="space-y-6" @submit.prevent="submit">
-                <!--
-                |--------------------------------------------------------------------------
-                | Upload Area
-                |--------------------------------------------------------------------------
-                -->
+                <!-- Upload Area -->
 
                 <div
                     :class="[
@@ -180,9 +200,18 @@ const submit = () => {
                             ? 'border-primary bg-primary/5'
                             : 'border-border bg-muted/20 hover:border-primary/40',
                         form.errors.file ? 'border-destructive' : '',
+                        form.processing
+                            ? 'cursor-not-allowed opacity-70'
+                            : 'cursor-pointer',
                     ]"
-                    class="relative flex min-h-72 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 transition-colors"
+                    class="relative flex min-h-72 flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 transition-colors"
+                    role="button"
+                    :aria-label="props.uploadText"
+                    :aria-disabled="form.processing"
+                    :tabindex="form.processing ? -1 : 0"
                     @click="openFilePicker"
+                    @keydown.enter.prevent="openFilePicker"
+                    @keydown.space.prevent="openFilePicker"
                     @dragenter.prevent="!form.processing && (isDragging = true)"
                     @dragover.prevent="!form.processing && (isDragging = true)"
                     @dragleave.prevent="isDragging = false"
@@ -193,6 +222,7 @@ const submit = () => {
                         :accept="props.acceptedFiles"
                         class="hidden"
                         type="file"
+                        :disabled="form.processing"
                         @change="onFileChange"
                     />
 
@@ -260,18 +290,13 @@ const submit = () => {
                                 @click.stop="removeFile"
                             >
                                 <X aria-hidden="true" class="size-4" />
-
                                 <span>Remove file</span>
                             </Button>
                         </div>
                     </template>
                 </div>
 
-                <!--
-                |--------------------------------------------------------------------------
-                | Validation Error
-                |--------------------------------------------------------------------------
-                -->
+                <!-- Validation Error -->
 
                 <p
                     v-if="form.errors.file"
@@ -281,11 +306,7 @@ const submit = () => {
                     {{ form.errors.file }}
                 </p>
 
-                <!--
-                |--------------------------------------------------------------------------
-                | Sample File
-                |--------------------------------------------------------------------------
-                -->
+                <!-- Sample File -->
 
                 <div
                     v-if="props.sampleFile"
@@ -312,11 +333,7 @@ const submit = () => {
                     </Button>
                 </div>
 
-                <!--
-                |--------------------------------------------------------------------------
-                | Import Information
-                |--------------------------------------------------------------------------
-                -->
+                <!-- Import Information -->
 
                 <div
                     v-if="props.informationItems.length"
@@ -327,21 +344,20 @@ const submit = () => {
                     </p>
 
                     <ul class="mt-2 list-disc space-y-1 pl-5">
-                        <li v-for="item in props.informationItems" :key="item">
+                        <li
+                            v-for="item in props.informationItems"
+                            :key="item"
+                        >
                             {{ item }}
                         </li>
                     </ul>
                 </div>
 
-                <!--
-                |--------------------------------------------------------------------------
-                | Submit
-                |--------------------------------------------------------------------------
-                -->
+                <!-- Submit -->
 
                 <Button
                     :disabled="!form.file || form.processing"
-                    class="h-10 w-full cursor-pointer"
+                    class="h-10 w-full"
                     type="submit"
                 >
                     <Loader2

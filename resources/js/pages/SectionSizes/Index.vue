@@ -3,19 +3,20 @@ import {Deferred, router} from '@inertiajs/vue3';
 import {Database, FileUp, RotateCcw, SearchX} from '@lucide/vue';
 import {computed, ref} from 'vue';
 
-import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingActions, {type ActionItem} from '@/components/common/ListingActions.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 
+import {ACTION_SHORTCUTS, useActionShortcuts} from '@/composables/useActionShortcuts';
 import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
 import {useListingEmptyState} from '@/composables/useListingEmptyState';
 import {useListingTable} from '@/composables/useListingTable';
 
 import {sectionSizePage} from '@/config/sectionSizes';
 
-import {bulkDestroy, create, destroy, index as sectionSizesRoute,} from '@/routes/section-sizes';
+import {bulkDestroy, create, destroy, index as sectionSizesRoute} from '@/routes/section-sizes';
 import {view as sectionSizesImportRoute} from '@/routes/section-sizes/import';
 
 import {createSectionSizeColumns} from '@/table/sectionSizes';
@@ -103,15 +104,28 @@ const actions = computed<ActionItem[]>(() => [
         label: 'Import',
         icon: FileUp,
         href: sectionSizesImportRoute().url,
+        shortcut: ACTION_SHORTCUTS.import.label,
     },
     {
         key: 'reset-preferences',
         label: 'Reset preferences',
         icon: RotateCcw,
         action: resetPreferences,
+        shortcut: ACTION_SHORTCUTS.resetPreferences.label,
         separatorBefore: true,
     },
 ]);
+
+useActionShortcuts(
+    computed(() => ({
+        import: {
+            handler: () => router.visit(sectionSizesImportRoute().url),
+        },
+        resetPreferences: {
+            handler: resetPreferences,
+        },
+    })),
+);
 
 const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);

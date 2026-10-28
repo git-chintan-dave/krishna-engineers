@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { Head } from '@inertiajs/vue3';
+import {Head} from '@inertiajs/vue3';
 
 import AppPageHeader from '@/components/common/AppPageHeader.vue';
 import ImportFile from '@/components/common/ImportFile.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { partSetupPage } from '@/config/partSetups';
-import { index as partSetups } from '@/routes/part-setups';
-import { store as submitImport } from '@/routes/part-setups/import';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {partSetupPage} from '@/config/partSetups';
+import {index as partSetups} from '@/routes/part-setups';
+import {store as submitImport} from '@/routes/part-setups/import';
 
 defineOptions({
     layout: {
@@ -30,6 +30,7 @@ defineOptions({
         <ImportFile
             accepted-files=".xlsx,.xls,.csv"
             description="Upload the part setup spreadsheet to import part and setup combinations."
+            :index-url="partSetups().url"
             :information-items="[
                 'Part, Setup, Machine Cycle Time, and Actual Cycle Time are required.',
                 'Part and Setup names are matched case-insensitively against existing records.',

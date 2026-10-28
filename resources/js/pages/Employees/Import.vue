@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { Head } from '@inertiajs/vue3';
+import {Head} from '@inertiajs/vue3';
 
 import AppPageHeader from '@/components/common/AppPageHeader.vue';
 import ImportFile from '@/components/common/ImportFile.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { employeePage } from '@/config/employees';
-import { index as employees } from '@/routes/employees';
-import { store as submitImport } from '@/routes/employees/import';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {employeePage} from '@/config/employees';
+import {index as employees} from '@/routes/employees';
+import {store as submitImport} from '@/routes/employees/import';
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +36,7 @@ defineOptions({
         <ImportFile
             accepted-files=".xlsx,.xls,.csv"
             description="Upload the employee spreadsheet to import employee records."
+            :index-url="employees().url"
             :information-items="[
                 'Name, Employee Code, and Role are required.',
                 'Employee Code is used to identify existing employees.',

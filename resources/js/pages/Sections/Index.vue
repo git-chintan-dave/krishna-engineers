@@ -3,19 +3,20 @@ import {Deferred, router} from '@inertiajs/vue3';
 import {computed, ref} from 'vue';
 import {Database, FileUp, RotateCcw, SearchX} from '@lucide/vue';
 
-import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingActions, {type ActionItem} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
 
+import {ACTION_SHORTCUTS, useActionShortcuts} from '@/composables/useActionShortcuts';
 import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
 import {useListingEmptyState} from '@/composables/useListingEmptyState';
 import {useListingTable} from '@/composables/useListingTable';
 
 import {sectionPage} from '@/config/sections';
 
-import {bulkDestroy, create, destroy, index as sectionsRoute,} from '@/routes/sections';
+import {bulkDestroy, create, destroy, index as sectionsRoute} from '@/routes/sections';
 import {view as sectionsImportRoute} from '@/routes/sections/import';
 
 import {createSectionColumns} from '@/table/sections';
@@ -102,15 +103,28 @@ const actions = computed<ActionItem[]>(() => [
         label: 'Import',
         icon: FileUp,
         href: sectionsImportRoute().url,
+        shortcut: ACTION_SHORTCUTS.import.label,
     },
     {
         key: 'reset-preferences',
         label: 'Reset preferences',
         icon: RotateCcw,
         action: resetPreferences,
+        shortcut: ACTION_SHORTCUTS.resetPreferences.label,
         separatorBefore: true,
     },
 ]);
+
+useActionShortcuts(
+    computed(() => ({
+        import: {
+            handler: () => router.visit(sectionsImportRoute().url),
+        },
+        resetPreferences: {
+            handler: resetPreferences,
+        },
+    })),
+);
 
 const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);

@@ -4,19 +4,20 @@ import {computed, ref} from 'vue';
 import {Database, FileUp, RotateCcw, SearchX} from '@lucide/vue';
 
 import DataTable from '@/components/data-table/DataTable.vue';
-import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingActions, {type ActionItem} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppPartSelect from '@/components/selects/AppPartSelect.vue';
 import AppSetupSelect from '@/components/selects/AppSetupSelect.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
 
+import {ACTION_SHORTCUTS, useActionShortcuts} from '@/composables/useActionShortcuts';
 import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
 import {useListingEmptyState} from '@/composables/useListingEmptyState';
 import {useListingTable} from '@/composables/useListingTable';
 
 import {partSetupPage} from '@/config/partSetups';
 
-import {bulkDestroy, create, destroy, index as partSetupsRoute,} from '@/routes/part-setups';
+import {bulkDestroy, create, destroy, index as partSetupsRoute} from '@/routes/part-setups';
 import {view as partSetupsImportRoute} from '@/routes/part-setups/import';
 
 import {createPartSetupColumns} from '@/table/partSetups';
@@ -99,15 +100,28 @@ const actions = computed<ActionItem[]>(() => [
         label: 'Import',
         icon: FileUp,
         href: partSetupsImportRoute().url,
+        shortcut: ACTION_SHORTCUTS.import.label,
     },
     {
         key: 'reset-preferences',
         label: 'Reset preferences',
         icon: RotateCcw,
         action: resetPreferences,
+        shortcut: ACTION_SHORTCUTS.resetPreferences.label,
         separatorBefore: true,
     },
 ]);
+
+useActionShortcuts(
+    computed(() => ({
+        import: {
+            handler: () => router.visit(partSetupsImportRoute().url),
+        },
+        resetPreferences: {
+            handler: resetPreferences,
+        },
+    })),
+);
 
 const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);
