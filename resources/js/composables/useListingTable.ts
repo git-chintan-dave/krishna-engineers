@@ -1,7 +1,7 @@
 import {router} from '@inertiajs/vue3';
 import type {RequestPayload} from '@inertiajs/core';
 import type {RowData, SortingState} from '@tanstack/vue-table';
-import {onMounted, ref, watch} from 'vue';
+import {computed, onMounted, ref, watch} from 'vue';
 
 import {useDataTable} from '@/composables/useDataTable';
 import {useListingPreferences} from '@/composables/useListingPreferences';
@@ -34,6 +34,7 @@ type ListingOptions<
     route: string;
     searchable?: boolean;
     additionalFilters?: () => Record<string, unknown>;
+    onClearFilters?: () => void;
     enableRowSelection?: (row: TData) => boolean;
 };
 
@@ -104,6 +105,33 @@ export function useListingTable<
     const searchQuery = ref(
         options.searchable === false ? '' : (options.filters.search ?? ''),
     );
+
+    const hasActiveFilters = computed(() => {
+        const hasSearch =
+            options.searchable !== false &&
+            Boolean(searchQuery.value.trim());
+
+        const hasAdditionalFilters = Object.values(
+            options.additionalFilters?.() ?? {},
+        ).some((value) => {
+            if (
+                value === undefined ||
+                value === null ||
+                value === '' ||
+                value === 'all'
+            ) {
+                return false;
+            }
+
+            if (Array.isArray(value) && value.length === 0) {
+                return false;
+            }
+
+            return true;
+        });
+
+        return hasSearch || hasAdditionalFilters;
+    });
 
     const defaultSorting: SortingState = [
         {
@@ -223,7 +251,6 @@ export function useListingTable<
                 enableRowSelection: options.enableRowSelection,
 
                 onPaginationChange: ({ pageIndex, pageSize }) => {
-                    // Deferred data may not have arrived yet.
                     if (!getResponse()) {
                         return;
                     }
@@ -384,7 +411,6 @@ export function useListingTable<
             ...additionalFilters,
         };
 
-        // Include only non-default pagination values.
         if (page !== DEFAULT_PAGE) {
             params.page = page;
         }
@@ -393,7 +419,6 @@ export function useListingTable<
             params.per_page = perPage;
         }
 
-        // Include only non-default sorting values.
         const effectiveSort = sortingParams.sort;
         const effectiveDirection = sortingParams.direction;
 
@@ -439,7 +464,6 @@ export function useListingTable<
     const restorePreferencesIfNecessary = () => {
         const response = getResponse();
 
-        // Wait until deferred data has arrived.
         if (!response || preferencesInitialized) {
             return;
         }
@@ -484,7 +508,6 @@ export function useListingTable<
 
     onMounted(restorePreferencesIfNecessary);
 
-    // Handles deferred props arriving after the component has mounted.
     watch(
         () => options.data(),
         (response) => {
@@ -503,6 +526,7 @@ export function useListingTable<
     const search = () => visit({ page: DEFAULT_PAGE });
 
     const clearFilters = () => {
+        options.onClearFilters?.();
         searchQuery.value = '';
         visit({ page: DEFAULT_PAGE });
     };
@@ -544,6 +568,7 @@ export function useListingTable<
         selectedRows,
         selectedCount,
         clearSelection,
+        hasActiveFilters,
         visit,
         search,
         clearFilters,

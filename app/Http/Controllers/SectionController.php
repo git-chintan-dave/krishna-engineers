@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\HasCrudResponses;
+use App\Http\Controllers\Concerns\HasListingFilters;
 use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\Sections\IndexSectionRequest;
 use App\Http\Requests\Sections\SectionRequest;
@@ -18,7 +19,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class SectionController extends Controller
 {
-    use HasCrudResponses;
+    use HasCrudResponses, HasListingFilters;
 
     private const string MODULE_NAME = 'Section';
 
@@ -30,26 +31,26 @@ class SectionController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function index(
-        IndexSectionRequest $request,
-    ): Response {
+    public function index(IndexSectionRequest $request): Response {
         Gate::authorize('viewAny', Section::class);
 
         $filters = $request->validated();
 
-        $sections = Section::query()
-            ->filterQuery($filters)
-            ->paginate($filters['per_page'] ?? 10)
-            ->withQueryString();
-
         return Inertia::render('Sections/Index', [
-            'sections' => SectionResource::collection($sections),
+            'sections' => Inertia::defer(function () use ($filters) {
+                $sections = Section::query()
+                    ->filterQuery($filters)
+                    ->paginate($filters['per_page'] ?? 10)
+                    ->withQueryString();
+
+                return SectionResource::collection($sections);
+            }),
+
+            'hasAnyRecords' => Section::query()->exists(),
+
             'filters' => [
-                'search' => $filters['search'] ?? '',
+                ...$this->listingFilters($filters),
                 'status' => $filters['status'] ?? 'all',
-                'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'id',
-                'direction' => $filters['direction'] ?? 'desc',
             ],
         ]);
     }

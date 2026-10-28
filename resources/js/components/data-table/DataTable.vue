@@ -62,13 +62,28 @@ type Props = {
     emptyText?: string;
     emptyState?: EmptyStateConfig;
     itemLabel?: string;
-
-    /**
-     * Resolve the semantic highlight for each row.
-     * Return undefined for a normal row.
-     */
     rowHighlight?: RowHighlightResolver<any>;
 };
+
+/*
+|--------------------------------------------------------------------------
+| Constants
+|--------------------------------------------------------------------------
+*/
+
+const SELECT_COLUMN_ID = 'select';
+const ACTIONS_COLUMN_ID = 'actions';
+
+const INTERACTIVE_SELECTOR = [
+    'button',
+    'a',
+    'input',
+    'select',
+    'textarea',
+    '[role="button"]',
+    '[role="checkbox"]',
+    '[data-row-selection-ignore]',
+].join(', ');
 
 /*
 |--------------------------------------------------------------------------
@@ -87,6 +102,51 @@ const props = withDefaults(defineProps<Props>(), {
     emptyText: 'No records found.',
     itemLabel: 'records',
 });
+
+/*
+|--------------------------------------------------------------------------
+| Row Selection
+|--------------------------------------------------------------------------
+*/
+
+const hasSelectionColumn = computed(() =>
+    props.table
+        .getAllLeafColumns()
+        .some((column) => column.id === SELECT_COLUMN_ID),
+);
+
+const handleRowClick = (event: MouseEvent, row: any) => {
+    if (
+        !hasSelectionColumn.value ||
+        !row.getCanSelect() ||
+        props.loading
+    ) {
+        return;
+    }
+
+    const target = event.target;
+
+    if (!(target instanceof Element)) {
+        return;
+    }
+
+    // Clicking anywhere inside the actions cell must not select the row.
+    if (
+        target.closest(
+            `[data-column-id="${ACTIONS_COLUMN_ID}"]`,
+        )
+    ) {
+        return;
+    }
+
+    // Controls manage their own interactions.
+    // This prevents checkbox clicks from toggling selection twice.
+    if (target.closest(INTERACTIVE_SELECTOR)) {
+        return;
+    }
+
+    row.toggleSelected();
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -296,6 +356,7 @@ const getRowClass = (row: any) => {
 
     return [
         'group transition-colors',
+        hasSelectionColumn.value ? 'cursor-pointer' : '',
         getRowHighlightClass(highlight),
     ];
 };
@@ -307,10 +368,10 @@ const getRowClass = (row: any) => {
 */
 
 const FIXED_COLUMN_IDS = [
-    'select',
+    SELECT_COLUMN_ID,
     'status',
     'created_at',
-    'actions',
+    ACTIONS_COLUMN_ID,
 ];
 
 const getColumnStyle = (column: any) => {
@@ -375,15 +436,19 @@ const handlePageSizeChange = (
 </script>
 
 <template>
-    <div class="w-full min-w-0 overflow-hidden rounded-lg border bg-background">
+    <div
+        class="w-full min-w-0 overflow-hidden rounded-lg border bg-background"
+    >
         <!-- Table -->
-        <div class="w-full min-w-0 overflow-x-auto overscroll-x-contain">
+        <div
+            class="w-full min-w-0 overflow-x-auto overscroll-x-contain"
+        >
             <UiTable class="table-fixed" :style="tableStyle">
                 <TableHeader>
                     <TableRow
                         v-for="headerGroup in table.getHeaderGroups()"
                         :key="headerGroup.id"
-                        class="bg-muted/30 hover:bg-muted/30"
+                        class="bg-transparent hover:bg-transparent"
                     >
                         <TableHead
                             v-for="header in headerGroup.headers"
@@ -393,6 +458,9 @@ const handlePageSizeChange = (
                                 getAlignmentClass(
                                     getColumnAlign(header.column),
                                 ),
+                                header.column.id === SELECT_COLUMN_ID
+                                    ? 'bg-transparent'
+                                    : 'bg-muted/30 hover:bg-muted/30',
                                 'capitalize',
                             ]"
                             :style="getColumnStyle(header.column)"
@@ -416,6 +484,7 @@ const handlePageSizeChange = (
                             <TableCell
                                 v-for="(columnId, index) in loadingColumnIds"
                                 :key="index"
+                                :data-column-id="columnId"
                                 :class="getColumnClass(columnId)"
                                 :style="
                                     getColumnStyle(
@@ -458,10 +527,12 @@ const handlePageSizeChange = (
                                     : undefined
                             "
                             :class="getRowClass(row)"
+                            @click="handleRowClick($event, row)"
                         >
                             <TableCell
                                 v-for="cell in row.getAllCells()"
                                 :key="cell.id"
+                                :data-column-id="cell.column.id"
                                 :class="[
                                     getColumnClass(cell.column.id),
                                     getAlignmentClass(
@@ -510,7 +581,10 @@ const handlePageSizeChange = (
                                 </EmptyHeader>
 
                                 <EmptyContent
-                                    v-if="emptyState.actionLabel && emptyState.onAction"
+                                    v-if="
+                                        emptyState.actionLabel &&
+                                        emptyState.onAction
+                                    "
                                 >
                                     <Button
                                         type="button"
@@ -526,7 +600,9 @@ const handlePageSizeChange = (
                                 v-else
                                 class="flex min-h-32 items-center justify-center px-4 text-center"
                             >
-                                <span class="text-sm text-muted-foreground">
+                                <span
+                                    class="text-sm text-muted-foreground"
+                                >
                                     {{ emptyText }}
                                 </span>
                             </div>
@@ -544,7 +620,9 @@ const handlePageSizeChange = (
             <div class="flex flex-col gap-4">
                 <!-- Summary -->
                 <div class="min-w-0">
-                    <p class="text-sm break-words text-muted-foreground">
+                    <p
+                        class="text-sm break-words text-muted-foreground"
+                    >
                         Showing
                         <span class="font-medium text-foreground">
                             {{ showingFrom }}–{{ showingTo }}
@@ -570,7 +648,9 @@ const handlePageSizeChange = (
                     class="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                     <!-- Page Size -->
-                    <div class="flex min-w-0 items-center gap-2">
+                    <div
+                        class="flex min-w-0 items-center gap-2"
+                    >
                         <span
                             class="shrink-0 text-sm whitespace-nowrap text-muted-foreground"
                         >
@@ -589,7 +669,9 @@ const handlePageSizeChange = (
                     </div>
 
                     <!-- Pages -->
-                    <div class="max-w-full min-w-0 overflow-x-auto pb-0.5">
+                    <div
+                        class="max-w-full min-w-0 overflow-x-auto pb-0.5"
+                    >
                         <div
                             aria-label="Pagination"
                             class="flex w-max items-center gap-1"

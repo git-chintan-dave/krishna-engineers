@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\HasCrudResponses;
+use App\Http\Controllers\Concerns\HasListingFilters;
 use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\SectionSizes\IndexSectionSizeRequest;
 use App\Http\Requests\SectionSizes\SectionSizeRequest;
@@ -18,7 +19,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class SectionSizeController extends Controller
 {
-    use HasCrudResponses;
+    use HasCrudResponses, HasListingFilters;
 
     private const string MODULE_NAME = 'Section Size';
 
@@ -36,20 +37,22 @@ class SectionSizeController extends Controller
 
         $filters = $request->validated();
 
-        $sectionSizes = SectionSize::query()
-            ->with('section')
-            ->filterQuery($filters)
-            ->paginate($filters['per_page'] ?? 10)
-            ->withQueryString();
-
         return Inertia::render('SectionSizes/Index', [
-            'sectionSizes' => SectionSizeResource::collection($sectionSizes),
+            'sectionSizes' => Inertia::defer(function () use ($filters) {
+                $sectionSizes = SectionSize::query()
+                    ->with('section')
+                    ->filterQuery($filters)
+                    ->paginate($filters['per_page'] ?? 10)
+                    ->withQueryString();
+
+                return SectionSizeResource::collection($sectionSizes);
+            }),
+
+            'hasAnyRecords' => SectionSize::query()->exists(),
+
             'filters' => [
-                'search' => $filters['search'] ?? '',
+                ...$this->listingFilters($filters),
                 'sectionId' => $filters['section_id'] ?? 'all',
-                'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'id',
-                'direction' => $filters['direction'] ?? 'desc',
             ],
         ]);
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\HasCrudResponses;
+use App\Http\Controllers\Concerns\HasListingFilters;
 use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\PartSetups\IndexPartSetupRequest;
 use App\Http\Requests\PartSetups\PartSetupRequest;
@@ -19,7 +20,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class PartSetupController extends Controller
 {
-    use HasCrudResponses;
+    use HasCrudResponses, HasListingFilters;
 
     private const string MODULE_NAME = 'Part Setup';
 
@@ -37,31 +38,30 @@ class PartSetupController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function index(
-        IndexPartSetupRequest $request,
-    ): Response {
+    public function index(IndexPartSetupRequest $request): Response {
         Gate::authorize('viewAny', PartSetup::class);
 
         $filters = $request->validated();
 
-        $partSetups = PartSetup::query()
-            ->with(['part', 'setup'])
-            ->filterQuery($filters)
-            ->paginate($filters['per_page'] ?? 10)
-            ->withQueryString();
-
         return Inertia::render('PartSetups/Index', [
-            'partSetups' => PartSetupResource::collection($partSetups),
+            'partSetups' => Inertia::defer(function () use ($filters) {
+                $partSetups = PartSetup::query()
+                    ->with(['part', 'setup'])
+                    ->filterQuery($filters)
+                    ->paginate($filters['per_page'] ?? 10)
+                    ->withQueryString();
+
+                return PartSetupResource::collection($partSetups);
+            }),
+
+            'hasAnyRecords' => PartSetup::query()->exists(),
+
             'filters' => [
-                'search' => $filters['search'] ?? '',
+                ...$this->listingFilters($filters),
                 'partId' => $filters['part_id'] ?? null,
                 'setupId' => $filters['setup_id'] ?? null,
-                'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'id',
-                'direction' => $filters['direction'] ?? 'desc',
             ],
-        ],
-        );
+        ]);
     }
 
     /*

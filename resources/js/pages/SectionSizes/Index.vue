@@ -1,49 +1,34 @@
 ﻿<script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import {Deferred, router} from '@inertiajs/vue3';
+import {Database, FileUp, RotateCcw, SearchX} from '@lucide/vue';
+import {computed, ref} from 'vue';
 
-import ListingActions, {
-    type ActionItem,
-} from '@/components/common/ListingActions.vue';
-import ListingFilters from '@/components/common/ListingFilters.vue';
-import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
+import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { sectionSizePage } from '@/config/sectionSizes';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as sectionSizesRoute,
-} from '@/routes/section-sizes';
-import { createSectionSizeColumns } from '@/table/sectionSizes';
-import type {
-    SectionSize,
-    SectionSizeFilters,
-    SectionSizeSort,
-    SectionSizesResponse,
-} from '@/types/sectionSize';
-import { FileUp, RotateCcw } from '@lucide/vue';
-import { view as sectionSizesImportRoute } from '@/routes/section-sizes/import';
+import ListingFilters from '@/components/common/ListingFilters.vue';
+import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 
-/*
-|--------------------------------------------------------------------------
-| Props
-|--------------------------------------------------------------------------
-*/
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingEmptyState} from '@/composables/useListingEmptyState';
+import {useListingTable} from '@/composables/useListingTable';
+
+import {sectionSizePage} from '@/config/sectionSizes';
+
+import {bulkDestroy, create, destroy, index as sectionSizesRoute,} from '@/routes/section-sizes';
+import {view as sectionSizesImportRoute} from '@/routes/section-sizes/import';
+
+import {createSectionSizeColumns} from '@/table/sectionSizes';
+
+import {getQuantityRowHighlight} from '@/lib/row-highlights';
+
+import type {SectionSize, SectionSizeFilters, SectionSizeSort, SectionSizesResponse,} from '@/types/sectionSize';
 
 const props = defineProps<{
-    sectionSizes: SectionSizesResponse;
+    sectionSizes?: SectionSizesResponse;
+    hasAnyRecords: boolean;
     filters: SectionSizeFilters;
 }>();
-
-/*
-|--------------------------------------------------------------------------
-| Page
-|--------------------------------------------------------------------------
-*/
 
 defineOptions({
     layout: {
@@ -54,28 +39,11 @@ defineOptions({
     },
 });
 
-/*
-|--------------------------------------------------------------------------
-| Filters
-|--------------------------------------------------------------------------
-*/
-
 const filterSectionId = ref<number | 'all'>(props.filters.sectionId);
 
 const handleSectionChange = (value: number | null): void => {
     filterSectionId.value = value ?? 'all';
 };
-
-const handleClearFilters = (): void => {
-    filterSectionId.value = 'all';
-    clearFilters();
-};
-
-/*
-|--------------------------------------------------------------------------
-| Table
-|--------------------------------------------------------------------------
-*/
 
 const columns = createSectionSizeColumns((id) => {
     router.delete(destroy(id).url);
@@ -89,29 +57,45 @@ const {
     clearFilters,
     deleteSelected,
     resetPreferences,
+    hasActiveFilters,
 } = useListingTable<SectionSize, SectionSizeSort>({
     data: () => props.sectionSizes,
     columns,
-
     filters: {
         search: props.filters.search,
         sort: props.filters.sort,
         direction: props.filters.direction,
+        perPage: props.filters.perPage,
     },
-
     route: sectionSizesRoute.url(),
-
     additionalFilters: () => ({
-        section_id:
-            filterSectionId.value !== 'all' ? filterSectionId.value : undefined,
+        section_id: filterSectionId.value !== 'all'
+            ? filterSectionId.value
+            : undefined,
     }),
+    onClearFilters: () => {
+        filterSectionId.value = 'all';
+    },
 });
 
-/*
-|--------------------------------------------------------------------------
-| Actions
-|--------------------------------------------------------------------------
-*/
+const emptyState = useListingEmptyState({
+    hasAnyRecords: () => props.hasAnyRecords,
+    hasActiveFilters: () => hasActiveFilters.value,
+    noRecords: {
+        title: 'No section sizes yet',
+        description: 'Get started by adding your first section size.',
+        actionLabel: sectionSizePage.createLabel || 'Add section size',
+        icon: Database,
+        onAction: () => router.visit(create().url),
+    },
+    noResults: {
+        title: 'No results found',
+        description: 'Try adjusting your search or filters.',
+        actionLabel: sectionSizePage.clearButtonLabel || 'Clear filters',
+        icon: SearchX,
+        onAction: clearFilters,
+    },
+});
 
 const actions = computed<ActionItem[]>(() => [
     {
@@ -129,12 +113,6 @@ const actions = computed<ActionItem[]>(() => [
     },
 ]);
 
-/*
-|--------------------------------------------------------------------------
-| Bulk Actions
-|--------------------------------------------------------------------------
-*/
-
 const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);
 };
@@ -146,7 +124,6 @@ const handleDeleteSelected = (): void => {
         :title="sectionSizePage.title"
         @reset-preferences="resetPreferences"
     >
-        <!-- Actions -->
         <template #actions>
             <ListingActions
                 :actions="actions"
@@ -158,27 +135,20 @@ const handleDeleteSelected = (): void => {
             />
         </template>
 
-        <!-- Filters -->
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
                 :clear-button-label="sectionSizePage.clearButtonLabel"
-                :clear-disabled="
-                    !searchQuery.trim() && filterSectionId === 'all'
-                "
+                :clear-disabled="!hasActiveFilters"
                 :search-button-label="sectionSizePage.searchButtonLabel"
                 :search-placeholder="sectionSizePage.searchPlaceholder"
-                @clear="handleClearFilters"
+                @clear="clearFilters"
                 @search="search"
             >
                 <template #filters>
                     <div class="w-full min-w-0">
                         <AppSectionSelect
-                            :model-value="
-                                filterSectionId === 'all'
-                                    ? null
-                                    : filterSectionId
-                            "
+                            :model-value="filterSectionId === 'all' ? null : filterSectionId"
                             :placeholder="sectionSizePage.sectionPlaceholder"
                             clearable
                             @update:model-value="handleSectionChange"
@@ -188,19 +158,38 @@ const handleDeleteSelected = (): void => {
             </ListingFilters>
         </template>
 
-        <!-- Table -->
         <template #table>
-            <DataTable
-                :columns-count="columns.length"
-                :empty-text="sectionSizePage.emptyText"
-                :item-label="sectionSizePage.itemLabel"
-                :page-index="sectionSizes.meta.current_page - 1"
-                :page-size="sectionSizes.meta.per_page"
-                :page-size-options="[10, 25, 50, 100]"
-                :selected-count="selectedCount"
-                :table="table"
-                :total="sectionSizes.meta.total"
-            />
+            <Deferred data="sectionSizes">
+                <template #fallback>
+                    <DataTable
+                        :columns-count="columns.length"
+                        :empty-text="sectionSizePage.emptyText"
+                        :item-label="sectionSizePage.itemLabel"
+                        :page-index="0"
+                        :page-size="filters.perPage"
+                        :page-size-options="[10, 25, 50, 100]"
+                        :selected-count="0"
+                        :table="table"
+                        :total="0"
+                        :loading="true"
+                    />
+                </template>
+
+                <DataTable
+                    v-if="sectionSizes"
+                    :columns-count="columns.length"
+                    :empty-state="emptyState"
+                    :empty-text="sectionSizePage.emptyText"
+                    :item-label="sectionSizePage.itemLabel"
+                    :page-index="sectionSizes.meta.current_page - 1"
+                    :page-size="sectionSizes.meta.per_page"
+                    :page-size-options="[10, 25, 50, 100]"
+                    :selected-count="selectedCount"
+                    :table="table"
+                    :total="sectionSizes.meta.total"
+                    :row-highlight="getQuantityRowHighlight"
+                />
+            </Deferred>
         </template>
     </ListingLayout>
 </template>

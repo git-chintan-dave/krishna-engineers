@@ -1,7 +1,7 @@
-import { h } from 'vue';
+import {h} from 'vue';
 
-import { Checkbox } from '@/components/ui/checkbox';
-import { COLUMN_DEFAULTS } from '@/table/constants/columns';
+import {Checkbox} from '@/components/ui/checkbox';
+import {COLUMN_DEFAULTS} from '@/table/constants/columns';
 
 /*
 |--------------------------------------------------------------------------
@@ -16,14 +16,29 @@ type SelectColumnOptions<TData = any> = {
 
 /*
 |--------------------------------------------------------------------------
+| Checkbox Styles
+|--------------------------------------------------------------------------
+*/
+
+const CHECKBOX_CLASS = [
+    'cursor-pointer',
+    'border-muted-foreground/50',
+    'data-[state=checked]:border-primary',
+    'data-[state=checked]:bg-primary',
+    'data-[state=indeterminate]:border-primary',
+    'data-[state=indeterminate]:bg-primary',
+].join(' ');
+
+/*
+|--------------------------------------------------------------------------
 | Column
 |--------------------------------------------------------------------------
 */
 
 export const createSelectColumn = <TData = any>({
-    resourceName,
-    isSelectable,
-}: SelectColumnOptions<TData>) => ({
+                                                    resourceName,
+                                                    isSelectable,
+                                                }: SelectColumnOptions<TData>) => ({
     id: 'select',
 
     size: COLUMN_DEFAULTS.select.size,
@@ -41,7 +56,8 @@ export const createSelectColumn = <TData = any>({
             },
 
             ariaLabel: `Select all ${resourceName}`,
-            class: 'cursor-pointer',
+
+            class: CHECKBOX_CLASS,
         }),
 
     cell: ({ row }: any) => {
@@ -59,11 +75,12 @@ export const createSelectColumn = <TData = any>({
             },
 
             ariaLabel: `Select ${row.original.name}`,
-            class: 'cursor-pointer',
+            class: CHECKBOX_CLASS,
         });
     },
 
-    enableRowSelection: (row: any) => isSelectable?.(row.original) ?? true,
+    enableRowSelection: (row: any) =>
+        isSelectable?.(row.original) ?? true,
 
     enableSorting: false,
 });

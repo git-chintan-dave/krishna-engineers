@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\HasCrudResponses;
+use App\Http\Controllers\Concerns\HasListingFilters;
 use App\Http\Queries\Concerns\AppliesIndexFilters;
 use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\Tools\IndexToolRequest;
@@ -20,7 +21,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ToolController extends Controller
 {
-    use AppliesIndexFilters, HasCrudResponses;
+    use AppliesIndexFilters, HasCrudResponses, HasListingFilters;
 
     /*
     |--------------------------------------------------------------------------
@@ -48,20 +49,22 @@ class ToolController extends Controller
 
         $filters = $request->validated();
 
-        $tools = Tool::query()
-            ->filterQuery($filters)
-            ->paginate($filters['per_page'] ?? 10)
-            ->withQueryString();
-
         return Inertia::render('Tools/Index', [
-            'tools' => ToolResource::collection($tools),
+            'tools' => Inertia::defer(function () use ($filters) {
+                $tools = Tool::query()
+                    ->filterQuery($filters)
+                    ->paginate($filters['per_page'] ?? 10)
+                    ->withQueryString();
+
+                return ToolResource::collection($tools);
+            }),
+
+            'hasAnyRecords' => Tool::query()->exists(),
+
             'filters' => [
-                'search' => $filters['search'] ?? '',
+                ...$this->listingFilters($filters),
                 'type' => $filters['type'] ?? 'all',
                 'status' => $filters['status'] ?? 'all',
-                'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'id',
-                'direction' => $filters['direction'] ?? 'desc',
             ],
         ]);
     }

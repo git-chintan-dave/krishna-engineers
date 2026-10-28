@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\HasCrudResponses;
+use App\Http\Controllers\Concerns\HasListingFilters;
 use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\Setups\IndexSetupRequest;
 use App\Http\Requests\Setups\SetupRequest;
@@ -18,7 +19,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class SetupController extends Controller
 {
-    use HasCrudResponses;
+    use HasCrudResponses, HasListingFilters;
 
     private const string MODULE_NAME = 'Setup';
 
@@ -30,19 +31,21 @@ class SetupController extends Controller
 
         $filters = $request->validated();
 
-        $setups = Setup::query()
-            ->filterQuery($filters)
-            ->paginate($filters['per_page'] ?? 10)
-            ->withQueryString();
-
         return Inertia::render('Setups/Index', [
-            'setups' => SetupResource::collection($setups),
+            'setups' => Inertia::defer(function () use ($filters) {
+                $setups = Setup::query()
+                    ->filterQuery($filters)
+                    ->paginate($filters['per_page'] ?? 10)
+                    ->withQueryString();
+
+                return SetupResource::collection($setups);
+            }),
+
+            'hasAnyRecords' => Setup::query()->exists(),
+
             'filters' => [
-                'search' => $filters['search'] ?? '',
+                ...$this->listingFilters($filters),
                 'status' => $filters['status'] ?? 'all',
-                'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'id',
-                'direction' => $filters['direction'] ?? 'desc',
             ],
         ]);
     }

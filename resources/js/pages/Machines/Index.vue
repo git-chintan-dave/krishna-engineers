@@ -10,37 +10,24 @@ import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
 
 import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingEmptyState} from '@/composables/useListingEmptyState';
 import {useListingTable} from '@/composables/useListingTable';
 
 import {machinePage} from '@/config/machines';
 
 import {bulkDestroy, create, destroy, index as machinesRoute,} from '@/routes/machines';
-
 import {view as machinesImportRoute} from '@/routes/machines/import';
 
 import {createMachineColumns} from '@/table/machines';
 
 import type {Machine, MachineFilters, MachineSort, MachinesResponse,} from '@/types/machine';
-
 import type {StatusFilter} from '@/types/listing';
-
-/*
-|--------------------------------------------------------------------------
-| Props
-|--------------------------------------------------------------------------
-*/
 
 const props = defineProps<{
     machines?: MachinesResponse;
     hasAnyRecords: boolean;
     filters: MachineFilters;
 }>();
-
-/*
-|--------------------------------------------------------------------------
-| Page
-|--------------------------------------------------------------------------
-*/
 
 defineOptions({
     layout: {
@@ -51,31 +38,14 @@ defineOptions({
     },
 });
 
-/*
-|--------------------------------------------------------------------------
-| Filters
-|--------------------------------------------------------------------------
-*/
-
 const filterStatus = ref<StatusFilter>(props.filters.status);
 
-const handleStatusChange = (value: string | null) => {
+const handleStatusChange = (value: string | null): void => {
     filterStatus.value = (value as StatusFilter | null) ?? 'all';
 };
 
-const handleClearFilters = () => {
-    filterStatus.value = 'all';
-    clearFilters();
-};
-
-/*
-|--------------------------------------------------------------------------
-| Table
-|--------------------------------------------------------------------------
-*/
-
-const columns = createMachineColumns((uuid) => {
-    router.delete(destroy(uuid).url);
+const columns = createMachineColumns((id) => {
+    router.delete(destroy(id).url);
 });
 
 const {
@@ -86,6 +56,7 @@ const {
     clearFilters,
     deleteSelected,
     resetPreferences,
+    hasActiveFilters,
 } = useListingTable<Machine, MachineSort>({
     data: () => props.machines,
     columns,
@@ -97,66 +68,33 @@ const {
     },
     route: machinesRoute.url(),
     additionalFilters: () => ({
-        status:
-            filterStatus.value !== 'all'
-                ? filterStatus.value
-                : undefined,
+        status: filterStatus.value !== 'all'
+            ? filterStatus.value
+            : undefined,
     }),
+    onClearFilters: () => {
+        filterStatus.value = 'all';
+    },
 });
 
-/*
-|--------------------------------------------------------------------------
-| Empty State
-|--------------------------------------------------------------------------
-*/
-
-const hasActiveFilters = computed(
-    () =>
-        Boolean(searchQuery.value.trim()) ||
-        filterStatus.value !== 'all',
-);
-
-const emptyState = computed(() => {
-    // No records exist in the underlying listing.
-    // Encourage the user to create the first machine.
-    if (!props.hasAnyRecords) {
-        return {
-            title: 'No machines yet',
-            description: 'Get started by adding your first machine.',
-            actionLabel: machinePage.createLabel || 'Add machine',
-            icon: Database,
-            onAction: () => router.visit(create().url),
-        };
-    }
-
-    // Records exist, but the current filters/search have no matches.
-    if (hasActiveFilters.value) {
-        return {
-            title: 'No results found',
-            description: 'Try adjusting your search or filters.',
-            actionLabel: machinePage.clearButtonLabel || 'Clear filters',
-            icon: SearchX,
-            onAction: handleClearFilters,
-        };
-    }
-
-    // Retain the DataTable's generic empty message for other cases.
-    return undefined;
+const emptyState = useListingEmptyState({
+    hasAnyRecords: () => props.hasAnyRecords,
+    hasActiveFilters: () => hasActiveFilters.value,
+    noRecords: {
+        title: 'No machines yet',
+        description: 'Get started by adding your first machine.',
+        actionLabel: machinePage.createLabel || 'Add machine',
+        icon: Database,
+        onAction: () => router.visit(create().url),
+    },
+    noResults: {
+        title: 'No results found',
+        description: 'Try adjusting your search or filters.',
+        actionLabel: machinePage.clearButtonLabel || 'Clear filters',
+        icon: SearchX,
+        onAction: clearFilters,
+    },
 });
-
-/*
-|--------------------------------------------------------------------------
-| Row Highlight
-|--------------------------------------------------------------------------
-*/
-
-const getMachineRowHighlight = (_machine: Machine) => undefined;
-
-/*
-|--------------------------------------------------------------------------
-| Actions
-|--------------------------------------------------------------------------
-*/
 
 const actions = computed<ActionItem[]>(() => [
     {
@@ -174,7 +112,7 @@ const actions = computed<ActionItem[]>(() => [
     },
 ]);
 
-const handleDeleteSelected = () => {
+const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);
 };
 </script>
@@ -200,25 +138,17 @@ const handleDeleteSelected = () => {
             <ListingFilters
                 v-model:search="searchQuery"
                 :clear-button-label="machinePage.clearButtonLabel"
-                :clear-disabled="
-                    !searchQuery.trim() && filterStatus === 'all'
-                "
+                :clear-disabled="!hasActiveFilters"
                 :search-button-label="machinePage.searchButtonLabel"
                 :search-placeholder="machinePage.searchPlaceholder"
-                @clear="handleClearFilters"
+                @clear="clearFilters"
                 @search="search"
             >
                 <template #filters>
                     <div class="w-full min-w-0">
                         <AppStatusSelect
-                            :model-value="
-                                filterStatus === 'all'
-                                    ? null
-                                    : filterStatus
-                            "
-                            :placeholder="
-                                machinePage.statusPlaceholder ?? 'All statuses'
-                            "
+                            :model-value="filterStatus === 'all' ? null : filterStatus"
+                            :placeholder="machinePage.statusPlaceholder ?? 'All statuses'"
                             clearable
                             @update:model-value="handleStatusChange"
                         />
@@ -256,7 +186,6 @@ const handleDeleteSelected = () => {
                     :selected-count="selectedCount"
                     :table="table"
                     :total="machines.meta.total"
-                    :row-highlight="getMachineRowHighlight"
                 />
             </Deferred>
         </template>
