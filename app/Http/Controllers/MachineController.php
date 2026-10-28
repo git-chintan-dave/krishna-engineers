@@ -122,46 +122,6 @@ class MachineController extends Controller
 
         $import = new MachinesImport;
 
-        $file = $request->file('file');
-
-        $file = $request->file('file');
-
-        dd([
-            'php_version' => PHP_VERSION,
-            'has_file' => $request->hasFile('file'),
-            'file_class' => $file ? get_class($file) : null,
-            'original_name' => $file?->getClientOriginalName(),
-            'upload_error_code' => $file?->getError(),
-            'upload_error_message' => $file?->getErrorMessage(),
-            'temporary_path' => $file?->getPathname(),
-            'real_path' => $file?->getRealPath(),
-            'is_valid' => $file?->isValid(),
-            'temp_directory_exists' => is_dir(sys_get_temp_dir()),
-            'temp_directory_writable' => is_writable(sys_get_temp_dir()),
-        ]);
-        if (! $file || ! $file->isValid()) {
-            throw new \RuntimeException(
-                'Excel upload failed: ' .
-                ($file?->getErrorMessage() ?? 'No uploaded file received.')
-            );
-        }
-
-        if (! $file->getRealPath()) {
-            throw new \RuntimeException(
-                'Excel upload has no valid temporary file path.'
-            );
-        }
-
-        dd([
-            'php_version' => PHP_VERSION,
-            'file_exists' => $file ? file_exists($file->getPathname()) : false,
-            'is_valid' => $file?->isValid(),
-            'upload_error' => $file?->getError(),
-            'temporary_path' => $file?->getPathname(),
-            'real_path' => $file?->getRealPath(),
-            'file_size' => $file?->getSize(),
-        ]);
-
         Excel::import($import, $request->file('file'));
 
         return $this->successResponse(
