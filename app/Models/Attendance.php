@@ -63,7 +63,12 @@ class Attendance extends Model
 
     public function isOpen(): bool
     {
-        return $this->end_at === null;
+        return $this->end_at === null && $this->start_at->toDateString() === now()->toDateString();
+    }
+
+    public function needsAttention(): bool
+    {
+        return $this->start_at !== null && blank($this->end_at) && $this->start_at->toDateString() !== now()->toDateString();
     }
 
     // Helpers

@@ -37,6 +37,7 @@ import type {
     AttendanceResponse,
     AttendanceSort,
 } from '@/types/attendance';
+import {getAttendanceRowHighlight} from "@/lib/row-highlights";
 
 /*
 |--------------------------------------------------------------------------
@@ -402,6 +403,7 @@ const handleDeleteSelected = () => {
                 :selected-count="selectedCount"
                 :table="table"
                 :total="attendances.meta.total"
+                :row-highlight="getAttendanceRowHighlight"
             />
         </template>
     </ListingLayout>

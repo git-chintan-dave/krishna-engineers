@@ -5,7 +5,6 @@ namespace App\Http\Resources;
 use App\Models\Attendance;
 use App\Services\AttendanceService;
 use App\Services\OperatorProductionEfficiencyService;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -16,19 +15,27 @@ class AttendanceResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $attendanceService = app(AttendanceService::class);
+
         $productionEfficiencyService = app(
             OperatorProductionEfficiencyService::class,
         );
 
-        $productionSeconds = $productionEfficiencyService->getProductionSecondsForDay(
-            $this->user_id,
-            $this->attendance_date,
-        );
+        $productionSeconds = (int) $productionEfficiencyService
+            ->getProductionSecondsForDay(
+                $this->user_id,
+                $this->attendance_date,
+            );
+
+        $effectiveWorkingSeconds = (int) $this->effective_working_seconds;
 
         $productionEfficiency = $productionEfficiencyService->calculate(
             $productionSeconds,
-            $this->effective_working_seconds,
+            $effectiveWorkingSeconds,
         );
+
+        $startAt = $this->start_at;
+        $endAt = $this->end_at;
 
         return [
             'id' => $this->id,
@@ -59,17 +66,21 @@ class AttendanceResource extends JsonResource
 
             'attendance_date' => $this->attendance_date?->toDateString(),
 
-            'attendance_date_formatted' => $this->attendance_date?->format('d M Y'),
+            'attendance_date_formatted' => $this->attendance_date?->format(
+                'd M Y',
+            ),
 
-            'start_at' => $this->start_at?->format('Y-m-d H:i:s'),
+            'start_at' => $startAt?->format('Y-m-d H:i:s'),
 
-            'end_at' => $this->end_at?->format('Y-m-d H:i:s'),
+            'end_at' => $endAt?->format('Y-m-d H:i:s'),
 
-            'start_at_formatted' => $this->start_at?->format('h:i A'),
+            'start_at_formatted' => $startAt?->format('h:i A'),
 
-            'end_at_formatted' => $this->end_at?->format('h:i A'),
+            'end_at_formatted' => $endAt?->format('h:i A'),
 
             'is_open' => $this->isOpen(),
+
+            'needs_attention' => $this->needsAttention(),
 
             /*
             |--------------------------------------------------------------------------
@@ -79,27 +90,27 @@ class AttendanceResource extends JsonResource
 
             'total_working_seconds' => $this->total_working_seconds,
 
-            'total_working_seconds_formatted' => Carbon::createFromTimestampUTC(
+            'total_working_seconds_formatted' => self::formatDuration(
                 $this->total_working_seconds,
-            )->format('H:i:s'),
+            ),
 
             'break_seconds' => $this->break_seconds,
 
-            'break_seconds_formatted' => Carbon::createFromTimestampUTC(
+            'break_seconds_formatted' => self::formatDuration(
                 $this->break_seconds,
-            )->format('H:i:s'),
+            ),
 
             'effective_working_seconds' => $this->effective_working_seconds,
 
-            'effective_working_seconds_formatted' => Carbon::createFromTimestampUTC(
+            'effective_working_seconds_formatted' => self::formatDuration(
                 $this->effective_working_seconds,
-            )->format('H:i:s'),
+            ),
 
             'undertime_seconds' => $this->undertime_seconds,
 
-            'undertime_seconds_formatted' => $this->undertime_seconds ? Carbon::createFromTimestampUTC(
-                $this->undertime_seconds,
-            )->format('H:i:s') : null,
+            'undertime_seconds_formatted' => $this->undertime_seconds !== null
+                ? self::formatDuration($this->undertime_seconds)
+                : null,
 
             /*
             |--------------------------------------------------------------------------
@@ -109,9 +120,9 @@ class AttendanceResource extends JsonResource
 
             'production_seconds' => $productionSeconds,
 
-            'production_seconds_formatted' => Carbon::createFromTimestampUTC(
+            'production_seconds_formatted' => self::formatDuration(
                 $productionSeconds,
-            )->format('H:i:s'),
+            ),
 
             'production_efficiency' => $productionEfficiency,
 
@@ -135,9 +146,32 @@ class AttendanceResource extends JsonResource
 
             'updated_at' => $this->updated_at?->format('d M Y'),
 
-            'is_locked' => app(AttendanceService::class)->isLocked(
-                $this->resource,
-            ),
+            /*
+            |--------------------------------------------------------------------------
+            | Status
+            |--------------------------------------------------------------------------
+            */
+
+            'is_locked' => $attendanceService->isLocked($this->resource),
         ];
+    }
+
+    /**
+     * Format seconds as HH:MM:SS without wrapping after 24 hours.
+     */
+    private static function formatDuration(int|string|null $seconds): string
+    {
+        $seconds = max(0, (int) $seconds);
+
+        $hours = intdiv($seconds, 3600);
+        $minutes = intdiv($seconds % 3600, 60);
+        $remainingSeconds = $seconds % 60;
+
+        return sprintf(
+            '%02d:%02d:%02d',
+            $hours,
+            $minutes,
+            $remainingSeconds,
+        );
     }
 }
