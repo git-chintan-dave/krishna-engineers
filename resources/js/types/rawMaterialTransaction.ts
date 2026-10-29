@@ -88,10 +88,10 @@ export type RawMaterialTransactionSort = 'created_at' | 'quantity' | 'type';
 
 export type RawMaterialTransactionFilters = {
     search: string;
-    sectionId: number | string;
-    sectionSizeId: number | string;
+    sectionId: number | 'all';
+    sectionSizeId: number | 'all';
     type: string;
-    userId: number | string;
+    userId: number | 'all';
     startDate: string;
     endDate: string;
     perPage: number;

@@ -79,9 +79,13 @@ const {
     },
 });
 
+const hasAnyActiveFilters = computed(
+    () => hasActiveFilters.value || filterSectionId.value !== 'all',
+);
+
 const emptyState = useListingEmptyState({
     hasAnyRecords: () => props.hasAnyRecords,
-    hasActiveFilters: () => hasActiveFilters.value,
+    hasActiveFilters: () => hasAnyActiveFilters.value,
     noRecords: {
         title: 'No section sizes yet',
         description: 'Get started by adding your first section size.',
@@ -152,8 +156,9 @@ const handleDeleteSelected = (): void => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
+                :active-filter-count="Number(filterSectionId !== 'all')"
                 :clear-button-label="sectionSizePage.clearButtonLabel"
-                :clear-disabled="!hasActiveFilters"
+                :clear-disabled="!hasAnyActiveFilters"
                 :search-button-label="sectionSizePage.searchButtonLabel"
                 :search-placeholder="sectionSizePage.searchPlaceholder"
                 @clear="clearFilters"

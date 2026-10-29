@@ -1,8 +1,9 @@
 ﻿<script lang="ts" setup>
 import {Deferred, router} from '@inertiajs/vue3';
 import {computed, ref} from 'vue';
+import {Database, RotateCcw, SearchX} from '@lucide/vue';
 
-import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
+import ListingActions, {type ActionItem} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppPartSelect from '@/components/selects/AppPartSelect.vue';
@@ -18,7 +19,6 @@ import {toolTransactionPage} from '@/config/toolTransactions';
 import {bulkDestroy, create, destroy, index as toolTransactionsRoute,} from '@/routes/tool-transactions';
 import {createToolTransactionColumns} from '@/table/toolTransactions';
 import type {ToolTransaction, ToolTransactionType,} from '@/types/toolTransaction';
-import {Database, RotateCcw, SearchX} from '@lucide/vue';
 
 /*
 |--------------------------------------------------------------------------
@@ -79,7 +79,9 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const filterToolId = ref<number | 'all'>(props.filters.toolId ?? 'all');
+const filterToolId = ref<number | 'all'>(
+    props.filters.toolId ?? 'all',
+);
 
 const filterType = ref<ToolTransactionType | 'all'>(
     props.filters.type ?? 'all',
@@ -89,11 +91,17 @@ const filterFromUserId = ref<number | 'all'>(
     props.filters.fromUserId ?? 'all',
 );
 
-const filterToUserId = ref<number | 'all'>(props.filters.toUserId ?? 'all');
+const filterToUserId = ref<number | 'all'>(
+    props.filters.toUserId ?? 'all',
+);
 
-const filterPartId = ref<number | 'all'>(props.filters.partId ?? 'all');
+const filterPartId = ref<number | 'all'>(
+    props.filters.partId ?? 'all',
+);
 
-const filterSetupId = ref<number | 'all'>(props.filters.setupId ?? 'all');
+const filterSetupId = ref<number | 'all'>(
+    props.filters.setupId ?? 'all',
+);
 
 const handleToolChange = (value: number | null): void => {
     filterToolId.value = value ?? 'all';
@@ -101,7 +109,9 @@ const handleToolChange = (value: number | null): void => {
 
 const handleTypeChange = (value: string | number | null): void => {
     filterType.value =
-        typeof value === 'string' ? (value as ToolTransactionType) : 'all';
+        typeof value === 'string'
+            ? (value as ToolTransactionType)
+            : 'all';
 };
 
 const handleFromUserChange = (value: number | null): void => {
@@ -145,39 +155,50 @@ const {
 } = useListingTable<ToolTransaction, ToolTransactionSort>({
     data: () => props.transactions,
     columns,
-
     filters: {
         search: props.filters.search ?? '',
         sort: props.filters.sort,
         direction: props.filters.direction,
     },
-
     route: toolTransactionsRoute.url(),
     searchable: false,
-
     additionalFilters: () => ({
-        tool_id: filterToolId.value === 'all' ? undefined : filterToolId.value,
-        type: filterType.value === 'all' ? undefined : filterType.value,
+        tool_id:
+            filterToolId.value !== 'all'
+                ? filterToolId.value
+                : undefined,
+        type:
+            filterType.value !== 'all'
+                ? filterType.value
+                : undefined,
         from_user_id:
-            filterFromUserId.value === 'all'
-                ? undefined
-                : filterFromUserId.value,
+            filterFromUserId.value !== 'all'
+                ? filterFromUserId.value
+                : undefined,
         to_user_id:
-            filterToUserId.value === 'all' ? undefined : filterToUserId.value,
-        part_id: filterPartId.value === 'all' ? undefined : filterPartId.value,
+            filterToUserId.value !== 'all'
+                ? filterToUserId.value
+                : undefined,
+        part_id:
+            filterPartId.value !== 'all'
+                ? filterPartId.value
+                : undefined,
         setup_id:
-            filterSetupId.value === 'all' ? undefined : filterSetupId.value,
+            filterSetupId.value !== 'all'
+                ? filterSetupId.value
+                : undefined,
     }),
 });
 
 /*
 |--------------------------------------------------------------------------
-| Empty State
+| Active Filters
 |--------------------------------------------------------------------------
 */
 
-const hasAdditionalFilters = computed(
+const hasAnyActiveFilters = computed(
     () =>
+        hasActiveFilters.value ||
         filterToolId.value !== 'all' ||
         filterType.value !== 'all' ||
         filterFromUserId.value !== 'all' ||
@@ -186,31 +207,19 @@ const hasAdditionalFilters = computed(
         filterSetupId.value !== 'all',
 );
 
-const emptyState = useListingEmptyState({
-    hasAnyRecords: () => props.hasAnyRecords,
-    hasActiveFilters: () =>
-        hasActiveFilters.value || hasAdditionalFilters.value,
-
-    noRecords: {
-        icon: Database,
-        title: 'No tool transactions yet',
-        description: 'Create a tool transaction to get started.',
-        actionLabel: toolTransactionPage.createLabel,
-        onAction: () => router.visit(create().url),
-    },
-
-    noResults: {
-        icon: SearchX,
-        title: 'No tool transactions found',
-        description: 'Try adjusting or clearing your filters.',
-        actionLabel: toolTransactionPage.clearButtonLabel,
-        onAction: () => handleClearFilters(),
-    },
-});
+const activeFilterCount = computed(
+    () =>
+        Number(filterToolId.value !== 'all') +
+        Number(filterType.value !== 'all') +
+        Number(filterFromUserId.value !== 'all') +
+        Number(filterToUserId.value !== 'all') +
+        Number(filterPartId.value !== 'all') +
+        Number(filterSetupId.value !== 'all'),
+);
 
 /*
 |--------------------------------------------------------------------------
-| Actions
+| Clear Filters
 |--------------------------------------------------------------------------
 */
 
@@ -224,6 +233,37 @@ const handleClearFilters = (): void => {
 
     clearFilters();
 };
+
+/*
+|--------------------------------------------------------------------------
+| Empty State
+|--------------------------------------------------------------------------
+*/
+
+const emptyState = useListingEmptyState({
+    hasAnyRecords: () => props.hasAnyRecords,
+    hasActiveFilters: () => hasAnyActiveFilters.value,
+    noRecords: {
+        icon: Database,
+        title: 'No tool transactions yet',
+        description: 'Create a tool transaction to get started.',
+        actionLabel: toolTransactionPage.createLabel,
+        onAction: () => router.visit(create().url),
+    },
+    noResults: {
+        icon: SearchX,
+        title: 'No tool transactions found',
+        description: 'Try adjusting or clearing your filters.',
+        actionLabel: toolTransactionPage.clearButtonLabel,
+        onAction: handleClearFilters,
+    },
+});
+
+/*
+|--------------------------------------------------------------------------
+| Actions
+|--------------------------------------------------------------------------
+*/
 
 const actions = computed<ActionItem[]>(() => [
     {
@@ -242,7 +282,9 @@ const actions = computed<ActionItem[]>(() => [
 */
 
 const handleDeleteSelected = (): void => {
-    deleteSelected(bulkDestroy().url);
+    if (selectedCount.value > 0) {
+        deleteSelected(bulkDestroy().url);
+    }
 };
 </script>
 
@@ -252,7 +294,6 @@ const handleDeleteSelected = (): void => {
         :title="toolTransactionPage.title"
         @reset-preferences="resetPreferences"
     >
-        <!-- Actions -->
         <template #actions>
             <ListingActions
                 :actions="actions"
@@ -264,14 +305,12 @@ const handleDeleteSelected = (): void => {
             />
         </template>
 
-        <!-- Filters -->
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
+                :active-filter-count="activeFilterCount"
                 :clear-button-label="toolTransactionPage.clearButtonLabel"
-                :clear-disabled="
-                    !searchQuery.trim() && !hasAdditionalFilters
-                "
+                :clear-disabled="!hasAnyActiveFilters"
                 :search-button-label="toolTransactionPage.searchButtonLabel"
                 :search-placeholder="toolTransactionPage.searchPlaceholder"
                 :searchable="false"
@@ -291,7 +330,9 @@ const handleDeleteSelected = (): void => {
                     />
 
                     <AppToolTransactionTypeSelect
-                        :model-value="filterType === 'all' ? null : filterType"
+                        :model-value="
+                            filterType === 'all' ? null : filterType
+                        "
                         :placeholder="toolTransactionPage.typePlaceholder"
                         class="w-full min-w-0"
                         clearable
@@ -314,7 +355,9 @@ const handleDeleteSelected = (): void => {
 
                     <AppEmployeeSelect
                         :model-value="
-                            filterToUserId === 'all' ? null : filterToUserId
+                            filterToUserId === 'all'
+                                ? null
+                                : filterToUserId
                         "
                         :placeholder="toolTransactionPage.toUserPlaceholder"
                         class="w-full min-w-0"
@@ -338,7 +381,9 @@ const handleDeleteSelected = (): void => {
                         :model-value="
                             filterSetupId === 'all' ? null : filterSetupId
                         "
-                        :part-id="filterPartId === 'all' ? null : filterPartId"
+                        :part-id="
+                            filterPartId === 'all' ? null : filterPartId
+                        "
                         :placeholder="toolTransactionPage.setupPlaceholder"
                         class="w-full min-w-0"
                         clearable
@@ -349,7 +394,6 @@ const handleDeleteSelected = (): void => {
             </ListingFilters>
         </template>
 
-        <!-- Table -->
         <template #table>
             <Deferred data="transactions">
                 <template #fallback>

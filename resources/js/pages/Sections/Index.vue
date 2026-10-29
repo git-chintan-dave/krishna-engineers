@@ -78,9 +78,13 @@ const {
     },
 });
 
+const hasAnyActiveFilters = computed(
+    () => hasActiveFilters.value || filterStatus.value !== 'all',
+);
+
 const emptyState = useListingEmptyState({
     hasAnyRecords: () => props.hasAnyRecords,
-    hasActiveFilters: () => hasActiveFilters.value,
+    hasActiveFilters: () => hasAnyActiveFilters.value,
     noRecords: {
         title: 'No sections yet',
         description: 'Get started by adding your first section.',
@@ -151,8 +155,9 @@ const handleDeleteSelected = (): void => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
+                :active-filter-count="Number(filterStatus !== 'all')"
                 :clear-button-label="sectionPage.clearButtonLabel"
-                :clear-disabled="!hasActiveFilters"
+                :clear-disabled="!hasAnyActiveFilters"
                 :search-button-label="sectionPage.searchButtonLabel"
                 :search-placeholder="sectionPage.searchPlaceholder"
                 @clear="clearFilters"

@@ -62,18 +62,11 @@ defineOptions({
 const filterWorkDate = ref(props.filters.workDate);
 const filterUserId = ref<number | 'all'>(props.filters.userId ?? 'all');
 const filterPartId = ref<number | 'all'>(props.filters.partId ?? 'all');
-const filterSectionId = ref<number | 'all'>(props.filters.sectionId ?? 'all');
+const filterSectionId = ref<number | 'all'>(
+    props.filters.sectionId ?? 'all',
+);
 const filterSectionSizeId = ref<number | 'all'>(
     props.filters.sectionSizeId ?? 'all',
-);
-
-const hasAdditionalFilters = computed(
-    () =>
-        Boolean(filterWorkDate.value) ||
-        (props.canSelectBandsaw && filterUserId.value !== 'all') ||
-        filterPartId.value !== 'all' ||
-        filterSectionId.value !== 'all' ||
-        filterSectionSizeId.value !== 'all',
 );
 
 /*
@@ -118,31 +111,28 @@ const {
 
 /*
 |--------------------------------------------------------------------------
-| Empty State
+| Active Filters
 |--------------------------------------------------------------------------
 */
 
-const emptyState = useListingEmptyState({
-    hasAnyRecords: () => props.hasAnyRecords,
-    hasActiveFilters: () =>
-        hasActiveFilters.value || hasAdditionalFilters.value,
+const hasAnyActiveFilters = computed(
+    () =>
+        hasActiveFilters.value ||
+        Boolean(filterWorkDate.value) ||
+        (props.canSelectBandsaw && filterUserId.value !== 'all') ||
+        filterPartId.value !== 'all' ||
+        filterSectionId.value !== 'all' ||
+        filterSectionSizeId.value !== 'all',
+);
 
-    noRecords: {
-        icon: Database,
-        title: 'No bandsaw work logs yet',
-        description: 'Create a bandsaw work log to get started.',
-        actionLabel: bandsawWorkLogPage.createLabel,
-        onAction: () => router.visit(create().url),
-    },
-
-    noResults: {
-        icon: SearchX,
-        title: 'No bandsaw work logs found',
-        description: 'Try adjusting or clearing your filters.',
-        actionLabel: bandsawWorkLogPage.clearButtonLabel,
-        onAction: () => handleClearFilters(),
-    },
-});
+const activeFilterCount = computed(
+    () =>
+        Number(Boolean(filterWorkDate.value)) +
+        Number(props.canSelectBandsaw && filterUserId.value !== 'all') +
+        Number(filterPartId.value !== 'all') +
+        Number(filterSectionId.value !== 'all') +
+        Number(filterSectionSizeId.value !== 'all'),
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -195,6 +185,31 @@ const handleClearFilters = (): void => {
 
 /*
 |--------------------------------------------------------------------------
+| Empty State
+|--------------------------------------------------------------------------
+*/
+
+const emptyState = useListingEmptyState({
+    hasAnyRecords: () => props.hasAnyRecords,
+    hasActiveFilters: () => hasAnyActiveFilters.value,
+    noRecords: {
+        icon: Database,
+        title: 'No bandsaw work logs yet',
+        description: 'Create a bandsaw work log to get started.',
+        actionLabel: bandsawWorkLogPage.createLabel,
+        onAction: () => router.visit(create().url),
+    },
+    noResults: {
+        icon: SearchX,
+        title: 'No bandsaw work logs found',
+        description: 'Try adjusting or clearing your filters.',
+        actionLabel: bandsawWorkLogPage.clearButtonLabel,
+        onAction: handleClearFilters,
+    },
+});
+
+/*
+|--------------------------------------------------------------------------
 | Bulk Actions
 |--------------------------------------------------------------------------
 */
@@ -223,8 +238,9 @@ const handleDeleteSelected = (): void => {
 
         <template #filters>
             <ListingFilters
+                :active-filter-count="activeFilterCount"
                 :clear-button-label="bandsawWorkLogPage.clearButtonLabel"
-                :clear-disabled="!hasAdditionalFilters"
+                :clear-disabled="!hasAnyActiveFilters"
                 :searchable="false"
                 @clear="handleClearFilters"
                 @search="search"

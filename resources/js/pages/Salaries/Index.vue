@@ -127,7 +127,7 @@ const {
     clearFilters,
     deleteSelected,
     resetPreferences,
-    hasActiveFilters: hasTableActiveFilters,
+    hasActiveFilters,
 } = useListingTable<Salary, SalarySort>({
     data: () => props.salaries,
     columns,
@@ -153,16 +153,23 @@ const {
 
 /*
 |--------------------------------------------------------------------------
-| Filter Actions
+| Active Filters
 |--------------------------------------------------------------------------
 */
 
-const hasActiveFilters = computed(
+const hasAnyActiveFilters = computed(
     () =>
-        hasTableActiveFilters.value ||
+        hasActiveFilters.value ||
         filterEmployee.value !== 'all' ||
         filterStatus.value !== 'all' ||
         Boolean(filterStartDate.value),
+);
+
+const activeFilterCount = computed(
+    () =>
+        Number(filterEmployee.value !== 'all') +
+        Number(filterStatus.value !== 'all') +
+        Number(Boolean(filterStartDate.value)),
 );
 
 const handleClearFilters = (): void => {
@@ -181,7 +188,7 @@ const handleClearFilters = (): void => {
 
 const emptyState = useListingEmptyState({
     hasAnyRecords: () => props.hasAnyRecords,
-    hasActiveFilters: () => hasActiveFilters.value,
+    hasActiveFilters: () => hasAnyActiveFilters.value,
     noRecords: {
         title: 'No salary records yet',
         description: 'Generate or create salary records to get started.',
@@ -259,8 +266,9 @@ const handleDeleteSelected = (): void => {
 
         <template #filters>
             <ListingFilters
+                :active-filter-count="activeFilterCount"
                 :clear-button-label="salaryPage.clearButtonLabel"
-                :clear-disabled="!hasActiveFilters"
+                :clear-disabled="!hasAnyActiveFilters"
                 :searchable="false"
                 @clear="handleClearFilters"
                 @search="search"

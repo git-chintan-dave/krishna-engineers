@@ -3,16 +3,17 @@ import {Deferred, router} from '@inertiajs/vue3';
 import {computed, ref} from 'vue';
 import {Database, FileUp, RotateCcw, SearchX} from '@lucide/vue';
 
-import DataTable from '@/components/data-table/DataTable.vue';
 import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
-import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
+import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
 
+import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
+
+import {ACTION_SHORTCUTS, useActionShortcuts,} from '@/composables/useActionShortcuts';
 import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
 import {useListingEmptyState} from '@/composables/useListingEmptyState';
 import {useListingTable} from '@/composables/useListingTable';
-import {ACTION_SHORTCUTS, useActionShortcuts,} from '@/composables/useActionShortcuts';
 
 import {machinePage} from '@/config/machines';
 
@@ -50,6 +51,10 @@ const filterStatus = ref<StatusFilter>(props.filters.status);
 const handleStatusChange = (value: string | null): void => {
     filterStatus.value = (value as StatusFilter | null) ?? 'all';
 };
+
+const hasAnyActiveFilters = computed(
+    () => hasActiveFilters.value || filterStatus.value !== 'all',
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -99,7 +104,7 @@ const {
 
 const emptyState = useListingEmptyState({
     hasAnyRecords: () => props.hasAnyRecords,
-    hasActiveFilters: () => hasActiveFilters.value,
+    hasActiveFilters: () => hasAnyActiveFilters.value,
     noRecords: {
         title: 'No machines yet',
         description: 'Get started by adding your first machine.',
@@ -186,8 +191,11 @@ useActionShortcuts(
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
+                :active-filter-count="
+                    Number(filterStatus !== 'all')
+                "
                 :clear-button-label="machinePage.clearButtonLabel"
-                :clear-disabled="!hasActiveFilters"
+                :clear-disabled="!hasAnyActiveFilters"
                 :search-button-label="machinePage.searchButtonLabel"
                 :search-placeholder="machinePage.searchPlaceholder"
                 @clear="clearFilters"

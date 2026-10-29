@@ -9,10 +9,10 @@ import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
 
+import {ACTION_SHORTCUTS, useActionShortcuts,} from '@/composables/useActionShortcuts';
 import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
 import {useListingEmptyState} from '@/composables/useListingEmptyState';
 import {useListingTable} from '@/composables/useListingTable';
-import {ACTION_SHORTCUTS, useActionShortcuts,} from '@/composables/useActionShortcuts';
 
 import {setupPage} from '@/config/setups';
 
@@ -103,6 +103,10 @@ const {
     },
 });
 
+const hasAnyActiveFilters = computed(
+    () => hasActiveFilters.value || filterStatus.value !== 'all',
+);
+
 /*
 |--------------------------------------------------------------------------
 | Empty State
@@ -111,7 +115,7 @@ const {
 
 const emptyState = useListingEmptyState({
     hasAnyRecords: () => props.hasAnyRecords,
-    hasActiveFilters: () => hasActiveFilters.value,
+    hasActiveFilters: () => hasAnyActiveFilters.value,
     noRecords: {
         title: 'No setups yet',
         description: 'Get started by adding your first setup.',
@@ -162,7 +166,7 @@ const handleDeleteSelected = (): void => {
 |--------------------------------------------------------------------------
 |
 | Add and bulk delete are registered by ListingActions.
-| This page registers its page-specific actions.
+| This page registers only its page-specific actions.
 |
 */
 
@@ -171,7 +175,6 @@ useActionShortcuts(
         import: {
             handler: () => router.visit(setupsImportRoute().url),
         },
-
         resetPreferences: {
             handler: resetPreferences,
         },
@@ -199,8 +202,9 @@ useActionShortcuts(
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
+                :active-filter-count="Number(filterStatus !== 'all')"
                 :clear-button-label="setupPage.clearButtonLabel"
-                :clear-disabled="!hasActiveFilters"
+                :clear-disabled="!hasAnyActiveFilters"
                 :search-button-label="setupPage.searchButtonLabel"
                 :search-placeholder="setupPage.searchPlaceholder"
                 @clear="clearFilters"
@@ -210,13 +214,10 @@ useActionShortcuts(
                     <div class="w-full min-w-0">
                         <AppStatusSelect
                             :model-value="
-                                filterStatus === 'all'
-                                    ? null
-                                    : filterStatus
+                                filterStatus === 'all' ? null : filterStatus
                             "
                             :placeholder="
-                                setupPage.statusPlaceholder ??
-                                'All statuses'
+                                setupPage.statusPlaceholder ?? 'All statuses'
                             "
                             clearable
                             @update:model-value="handleStatusChange"

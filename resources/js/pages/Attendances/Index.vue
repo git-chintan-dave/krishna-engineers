@@ -69,7 +69,7 @@ const page = usePage();
 const userRole = computed(() => page.props.auth.user?.role);
 
 const canManageAttendance = computed(() =>
-    ['super_admin', 'supervisor'].includes(userRole.value ?? ''),
+    ['super_admin', 'supervisor'].includes((userRole.value) as string ?? ''),
 );
 
 const isSuperAdmin = computed(() => userRole.value === 'super_admin');
@@ -80,7 +80,7 @@ const isSuperAdmin = computed(() => userRole.value === 'super_admin');
 |--------------------------------------------------------------------------
 */
 
-const filterEmployee = ref<number | string | 'all'>(props.filters.userId);
+const filterEmployee = ref<number | 'all'>(props.filters.userId);
 const filterStartDate = ref(props.filters.startDate);
 const filterEndDate = ref(props.filters.endDate);
 
@@ -192,7 +192,6 @@ const handleSync = (): void => {
 
                 router.reload({
                     only: ['attendances', 'hasAnyRecords'],
-                    preserveScroll: true,
                 });
             },
 
@@ -231,7 +230,6 @@ const columns = createAttendanceColumns(
 
 const {
     table,
-    searchQuery,
     selectedCount,
     search,
     clearFilters,
@@ -259,6 +257,19 @@ const {
         filterEndDate.value = '';
     },
 });
+
+/*
+|--------------------------------------------------------------------------
+| Active Filters
+|--------------------------------------------------------------------------
+*/
+
+const hasAnyActiveFilters = computed(
+    () => hasActiveFilters.value
+        || (canManageAttendance.value && filterEmployee.value !== 'all')
+        || Boolean(filterStartDate.value)
+        || Boolean(filterEndDate.value),
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -328,7 +339,7 @@ const handleDeleteSelected = (): void => {
 
 const emptyState = useListingEmptyState({
     hasAnyRecords: () => props.hasAnyRecords,
-    hasActiveFilters: () => hasActiveFilters.value,
+    hasActiveFilters: () => hasAnyActiveFilters.value,
     noRecords: {
         title: 'No attendance records yet',
         description: 'Create an attendance record or sync attendance from eTimeOffice.',
@@ -369,8 +380,13 @@ const emptyState = useListingEmptyState({
 
         <template #filters>
             <ListingFilters
+                :active-filter-count="
+                    Number(canManageAttendance && filterEmployee !== 'all')
+                    + Number(Boolean(filterStartDate))
+                    + Number(Boolean(filterEndDate))
+                "
                 :clear-button-label="attendancePage.clearButtonLabel"
-                :clear-disabled="!hasActiveFilters"
+                :clear-disabled="!hasAnyActiveFilters"
                 :search-button-label="attendancePage.searchButtonLabel"
                 :searchable="false"
                 @clear="handleClearFilters"

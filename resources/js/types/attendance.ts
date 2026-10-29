@@ -100,7 +100,7 @@ export type AttendanceSort =
     | 'created_at';
 
 export type AttendanceFilters = {
-    userId: number | string | 'all';
+    userId: number | 'all';
     startDate: string;
     endDate: string;
     perPage: number;

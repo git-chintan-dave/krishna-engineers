@@ -98,16 +98,6 @@ const filterMachineId = ref<FilterId>(
 const filterPartId = ref<FilterId>(normalizeFilterId(props.filters.partId));
 const filterSetupId = ref<FilterId>(normalizeFilterId(props.filters.setupId));
 
-const hasAdditionalFilters = computed(
-    () =>
-        Boolean(filterWorkDate.value) ||
-        filterShift.value !== 'all' ||
-        (props.canSelectOperator && filterUserId.value !== 'all') ||
-        filterMachineId.value !== 'all' ||
-        filterPartId.value !== 'all' ||
-        filterSetupId.value !== 'all',
-);
-
 /*
 |--------------------------------------------------------------------------
 | Table
@@ -129,15 +119,12 @@ const {
 } = useListingTable<OperatorWorkLog, OperatorWorkLogSort>({
     data: () => props.operatorWorkLogs,
     columns,
-
     filters: {
         sort: props.filters.sort,
         direction: props.filters.direction,
     },
-
     route: operatorWorkLogsRoute.url(),
     searchable: false,
-
     additionalFilters: () => ({
         work_date: filterWorkDate.value || undefined,
         shift: filterShift.value !== 'all' ? filterShift.value : undefined,
@@ -152,31 +139,32 @@ const {
 
 /*
 |--------------------------------------------------------------------------
-| Empty State
+| Active Filters
 |--------------------------------------------------------------------------
 */
 
-const emptyState = useListingEmptyState({
-    hasAnyRecords: () => props.hasAnyRecords,
-    hasActiveFilters: () =>
-        hasActiveFilters.value || hasAdditionalFilters.value,
+const hasAnyActiveFilters = computed(
+    () =>
+        hasActiveFilters.value ||
+        Boolean(filterWorkDate.value) ||
+        filterShift.value !== 'all' ||
+        (props.canSelectOperator && filterUserId.value !== 'all') ||
+        filterMachineId.value !== 'all' ||
+        filterPartId.value !== 'all' ||
+        filterSetupId.value !== 'all',
+);
 
-    noRecords: {
-        icon: Database,
-        title: 'No operator work logs yet',
-        description: 'Create an operator work log to get started.',
-        actionLabel: operatorWorkLogPage.createLabel,
-        onAction: () => router.visit(create().url),
-    },
-
-    noResults: {
-        icon: SearchX,
-        title: 'No operator work logs found',
-        description: 'Try adjusting or clearing your filters.',
-        actionLabel: operatorWorkLogPage.clearButtonLabel,
-        onAction: () => handleClearFilters(),
-    },
-});
+const activeFilterCount = computed(
+    () =>
+        Number(Boolean(filterWorkDate.value)) +
+        Number(filterShift.value !== 'all') +
+        Number(
+            props.canSelectOperator && filterUserId.value !== 'all',
+        ) +
+        Number(filterMachineId.value !== 'all') +
+        Number(filterPartId.value !== 'all') +
+        Number(filterSetupId.value !== 'all'),
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -222,6 +210,31 @@ const handleClearFilters = (): void => {
 
 /*
 |--------------------------------------------------------------------------
+| Empty State
+|--------------------------------------------------------------------------
+*/
+
+const emptyState = useListingEmptyState({
+    hasAnyRecords: () => props.hasAnyRecords,
+    hasActiveFilters: () => hasAnyActiveFilters.value,
+    noRecords: {
+        icon: Database,
+        title: 'No operator work logs yet',
+        description: 'Create an operator work log to get started.',
+        actionLabel: operatorWorkLogPage.createLabel,
+        onAction: () => router.visit(create().url),
+    },
+    noResults: {
+        icon: SearchX,
+        title: 'No operator work logs found',
+        description: 'Try adjusting or clearing your filters.',
+        actionLabel: operatorWorkLogPage.clearButtonLabel,
+        onAction: handleClearFilters,
+    },
+});
+
+/*
+|--------------------------------------------------------------------------
 | Actions
 |--------------------------------------------------------------------------
 */
@@ -253,7 +266,6 @@ const handleDeleteSelected = (): void => {
         :title="operatorWorkLogPage.title"
         @reset-preferences="resetPreferences"
     >
-        <!-- Actions -->
         <template #actions>
             <ListingActions
                 :actions="actions"
@@ -265,17 +277,16 @@ const handleDeleteSelected = (): void => {
             />
         </template>
 
-        <!-- Filters -->
         <template #filters>
             <ListingFilters
+                :active-filter-count="activeFilterCount"
                 :clear-button-label="operatorWorkLogPage.clearButtonLabel"
-                :clear-disabled="!hasAdditionalFilters"
+                :clear-disabled="!hasAnyActiveFilters"
                 :searchable="false"
                 @clear="handleClearFilters"
                 @search="search"
             >
                 <template #filters>
-                    <!-- Work Date -->
                     <div class="w-full min-w-0">
                         <AppInput
                             :model-value="filterWorkDate"
@@ -287,7 +298,6 @@ const handleDeleteSelected = (): void => {
                         />
                     </div>
 
-                    <!-- Operator -->
                     <div v-if="canSelectOperator" class="w-full min-w-0">
                         <AppEmployeeSelect
                             :model-value="
@@ -303,7 +313,6 @@ const handleDeleteSelected = (): void => {
                         />
                     </div>
 
-                    <!-- Shift -->
                     <div class="w-full min-w-0">
                         <AppUserShiftSelect
                             :model-value="
@@ -315,7 +324,6 @@ const handleDeleteSelected = (): void => {
                         />
                     </div>
 
-                    <!-- Machine -->
                     <div class="w-full min-w-0">
                         <AppMachineSelect
                             :model-value="
@@ -332,7 +340,6 @@ const handleDeleteSelected = (): void => {
                         />
                     </div>
 
-                    <!-- Part -->
                     <div class="w-full min-w-0">
                         <AppPartSelect
                             :model-value="
@@ -345,7 +352,6 @@ const handleDeleteSelected = (): void => {
                         />
                     </div>
 
-                    <!-- Setup -->
                     <div class="w-full min-w-0">
                         <AppSetupSelect
                             :model-value="
@@ -364,7 +370,6 @@ const handleDeleteSelected = (): void => {
             </ListingFilters>
         </template>
 
-        <!-- Table -->
         <template #table>
             <Deferred data="operatorWorkLogs">
                 <template #fallback>

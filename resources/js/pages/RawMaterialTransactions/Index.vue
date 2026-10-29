@@ -170,13 +170,12 @@ const {
 
 /*
 |--------------------------------------------------------------------------
-| Empty State
+| Active Filters
 |--------------------------------------------------------------------------
 */
 
-const emptyState = useListingEmptyState({
-    hasAnyRecords: () => props.hasAnyRecords,
-    hasActiveFilters: () =>
+const hasAnyActiveFilters = computed(
+    () =>
         hasActiveFilters.value ||
         filterSectionId.value !== 'all' ||
         filterSectionSizeId.value !== 'all' ||
@@ -184,6 +183,27 @@ const emptyState = useListingEmptyState({
         filterUserId.value !== 'all' ||
         Boolean(filterStartDate.value) ||
         Boolean(filterEndDate.value),
+);
+
+const activeFilterCount = computed(
+    () =>
+        Number(filterSectionId.value !== 'all') +
+        Number(filterSectionSizeId.value !== 'all') +
+        Number(filterType.value !== 'all') +
+        Number(filterUserId.value !== 'all') +
+        Number(Boolean(filterStartDate.value)) +
+        Number(Boolean(filterEndDate.value)),
+);
+
+/*
+|--------------------------------------------------------------------------
+| Empty State
+|--------------------------------------------------------------------------
+*/
+
+const emptyState = useListingEmptyState({
+    hasAnyRecords: () => props.hasAnyRecords,
+    hasActiveFilters: () => hasAnyActiveFilters.value,
     noRecords: {
         title: 'No transactions yet',
         description: 'Create a raw material transaction to get started.',
@@ -247,18 +267,11 @@ const handleDeleteSelected = () => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
+                :active-filter-count="activeFilterCount"
                 :clear-button-label="
                     rawMaterialTransactionPage.clearButtonLabel
                 "
-                :clear-disabled="
-                    !searchQuery.trim() &&
-                    filterSectionId === 'all' &&
-                    filterSectionSizeId === 'all' &&
-                    filterType === 'all' &&
-                    filterUserId === 'all' &&
-                    !filterStartDate &&
-                    !filterEndDate
-                "
+                :clear-disabled="!hasAnyActiveFilters"
                 :search-button-label="
                     rawMaterialTransactionPage.searchButtonLabel
                 "

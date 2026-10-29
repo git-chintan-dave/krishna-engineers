@@ -1,4 +1,4 @@
-import type { PaginatedResponse, SortDirection } from '@/types/listing';
+import type {PaginatedResponse, SortDirection} from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------
@@ -74,10 +74,10 @@ export type BandsawWorkLogSort = 'work_date' | 'quantity' | 'created_at';
 export type BandsawWorkLogFilters = {
     search: string;
     workDate: string;
-    userId: number | string;
-    partId: number | string;
-    sectionId: number | string;
-    sectionSizeId: number | string;
+    userId: number | 'all';
+    partId: number | 'all';
+    sectionId: number | 'all';
+    sectionSizeId: number | 'all';
     perPage: number;
     sort: BandsawWorkLogSort;
     direction: SortDirection;

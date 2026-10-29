@@ -502,7 +502,7 @@ const handlePageSizeChange = (
                                     class="flex min-h-7 items-center"
                                 >
                                     <div
-                                        class="h-4 w-3/4 max-w-32 animate-pulse rounded-sm bg-muted motion-reduce:animate-none"
+                                        class="h-4 min-w-4 w-3/4 max-w-32 animate-pulse rounded-sm bg-muted motion-reduce:animate-none"
                                     />
                                 </div>
                             </TableCell>

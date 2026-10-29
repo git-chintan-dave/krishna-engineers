@@ -75,9 +75,15 @@ const {
     },
 });
 
+const hasAnyActiveFilters = computed(
+    () => hasActiveFilters.value
+        || filterPart.value !== null
+        || filterSetup.value !== null,
+);
+
 const emptyState = useListingEmptyState({
     hasAnyRecords: () => props.hasAnyRecords,
-    hasActiveFilters: () => hasActiveFilters.value,
+    hasActiveFilters: () => hasAnyActiveFilters.value,
     noRecords: {
         title: 'No part setups yet',
         description: 'Get started by assigning a setup to a part.',
@@ -148,8 +154,9 @@ const handleDeleteSelected = (): void => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
+                :active-filter-count="Number(filterPart !== null) + Number(filterSetup !== null)"
                 :clear-button-label="partSetupPage.clearButtonLabel"
-                :clear-disabled="!hasActiveFilters"
+                :clear-disabled="!hasAnyActiveFilters"
                 :search-button-label="partSetupPage.searchButtonLabel"
                 :search-placeholder="partSetupPage.searchPlaceholder"
                 @clear="clearFilters"

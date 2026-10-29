@@ -122,13 +122,27 @@ const {
 
 /*
 |--------------------------------------------------------------------------
+| Active Filters
+|--------------------------------------------------------------------------
+*/
+
+const hasAnyActiveFilters = computed(
+    () =>
+        hasActiveFilters.value ||
+        filterRole.value !== 'all' ||
+        filterShift.value !== 'all' ||
+        filterStatus.value !== 'all',
+);
+
+/*
+|--------------------------------------------------------------------------
 | Empty State
 |--------------------------------------------------------------------------
 */
 
 const emptyState = useListingEmptyState({
     hasAnyRecords: () => props.hasAnyRecords,
-    hasActiveFilters: () => hasActiveFilters.value,
+    hasActiveFilters: () => hasAnyActiveFilters.value,
     noRecords: {
         title: 'No employees yet',
         description: 'Create an employee to get started.',
@@ -192,13 +206,13 @@ const handleDeleteSelected = () => {
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
-                :clear-button-label="employeePage.clearButtonLabel"
-                :clear-disabled="
-                    !searchQuery.trim() &&
-                    filterRole === 'all' &&
-                    filterShift === 'all' &&
-                    filterStatus === 'all'
+                :active-filter-count="
+                    Number(filterRole !== 'all') +
+                    Number(filterShift !== 'all') +
+                    Number(filterStatus !== 'all')
                 "
+                :clear-button-label="employeePage.clearButtonLabel"
+                :clear-disabled="!hasAnyActiveFilters"
                 :search-button-label="employeePage.searchButtonLabel"
                 :search-placeholder="employeePage.searchPlaceholder"
                 @clear="handleClearFilters"
