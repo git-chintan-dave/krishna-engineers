@@ -4,6 +4,7 @@ import {type Component, h, type VNode} from 'vue';
 
 import {Button} from '@/components/ui/button';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '@/components/ui/tooltip';
+import {executeConfirm} from '@/directives/confirm';
 import ActionsDropdown from '@/table/ActionsDropdown.vue';
 import {COLUMN_DEFAULTS} from '@/table/constants/columns';
 
@@ -66,13 +67,6 @@ type ActionRecord = {
 const ICON_CLASS = 'size-3.5';
 const ICON_BUTTON_CLASS = 'size-8 shrink-0 cursor-pointer';
 
-const TOOLTIP_CONTENT_CLASS = [
-    'z-50 rounded-md border border-border',
-    'bg-popover px-3 py-1.5',
-    'text-xs font-medium text-popover-foreground',
-    'shadow-md',
-];
-
 const ACTION_STYLES = {
     view: [
         'bg-slate-50 text-slate-600',
@@ -117,7 +111,7 @@ function createIconButton(
     options: {
         href?: string;
         disabled?: boolean;
-        onClick?: () => void;
+        onClick?: () => void | Promise<void>;
     } = {},
 ): VNode {
     const button = h(
@@ -131,7 +125,10 @@ function createIconButton(
             'aria-label': label,
             onClick: (event: MouseEvent) => {
                 event.stopPropagation();
-                options.onClick?.();
+
+                if (!options.disabled) {
+                    void options.onClick?.();
+                }
             },
             ...(options.href ? { asChild: true } : {}),
         },
@@ -151,7 +148,6 @@ function createIconButton(
             },
     );
 
-    // Disabled buttons cannot reliably trigger tooltips themselves.
     const trigger = options.disabled
         ? h(
             'span',
@@ -185,8 +181,6 @@ function createIconButton(
                                 TooltipContent,
                                 {
                                     side: 'top',
-                                    // sideOffset: 6,
-                                    // class: TOOLTIP_CONTENT_CLASS,
                                 },
                                 {
                                     default: () => label,
@@ -253,10 +247,6 @@ export const createActionsColumn = <TData = unknown>({
 
             const primaryActions: VNode[] = [];
 
-            /*
-             * View
-             */
-
             if (detailsUrl) {
                 primaryActions.push(
                     createIconButton(
@@ -269,10 +259,6 @@ export const createActionsColumn = <TData = unknown>({
                     ),
                 );
             }
-
-            /*
-             * Edit
-             */
 
             if (canEdit) {
                 primaryActions.push(
@@ -288,7 +274,7 @@ export const createActionsColumn = <TData = unknown>({
             }
 
             /*
-             * Delete
+             * Delete with confirmation
              */
 
             primaryActions.push(
@@ -299,7 +285,17 @@ export const createActionsColumn = <TData = unknown>({
                     {
                         disabled: !canDelete,
                         onClick: canDelete
-                            ? () => handleDelete(uuid)
+                            ? async () => {
+                                await executeConfirm({
+                                    action: () => handleDelete(uuid),
+                                    options: {
+                                        title: `Delete ${resourceName}?`,
+                                        description:
+                                            'This action cannot be undone. The selected record will be permanently deleted.',
+                                        confirmText: 'Delete',
+                                    },
+                                });
+                            }
                             : undefined,
                     },
                 ),
@@ -347,7 +343,7 @@ export const createActionsColumn = <TData = unknown>({
                 if (primaryActions.length > 0) {
                     primaryActions.push(
                         h('span', {
-                            class: 'mx-0.5 h-5 w-px bg-border',
+                            class: 'mx-0.5 h-5 w-px shrink-0 bg-border',
                             'aria-hidden': 'true',
                         }),
                     );
@@ -366,7 +362,7 @@ export const createActionsColumn = <TData = unknown>({
                 {
                     class: [
                         'flex h-8 min-h-8 items-center justify-center',
-                        'gap-1 whitespace-nowrap overflow-hidden',
+                        'gap-1 whitespace-nowrap',
                     ],
                 },
                 primaryActions,

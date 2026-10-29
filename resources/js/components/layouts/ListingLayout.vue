@@ -11,6 +11,10 @@ withDefaults(
         description: '',
     },
 );
+
+defineEmits<{
+    resetPreferences: [];
+}>();
 </script>
 
 <template>
