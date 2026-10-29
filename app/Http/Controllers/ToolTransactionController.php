@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\ToolTransactionType;
 use App\Enums\UserRole;
 use App\Http\Controllers\Concerns\HasCrudResponses;
+use App\Http\Controllers\Concerns\HasListingFilters;
 use App\Http\Requests\ToolTransactions\IndexToolTransactionRequest;
 use App\Http\Requests\ToolTransactions\ToolTransactionRequest;
 use App\Http\Resources\ToolTransactionResource;
@@ -21,7 +22,7 @@ use Inertia\Response;
 
 class ToolTransactionController extends Controller
 {
-    use HasCrudResponses;
+    use HasCrudResponses, HasListingFilters;
 
     private const string MODULE_NAME = 'Tool Transaction';
 
@@ -29,7 +30,9 @@ class ToolTransactionController extends Controller
 
     public function __construct(
         private readonly ToolTransactionService $toolTransactionService,
-    ) {}
+    )
+    {
+    }
 
     public function index(IndexToolTransactionRequest $request): Response
     {
@@ -37,23 +40,28 @@ class ToolTransactionController extends Controller
 
         $filters = $request->validated();
 
-        $transactions = ToolTransaction::query()
-            ->with([
-                'tool',
-                'fromUser',
-                'toUser',
-                'part',
-                'setup',
-                'createdBy',
-            ])
-            ->filterQuery($filters)
-            ->paginate($filters['per_page'] ?? 10)
-            ->withQueryString();
-
         return Inertia::render('ToolTransactions/Index', [
-            'transactions' => ToolTransactionResource::collection($transactions),
+            'transactions' => Inertia::defer(function () use ($filters) {
+                $transactions = ToolTransaction::query()
+                    ->with([
+                        'tool',
+                        'fromUser',
+                        'toUser',
+                        'part',
+                        'setup',
+                        'createdBy',
+                    ])
+                    ->filterQuery($filters)
+                    ->paginate($filters['per_page'] ?? 10)
+                    ->withQueryString();
+
+                return ToolTransactionResource::collection($transactions);
+            }),
+
+            'hasAnyRecords' => ToolTransaction::query()->exists(),
+
             'filters' => [
-                'search' => $filters['search'] ?? '',
+                ...$this->listingFilters($filters),
                 'toolId' => $filters['tool_id'] ?? null,
                 'type' => $filters['type'] ?? null,
                 'fromUserId' => $filters['from_user_id'] ?? null,
@@ -62,9 +70,6 @@ class ToolTransactionController extends Controller
                 'setupId' => $filters['setup_id'] ?? null,
                 'fromDate' => $filters['from_date'] ?? null,
                 'toDate' => $filters['to_date'] ?? null,
-                'sort' => $filters['sort'] ?? 'id',
-                'direction' => $filters['direction'] ?? 'desc',
-                'perPage' => $filters['per_page'] ?? 10,
             ],
         ]);
     }
@@ -85,7 +90,7 @@ class ToolTransactionController extends Controller
         $data = $request->validated();
         $tool = Tool::query()->findOrFail($data['tool_id']);
         $type = ToolTransactionType::from($data['type']);
-        $quantity = (int) $data['quantity'];
+        $quantity = (int)$data['quantity'];
 
         match ($type) {
             ToolTransactionType::OPENING => $this->toolTransactionService->opening(
@@ -147,8 +152,9 @@ class ToolTransactionController extends Controller
 
     public function update(
         ToolTransactionRequest $request,
-        ToolTransaction $toolTransaction,
-    ): RedirectResponse {
+        ToolTransaction        $toolTransaction,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $toolTransaction);
 
         /** @var User $user */

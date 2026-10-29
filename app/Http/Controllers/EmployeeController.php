@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Concerns\HasCrudResponses;
+use App\Http\Controllers\Concerns\HasListingFilters;
 use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\Users\IndexUserRequest;
 use App\Http\Requests\Users\UserRequest;
@@ -19,7 +20,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeeController extends Controller
 {
-    use HasCrudResponses;
+    use HasCrudResponses, HasListingFilters;
 
     private const string MODULE_NAME = 'Employee';
 
@@ -32,37 +33,33 @@ class EmployeeController extends Controller
 
         $filters = $request->validated();
 
-        $employees = User::query()
-            ->filterQuery($filters)
-            ->paginate($filters['per_page'] ?? 10)
-            ->withQueryString();
-
         return Inertia::render('Employees/Index', [
-            'employees' => UserResource::collection($employees),
+            'employees' => Inertia::defer(function () use ($filters) {
+                $employees = User::query()
+                    ->filterQuery($filters)
+                    ->paginate($filters['per_page'] ?? 10)
+                    ->withQueryString();
+
+                return UserResource::collection($employees);
+            }),
+
+            'hasAnyRecords' => User::query()->exists(),
+
             'filters' => [
-                'search' => $filters['search'] ?? '',
+                ...$this->listingFilters($filters),
                 'role' => $filters['role'] ?? 'all',
                 'shift' => $filters['shift'] ?? 'all',
                 'status' => $filters['status'] ?? 'all',
-                'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'id',
-                'direction' => $filters['direction'] ?? 'desc',
             ],
         ]);
     }
 
     // Create
-    public function create(): Response
-    {
-        Gate::authorize('create', User::class);
 
-        return Inertia::render('Employees/Create', []);
-    }
-
-    // Store
     public function store(
         UserRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('create', User::class);
 
         User::create($request->validated());
@@ -70,7 +67,17 @@ class EmployeeController extends Controller
         return $this->successResponse('created');
     }
 
+    // Store
+
+    public function create(): Response
+    {
+        Gate::authorize('create', User::class);
+
+        return Inertia::render('Employees/Create', []);
+    }
+
     // Edit
+
     public function edit(User $employee): Response
     {
         Gate::authorize('view', $employee);
@@ -119,11 +126,6 @@ class EmployeeController extends Controller
         return $this->successResponse('bulk_deleted');
     }
 
-    public function import()
-    {
-        return Inertia::render('Employees/Import', []);
-    }
-
     public function importStore(Request $request)
     {
         $request->validate([
@@ -144,5 +146,10 @@ class EmployeeController extends Controller
             created: $import->getCreatedCount(),
             updated: $import->getUpdatedCount(),
         );
+    }
+
+    public function import()
+    {
+        return Inertia::render('Employees/Import', []);
     }
 }

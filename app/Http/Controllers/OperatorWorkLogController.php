@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\Status;
 use App\Enums\UserRole;
 use App\Http\Controllers\Concerns\HasCrudResponses;
-use App\Http\Queries\Concerns\AppliesIndexFilters;
+use App\Http\Controllers\Concerns\HasListingFilters;
 use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\OperatorWorkLogs\IndexOperatorWorkLogRequest;
 use App\Http\Requests\OperatorWorkLogs\OperatorWorkLogRequest;
@@ -24,7 +24,7 @@ use Inertia\Response;
 
 class OperatorWorkLogController extends Controller
 {
-    use AppliesIndexFilters, HasCrudResponses;
+    use HasCrudResponses, HasListingFilters;
 
     private const string MODULE_NAME = 'Operator Work Log';
 
@@ -39,27 +39,44 @@ class OperatorWorkLogController extends Controller
 
         $isOperator = $user->role === UserRole::OPERATOR;
 
-        $query = $this->withDailyProductionMetrics(
-            OperatorWorkLog::query()
-                ->select('operator_work_logs.*')
-                ->with(['user', 'machine', 'part', 'setup']),
-        );
-
-        $operatorWorkLogs = $query
-            ->when($isOperator, fn (Builder $query) => $query->forUser($user->id),)
-            ->filterQuery(
-                $isOperator
-                    ? array_diff_key($filters, ['user_id' => true])
-                    : $filters,
-            )
-            ->paginate($filters['per_page'] ?? 10)
-            ->withQueryString();
+        $workLogFilters = $isOperator
+            ? array_diff_key($filters, ['user_id' => true])
+            : $filters;
 
         return Inertia::render('WorkLogs/Operator/Index', [
-            'operatorWorkLogs' => OperatorWorkLogResource::collection(
-                $operatorWorkLogs,
-            ),
+            'operatorWorkLogs' => Inertia::defer(function () use (
+                $filters,
+                $user,
+                $isOperator,
+                $workLogFilters,
+            ) {
+                $query = $this->withDailyProductionMetrics(
+                    OperatorWorkLog::query()
+                        ->select('operator_work_logs.*')
+                        ->with(['user', 'machine', 'part', 'setup']),
+                );
+
+                $operatorWorkLogs = $query
+                    ->when(
+                        $isOperator,
+                        fn(Builder $query) => $query->forUser($user->id),
+                    )
+                    ->filterQuery($workLogFilters)
+                    ->paginate($filters['per_page'] ?? 10)
+                    ->withQueryString();
+
+                return OperatorWorkLogResource::collection($operatorWorkLogs);
+            }),
+
+            'hasAnyRecords' => OperatorWorkLog::query()
+                ->when(
+                    $isOperator,
+                    fn(Builder $query) => $query->forUser($user->id),
+                )
+                ->exists(),
+
             'filters' => [
+                ...$this->listingFilters($filters),
                 'workDate' => $filters['work_date'] ?? '',
                 'shift' => $filters['shift'] ?? 'all',
                 'userId' => $isOperator
@@ -68,10 +85,8 @@ class OperatorWorkLogController extends Controller
                 'machineId' => $filters['machine_id'] ?? 'all',
                 'partId' => $filters['part_id'] ?? 'all',
                 'setupId' => $filters['setup_id'] ?? 'all',
-                'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'id',
-                'direction' => $filters['direction'] ?? 'desc',
             ],
+
             ...$this->formOptions(),
         ]);
     }
@@ -137,7 +152,7 @@ class OperatorWorkLogController extends Controller
             ]),
         ];
 
-        if (! $includeLastReports) {
+        if (!$includeLastReports) {
             return [
                 ...$options,
                 'currentUserId' => $currentUser->id,
@@ -166,8 +181,8 @@ class OperatorWorkLogController extends Controller
                 'setup_id',
             ])
             ->unique('user_id')
-            ->mapWithKeys(fn (OperatorWorkLog $log): array => [
-                (string) $log->user_id => [
+            ->mapWithKeys(fn(OperatorWorkLog $log): array => [
+                (string)$log->user_id => [
                     'shift' => $log->shift,
                     'machine_id' => $log->machine_id,
                     'part_id' => $log->part_id,
@@ -182,15 +197,6 @@ class OperatorWorkLogController extends Controller
             'canSelectOperator' => $canSelectOperator,
             'lastReports' => $lastReports,
         ];
-    }
-
-    public function create(): Response
-    {
-        Gate::authorize('create', OperatorWorkLog::class);
-
-        return Inertia::render('WorkLogs/Operator/Create', [
-            ...$this->formOptions(includeLastReports: true),
-        ]);
     }
 
     public function store(OperatorWorkLogRequest $request): RedirectResponse
@@ -218,6 +224,41 @@ class OperatorWorkLogController extends Controller
         return $this->successResponse('created');
     }
 
+    /**
+     * Resolve a part setup belonging to the selected part and setup.
+     *
+     * @throws ValidationException
+     */
+    private function resolvePartSetup(
+        int $partSetupId,
+        int $partId,
+        int $setupId,
+    ): PartSetup
+    {
+        $partSetup = PartSetup::query()
+            ->whereKey($partSetupId)
+            ->where('part_id', $partId)
+            ->where('setup_id', $setupId)
+            ->first();
+
+        if (!$partSetup) {
+            throw ValidationException::withMessages([
+                'part_setup_id' => 'The selected part setup is invalid for the selected part and setup.',
+            ]);
+        }
+
+        return $partSetup;
+    }
+
+    public function create(): Response
+    {
+        Gate::authorize('create', OperatorWorkLog::class);
+
+        return Inertia::render('WorkLogs/Operator/Create', [
+            ...$this->formOptions(includeLastReports: true),
+        ]);
+    }
+
     public function edit(OperatorWorkLog $operator): Response
     {
         Gate::authorize('update', $operator);
@@ -238,8 +279,9 @@ class OperatorWorkLogController extends Controller
 
     public function update(
         OperatorWorkLogRequest $request,
-        OperatorWorkLog $operator,
-    ): RedirectResponse {
+        OperatorWorkLog        $operator,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $operator);
 
         $data = $request->validated();
@@ -256,31 +298,6 @@ class OperatorWorkLogController extends Controller
         $operator->update($data);
 
         return $this->successResponse('updated');
-    }
-
-    /**
-     * Resolve a part setup belonging to the selected part and setup.
-     *
-     * @throws ValidationException
-     */
-    private function resolvePartSetup(
-        int $partSetupId,
-        int $partId,
-        int $setupId,
-    ): PartSetup {
-        $partSetup = PartSetup::query()
-            ->whereKey($partSetupId)
-            ->where('part_id', $partId)
-            ->where('setup_id', $setupId)
-            ->first();
-
-        if (! $partSetup) {
-            throw ValidationException::withMessages([
-                'part_setup_id' => 'The selected part setup is invalid for the selected part and setup.',
-            ]);
-        }
-
-        return $partSetup;
     }
 
     public function destroy(OperatorWorkLog $operator): RedirectResponse

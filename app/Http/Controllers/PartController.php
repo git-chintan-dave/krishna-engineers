@@ -28,7 +28,9 @@ class PartController extends Controller
 
     private const string IMAGE_DIRECTORY = 'parts';
 
-    public function __construct(private readonly FileUploadService $fileUploadService) {}
+    public function __construct(private readonly FileUploadService $fileUploadService)
+    {
+    }
 
     public function index(IndexPartRequest $request): Response
     {
@@ -93,8 +95,9 @@ class PartController extends Controller
 
     public function update(
         PartRequest $request,
-        Part $part,
-    ): RedirectResponse {
+        Part        $part,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $part);
 
         $data = $request->validated();
@@ -124,7 +127,8 @@ class PartController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('deleteAny', Part::class);
 
         Part::query()
@@ -132,11 +136,6 @@ class PartController extends Controller
             ->delete();
 
         return $this->successResponse('bulk_deleted');
-    }
-
-    public function import()
-    {
-        return Inertia::render('Parts/Import', []);
     }
 
     public function importStore(Request $request)
@@ -159,5 +158,10 @@ class PartController extends Controller
             created: $import->getCreatedCount(),
             updated: $import->getUpdatedCount(),
         );
+    }
+
+    public function import()
+    {
+        return Inertia::render('Parts/Import', []);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\UserRole;
 use App\Exceptions\AttendanceImportException;
 use App\Http\Controllers\Concerns\HasCrudResponses;
+use App\Http\Controllers\Concerns\HasListingFilters;
 use App\Http\Requests\Attendances\AttendanceImportRequest;
 use App\Http\Requests\Attendances\AttendanceRequest;
 use App\Http\Requests\Attendances\IndexAttendanceRequest;
@@ -31,13 +32,15 @@ use Throwable;
 
 class AttendanceController extends Controller
 {
-    use HasCrudResponses;
+    use HasCrudResponses, HasListingFilters;
 
     private const string MODULE_NAME = 'Attendance';
 
     private const string INDEX_ROUTE = 'attendances.index';
 
-    public function __construct(private readonly AttendanceService $attendanceService) {}
+    public function __construct(private readonly AttendanceService $attendanceService)
+    {
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -45,16 +48,11 @@ class AttendanceController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function index(
-        IndexAttendanceRequest $request,
-    ): Response {
-        Gate::authorize(
-            'viewAny',
-            Attendance::class,
-        );
+    public function index(IndexAttendanceRequest $request): Response
+    {
+        Gate::authorize('viewAny', Attendance::class);
 
         $filters = $request->validated();
-
         $user = $request->user();
 
         $isAdminOrSupervisor = in_array(
@@ -63,32 +61,45 @@ class AttendanceController extends Controller
             true,
         );
 
-        $attendances = Attendance::query()
-            ->with([
-                'user:id,name,employee_code',
-                'breaks',
-            ])
-            ->when(
-                !$isAdminOrSupervisor,
-                fn (Builder $query) => $query->forUser($user->id),
-            )
-            ->filterQuery(
-                $isAdminOrSupervisor
-                    ? $filters
-                    : array_diff_key($filters, ['user_id' => true]),
-            )
-            ->paginate($filters['per_page'] ?? 10)
-            ->withQueryString();
+        $attendanceFilters = $isAdminOrSupervisor
+            ? $filters
+            : array_diff_key($filters, ['user_id' => true]);
 
         return Inertia::render('Attendances/Index', [
-            'attendances' => AttendanceResource::collection($attendances),
+            'attendances' => Inertia::defer(function () use (
+                $attendanceFilters,
+                $filters,
+                $isAdminOrSupervisor,
+                $user,
+            ) {
+                $attendances = Attendance::query()
+                    ->with([
+                        'user:id,name,employee_code',
+                        'breaks',
+                    ])
+                    ->when(
+                        !$isAdminOrSupervisor,
+                        fn(Builder $query) => $query->forUser($user->id),
+                    )
+                    ->filterQuery($attendanceFilters)
+                    ->paginate($filters['per_page'] ?? 10)
+                    ->withQueryString();
+
+                return AttendanceResource::collection($attendances);
+            }),
+
+            'hasAnyRecords' => Attendance::query()
+                ->when(
+                    !$isAdminOrSupervisor,
+                    fn(Builder $query) => $query->forUser($user->id),
+                )
+                ->exists(),
+
             'filters' => [
+                ...$this->listingFilters($filters),
                 'user_id' => $filters['user_id'] ?? 'all',
                 'start_date' => $filters['start_date'] ?? '',
                 'end_date' => $filters['end_date'] ?? '',
-                'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'id',
-                'direction' => $filters['direction'] ?? 'desc',
             ],
         ]);
     }
@@ -101,7 +112,8 @@ class AttendanceController extends Controller
 
     public function edit(
         Attendance $attendance,
-    ): Response {
+    ): Response
+    {
         Gate::authorize(
             'view',
             $attendance,
@@ -127,7 +139,8 @@ class AttendanceController extends Controller
 
     public function store(
         AttendanceRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize(
             'create',
             Attendance::class,
@@ -178,8 +191,9 @@ class AttendanceController extends Controller
 
     public function update(
         AttendanceRequest $request,
-        Attendance $attendance,
-    ): RedirectResponse {
+        Attendance        $attendance,
+    ): RedirectResponse
+    {
         Gate::authorize(
             'update',
             $attendance,
@@ -215,7 +229,8 @@ class AttendanceController extends Controller
 
     public function destroy(
         Attendance $attendance,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize(
             'delete',
             $attendance,
@@ -241,7 +256,8 @@ class AttendanceController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize(
             'deleteAny',
             Attendance::class,
@@ -282,7 +298,8 @@ class AttendanceController extends Controller
 
     public function import(
         AttendanceImportRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize(
             'import',
             Attendance::class,
@@ -375,7 +392,7 @@ class AttendanceController extends Controller
 
         $arguments['--empcode'] = 'ALL';
 
-        if (! empty($validated['user_id'])) {
+        if (!empty($validated['user_id'])) {
             $user = User::query()->findOrFail(
                 $validated['user_id'],
             );
@@ -446,7 +463,8 @@ class AttendanceController extends Controller
 
     public function history(
         Request $request,
-    ): AnonymousResourceCollection {
+    ): AnonymousResourceCollection
+    {
         Gate::authorize(
             'viewAny',
             Attendance::class,

@@ -10,9 +10,10 @@ use Inertia\Response;
 class DashboardController extends Controller
 {
     public function __invoke(
-        Request $request,
+        Request          $request,
         DashboardService $dashboardService,
-    ): Response {
+    ): Response
+    {
         $user = $request->user();
 
         $props = $dashboardService->metadataForUser($user);
@@ -20,7 +21,7 @@ class DashboardController extends Controller
         foreach ($dashboardService->deferredPropsForUser($user) as $key => $callback) {
             $props[$key] = Inertia::defer(
                 $callback,
-                'dashboard-'.$key,
+                'dashboard-' . $key,
             );
         }
 

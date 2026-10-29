@@ -30,7 +30,9 @@ class PartSetupController extends Controller
 
     public function __construct(
         private readonly FileUploadService $fileUploadService,
-    ) {}
+    )
+    {
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -38,7 +40,8 @@ class PartSetupController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function index(IndexPartSetupRequest $request): Response {
+    public function index(IndexPartSetupRequest $request): Response
+    {
         Gate::authorize('viewAny', PartSetup::class);
 
         $filters = $request->validated();
@@ -220,11 +223,6 @@ class PartSetupController extends Controller
         );
     }
 
-    public function import()
-    {
-        return Inertia::render('PartSetups/Import', []);
-    }
-
     public function importStore(Request $request)
     {
         $request->validate([
@@ -245,5 +243,10 @@ class PartSetupController extends Controller
             created: $import->getCreatedCount(),
             updated: $import->getUpdatedCount(),
         );
+    }
+
+    public function import()
+    {
+        return Inertia::render('PartSetups/Import', []);
     }
 }

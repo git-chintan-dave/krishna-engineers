@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\HasCrudResponses;
 use App\Http\Controllers\Concerns\HasListingFilters;
-use App\Http\Queries\Concerns\AppliesIndexFilters;
 use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\Tools\IndexToolRequest;
 use App\Http\Requests\Tools\ToolRequest;
@@ -21,7 +20,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ToolController extends Controller
 {
-    use AppliesIndexFilters, HasCrudResponses, HasListingFilters;
+    use HasCrudResponses, HasListingFilters;
 
     /*
     |--------------------------------------------------------------------------
@@ -35,7 +34,9 @@ class ToolController extends Controller
 
     private const string IMAGE_DIRECTORY = 'tools';
 
-    public function __construct(private readonly FileUploadService $fileUploadService) {}
+    public function __construct(private readonly FileUploadService $fileUploadService)
+    {
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -127,8 +128,9 @@ class ToolController extends Controller
 
     public function update(
         ToolRequest $request,
-        Tool $tool,
-    ): RedirectResponse {
+        Tool        $tool,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $tool);
 
         $data = $request->validated();
@@ -170,7 +172,8 @@ class ToolController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('deleteAny', Tool::class);
 
         Tool::query()
@@ -178,11 +181,6 @@ class ToolController extends Controller
             ->delete();
 
         return $this->successResponse('bulk_deleted');
-    }
-
-    public function import()
-    {
-        return Inertia::render('Tools/Import', []);
     }
 
     public function importStore(Request $request)
@@ -205,5 +203,10 @@ class ToolController extends Controller
             created: $import->getCreatedCount(),
             updated: $import->getUpdatedCount(),
         );
+    }
+
+    public function import()
+    {
+        return Inertia::render('Tools/Import', []);
     }
 }

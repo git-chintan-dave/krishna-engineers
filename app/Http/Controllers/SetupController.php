@@ -77,8 +77,9 @@ class SetupController extends Controller
 
     public function update(
         SetupRequest $request,
-        Setup $setup,
-    ): RedirectResponse {
+        Setup        $setup,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $setup);
 
         $setup->update($request->validated());
@@ -97,7 +98,8 @@ class SetupController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('deleteAny', Setup::class);
 
         Setup::query()
@@ -105,11 +107,6 @@ class SetupController extends Controller
             ->delete();
 
         return $this->successResponse('bulk_deleted');
-    }
-
-    public function import()
-    {
-        return Inertia::render('Setups/Import', []);
     }
 
     public function importStore(Request $request)
@@ -132,5 +129,10 @@ class SetupController extends Controller
             created: $import->getCreatedCount(),
             updated: $import->getUpdatedCount(),
         );
+    }
+
+    public function import()
+    {
+        return Inertia::render('Setups/Import', []);
     }
 }

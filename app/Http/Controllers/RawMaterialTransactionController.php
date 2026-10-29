@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\HasCrudResponses;
+use App\Http\Controllers\Concerns\HasListingFilters;
 use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\RawMaterialTransactions\IndexRawMaterialTransactionRequest;
 use App\Http\Requests\RawMaterialTransactions\RawMaterialTransactionRequest;
@@ -16,7 +17,7 @@ use Inertia\Response;
 
 class RawMaterialTransactionController extends Controller
 {
-    use HasCrudResponses;
+    use HasCrudResponses, HasListingFilters;
 
     private const string MODULE_NAME = 'Raw Material Transaction';
 
@@ -34,28 +35,27 @@ class RawMaterialTransactionController extends Controller
 
         $filters = $request->validated();
 
-        $transactions = RawMaterialTransaction::query()
-            ->with(['sectionSize.section', 'user', 'reference'])
-            ->filterQuery($filters)
-            ->paginate($validated['per_page'] ?? 10)
-            ->withQueryString();
-
         return Inertia::render('RawMaterialTransactions/Index', [
-            'transactions' => RawMaterialTransactionResource::collection(
-                $transactions,
-            ),
+            'transactions' => Inertia::defer(function () use ($filters) {
+                $transactions = RawMaterialTransaction::query()
+                    ->with(['sectionSize.section', 'user', 'reference'])
+                    ->filterQuery($filters)
+                    ->paginate($filters['per_page'] ?? 10)
+                    ->withQueryString();
+
+                return RawMaterialTransactionResource::collection($transactions);
+            }),
+
+            'hasAnyRecords' => RawMaterialTransaction::query()->exists(),
 
             'filters' => [
-                'search' => $filters['search'] ?? '',
+                ...$this->listingFilters($filters),
                 'sectionId' => $filters['section_id'] ?? 'all',
                 'sectionSizeId' => $filters['section_size_id'] ?? 'all',
                 'type' => $filters['type'] ?? 'all',
                 'userId' => $filters['user_id'] ?? 'all',
                 'startDate' => $filters['start_date'] ?? '',
                 'endDate' => $filters['end_date'] ?? '',
-                'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'id',
-                'direction' => $filters['direction'] ?? 'desc',
             ],
         ]);
     }
@@ -69,7 +69,8 @@ class RawMaterialTransactionController extends Controller
     public function store(
         RawMaterialTransactionRequest $request,
         RawMaterialTransactionService $service,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         $service->create(
             $request->validated(),
             $request->user(),
@@ -99,7 +100,8 @@ class RawMaterialTransactionController extends Controller
 
     public function edit(
         RawMaterialTransaction $rawMaterialTransaction,
-    ): Response {
+    ): Response
+    {
         Gate::authorize('view', $rawMaterialTransaction);
 
         $rawMaterialTransaction->load([
@@ -123,9 +125,10 @@ class RawMaterialTransactionController extends Controller
 
     public function update(
         RawMaterialTransactionRequest $request,
-        RawMaterialTransaction $rawMaterialTransaction,
+        RawMaterialTransaction        $rawMaterialTransaction,
         RawMaterialTransactionService $service,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('update', $rawMaterialTransaction);
 
         $service->update(
@@ -143,9 +146,10 @@ class RawMaterialTransactionController extends Controller
     */
 
     public function destroy(
-        RawMaterialTransaction $rawMaterialTransaction,
+        RawMaterialTransaction        $rawMaterialTransaction,
         RawMaterialTransactionService $service,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('delete', $rawMaterialTransaction);
 
         $service->delete($rawMaterialTransaction);
@@ -160,9 +164,10 @@ class RawMaterialTransactionController extends Controller
     */
 
     public function bulkDestroy(
-        BulkDestroyRequest $request,
+        BulkDestroyRequest            $request,
         RawMaterialTransactionService $service,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('deleteAny', RawMaterialTransaction::class);
 
         $service->bulkDelete($request->validated('ids'));

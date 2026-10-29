@@ -31,7 +31,8 @@ class SectionController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function index(IndexSectionRequest $request): Response {
+    public function index(IndexSectionRequest $request): Response
+    {
         Gate::authorize('viewAny', Section::class);
 
         $filters = $request->validated();
@@ -63,7 +64,8 @@ class SectionController extends Controller
 
     public function store(
         SectionRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('create', Section::class);
 
         Section::create($request->validated());
@@ -107,8 +109,9 @@ class SectionController extends Controller
 
     public function update(
         SectionRequest $request,
-        Section $section,
-    ): RedirectResponse {
+        Section        $section,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $section);
 
         $section->update($request->validated());
@@ -139,7 +142,8 @@ class SectionController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('deleteAny', Section::class);
 
         Section::query()
@@ -147,11 +151,6 @@ class SectionController extends Controller
             ->delete();
 
         return $this->successResponse('bulk_deleted');
-    }
-
-    public function import()
-    {
-        return Inertia::render('Sections/Import', []);
     }
 
     public function importStore(Request $request)
@@ -174,5 +173,10 @@ class SectionController extends Controller
             created: $import->getCreatedCount(),
             updated: $import->getUpdatedCount(),
         );
+    }
+
+    public function import()
+    {
+        return Inertia::render('Sections/Import', []);
     }
 }

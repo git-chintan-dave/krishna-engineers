@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\SalaryStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Concerns\HasCrudResponses;
+use App\Http\Controllers\Concerns\HasListingFilters;
 use App\Http\Requests\BulkDestroyRequest;
 use App\Http\Requests\Salaries\IndexSalaryRequest;
 use App\Http\Requests\Salaries\SalaryPreviewRequest;
@@ -25,7 +26,7 @@ use Throwable;
 
 class SalaryController extends Controller
 {
-    use HasCrudResponses;
+    use HasCrudResponses, HasListingFilters;
 
     private const string MODULE_NAME = 'Salary';
 
@@ -33,7 +34,9 @@ class SalaryController extends Controller
 
     public function __construct(
         private readonly SalaryService $salaryService,
-    ) {}
+    )
+    {
+    }
 
     public function index(IndexSalaryRequest $request): Response
     {
@@ -41,33 +44,37 @@ class SalaryController extends Controller
 
         $filters = $request->validated();
 
-        $salaries = Salary::query()
-            ->with('user:id,name,employee_code')
-            ->filterQuery($filters)
-            ->paginate($filters['per_page'] ?? 10)
-            ->withQueryString();
-
         $now = now()->subMonthNoOverflow();
 
         $periodStart = $now->copy()->startOfMonth()->toDateString();
         $periodEnd = $now->copy()->endOfMonth()->toDateString();
 
-        $canGenerateLastMonth = ! Salary::query()
+        $canGenerateLastMonth = !Salary::query()
             ->whereDate('salary_period_start', $periodStart)
             ->whereDate('salary_period_end', $periodEnd)
             ->exists();
 
         return Inertia::render('Salaries/Index', [
-            'salaries' => SalaryResource::collection($salaries),
+            'salaries' => Inertia::defer(function () use ($filters) {
+                $salaries = Salary::query()
+                    ->with('user:id,name,employee_code')
+                    ->filterQuery($filters)
+                    ->paginate($filters['per_page'] ?? 10)
+                    ->withQueryString();
+
+                return SalaryResource::collection($salaries);
+            }),
+
+            'hasAnyRecords' => Salary::query()->exists(),
+
             'can_generate_last_month' => $canGenerateLastMonth,
+
             'filters' => [
+                ...$this->listingFilters($filters),
                 'user_id' => $filters['user_id'] ?? 'all',
                 'status' => $filters['status'] ?? 'all',
                 'start_date' => $filters['start_date'] ?? '',
                 'end_date' => $filters['end_date'] ?? '',
-                'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'id',
-                'direction' => $filters['direction'] ?? 'desc',
             ],
         ]);
     }
@@ -91,11 +98,11 @@ class SalaryController extends Controller
             user: $user,
             periodStart: Carbon::parse($data['salary_period_start']),
             periodEnd: Carbon::parse($data['salary_period_end']),
-            upad: (float) $data['upad'],
-            paidLoan: (float) $data['paid_loan'],
-            adjustment: (float) $data['adjustment'],
+            upad: (float)$data['upad'],
+            paidLoan: (float)$data['paid_loan'],
+            adjustment: (float)$data['adjustment'],
             adjustmentReason: $data['adjustment_reason'] ?? null,
-            lateDays: (int) $data['late_days'],
+            lateDays: (int)$data['late_days'],
         );
 
         return $this->successResponse('created');
@@ -137,19 +144,20 @@ class SalaryController extends Controller
 
     public function update(
         SalaryRequest $request,
-        Salary $salary,
-    ): RedirectResponse {
+        Salary        $salary,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $salary);
 
         $data = $request->validated();
 
         $this->salaryService->recalculate(
             salary: $salary,
-            upad: (float) $data['upad'],
-            paidLoan: (float) $data['paid_loan'],
-            adjustment: (float) $data['adjustment'],
+            upad: (float)$data['upad'],
+            paidLoan: (float)$data['paid_loan'],
+            adjustment: (float)$data['adjustment'],
             adjustmentReason: $data['adjustment_reason'] ?? null,
-            lateDays: (int) $data['late_days'],
+            lateDays: (int)$data['late_days'],
         );
 
         return $this->successResponse('updated');
@@ -175,7 +183,8 @@ class SalaryController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('deleteAny', Salary::class);
 
         $ids = $request->input('ids', []);
@@ -190,7 +199,8 @@ class SalaryController extends Controller
 
     public function preview(
         SalaryPreviewRequest $request,
-    ): JsonResponse {
+    ): JsonResponse
+    {
         Gate::authorize('create', Salary::class);
 
         $data = $request->validated();
@@ -225,8 +235,9 @@ class SalaryController extends Controller
 
     public function generateSalary(
         SalaryService $salaryService,
-        ?int $userId = null,
-    ): RedirectResponse {
+        ?int          $userId = null,
+    ): RedirectResponse
+    {
         try {
             $result = $salaryService->generateForEmployees(
                 userId: $userId,
@@ -253,9 +264,10 @@ class SalaryController extends Controller
     }
 
     public function regenerate(
-        Salary $salary,
+        Salary        $salary,
         SalaryService $salaryService,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         try {
             if ($salary->status === 'paid') {
                 return $this->errorResponse(

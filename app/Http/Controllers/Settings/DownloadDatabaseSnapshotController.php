@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
@@ -21,7 +22,7 @@ class DownloadDatabaseSnapshotController
 
         $disk = config('db-snapshots.disk', 'snapshots');
 
-        $snapshotName = 'krishna-engineers-'.now()->format('Ymd-His');
+        $snapshotName = 'krishna-engineers-' . now()->format('Ymd-His');
 
         try {
             // Create a fresh snapshot before downloading.
@@ -30,7 +31,7 @@ class DownloadDatabaseSnapshotController
             ]);
 
             if ($exitCode !== 0) {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     'The database snapshot command failed.'
                 );
             }
@@ -40,14 +41,14 @@ class DownloadDatabaseSnapshotController
             // Locate the file created by this request.
             $snapshotPath = collect($storage->allFiles())
                 ->first(
-                    fn (string $path): bool => str_starts_with(
+                    fn(string $path): bool => str_starts_with(
                         basename($path),
-                        $snapshotName.'.'
+                        $snapshotName . '.'
                     )
                 );
 
-            if (! $snapshotPath || ! $storage->exists($snapshotPath)) {
-                throw new \RuntimeException(
+            if (!$snapshotPath || !$storage->exists($snapshotPath)) {
+                throw new RuntimeException(
                     'The generated database snapshot was not found.'
                 );
             }
@@ -59,7 +60,7 @@ class DownloadDatabaseSnapshotController
                     $stream = $storage->readStream($snapshotPath);
 
                     if ($stream === false) {
-                        throw new \RuntimeException('Unable to read the database snapshot.');
+                        throw new RuntimeException('Unable to read the database snapshot.');
                     }
 
                     try {

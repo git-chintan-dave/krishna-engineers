@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\Status;
 use App\Enums\UserRole;
 use App\Http\Controllers\Concerns\HasCrudResponses;
-use App\Http\Queries\Concerns\AppliesIndexFilters;
+use App\Http\Controllers\Concerns\HasListingFilters;
 use App\Http\Requests\BandsawWorkLogs\BandsawWorkLogRequest;
 use App\Http\Requests\BandsawWorkLogs\IndexBandsawWorkLogRequest;
 use App\Http\Requests\BulkDestroyRequest;
@@ -21,7 +21,7 @@ use Inertia\Response;
 
 class BandsawWorkLogController extends Controller
 {
-    use AppliesIndexFilters, HasCrudResponses;
+    use HasCrudResponses, HasListingFilters;
 
     private const string MODULE_NAME = 'Bandsaw Work Log';
 
@@ -30,61 +30,70 @@ class BandsawWorkLogController extends Controller
     /**
      * Display a listing of Bandsaw work logs.
      */
-    public function index(
-        IndexBandsawWorkLogRequest $request,
-    ): Response {
-        Gate::authorize(
-            'viewAny',
-            BandsawWorkLog::class,
-        );
+    public function index(IndexBandsawWorkLogRequest $request): Response
+    {
+        Gate::authorize('viewAny', BandsawWorkLog::class);
 
         $user = $request->user();
         $filters = $request->validated();
 
         $isBandsaw = $user->role === UserRole::BANDSAW;
 
-        $bandsawWorkLogs = BandsawWorkLog::query()
-            ->select('bandsaw_work_logs.*')
-            ->with([
-                'user',
-                'part',
-                'sectionSize.section',
-            ])
-            ->when(
-                $isBandsaw,
-                fn (Builder $query): Builder => $query->forUser($user->id),
-            )
-            ->filterQuery(
-                $isBandsaw
-                    ? array_diff_key($filters, ['user_id' => true])
-                    : $filters,
-            )
-            ->when(
-                $filters['section_id'] ?? null,
-                fn (Builder $query, int $sectionId): Builder => $query->whereHas(
-                    'sectionSize',
-                    fn (Builder $query): Builder => $query->where(
-                        'section_id',
-                        $sectionId,
-                    ),
-                ),
-            )
-            ->paginate($filters['per_page'] ?? 10)
-            ->withQueryString();
+        $workLogFilters = $isBandsaw
+            ? array_diff_key($filters, ['user_id' => true])
+            : $filters;
 
         return Inertia::render('WorkLogs/Bandsaw/Index', [
-            'bandsawWorkLogs' => BandsawWorkLogResource::collection($bandsawWorkLogs),
+            'bandsawWorkLogs' => Inertia::defer(function () use (
+                $filters,
+                $user,
+                $isBandsaw,
+                $workLogFilters,
+            ) {
+                $bandsawWorkLogs = BandsawWorkLog::query()
+                    ->select('bandsaw_work_logs.*')
+                    ->with([
+                        'user',
+                        'part',
+                        'sectionSize.section',
+                    ])
+                    ->when(
+                        $isBandsaw,
+                        fn(Builder $query): Builder => $query->forUser($user->id),
+                    )
+                    ->filterQuery($workLogFilters)
+                    ->when(
+                        $filters['section_id'] ?? null,
+                        fn(Builder $query, int $sectionId): Builder => $query->whereHas(
+                            'sectionSize',
+                            fn(Builder $query): Builder => $query->where(
+                                'section_id',
+                                $sectionId,
+                            ),
+                        ),
+                    )
+                    ->paginate($filters['per_page'] ?? 10)
+                    ->withQueryString();
+
+                return BandsawWorkLogResource::collection($bandsawWorkLogs);
+            }),
+
+            'hasAnyRecords' => BandsawWorkLog::query()
+                ->when(
+                    $isBandsaw,
+                    fn(Builder $query): Builder => $query->forUser($user->id),
+                )
+                ->exists(),
+
             'filters' => [
-                'search' => $filters['search'] ?? '',
+                ...$this->listingFilters($filters),
                 'workDate' => $filters['work_date'] ?? '',
                 'userId' => $filters['user_id'] ?? 'all',
                 'partId' => $filters['part_id'] ?? 'all',
                 'sectionId' => $filters['section_id'] ?? 'all',
                 'sectionSizeId' => $filters['section_size_id'] ?? 'all',
-                'perPage' => $filters['per_page'] ?? 10,
-                'sort' => $filters['sort'] ?? 'id',
-                'direction' => $filters['direction'] ?? 'desc',
             ],
+
             ...$this->formOptions(),
         ]);
     }
@@ -94,7 +103,8 @@ class BandsawWorkLogController extends Controller
      */
     private function formOptions(
         bool $includeLastReports = false,
-    ): array {
+    ): array
+    {
         $currentUser = Auth::user();
 
         $role = $currentUser->role instanceof UserRole
@@ -117,7 +127,7 @@ class BandsawWorkLogController extends Controller
             'canSelectBandsaw' => $canSelectBandsaw,
         ];
 
-        if (! $includeLastReports) {
+        if (!$includeLastReports) {
             return $options;
         }
 
@@ -157,8 +167,8 @@ class BandsawWorkLogController extends Controller
             ])
             ->unique('user_id')
             ->mapWithKeys(
-                fn (BandsawWorkLog $log): array => [
-                    (string) $log->user_id => [
+                fn(BandsawWorkLog $log): array => [
+                    (string)$log->user_id => [
                         'part_id' => $log->part_id,
                         'section_id' => $log->sectionSize?->section_id,
                         'section_size_id' => $log->section_size_id,
@@ -178,7 +188,8 @@ class BandsawWorkLogController extends Controller
      */
     public function store(
         BandsawWorkLogRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize(
             'create',
             BandsawWorkLog::class,
@@ -207,14 +218,15 @@ class BandsawWorkLogController extends Controller
      * Resolve the Bandsaw user ID.
      */
     private function resolveUserId(
-        array $data,
+        array           $data,
         ?BandsawWorkLog $bandsaw = null,
-    ): array {
+    ): array
+    {
         $currentUser = Auth::user();
 
         $role = $currentUser->role instanceof UserRole
             ? $currentUser->role
-            : UserRole::tryFrom((string) $currentUser->role);
+            : UserRole::tryFrom((string)$currentUser->role);
 
         if ($role === UserRole::BANDSAW) {
             $data['user_id'] = $bandsaw?->user_id
@@ -247,7 +259,8 @@ class BandsawWorkLogController extends Controller
      */
     public function edit(
         BandsawWorkLog $bandsaw,
-    ): Response {
+    ): Response
+    {
         Gate::authorize(
             'view',
             $bandsaw,
@@ -277,8 +290,9 @@ class BandsawWorkLogController extends Controller
      */
     public function update(
         BandsawWorkLogRequest $request,
-        BandsawWorkLog $bandsaw,
-    ): RedirectResponse {
+        BandsawWorkLog        $bandsaw,
+    ): RedirectResponse
+    {
         Gate::authorize(
             'update',
             $bandsaw,
@@ -314,7 +328,8 @@ class BandsawWorkLogController extends Controller
      */
     public function destroy(
         BandsawWorkLog $bandsaw,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize(
             'delete',
             $bandsaw,
@@ -330,7 +345,8 @@ class BandsawWorkLogController extends Controller
      */
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize(
             'deleteAny',
             BandsawWorkLog::class,

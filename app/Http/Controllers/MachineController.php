@@ -77,8 +77,9 @@ class MachineController extends Controller
 
     public function update(
         MachineRequest $request,
-        Machine $machine,
-    ): RedirectResponse {
+        Machine        $machine,
+    ): RedirectResponse
+    {
         Gate::authorize('update', $machine);
 
         $machine->update($request->validated());
@@ -97,7 +98,8 @@ class MachineController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse {
+    ): RedirectResponse
+    {
         Gate::authorize('deleteAny', Machine::class);
 
         Machine::query()
@@ -105,11 +107,6 @@ class MachineController extends Controller
             ->delete();
 
         return $this->successResponse('bulk_deleted');
-    }
-
-    public function import()
-    {
-        return Inertia::render('Machines/Import', []);
     }
 
     public function importStore(Request $request)
@@ -132,5 +129,10 @@ class MachineController extends Controller
             created: $import->getCreatedCount(),
             updated: $import->getUpdatedCount(),
         );
+    }
+
+    public function import()
+    {
+        return Inertia::render('Machines/Import', []);
     }
 }
