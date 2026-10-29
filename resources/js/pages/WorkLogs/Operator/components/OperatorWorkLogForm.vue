@@ -1,16 +1,7 @@
 <script lang="ts" setup>
-import type { InertiaForm } from '@inertiajs/vue3';
-import {
-    CalendarDays,
-    Clock3,
-    Cog,
-    Hash,
-    MessageSquare,
-    Settings2,
-    User,
-    Wrench,
-} from '@lucide/vue';
-import { computed, ref, watch } from 'vue';
+import type {InertiaForm} from '@inertiajs/vue3';
+import {CalendarDays, Clock3, Cog, Hash, MessageSquare, Settings2, User, Wrench,} from '@lucide/vue';
+import {computed, ref, watch} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -23,14 +14,11 @@ import AppPartSelect from '@/components/selects/AppPartSelect.vue';
 import AppSetupSelect from '@/components/selects/AppSetupSelect.vue';
 import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
 
-import { operatorWorkLogPage } from '@/config/operatorWorkLogs';
+import {operatorWorkLogPage} from '@/config/operatorWorkLogs';
 
-import type {
-    OperatorWorkLogFormData,
-    OperatorWorkLogPartSetupOption,
-} from '@/types/operatorWorkLog';
-import { operatorWorkLogSchema } from '@/schemas/operatorWorkLogSchema';
-import { useZodFormValidation } from '@/composables/useZodFormValidation';
+import type {OperatorWorkLogFormData, OperatorWorkLogPartSetupOption,} from '@/types/operatorWorkLog';
+import {operatorWorkLogSchema} from '@/schemas/operatorWorkLogSchema';
+import {useZodFormValidation} from '@/composables/useZodFormValidation';
 
 /*
 |--------------------------------------------------------------------------
@@ -362,7 +350,7 @@ function parseDuration(value: string): number | null {
 }
 
 // Frontend validation
-const { errors: frontendErrors, validate } = useZodFormValidation(
+const {errors: frontendErrors, validate} = useZodFormValidation(
     operatorWorkLogSchema,
     () => props.form,
 );

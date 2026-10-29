@@ -19,7 +19,7 @@ defineOptions({
 </script>
 
 <template>
-    <Head title="Import Section Sizes" />
+    <Head title="Import Section Sizes"/>
 
     <div class="space-y-6 p-6">
         <AppPageHeader
@@ -28,8 +28,6 @@ defineOptions({
         />
 
         <ImportFile
-            accepted-files=".xlsx,.xls,.csv"
-            description="Upload the section size spreadsheet."
             :index-url="sectionSizes().url"
             :information-items="[
                 'Section Name and Size are required.',
@@ -38,10 +36,12 @@ defineOptions({
                 'Section + Size identifies an existing record.',
                 'Existing stock quantities are preserved during updates.',
             ]"
+            :submit-url="submitImport().url"
+            accepted-files=".xlsx,.xls,.csv"
+            description="Upload the section size spreadsheet."
             sample-file="/samples/section-sizes.xlsx"
             sample-file-name="section-sizes.xlsx"
             submit-button-text="Import Section Sizes"
-            :submit-url="submitImport().url"
             title="Import Section Sizes"
             upload-description="Drag and drop your section size spreadsheet here, or click to browse."
             upload-text="Upload section size spreadsheet"

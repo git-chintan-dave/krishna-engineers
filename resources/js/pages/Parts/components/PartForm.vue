@@ -1,13 +1,6 @@
 <script lang="ts" setup>
-import type { InertiaForm } from '@inertiajs/vue3';
-import {
-    Box,
-    Layers3,
-    Ruler,
-    Scale,
-    Settings2,
-    ToggleRight,
-} from '@lucide/vue';
+import type {InertiaForm} from '@inertiajs/vue3';
+import {Box, Layers3, Ruler, Scale, Settings2, ToggleRight,} from '@lucide/vue';
 
 import AppImagePicker from '@/components/common/AppImagePicker.vue';
 import AppInput from '@/components/common/AppInput.vue';
@@ -16,10 +9,10 @@ import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import ToggleCardInput from '@/components/form/ToggleCardInput.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
-import { partPage } from '@/config/parts';
-import { partSchema } from '@/schemas/partSchema';
-import type { PartFormData } from '@/types/part';
-import { useZodFormValidation } from '@/composables/useZodFormValidation';
+import {partPage} from '@/config/parts';
+import {partSchema} from '@/schemas/partSchema';
+import type {PartFormData} from '@/types/part';
+import {useZodFormValidation} from '@/composables/useZodFormValidation';
 
 // Props
 const props = withDefaults(
@@ -45,7 +38,7 @@ const emit = defineEmits<{
 }>();
 
 // Frontend validation
-const { errors: frontendErrors, validate } = useZodFormValidation(
+const {errors: frontendErrors, validate} = useZodFormValidation(
     partSchema,
     () => props.form,
 );

@@ -199,13 +199,13 @@ const handleDeleteSelected = (): void => {
                         :columns-count="columns.length"
                         :empty-text="toolPage.emptyText"
                         :item-label="toolPage.itemLabel"
+                        :loading="true"
                         :page-index="0"
                         :page-size="filters.perPage"
                         :page-size-options="[10, 25, 50, 100]"
                         :selected-count="0"
                         :table="table"
                         :total="0"
-                        :loading="true"
                     />
                 </template>
 
@@ -218,10 +218,10 @@ const handleDeleteSelected = (): void => {
                     :page-index="tools.meta.current_page - 1"
                     :page-size="tools.meta.per_page"
                     :page-size-options="[10, 25, 50, 100]"
+                    :row-highlight="getQuantityRowHighlight"
                     :selected-count="selectedCount"
                     :table="table"
                     :total="tools.meta.total"
-                    :row-highlight="getQuantityRowHighlight"
                 />
             </Deferred>
         </template>

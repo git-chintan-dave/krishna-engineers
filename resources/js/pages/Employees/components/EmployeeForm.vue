@@ -1,14 +1,5 @@
 <script lang="ts" setup>
-import {
-    Badge,
-    CalendarDays,
-    CreditCard,
-    IndianRupee,
-    LockKeyhole,
-    Mail,
-    Phone,
-    User,
-} from '@lucide/vue';
+import {Badge, CalendarDays, CreditCard, IndianRupee, LockKeyhole, Mail, Phone, User,} from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -17,13 +8,10 @@ import FormSection from '@/components/form/FormSection.vue';
 import ToggleCardInput from '@/components/form/ToggleCardInput.vue';
 import AppUserRoleSelect from '@/components/selects/AppUserRoleSelect.vue';
 import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
-import { employeePage } from '@/config/employees';
-import {
-    createEmployeeSchema,
-    editEmployeeSchema,
-} from '@/schemas/employeeSchema';
-import type { EmployeeFormData } from '@/types/employee';
-import { useZodFormValidation } from '@/composables/useZodFormValidation';
+import {employeePage} from '@/config/employees';
+import {createEmployeeSchema, editEmployeeSchema,} from '@/schemas/employeeSchema';
+import type {EmployeeFormData} from '@/types/employee';
+import {useZodFormValidation} from '@/composables/useZodFormValidation';
 
 const props = withDefaults(
     defineProps<{
@@ -47,7 +35,7 @@ const emit = defineEmits<{
 }>();
 
 // Frontend validation
-const { errors: frontendErrors, validate } = useZodFormValidation(
+const {errors: frontendErrors, validate} = useZodFormValidation(
     props.isEdit ? editEmployeeSchema : createEmployeeSchema,
     () => props.form,
 );

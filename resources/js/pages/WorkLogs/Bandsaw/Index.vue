@@ -1,12 +1,10 @@
 <script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { RotateCcw } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import {Deferred, router} from '@inertiajs/vue3';
+import {Database, RotateCcw, SearchX} from '@lucide/vue';
+import {computed, ref} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
-import ListingActions, {
-    type ActionItem,
-} from '@/components/common/ListingActions.vue';
+import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppPartSelect from '@/components/selects/AppPartSelect.vue';
@@ -14,16 +12,12 @@ import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
 import AppSectionSizeSelect from '@/components/selects/AppSectionSizeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { bandsawWorkLogPage } from '@/config/bandsawWorkLogs';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as bandsawWorkLogsRoute,
-} from '@/routes/bandsaw';
-import { createBandsawWorkLogColumns } from '@/table/bandsawWorkLogs';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingEmptyState} from '@/composables/useListingEmptyState';
+import {useListingTable} from '@/composables/useListingTable';
+import {bandsawWorkLogPage} from '@/config/bandsawWorkLogs';
+import {bulkDestroy, create, destroy, index as bandsawWorkLogsRoute,} from '@/routes/bandsaw';
+import {createBandsawWorkLogColumns} from '@/table/bandsawWorkLogs';
 import type {
     BandsawWorkLog,
     BandsawWorkLogFilters,
@@ -38,7 +32,8 @@ import type {
 */
 
 const props = defineProps<{
-    bandsawWorkLogs: BandsawWorkLogsResponse;
+    bandsawWorkLogs?: BandsawWorkLogsResponse;
+    hasAnyRecords: boolean;
     filters: BandsawWorkLogFilters;
     canSelectBandsaw: boolean;
 }>();
@@ -72,7 +67,7 @@ const filterSectionSizeId = ref<number | 'all'>(
     props.filters.sectionSizeId ?? 'all',
 );
 
-const hasFilters = computed(
+const hasAdditionalFilters = computed(
     () =>
         Boolean(filterWorkDate.value) ||
         (props.canSelectBandsaw && filterUserId.value !== 'all') ||
@@ -94,6 +89,7 @@ const columns = createBandsawWorkLogColumns((id) => {
 const {
     table,
     selectedCount,
+    hasActiveFilters,
     search,
     clearFilters,
     deleteSelected,
@@ -118,6 +114,34 @@ const {
                 ? filterSectionSizeId.value
                 : undefined,
     }),
+});
+
+/*
+|--------------------------------------------------------------------------
+| Empty State
+|--------------------------------------------------------------------------
+*/
+
+const emptyState = useListingEmptyState({
+    hasAnyRecords: () => props.hasAnyRecords,
+    hasActiveFilters: () =>
+        hasActiveFilters.value || hasAdditionalFilters.value,
+
+    noRecords: {
+        icon: Database,
+        title: 'No bandsaw work logs yet',
+        description: 'Create a bandsaw work log to get started.',
+        actionLabel: bandsawWorkLogPage.createLabel,
+        onAction: () => router.visit(create().url),
+    },
+
+    noResults: {
+        icon: SearchX,
+        title: 'No bandsaw work logs found',
+        description: 'Try adjusting or clearing your filters.',
+        actionLabel: bandsawWorkLogPage.clearButtonLabel,
+        onAction: () => handleClearFilters(),
+    },
 });
 
 /*
@@ -200,14 +224,14 @@ const handleDeleteSelected = (): void => {
         <template #filters>
             <ListingFilters
                 :clear-button-label="bandsawWorkLogPage.clearButtonLabel"
-                :clear-disabled="!hasFilters"
+                :clear-disabled="!hasAdditionalFilters"
                 :searchable="false"
                 @clear="handleClearFilters"
                 @search="search"
             >
                 <template #filters>
                     <div class="w-full min-w-0">
-                        <AppInput v-model="filterWorkDate" type="date" />
+                        <AppInput v-model="filterWorkDate" type="date"/>
                     </div>
 
                     <div v-if="canSelectBandsaw" class="w-full min-w-0">
@@ -274,17 +298,36 @@ const handleDeleteSelected = (): void => {
         </template>
 
         <template #table>
-            <DataTable
-                :columns-count="columns.length"
-                :empty-text="bandsawWorkLogPage.emptyText"
-                :item-label="bandsawWorkLogPage.itemLabel"
-                :page-index="bandsawWorkLogs.meta.current_page - 1"
-                :page-size="bandsawWorkLogs.meta.per_page"
-                :page-size-options="[10, 25, 50, 100]"
-                :selected-count="selectedCount"
-                :table="table"
-                :total="bandsawWorkLogs.meta.total"
-            />
+            <Deferred data="bandsawWorkLogs">
+                <template #fallback>
+                    <DataTable
+                        :columns-count="columns.length"
+                        :empty-text="bandsawWorkLogPage.emptyText"
+                        :item-label="bandsawWorkLogPage.itemLabel"
+                        :loading="true"
+                        :page-index="0"
+                        :page-size="10"
+                        :page-size-options="[10, 25, 50, 100]"
+                        :selected-count="selectedCount"
+                        :table="table"
+                        :total="0"
+                    />
+                </template>
+
+                <DataTable
+                    v-if="bandsawWorkLogs"
+                    :columns-count="columns.length"
+                    :empty-state="emptyState"
+                    :empty-text="bandsawWorkLogPage.emptyText"
+                    :item-label="bandsawWorkLogPage.itemLabel"
+                    :page-index="bandsawWorkLogs.meta.current_page - 1"
+                    :page-size="bandsawWorkLogs.meta.per_page"
+                    :page-size-options="[10, 25, 50, 100]"
+                    :selected-count="selectedCount"
+                    :table="table"
+                    :total="bandsawWorkLogs.meta.total"
+                />
+            </Deferred>
         </template>
     </ListingLayout>
 </template>

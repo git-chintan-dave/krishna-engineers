@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import { Form, Head } from '@inertiajs/vue3';
+import {Form, Head} from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import { login } from '@/routes';
-import { email } from '@/routes/password';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
+import {Spinner} from '@/components/ui/spinner';
+import {login} from '@/routes';
+import {email} from '@/routes/password';
 
 defineOptions({
     layout: {
@@ -22,7 +22,7 @@ defineProps<{
 </script>
 
 <template>
-    <Head title="Forgot password" />
+    <Head title="Forgot password"/>
 
     <div
         v-if="status"
@@ -43,7 +43,7 @@ defineProps<{
                     placeholder="email@example.com"
                     type="email"
                 />
-                <InputError :message="errors.email" />
+                <InputError :message="errors.email"/>
             </div>
 
             <div class="my-6 flex items-center justify-start">
@@ -52,7 +52,7 @@ defineProps<{
                     class="w-full"
                     data-test="email-password-reset-link-button"
                 >
-                    <Spinner v-if="processing" />
+                    <Spinner v-if="processing"/>
                     Email password reset link
                 </Button>
             </div>

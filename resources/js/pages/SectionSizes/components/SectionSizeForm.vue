@@ -1,16 +1,16 @@
 <script lang="ts" setup>
-import type { InertiaForm } from '@inertiajs/vue3';
-import { Layers3, Ruler, Scale } from '@lucide/vue';
+import type {InertiaForm} from '@inertiajs/vue3';
+import {Layers3, Ruler, Scale} from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
 import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import AppSectionSelect from '@/components/selects/AppSectionSelect.vue';
-import { sectionSizePage } from '@/config/sectionSizes';
-import { sectionSizeSchema } from '@/schemas/sectionSizeSchema';
-import type { SectionSizeFormData } from '@/types/sectionSize';
-import { useZodFormValidation } from '@/composables/useZodFormValidation';
+import {sectionSizePage} from '@/config/sectionSizes';
+import {sectionSizeSchema} from '@/schemas/sectionSizeSchema';
+import type {SectionSizeFormData} from '@/types/sectionSize';
+import {useZodFormValidation} from '@/composables/useZodFormValidation';
 
 // Props
 const props = defineProps<{
@@ -27,7 +27,7 @@ const emit = defineEmits<{
 }>();
 
 // Frontend validation
-const { errors: frontendErrors, validate } = useZodFormValidation(
+const {errors: frontendErrors, validate} = useZodFormValidation(
     sectionSizeSchema,
     () => props.form,
 );

@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { Head } from '@inertiajs/vue3';
-import { Monitor } from '@lucide/vue';
+import {Head} from '@inertiajs/vue3';
+import {Monitor} from '@lucide/vue';
 
-import { dashboard } from '@/routes';
+import {dashboard} from '@/routes';
 import AppearanceTabs from '@/components/AppearanceTabs.vue';
 import Heading from '@/components/Heading.vue';
 
@@ -22,14 +22,14 @@ defineOptions({
 </script>
 
 <template>
-    <Head title="Appearance settings" />
+    <Head title="Appearance settings"/>
 
     <h1 class="sr-only">Appearance settings</h1>
 
     <div class="space-y-8">
         <Heading
-            title="Appearance"
             description="Personalize how Krishna Engineers looks on your device."
+            title="Appearance"
             variant="small"
         />
 
@@ -42,7 +42,7 @@ defineOptions({
                 <div
                     class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
                 >
-                    <Monitor class="size-5" />
+                    <Monitor class="size-5"/>
                 </div>
 
                 <div class="min-w-0">
@@ -56,7 +56,7 @@ defineOptions({
             </div>
 
             <div class="space-y-5 p-5 sm:p-6">
-                <AppearanceTabs />
+                <AppearanceTabs/>
 
                 <p class="text-sm text-muted-foreground">
                     Your preference is applied automatically and saved for

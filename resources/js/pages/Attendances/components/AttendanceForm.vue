@@ -1,25 +1,18 @@
 <script lang="ts" setup>
-import { computed, reactive } from 'vue';
-import type { InertiaForm } from '@inertiajs/vue3';
-import { CalendarDays, Clock3, Plus, Trash2, User } from '@lucide/vue';
+import {computed, reactive} from 'vue';
+import type {InertiaForm} from '@inertiajs/vue3';
+import {CalendarDays, Clock3, Plus, Trash2, User} from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
 import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
-import { Button } from '@/components/ui/button';
-import { useZodFormValidation } from '@/composables/useZodFormValidation';
-import { attendancePage } from '@/config/attendances';
-import {
-    createAttendanceSchema,
-    editAttendanceSchema,
-} from '@/schemas/attendanceSchema';
-import type {
-    Attendance,
-    AttendanceFormBreak,
-    AttendanceFormData,
-} from '@/types/attendance';
+import {Button} from '@/components/ui/button';
+import {useZodFormValidation} from '@/composables/useZodFormValidation';
+import {attendancePage} from '@/config/attendances';
+import {createAttendanceSchema, editAttendanceSchema,} from '@/schemas/attendanceSchema';
+import type {Attendance, AttendanceFormBreak, AttendanceFormData,} from '@/types/attendance';
 
 // Props
 const props = withDefaults(
@@ -55,7 +48,7 @@ const attendanceSchema = isEdit.value
     ? editAttendanceSchema
     : createAttendanceSchema;
 
-const { errors: frontendErrors, validate } = useZodFormValidation(
+const {errors: frontendErrors, validate} = useZodFormValidation(
     attendanceSchema,
     () => props.form,
 );
@@ -779,7 +772,7 @@ props.form.breaks.forEach((attendanceBreak, index) => {
                             variant="ghost"
                             @click="removeBreak(index)"
                         >
-                            <Trash2 aria-hidden="true" class="size-4" />
+                            <Trash2 aria-hidden="true" class="size-4"/>
                         </Button>
                     </div>
 
@@ -863,7 +856,7 @@ props.form.breaks.forEach((attendanceBreak, index) => {
                     variant="outline"
                     @click="addBreak"
                 >
-                    <Plus aria-hidden="true" class="size-4" />
+                    <Plus aria-hidden="true" class="size-4"/>
                     <span>Add Break</span>
                 </Button>
             </div>

@@ -1,15 +1,12 @@
 ﻿<script lang="ts" setup>
-import { router, useForm } from '@inertiajs/vue3';
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { attendancePage } from '@/config/attendances';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {attendancePage} from '@/config/attendances';
 import AttendanceForm from '@/pages/Attendances/components/AttendanceForm.vue';
-import { index as attendances, store } from '@/routes/attendances';
-import type {
-    AttendanceEmployeeOption,
-    AttendanceFormData,
-} from '@/types/attendance';
+import {index as attendances, store} from '@/routes/attendances';
+import type {AttendanceEmployeeOption, AttendanceFormData,} from '@/types/attendance';
 
 /*
 |--------------------------------------------------------------------------

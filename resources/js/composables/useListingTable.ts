@@ -159,7 +159,7 @@ export function useListingTable<
 
     const listingPreferences = useListingPreferences(options.route, {
         defaultPerPage:
-            getResponse()?.meta.per_page ??
+            getResponse()?.meta?.per_page ??
             options.filters.perPage ??
             DEFAULT_PER_PAGE,
         defaultSorting,

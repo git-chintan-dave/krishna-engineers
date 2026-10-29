@@ -1,12 +1,12 @@
 ﻿<script lang="ts" setup>
-import { router, useForm } from '@inertiajs/vue3';
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import { machinePage } from '@/config/machines';
+import {machinePage} from '@/config/machines';
 import MachineForm from '@/pages/Machines/components/MachineForm.vue';
-import { index as machines, update as updateMachine } from '@/routes/machines';
-import type { Machine, MachineFormData } from '@/types/machine';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
+import {index as machines, update as updateMachine} from '@/routes/machines';
+import type {Machine, MachineFormData} from '@/types/machine';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
 
 /*
 |--------------------------------------------------------------------------

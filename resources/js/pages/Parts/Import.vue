@@ -19,7 +19,7 @@ defineOptions({
 </script>
 
 <template>
-    <Head title="Import Parts" />
+    <Head title="Import Parts"/>
 
     <div class="space-y-6 p-6">
         <AppPageHeader
@@ -28,8 +28,6 @@ defineOptions({
         />
 
         <ImportFile
-            accepted-files=".xlsx,.xls,.csv"
-            description="Upload the parts spreadsheet to import part records."
             :index-url="parts().url"
             :information-items="[
                 'Name is required.',
@@ -38,10 +36,12 @@ defineOptions({
                 'Name + Section identifies an existing part.',
                 'Existing images and status values are preserved during updates.',
             ]"
+            :submit-url="submitImport().url"
+            accepted-files=".xlsx,.xls,.csv"
+            description="Upload the parts spreadsheet to import part records."
             sample-file="/samples/parts.xlsx"
             sample-file-name="parts.xlsx"
             submit-button-text="Import Parts"
-            :submit-url="submitImport().url"
             title="Import Parts"
             upload-description="Drag and drop your parts spreadsheet here, or click to browse."
             upload-text="Upload parts spreadsheet"

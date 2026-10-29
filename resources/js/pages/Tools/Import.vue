@@ -19,7 +19,7 @@ defineOptions({
 </script>
 
 <template>
-    <Head title="Import Tools" />
+    <Head title="Import Tools"/>
 
     <div class="space-y-6 p-6">
         <AppPageHeader
@@ -28,8 +28,6 @@ defineOptions({
         />
 
         <ImportFile
-            accepted-files=".xlsx,.xls,.csv"
-            description="Upload the tool spreadsheet to import tool records."
             :index-url="tools().url"
             :information-items="[
                 'Type and Name are required.',
@@ -38,10 +36,12 @@ defineOptions({
                 'Existing tools, including image, quantity, and status, are preserved.',
                 'New tools are created with zero quantity and active status.',
             ]"
+            :submit-url="submitImport().url"
+            accepted-files=".xlsx,.xls,.csv"
+            description="Upload the tool spreadsheet to import tool records."
             sample-file="/samples/tools.xlsx"
             sample-file-name="tools.xlsx"
             submit-button-text="Import Tools"
-            :submit-url="submitImport().url"
             title="Import Tools"
             upload-description="Drag and drop your tool spreadsheet here, or click to browse."
             upload-text="Upload tool spreadsheet"

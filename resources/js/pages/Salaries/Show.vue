@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { ArrowLeft, CalendarDays, Printer } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import {router} from '@inertiajs/vue3';
+import {ArrowLeft, CalendarDays, Printer} from '@lucide/vue';
+import {computed, ref} from 'vue';
 
 import AttendanceHistoryDialog from '@/components/attendance/AttendanceHistoryDialog.vue';
-import { Button } from '@/components/ui/button';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { salaryPage } from '@/config/salaries';
-import { index as salaries } from '@/routes/salaries';
-import type { Salary } from '@/types/salary';
+import {Button} from '@/components/ui/button';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {salaryPage} from '@/config/salaries';
+import {index as salaries} from '@/routes/salaries';
+import type {Salary} from '@/types/salary';
 
 const props = defineProps<{
     salary: Salary;
@@ -89,12 +89,12 @@ const goBack = (): void => {
                     variant="outline"
                     @click="goBack"
                 >
-                    <ArrowLeft class="mr-2 size-4" />
+                    <ArrowLeft class="mr-2 size-4"/>
                     Back
                 </Button>
 
                 <Button class="cursor-pointer" @click="printSalarySlip">
-                    <Printer class="mr-2 size-4" />
+                    <Printer class="mr-2 size-4"/>
                     Print Salary Slip
                 </Button>
             </div>
@@ -109,9 +109,9 @@ const goBack = (): void => {
                     <div class="flex items-center justify-between gap-6">
                         <div class="flex min-w-0 items-center gap-3">
                             <img
-                                src="/logo_new.svg"
                                 alt="Krishna Engineers Logo"
                                 class="h-14 w-auto shrink-0 object-contain print:h-12"
+                                src="/logo_new.svg"
                             />
 
                             <div class="min-w-0">
@@ -141,7 +141,7 @@ const goBack = (): void => {
                             >
                                 {{ salary.salary_period_start_formatted }}
                                 <span class="px-1 text-muted-foreground"
-                                    >–</span
+                                >–</span
                                 >
                                 {{ salary.salary_period_end_formatted }}
                             </p>
@@ -152,12 +152,12 @@ const goBack = (): void => {
                 <!-- Employee Summary -->
                 <div class="border-b px-6 py-5 sm:px-8 print:px-5 print:py-3">
                     <div
-                        class="grid items-center"
                         :class="
                             show_production_efficiency
                                 ? 'grid-cols-4'
                                 : 'grid-cols-3'
                         "
+                        class="grid items-center"
                     >
                         <div class="min-w-0 text-center">
                             <p
@@ -202,8 +202,8 @@ const goBack = (): void => {
                         </div>
 
                         <div
-                            class="min-w-0 text-center"
                             v-if="show_production_efficiency"
+                            class="min-w-0 text-center"
                         >
                             <p
                                 class="text-xs font-medium tracking-wide text-muted-foreground uppercase print:text-[10px]"
@@ -239,7 +239,7 @@ const goBack = (): void => {
                                 variant="outline"
                                 @click="attendanceDialogOpen = true"
                             >
-                                <CalendarDays class="mr-2 size-4" />
+                                <CalendarDays class="mr-2 size-4"/>
                                 View Attendance
                             </Button>
                         </div>
@@ -515,9 +515,9 @@ const goBack = (): void => {
         <!-- Kept outside the printable salary slip -->
         <AttendanceHistoryDialog
             v-model:open="attendanceDialogOpen"
-            :user-id="salary.user_id"
-            :start-date="salary.salary_period_start"
             :end-date="salary.salary_period_end"
+            :start-date="salary.salary_period_start"
+            :user-id="salary.user_id"
         />
     </div>
 </template>

@@ -1,16 +1,16 @@
 <script lang="ts" setup>
-import { Form, Head, Link, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
-import { ArrowUpRight, Fingerprint, Phone, UserRound } from '@lucide/vue';
+import {Form, Head, Link, usePage} from '@inertiajs/vue3';
+import {computed} from 'vue';
+import {ArrowUpRight, Fingerprint, Phone, UserRound} from '@lucide/vue';
 import DeleteUser from '@/components/DeleteUser.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { send } from '@/routes/verification';
-import { dashboard } from '@/routes';
-import { update as updateProfile } from '@/routes/profile';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
+import {send} from '@/routes/verification';
+import {dashboard} from '@/routes';
+import {update as updateProfile} from '@/routes/profile';
 
 defineOptions({
     layout: {
@@ -31,14 +31,14 @@ const user = computed(() => page.props.auth.user);
 </script>
 
 <template>
-    <Head title="Profile settings" />
+    <Head title="Profile settings"/>
 
     <h1 class="sr-only">Profile settings</h1>
 
     <div class="space-y-8">
         <Heading
-            title="Profile"
             description="Manage your personal information and contact details."
+            title="Profile"
             variant="small"
         />
 
@@ -56,7 +56,7 @@ const user = computed(() => page.props.auth.user);
                     <div
                         class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
                     >
-                        <UserRound class="size-5" />
+                        <UserRound class="size-5"/>
                     </div>
 
                     <div class="min-w-0">
@@ -80,7 +80,7 @@ const user = computed(() => page.props.auth.user);
                             placeholder="Enter your full name"
                             required
                         />
-                        <InputError :message="errors.name" />
+                        <InputError :message="errors.name"/>
                     </div>
 
                     <div class="grid gap-2">
@@ -93,7 +93,7 @@ const user = computed(() => page.props.auth.user);
                             placeholder="Enter your email address"
                             type="email"
                         />
-                        <InputError :message="errors.email" />
+                        <InputError :message="errors.email"/>
 
                         <div
                             v-if="
@@ -109,7 +109,7 @@ const user = computed(() => page.props.auth.user);
                                 class="font-medium text-primary underline underline-offset-4"
                             >
                                 Resend verification
-                                <ArrowUpRight class="inline size-3.5" />
+                                <ArrowUpRight class="inline size-3.5"/>
                             </Link>
 
                             <p
@@ -135,7 +135,7 @@ const user = computed(() => page.props.auth.user);
                     <div
                         class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
                     >
-                        <Phone class="size-5" />
+                        <Phone class="size-5"/>
                     </div>
 
                     <div class="min-w-0">
@@ -161,7 +161,7 @@ const user = computed(() => page.props.auth.user);
                             placeholder="10-digit phone number"
                             type="tel"
                         />
-                        <InputError :message="errors.phone_number" />
+                        <InputError :message="errors.phone_number"/>
                     </div>
 
                     <div class="grid gap-2">
@@ -181,7 +181,7 @@ const user = computed(() => page.props.auth.user);
                             placeholder="Alternate phone number"
                             type="tel"
                         />
-                        <InputError :message="errors.alternate_phone_number" />
+                        <InputError :message="errors.alternate_phone_number"/>
                     </div>
                 </div>
             </section>
@@ -195,7 +195,7 @@ const user = computed(() => page.props.auth.user);
                     <div
                         class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
                     >
-                        <Fingerprint class="size-5" />
+                        <Fingerprint class="size-5"/>
                     </div>
 
                     <div class="min-w-0">
@@ -221,7 +221,7 @@ const user = computed(() => page.props.auth.user);
                             placeholder="12-digit Aadhaar number"
                             type="password"
                         />
-                        <InputError :message="errors.aadhar_number" />
+                        <InputError :message="errors.aadhar_number"/>
                         <p class="text-xs text-muted-foreground">
                             Your number is masked while displayed in the field.
                         </p>
@@ -237,17 +237,17 @@ const user = computed(() => page.props.auth.user);
                 </p>
 
                 <Button
-                    type="submit"
                     :disabled="processing"
                     data-test="update-profile-button"
+                    type="submit"
                 >
                     {{ processing ? 'Saving changes...' : 'Save changes' }}
                 </Button>
             </div>
         </Form>
 
-        <div class="border-t border-border" />
+        <div class="border-t border-border"/>
 
-        <DeleteUser />
+        <DeleteUser/>
     </div>
 </template>

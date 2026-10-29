@@ -1,35 +1,22 @@
 ﻿<script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
-import { RotateCcw, Wallet } from '@lucide/vue';
+import {Deferred, router} from '@inertiajs/vue3';
+import {computed, ref, watch} from 'vue';
+import {Database, RotateCcw, SearchX, Wallet} from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
-import ListingActions, {
-    type ActionItem,
-} from '@/components/common/ListingActions.vue';
+import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppSalaryStatusSelect from '@/components/selects/AppSalaryStatusSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { salaryPage } from '@/config/salaries';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    generateLastMonth,
-    index as salariesRoute,
-} from '@/routes/salaries';
-import { createSalaryColumns } from '@/table/salaries';
-import type {
-    Salary,
-    SalaryFilters,
-    SalaryResponse,
-    SalarySort,
-    SalaryStatus,
-} from '@/types/salary';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingEmptyState} from '@/composables/useListingEmptyState';
+import {useListingTable} from '@/composables/useListingTable';
+import {salaryPage} from '@/config/salaries';
+import {bulkDestroy, create, destroy, generateLastMonth, index as salariesRoute,} from '@/routes/salaries';
+import {createSalaryColumns} from '@/table/salaries';
+import type {Salary, SalaryFilters, SalaryResponse, SalarySort, SalaryStatus,} from '@/types/salary';
 
 /*
 |--------------------------------------------------------------------------
@@ -38,7 +25,8 @@ import type {
 */
 
 const props = defineProps<{
-    salaries: SalaryResponse;
+    salaries?: SalaryResponse;
+    hasAnyRecords: boolean;
     filters: SalaryFilters;
     can_generate_last_month: boolean;
 }>();
@@ -108,7 +96,7 @@ watch(
         filterStatus.value = filters.status;
         filterStartDate.value = filters.start_date;
     },
-    { deep: true },
+    {deep: true},
 );
 
 const handleEmployeeChange = (value: number | null): void => {
@@ -117,7 +105,9 @@ const handleEmployeeChange = (value: number | null): void => {
 
 const handleStatusChange = (value: string | null): void => {
     filterStatus.value =
-        value === 'draft' || value === 'paid' ? (value as SalaryStatus) : 'all';
+        value === 'draft' || value === 'paid'
+            ? (value as SalaryStatus)
+            : 'all';
 };
 
 /*
@@ -137,6 +127,7 @@ const {
     clearFilters,
     deleteSelected,
     resetPreferences,
+    hasActiveFilters: hasTableActiveFilters,
 } = useListingTable<Salary, SalarySort>({
     data: () => props.salaries,
     columns,
@@ -148,8 +139,13 @@ const {
     searchable: false,
     additionalFilters: () => ({
         user_id:
-            filterEmployee.value !== 'all' ? filterEmployee.value : undefined,
-        status: filterStatus.value !== 'all' ? filterStatus.value : undefined,
+            filterEmployee.value !== 'all'
+                ? filterEmployee.value
+                : undefined,
+        status:
+            filterStatus.value !== 'all'
+                ? filterStatus.value
+                : undefined,
         start_date: filterStartDate.value || undefined,
         end_date: filterEndDate.value || undefined,
     }),
@@ -163,6 +159,7 @@ const {
 
 const hasActiveFilters = computed(
     () =>
+        hasTableActiveFilters.value ||
         filterEmployee.value !== 'all' ||
         filterStatus.value !== 'all' ||
         Boolean(filterStartDate.value),
@@ -175,6 +172,31 @@ const handleClearFilters = (): void => {
 
     clearFilters();
 };
+
+/*
+|--------------------------------------------------------------------------
+| Empty State
+|--------------------------------------------------------------------------
+*/
+
+const emptyState = useListingEmptyState({
+    hasAnyRecords: () => props.hasAnyRecords,
+    hasActiveFilters: () => hasActiveFilters.value,
+    noRecords: {
+        title: 'No salary records yet',
+        description: 'Generate or create salary records to get started.',
+        actionLabel: salaryPage.createLabel,
+        icon: Database,
+        onAction: () => router.visit(create().url),
+    },
+    noResults: {
+        title: 'No salaries found',
+        description: 'Try adjusting the employee, status, or date filters.',
+        actionLabel: salaryPage.clearButtonLabel,
+        icon: SearchX,
+        onAction: handleClearFilters,
+    },
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -195,14 +217,14 @@ const generateButtonLabel = computed(() => {
 const actions = computed<ActionItem[]>(() => [
     ...(props.can_generate_last_month
         ? [
-              {
-                  key: 'generate-last-month',
-                  label: generateButtonLabel.value,
-                  icon: Wallet,
-                  href: generateLastMonth().url,
-                  method: 'post' as const,
-              },
-          ]
+            {
+                key: 'generate-last-month',
+                label: generateButtonLabel.value,
+                icon: Wallet,
+                href: generateLastMonth().url,
+                method: 'post' as const,
+            },
+        ]
         : []),
     {
         key: 'reset-preferences',
@@ -247,7 +269,9 @@ const handleDeleteSelected = (): void => {
                     <div class="w-full min-w-0">
                         <AppEmployeeSelect
                             :model-value="
-                                filterEmployee === 'all' ? null : filterEmployee
+                                filterEmployee === 'all'
+                                    ? null
+                                    : filterEmployee
                             "
                             :placeholder="salaryPage.employeePlaceholder"
                             clearable
@@ -289,17 +313,34 @@ const handleDeleteSelected = (): void => {
         </template>
 
         <template #table>
-            <DataTable
-                :columns-count="columns.length"
-                :empty-text="salaryPage.emptyText"
-                :item-label="salaryPage.itemLabel"
-                :page-index="salaries.meta.current_page - 1"
-                :page-size="salaries.meta.per_page"
-                :page-size-options="[10, 25, 50, 100]"
-                :selected-count="selectedCount"
-                :table="table"
-                :total="salaries.meta.total"
-            />
+            <Deferred data="salaries">
+                <template #fallback>
+                    <DataTable
+                        :columns-count="columns.length"
+                        :item-label="salaryPage.itemLabel"
+                        :loading="true"
+                        :page-index="0"
+                        :page-size="filters.perPage ?? 10"
+                        :page-size-options="[10, 25, 50, 100]"
+                        :selected-count="selectedCount"
+                        :table="table"
+                        :total="0"
+                    />
+                </template>
+
+                <DataTable
+                    v-if="salaries"
+                    :columns-count="columns.length"
+                    :empty-state="emptyState"
+                    :item-label="salaryPage.itemLabel"
+                    :page-index="salaries.meta.current_page - 1"
+                    :page-size="salaries.meta.per_page"
+                    :page-size-options="[10, 25, 50, 100]"
+                    :selected-count="selectedCount"
+                    :table="table"
+                    :total="salaries.meta.total"
+                />
+            </Deferred>
         </template>
     </ListingLayout>
 </template>

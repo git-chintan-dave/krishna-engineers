@@ -30,7 +30,7 @@ const form = useForm({
     remember: false,
 });
 
-const { errors: frontendErrors, validate } = useZodFormValidation(
+const {errors: frontendErrors, validate} = useZodFormValidation(
     loginSchema,
     () => form,
 );
@@ -49,7 +49,7 @@ const handleSubmit = () => {
 </script>
 
 <template>
-    <Head title="Log in" />
+    <Head title="Log in"/>
 
     <div
         v-if="props.status"
@@ -62,14 +62,14 @@ const handleSubmit = () => {
         <div class="grid gap-5">
             <!-- Employee Code -->
             <AppField
-                label="Employee Code"
                 input-id="employee-code"
+                label="Employee Code"
                 required
             >
                 <AppInput
                     id="employee-code"
-                    v-focus
                     v-model="form.employee_code"
+                    v-focus
                     :disabled="form.processing"
                     :error="
                         frontendErrors.employee_code ??
@@ -86,8 +86,8 @@ const handleSubmit = () => {
 
             <!-- Password -->
             <AppField
-                label="Password"
                 input-id="employee-password"
+                label="Password"
                 required
             >
                 <AppInput
@@ -131,7 +131,7 @@ const handleSubmit = () => {
                 data-test="login-button"
                 type="submit"
             >
-                <Spinner v-if="form.processing" />
+                <Spinner v-if="form.processing"/>
                 <span>Log in</span>
             </Button>
         </div>

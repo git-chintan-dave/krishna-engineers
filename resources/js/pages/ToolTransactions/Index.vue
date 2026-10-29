@@ -1,11 +1,8 @@
-﻿```vue
-<script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+﻿<script lang="ts" setup>
+import {Deferred, router} from '@inertiajs/vue3';
+import {computed, ref} from 'vue';
 
-import ListingActions, {
-    type ActionItem,
-} from '@/components/common/ListingActions.vue';
+import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppPartSelect from '@/components/selects/AppPartSelect.vue';
@@ -14,21 +11,14 @@ import AppToolSelect from '@/components/selects/AppToolSelect.vue';
 import AppToolTransactionTypeSelect from '@/components/selects/AppToolTransactionTypeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { toolTransactionPage } from '@/config/toolTransactions';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as toolTransactionsRoute,
-} from '@/routes/tool-transactions';
-import { createToolTransactionColumns } from '@/table/toolTransactions';
-import type {
-    ToolTransaction,
-    ToolTransactionType,
-} from '@/types/toolTransaction';
-import { RotateCcw } from '@lucide/vue';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingEmptyState} from '@/composables/useListingEmptyState';
+import {useListingTable} from '@/composables/useListingTable';
+import {toolTransactionPage} from '@/config/toolTransactions';
+import {bulkDestroy, create, destroy, index as toolTransactionsRoute,} from '@/routes/tool-transactions';
+import {createToolTransactionColumns} from '@/table/toolTransactions';
+import type {ToolTransaction, ToolTransactionType,} from '@/types/toolTransaction';
+import {Database, RotateCcw, SearchX} from '@lucide/vue';
 
 /*
 |--------------------------------------------------------------------------
@@ -69,7 +59,8 @@ type ToolTransactionPagination = {
 */
 
 const props = defineProps<{
-    transactions: ToolTransactionPagination;
+    transactions?: ToolTransactionPagination;
+    hasAnyRecords: boolean;
     filters: ToolTransactionFilters;
 }>();
 
@@ -94,7 +85,9 @@ const filterType = ref<ToolTransactionType | 'all'>(
     props.filters.type ?? 'all',
 );
 
-const filterFromUserId = ref<number | 'all'>(props.filters.fromUserId ?? 'all');
+const filterFromUserId = ref<number | 'all'>(
+    props.filters.fromUserId ?? 'all',
+);
 
 const filterToUserId = ref<number | 'all'>(props.filters.toUserId ?? 'all');
 
@@ -144,6 +137,7 @@ const {
     table,
     searchQuery,
     selectedCount,
+    hasActiveFilters,
     search,
     clearFilters,
     deleteSelected,
@@ -178,7 +172,7 @@ const {
 
 /*
 |--------------------------------------------------------------------------
-| Actions
+| Empty State
 |--------------------------------------------------------------------------
 */
 
@@ -191,6 +185,34 @@ const hasAdditionalFilters = computed(
         filterPartId.value !== 'all' ||
         filterSetupId.value !== 'all',
 );
+
+const emptyState = useListingEmptyState({
+    hasAnyRecords: () => props.hasAnyRecords,
+    hasActiveFilters: () =>
+        hasActiveFilters.value || hasAdditionalFilters.value,
+
+    noRecords: {
+        icon: Database,
+        title: 'No tool transactions yet',
+        description: 'Create a tool transaction to get started.',
+        actionLabel: toolTransactionPage.createLabel,
+        onAction: () => router.visit(create().url),
+    },
+
+    noResults: {
+        icon: SearchX,
+        title: 'No tool transactions found',
+        description: 'Try adjusting or clearing your filters.',
+        actionLabel: toolTransactionPage.clearButtonLabel,
+        onAction: () => handleClearFilters(),
+    },
+});
+
+/*
+|--------------------------------------------------------------------------
+| Actions
+|--------------------------------------------------------------------------
+*/
 
 const handleClearFilters = (): void => {
     filterToolId.value = 'all';
@@ -247,7 +269,9 @@ const handleDeleteSelected = (): void => {
             <ListingFilters
                 v-model:search="searchQuery"
                 :clear-button-label="toolTransactionPage.clearButtonLabel"
-                :clear-disabled="!searchQuery.trim() && !hasAdditionalFilters"
+                :clear-disabled="
+                    !searchQuery.trim() && !hasAdditionalFilters
+                "
                 :search-button-label="toolTransactionPage.searchButtonLabel"
                 :search-placeholder="toolTransactionPage.searchPlaceholder"
                 :searchable="false"
@@ -277,7 +301,9 @@ const handleDeleteSelected = (): void => {
 
                     <AppEmployeeSelect
                         :model-value="
-                            filterFromUserId === 'all' ? null : filterFromUserId
+                            filterFromUserId === 'all'
+                                ? null
+                                : filterFromUserId
                         "
                         :placeholder="toolTransactionPage.fromUserPlaceholder"
                         class="w-full min-w-0"
@@ -325,18 +351,36 @@ const handleDeleteSelected = (): void => {
 
         <!-- Table -->
         <template #table>
-            <DataTable
-                :columns-count="columns.length"
-                :empty-text="toolTransactionPage.emptyText"
-                :item-label="toolTransactionPage.itemLabel"
-                :page-index="transactions.meta.current_page - 1"
-                :page-size="transactions.meta.per_page"
-                :page-size-options="[10, 25, 50, 100]"
-                :selected-count="selectedCount"
-                :table="table"
-                :total="transactions.meta.total"
-            />
+            <Deferred data="transactions">
+                <template #fallback>
+                    <DataTable
+                        :columns-count="columns.length"
+                        :empty-text="toolTransactionPage.emptyText"
+                        :item-label="toolTransactionPage.itemLabel"
+                        :loading="true"
+                        :page-index="0"
+                        :page-size="10"
+                        :page-size-options="[10, 25, 50, 100]"
+                        :selected-count="selectedCount"
+                        :table="table"
+                        :total="0"
+                    />
+                </template>
+
+                <DataTable
+                    v-if="transactions"
+                    :columns-count="columns.length"
+                    :empty-state="emptyState"
+                    :empty-text="toolTransactionPage.emptyText"
+                    :item-label="toolTransactionPage.itemLabel"
+                    :page-index="transactions.meta.current_page - 1"
+                    :page-size="transactions.meta.per_page"
+                    :page-size-options="[10, 25, 50, 100]"
+                    :selected-count="selectedCount"
+                    :table="table"
+                    :total="transactions.meta.total"
+                />
+            </Deferred>
         </template>
     </ListingLayout>
 </template>
-```

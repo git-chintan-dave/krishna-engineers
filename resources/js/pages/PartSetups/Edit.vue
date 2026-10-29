@@ -1,12 +1,12 @@
 ﻿<script lang="ts" setup>
-import { router, useForm } from '@inertiajs/vue3';
+import {router, useForm} from '@inertiajs/vue3';
 
 import FormLayout from '@/components/layouts/FormLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { partSetupPage } from '@/config/partSetups';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {partSetupPage} from '@/config/partSetups';
 import PartSetupForm from '@/pages/PartSetups/components/PartSetupForm.vue';
-import { index as partSetups, update } from '@/routes/part-setups';
-import type { PartSetup, PartSetupFormData } from '@/types/partSetup';
+import {index as partSetups, update} from '@/routes/part-setups';
+import type {PartSetup, PartSetupFormData} from '@/types/partSetup';
 
 const props = defineProps<{
     partSetup: PartSetup;

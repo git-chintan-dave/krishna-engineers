@@ -1,27 +1,22 @@
 ﻿<script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import {Deferred, router} from '@inertiajs/vue3';
+import {computed, ref} from 'vue';
+import {Database, FileUp, RotateCcw, SearchX} from '@lucide/vue';
 
 import DataTable from '@/components/data-table/DataTable.vue';
-import ListingActions, {
-    ActionItem,
-} from '@/components/common/ListingActions.vue';
+import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import AppUserRoleSelect from '@/components/selects/AppUserRoleSelect.vue';
 import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { employeePage } from '@/config/employees';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as employeesRoute,
-} from '@/routes/employees';
-import { view as employeesImportRoute } from '@/routes/employees/import';
-import { createEmployeeColumns } from '@/table/employees';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingEmptyState} from '@/composables/useListingEmptyState';
+import {useListingTable} from '@/composables/useListingTable';
+import {employeePage} from '@/config/employees';
+import {bulkDestroy, create, destroy, index as employeesRoute,} from '@/routes/employees';
+import {view as employeesImportRoute} from '@/routes/employees/import';
+import {createEmployeeColumns} from '@/table/employees';
 import type {
     Employee,
     EmployeeFilters,
@@ -30,8 +25,7 @@ import type {
     EmployeeSort,
     EmployeesResponse,
 } from '@/types/employee';
-import type { StatusFilter } from '@/types/listing';
-import { FileUp, RotateCcw } from '@lucide/vue';
+import type {StatusFilter} from '@/types/listing';
 
 /*
 |--------------------------------------------------------------------------
@@ -40,7 +34,8 @@ import { FileUp, RotateCcw } from '@lucide/vue';
 */
 
 const props = defineProps<{
-    employees: EmployeesResponse;
+    employees?: EmployeesResponse;
+    hasAnyRecords: boolean;
     filters: EmployeeFilters;
 }>();
 
@@ -107,6 +102,7 @@ const {
     clearFilters,
     deleteSelected,
     resetPreferences,
+    hasActiveFilters,
 } = useListingTable<Employee, EmployeeSort>({
     data: () => props.employees,
     columns,
@@ -122,6 +118,31 @@ const {
         shift: filterShift.value !== 'all' ? filterShift.value : undefined,
         status: filterStatus.value !== 'all' ? filterStatus.value : undefined,
     }),
+});
+
+/*
+|--------------------------------------------------------------------------
+| Empty State
+|--------------------------------------------------------------------------
+*/
+
+const emptyState = useListingEmptyState({
+    hasAnyRecords: () => props.hasAnyRecords,
+    hasActiveFilters: () => hasActiveFilters.value,
+    noRecords: {
+        title: 'No employees yet',
+        description: 'Create an employee to get started.',
+        actionLabel: employeePage.createLabel,
+        icon: Database,
+        onAction: () => router.visit(create().url),
+    },
+    noResults: {
+        title: 'No employees found',
+        description: 'Try adjusting your search or filters.',
+        actionLabel: employeePage.clearButtonLabel,
+        icon: SearchX,
+        onAction: handleClearFilters,
+    },
 });
 
 /*
@@ -221,17 +242,34 @@ const handleDeleteSelected = () => {
         </template>
 
         <template #table>
-            <DataTable
-                :columns-count="columns.length"
-                :empty-text="employeePage.emptyText"
-                :item-label="employeePage.itemLabel"
-                :page-index="employees.meta.current_page - 1"
-                :page-size="employees.meta.per_page"
-                :page-size-options="[10, 25, 50, 100]"
-                :selected-count="selectedCount"
-                :table="table"
-                :total="employees.meta.total"
-            />
+            <Deferred data="employees">
+                <template #fallback>
+                    <DataTable
+                        :columns-count="columns.length"
+                        :item-label="employeePage.itemLabel"
+                        :loading="true"
+                        :page-index="0"
+                        :page-size="filters.perPage ?? 10"
+                        :page-size-options="[10, 25, 50, 100]"
+                        :selected-count="selectedCount"
+                        :table="table"
+                        :total="0"
+                    />
+                </template>
+
+                <DataTable
+                    v-if="employees"
+                    :columns-count="columns.length"
+                    :empty-state="emptyState"
+                    :item-label="employeePage.itemLabel"
+                    :page-index="employees.meta.current_page - 1"
+                    :page-size="employees.meta.per_page"
+                    :page-size-options="[10, 25, 50, 100]"
+                    :selected-count="selectedCount"
+                    :table="table"
+                    :total="employees.meta.total"
+                />
+            </Deferred>
         </template>
     </ListingLayout>
 </template>

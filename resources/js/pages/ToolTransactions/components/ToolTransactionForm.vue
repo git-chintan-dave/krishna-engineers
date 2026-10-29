@@ -1,15 +1,7 @@
 <script lang="ts" setup>
-import type { InertiaForm } from '@inertiajs/vue3';
-import {
-    ArrowLeftRight,
-    Box,
-    Hash,
-    MessageSquare,
-    Settings2,
-    User,
-    Wrench,
-} from '@lucide/vue';
-import { computed, watch } from 'vue';
+import type {InertiaForm} from '@inertiajs/vue3';
+import {ArrowLeftRight, Box, Hash, MessageSquare, Settings2, User, Wrench,} from '@lucide/vue';
+import {computed, watch} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -23,13 +15,10 @@ import AppSetupSelect from '@/components/selects/AppSetupSelect.vue';
 import AppToolSelect from '@/components/selects/AppToolSelect.vue';
 import AppToolTransactionTypeSelect from '@/components/selects/AppToolTransactionTypeSelect.vue';
 
-import { useZodFormValidation } from '@/composables/useZodFormValidation';
-import { toolTransactionPage } from '@/config/toolTransactions';
-import {
-    toolTransactionSchema,
-    type ToolTransactionValidationField,
-} from '@/schemas/toolTransactionSchema';
-import type { ToolTransactionType } from '@/types/toolTransaction';
+import {useZodFormValidation} from '@/composables/useZodFormValidation';
+import {toolTransactionPage} from '@/config/toolTransactions';
+import {toolTransactionSchema, type ToolTransactionValidationField,} from '@/schemas/toolTransactionSchema';
+import type {ToolTransactionType} from '@/types/toolTransaction';
 
 /*
 |--------------------------------------------------------------------------
@@ -111,7 +100,7 @@ const quantityMax = 4294967295;
 |--------------------------------------------------------------------------
 */
 
-const { errors: frontendErrors, validate } = useZodFormValidation(
+const {errors: frontendErrors, validate} = useZodFormValidation(
     toolTransactionSchema,
     () => props.form,
 );

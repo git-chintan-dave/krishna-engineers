@@ -19,7 +19,7 @@ defineOptions({
 </script>
 
 <template>
-    <Head title="Import Setups" />
+    <Head title="Import Setups"/>
 
     <div class="space-y-6 p-6">
         <AppPageHeader
@@ -28,18 +28,18 @@ defineOptions({
         />
 
         <ImportFile
-            accepted-files=".xlsx,.xls,.csv"
-            description="Upload the setup spreadsheet to import setup records."
             :index-url="setups().url"
             :information-items="[
                 'Name is required.',
                 'Setup names are used to identify existing records.',
                 'Duplicate setup names within the uploaded file are not allowed.',
             ]"
+            :submit-url="submitImport().url"
+            accepted-files=".xlsx,.xls,.csv"
+            description="Upload the setup spreadsheet to import setup records."
             sample-file="/samples/setups.xlsx"
             sample-file-name="setups.xlsx"
             submit-button-text="Import Setups"
-            :submit-url="submitImport().url"
             title="Import Setups"
             upload-description="Drag and drop your setup spreadsheet here, or click to browse."
             upload-text="Upload setup spreadsheet"

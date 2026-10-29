@@ -19,7 +19,7 @@ defineOptions({
 </script>
 
 <template>
-    <Head title="Import Part Setups" />
+    <Head title="Import Part Setups"/>
 
     <div class="space-y-6 p-6">
         <AppPageHeader
@@ -28,8 +28,6 @@ defineOptions({
         />
 
         <ImportFile
-            accepted-files=".xlsx,.xls,.csv"
-            description="Upload the part setup spreadsheet to import part and setup combinations."
             :index-url="partSetups().url"
             :information-items="[
                 'Part, Setup, Machine Cycle Time, and Actual Cycle Time are required.',
@@ -39,10 +37,12 @@ defineOptions({
                 'Cycle times must be non-negative integers in seconds.',
                 'Existing images and UUIDs are preserved when updating records.',
             ]"
+            :submit-url="submitImport().url"
+            accepted-files=".xlsx,.xls,.csv"
+            description="Upload the part setup spreadsheet to import part and setup combinations."
             sample-file="/samples/part-setups.xlsx"
             sample-file-name="part-setups.xlsx"
             submit-button-text="Import Part Setups"
-            :submit-url="submitImport().url"
             title="Import Part Setups"
             upload-description="Drag and drop your part setup spreadsheet here, or click to browse."
             upload-text="Upload part setup spreadsheet"

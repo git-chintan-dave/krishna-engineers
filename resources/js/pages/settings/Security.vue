@@ -1,16 +1,16 @@
 <script lang="ts" setup>
-import { Form, Head } from '@inertiajs/vue3';
-import { LockKeyhole, ShieldCheck } from '@lucide/vue';
+import {Form, Head} from '@inertiajs/vue3';
+import {LockKeyhole, ShieldCheck} from '@lucide/vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
-import type { Props as ManagePasskeysProps } from '@/components/ManagePasskeys.vue';
-import type { Props as ManageTwoFactorProps } from '@/components/ManageTwoFactor.vue';
+import type {Props as ManagePasskeysProps} from '@/components/ManagePasskeys.vue';
+import type {Props as ManageTwoFactorProps} from '@/components/ManageTwoFactor.vue';
 import ManageTwoFactor from '@/components/ManageTwoFactor.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { dashboard } from '@/routes';
-import { update as updateUserPassword } from '@/routes/user-password';
+import {Button} from '@/components/ui/button';
+import {Label} from '@/components/ui/label';
+import {dashboard} from '@/routes';
+import {update as updateUserPassword} from '@/routes/user-password';
 
 // oxfmt-ignore
 type Props = {
@@ -36,7 +36,7 @@ defineOptions({
 </script>
 
 <template>
-    <Head title="Security settings" />
+    <Head title="Security settings"/>
 
     <h1 class="sr-only">Security settings</h1>
 
@@ -51,7 +51,7 @@ defineOptions({
                 <div
                     class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
                 >
-                    <LockKeyhole class="size-5" />
+                    <LockKeyhole class="size-5"/>
                 </div>
 
                 <div class="min-w-0 flex-1">
@@ -87,7 +87,7 @@ defineOptions({
                             name="current_password"
                             placeholder="Enter current password"
                         />
-                        <InputError :message="errors.current_password" />
+                        <InputError :message="errors.current_password"/>
                     </div>
 
                     <div class="grid gap-2">
@@ -100,7 +100,7 @@ defineOptions({
                             name="password"
                             placeholder="Enter new password"
                         />
-                        <InputError :message="errors.password" />
+                        <InputError :message="errors.password"/>
                     </div>
 
                     <div class="grid gap-2">
@@ -115,7 +115,7 @@ defineOptions({
                             name="password_confirmation"
                             placeholder="Re-enter new password"
                         />
-                        <InputError :message="errors.password_confirmation" />
+                        <InputError :message="errors.password_confirmation"/>
                     </div>
 
                     <div
@@ -147,7 +147,7 @@ defineOptions({
                 <div
                     class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
                 >
-                    <ShieldCheck class="size-5" />
+                    <ShieldCheck class="size-5"/>
                 </div>
 
                 <div class="min-w-0 flex-1">

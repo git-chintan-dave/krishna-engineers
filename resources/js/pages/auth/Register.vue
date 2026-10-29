@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import { Form, Head } from '@inertiajs/vue3';
+import {Form, Head} from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import { login } from '@/routes';
-import { store } from '@/routes/register';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
+import {Spinner} from '@/components/ui/spinner';
+import {login} from '@/routes';
+import {store} from '@/routes/register';
 
 defineProps<{
     passwordRules: string;
@@ -23,7 +23,7 @@ defineOptions({
 </script>
 
 <template>
-    <Head title="Register" />
+    <Head title="Register"/>
 
     <Form
         v-slot="{ errors, processing }"
@@ -44,7 +44,7 @@ defineOptions({
                     required
                     type="text"
                 />
-                <InputError :message="errors.name" />
+                <InputError :message="errors.name"/>
             </div>
 
             <div class="grid gap-2">
@@ -58,7 +58,7 @@ defineOptions({
                     required
                     type="email"
                 />
-                <InputError :message="errors.email" />
+                <InputError :message="errors.email"/>
             </div>
 
             <div class="grid gap-2">
@@ -72,7 +72,7 @@ defineOptions({
                     placeholder="Password"
                     required
                 />
-                <InputError :message="errors.password" />
+                <InputError :message="errors.password"/>
             </div>
 
             <div class="grid gap-2">
@@ -86,7 +86,7 @@ defineOptions({
                     placeholder="Confirm password"
                     required
                 />
-                <InputError :message="errors.password_confirmation" />
+                <InputError :message="errors.password_confirmation"/>
             </div>
 
             <Button
@@ -96,7 +96,7 @@ defineOptions({
                 tabindex="5"
                 type="submit"
             >
-                <Spinner v-if="processing" />
+                <Spinner v-if="processing"/>
                 Create account
             </Button>
         </div>
@@ -107,7 +107,7 @@ defineOptions({
                 :href="login()"
                 :tabindex="6"
                 class="underline underline-offset-4"
-                >Log in
+            >Log in
             </TextLink>
         </div>
     </Form>

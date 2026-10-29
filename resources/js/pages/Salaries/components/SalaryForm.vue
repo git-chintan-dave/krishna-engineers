@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import axios from 'axios';
-import type { InertiaForm } from '@inertiajs/vue3';
-import { CalendarDays, IndianRupee, User } from '@lucide/vue';
-import { computed, ref, watch } from 'vue';
+import type {InertiaForm} from '@inertiajs/vue3';
+import {CalendarDays, IndianRupee, User} from '@lucide/vue';
+import {computed, ref, watch} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import AppField from '@/components/form/AppField.vue';
@@ -10,12 +10,12 @@ import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AttendanceHistoryDialog from '@/components/attendance/AttendanceHistoryDialog.vue';
-import { Button } from '@/components/ui/button';
-import { useZodFormValidation } from '@/composables/useZodFormValidation';
-import { salaryPage } from '@/config/salaries';
-import { preview as previewSalary } from '@/routes/salaries';
-import { salarySchema } from '@/schemas/salarySchema';
-import type { Salary, SalaryFormData } from '@/types/salary';
+import {Button} from '@/components/ui/button';
+import {useZodFormValidation} from '@/composables/useZodFormValidation';
+import {salaryPage} from '@/config/salaries';
+import {preview as previewSalary} from '@/routes/salaries';
+import {salarySchema} from '@/schemas/salarySchema';
+import type {Salary, SalaryFormData} from '@/types/salary';
 
 /*
 |--------------------------------------------------------------------------
@@ -110,16 +110,16 @@ const baseSalary = computed(() =>
 const attendanceDays = computed(() =>
     Number(
         props.salary?.attendance_days ??
-            previewData.value?.attendance_days ??
-            0,
+        previewData.value?.attendance_days ??
+        0,
     ),
 );
 
 const totalUndertimeSeconds = computed(() =>
     Number(
         props.salary?.total_undertime_seconds ??
-            previewData.value?.total_undertime_seconds ??
-            0,
+        previewData.value?.total_undertime_seconds ??
+        0,
     ),
 );
 
@@ -236,7 +236,7 @@ const formatDuration = (seconds: number): string => {
 |--------------------------------------------------------------------------
 */
 
-const { errors: frontendErrors, validate } = useZodFormValidation(
+const {errors: frontendErrors, validate} = useZodFormValidation(
     salarySchema,
     () => props.form,
 );
@@ -351,7 +351,7 @@ watch(
         () => props.form.salary_period_end,
     ],
     loadPreview,
-    { immediate: true },
+    {immediate: true},
 );
 
 watch(
@@ -361,7 +361,7 @@ watch(
             props.form.late_days = value;
         }
     },
-    { immediate: true },
+    {immediate: true},
 );
 </script>
 
@@ -440,16 +440,16 @@ watch(
                 </p>
 
                 <Button
-                    type="button"
-                    variant="outline"
                     :disabled="
                         !props.form.user_id ||
                         !props.form.salary_period_start ||
                         !props.form.salary_period_end
                     "
+                    type="button"
+                    variant="outline"
                     @click="attendanceDialogOpen = true"
                 >
-                    <CalendarDays class="mr-2 size-4" />
+                    <CalendarDays class="mr-2 size-4"/>
                     View Attendance
                 </Button>
             </div>
@@ -457,9 +457,9 @@ watch(
 
         <AttendanceHistoryDialog
             v-model:open="attendanceDialogOpen"
-            :user-id="props.form.user_id"
-            :start-date="props.form.salary_period_start"
             :end-date="props.form.salary_period_end"
+            :start-date="props.form.salary_period_start"
+            :user-id="props.form.user_id"
         />
 
         <!-- Main content -->
@@ -587,7 +587,6 @@ watch(
                                 </div>
 
                                 <p
-                                    class="shrink-0 text-sm font-medium tabular-nums"
                                     :class="{
                                         'text-green-600 dark:text-green-400':
                                             item.type === 'positive' ||
@@ -597,12 +596,15 @@ watch(
                                             item.type === 'deduction' ||
                                             item.amount < 0,
                                     }"
+                                    class="shrink-0 text-sm font-medium tabular-nums"
                                 >
                                     <template v-if="item.amount > 0"
-                                        >+</template
+                                    >+
+                                    </template
                                     >
                                     <template v-else-if="item.amount < 0"
-                                        >−</template
+                                    >−
+                                    </template
                                     >
                                     ₹{{ formatCurrency(Math.abs(item.amount)) }}
                                 </p>
@@ -671,9 +673,9 @@ watch(
                         v-if="previewLoading"
                         class="mt-5 animate-pulse space-y-4"
                     >
-                        <div class="h-4 rounded bg-muted" />
-                        <div class="h-4 rounded bg-muted" />
-                        <div class="h-4 rounded bg-muted" />
+                        <div class="h-4 rounded bg-muted"/>
+                        <div class="h-4 rounded bg-muted"/>
+                        <div class="h-4 rounded bg-muted"/>
                     </div>
 
                     <div v-else class="mt-5 space-y-4">
@@ -715,8 +717,8 @@ watch(
 
                         <div class="border-t pt-4">
                             <AppField
-                                label="Late days deducted"
                                 input-id="salary-late-days"
+                                label="Late days deducted"
                                 required
                             >
                                 <AppInput
@@ -727,8 +729,8 @@ watch(
                                         frontendErrors.late_days ??
                                         props.errors.late_days
                                     "
-                                    min="0"
                                     :max="attendanceDays"
+                                    min="0"
                                     step="1"
                                     type="number"
                                 />

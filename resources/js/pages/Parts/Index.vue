@@ -197,13 +197,13 @@ const handleDeleteSelected = (): void => {
                         :columns-count="columns.length"
                         :empty-text="partPage.emptyText"
                         :item-label="partPage.itemLabel"
+                        :loading="true"
                         :page-index="0"
                         :page-size="filters.perPage"
                         :page-size-options="[10, 25, 50, 100]"
                         :selected-count="0"
                         :table="table"
                         :total="0"
-                        :loading="true"
                     />
                 </template>
 

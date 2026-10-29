@@ -364,7 +364,10 @@ export const createActionsColumn = <TData = unknown>({
             return h(
                 'div',
                 {
-                    class: 'flex items-center justify-center gap-1 whitespace-nowrap',
+                    class: [
+                        'flex h-8 min-h-8 items-center justify-center',
+                        'gap-1 whitespace-nowrap overflow-hidden',
+                    ],
                 },
                 primaryActions,
             );

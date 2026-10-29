@@ -165,13 +165,13 @@ function refreshDashboard(): void {
         <section v-if="dashboardComponent" class="min-w-0">
             <component
                 :is="dashboardComponent"
-                :dashboard-data="dashboardData"
-                :salary-overview="pageProps.salaryOverview"
-                :inventory-alerts="pageProps.inventoryAlerts"
-                :production-overview="pageProps.productionOverview"
                 :attendance-overview="pageProps.attendanceOverview"
+                :dashboard-data="dashboardData"
+                :inventory-alerts="pageProps.inventoryAlerts"
                 :loading="loading"
+                :production-overview="pageProps.productionOverview"
                 :refreshing="refreshing"
+                :salary-overview="pageProps.salaryOverview"
                 @refresh="refreshDashboard"
                 @refresh-section="refreshSection"
             />

@@ -226,13 +226,13 @@ useActionShortcuts(
                         :columns-count="columns.length"
                         :empty-text="machinePage.emptyText"
                         :item-label="machinePage.itemLabel"
+                        :loading="true"
                         :page-index="0"
                         :page-size="filters.perPage"
                         :page-size-options="[10, 25, 50, 100]"
                         :selected-count="0"
                         :table="table"
                         :total="0"
-                        :loading="true"
                     />
                 </template>
 

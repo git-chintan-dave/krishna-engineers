@@ -25,7 +25,7 @@ defineOptions({
 </script>
 
 <template>
-    <Head title="Import Employees" />
+    <Head title="Import Employees"/>
 
     <div class="space-y-6 p-6">
         <AppPageHeader
@@ -34,8 +34,6 @@ defineOptions({
         />
 
         <ImportFile
-            accepted-files=".xlsx,.xls,.csv"
-            description="Upload the employee spreadsheet to import employee records."
             :index-url="employees().url"
             :information-items="[
                 'Name, Employee Code, and Role are required.',
@@ -44,10 +42,12 @@ defineOptions({
                 'Role and Shift values must match the available system options.',
                 'Ensure phone numbers, dates, salary, incentive, and deduction values are valid.',
             ]"
+            :submit-url="submitImport().url"
+            accepted-files=".xlsx,.xls,.csv"
+            description="Upload the employee spreadsheet to import employee records."
             sample-file="/samples/employees.xlsx"
             sample-file-name="employees.xlsx"
             submit-button-text="Import Employees"
-            :submit-url="submitImport().url"
             title="Import Employees"
             upload-description="Drag and drop your employee spreadsheet here, or click to browse."
             upload-text="Upload employee spreadsheet"

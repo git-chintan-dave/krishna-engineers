@@ -1,13 +1,7 @@
 <script lang="ts" setup>
-import { Head, Link } from '@inertiajs/vue3';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
-import { dashboard, login } from '@/routes';
+import {Head, Link} from '@inertiajs/vue3';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from '@/components/ui/card';
+import {dashboard, login} from '@/routes';
 </script>
 
 <template>

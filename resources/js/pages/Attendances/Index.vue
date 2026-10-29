@@ -1,43 +1,32 @@
 ﻿<script lang="ts" setup>
-import { router, usePage } from '@inertiajs/vue3';
-import { FileUp, RefreshCw, RotateCcw } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import {Deferred, router, usePage} from '@inertiajs/vue3';
+import {computed, ref} from 'vue';
+import {Database, FileUp, RefreshCw, RotateCcw, SearchX} from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
-import ListingActions, {
-    type ActionItem,
-} from '@/components/common/ListingActions.vue';
+import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { attendancePage } from '@/config/attendances';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as attendancesRoute,
-    sync,
-} from '@/routes/attendances';
-import { view as attendancesImportRoute } from '@/routes/attendances/import';
-import { createAttendanceColumns } from '@/table/attendances';
-import type {
-    Attendance,
-    AttendanceFilters,
-    AttendanceResponse,
-    AttendanceSort,
-} from '@/types/attendance';
-import {getAttendanceRowHighlight} from "@/lib/row-highlights";
+import {Button} from '@/components/ui/button';
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from '@/components/ui/dialog';
+
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingEmptyState} from '@/composables/useListingEmptyState';
+import {useListingTable} from '@/composables/useListingTable';
+import {ACTION_SHORTCUTS} from '@/composables/useActionShortcuts';
+
+import {attendancePage} from '@/config/attendances';
+
+import {bulkDestroy, create, destroy, index as attendancesRoute, sync,} from '@/routes/attendances';
+import {view as attendancesImportRoute} from '@/routes/attendances/import';
+
+import {createAttendanceColumns} from '@/table/attendances';
+
+import {getAttendanceRowHighlight} from '@/lib/row-highlights';
+
+import type {Attendance, AttendanceFilters, AttendanceResponse, AttendanceSort,} from '@/types/attendance';
 
 /*
 |--------------------------------------------------------------------------
@@ -55,7 +44,8 @@ type SyncMessageType = 'success' | 'error' | null;
 */
 
 const props = defineProps<{
-    attendances: AttendanceResponse;
+    attendances?: AttendanceResponse;
+    hasAnyRecords: boolean;
     filters: AttendanceFilters;
 }>();
 
@@ -76,8 +66,7 @@ defineOptions({
 
 const page = usePage();
 
-const auth = computed(() => page.props.auth);
-const userRole = computed(() => auth.value.user?.role);
+const userRole = computed(() => page.props.auth.user?.role);
 
 const canManageAttendance = computed(() =>
     ['super_admin', 'supervisor'].includes(userRole.value ?? ''),
@@ -95,7 +84,7 @@ const filterEmployee = ref<number | string | 'all'>(props.filters.userId);
 const filterStartDate = ref(props.filters.startDate);
 const filterEndDate = ref(props.filters.endDate);
 
-const handleEmployeeChange = (value: number | null) => {
+const handleEmployeeChange = (value: number | null): void => {
     filterEmployee.value = value ?? 'all';
 };
 
@@ -142,7 +131,7 @@ const syncDisabled = computed(
     () => syncProcessing.value || Boolean(syncDateError.value),
 );
 
-const openSyncDialog = () => {
+const openSyncDialog = (): void => {
     syncOpen.value = true;
 
     const today = new Date();
@@ -158,11 +147,11 @@ const openSyncDialog = () => {
     syncMessageType.value = null;
 };
 
-const handleSyncDialogOpenChange = (open: boolean) => {
+const handleSyncDialogOpenChange = (open: boolean): void => {
     syncOpen.value = open;
 };
 
-const handleSync = () => {
+const handleSync = (): void => {
     if (syncDisabled.value) {
         return;
     }
@@ -202,7 +191,7 @@ const handleSync = () => {
                 }
 
                 router.reload({
-                    only: ['attendances'],
+                    only: ['attendances', 'hasAnyRecords'],
                     preserveScroll: true,
                 });
             },
@@ -242,11 +231,13 @@ const columns = createAttendanceColumns(
 
 const {
     table,
+    searchQuery,
     selectedCount,
     search,
     clearFilters,
     deleteSelected,
     resetPreferences,
+    hasActiveFilters,
 } = useListingTable<Attendance, AttendanceSort>({
     data: () => props.attendances,
     columns,
@@ -262,6 +253,11 @@ const {
         start_date: filterStartDate.value || undefined,
         end_date: filterEndDate.value || undefined,
     }),
+    onClearFilters: () => {
+        filterEmployee.value = 'all';
+        filterStartDate.value = '';
+        filterEndDate.value = '';
+    },
 });
 
 /*
@@ -278,14 +274,14 @@ const actions = computed<ActionItem[]>(() => [
                 label: 'Import',
                 icon: FileUp,
                 href: attendancesImportRoute().url,
-                shortcut: 'I',
+                shortcut: ACTION_SHORTCUTS.import.label,
             },
             {
                 key: 'sync',
                 label: 'Sync attendance',
                 icon: RefreshCw,
                 action: openSyncDialog,
-                shortcut: 'S',
+                shortcut: ACTION_SHORTCUTS.sync.label,
             },
         ]
         : []),
@@ -295,7 +291,7 @@ const actions = computed<ActionItem[]>(() => [
         label: 'Reset preferences',
         icon: RotateCcw,
         action: resetPreferences,
-        shortcut: 'R',
+        shortcut: ACTION_SHORTCUTS.resetPreferences.label,
         separatorBefore: true,
     },
 ]);
@@ -306,11 +302,7 @@ const actions = computed<ActionItem[]>(() => [
 |--------------------------------------------------------------------------
 */
 
-const handleSearch = () => {
-    search();
-};
-
-const handleClearFilters = () => {
+const handleClearFilters = (): void => {
     filterEmployee.value = 'all';
     filterStartDate.value = '';
     filterEndDate.value = '';
@@ -324,17 +316,46 @@ const handleClearFilters = () => {
 |--------------------------------------------------------------------------
 */
 
-const handleDeleteSelected = () => {
+const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);
 };
+
+/*
+|--------------------------------------------------------------------------
+| Empty State
+|--------------------------------------------------------------------------
+*/
+
+const emptyState = useListingEmptyState({
+    hasAnyRecords: () => props.hasAnyRecords,
+    hasActiveFilters: () => hasActiveFilters.value,
+    noRecords: {
+        title: 'No attendance records yet',
+        description: 'Create an attendance record or sync attendance from eTimeOffice.',
+        actionLabel: canManageAttendance.value
+            ? attendancePage.createLabel || 'Add attendance'
+            : undefined,
+        icon: Database,
+        onAction: canManageAttendance.value
+            ? () => router.visit(create().url)
+            : undefined,
+    },
+    noResults: {
+        title: 'No results found',
+        description: 'Try adjusting your employee or date filters.',
+        actionLabel: attendancePage.clearButtonLabel || 'Clear filters',
+        icon: SearchX,
+        onAction: handleClearFilters,
+    },
+});
 </script>
 
 <template>
     <ListingLayout
         :description="attendancePage.description"
         :title="attendancePage.title"
+        @reset-preferences="resetPreferences"
     >
-        <!-- Header Actions -->
         <template #actions>
             <ListingActions
                 :actions="actions"
@@ -346,19 +367,14 @@ const handleDeleteSelected = () => {
             />
         </template>
 
-        <!-- Filters -->
         <template #filters>
             <ListingFilters
                 :clear-button-label="attendancePage.clearButtonLabel"
-                :clear-disabled="
-                    filterEmployee === 'all' &&
-                    !filterStartDate &&
-                    !filterEndDate
-                "
+                :clear-disabled="!hasActiveFilters"
                 :search-button-label="attendancePage.searchButtonLabel"
                 :searchable="false"
                 @clear="handleClearFilters"
-                @search="handleSearch"
+                @search="search"
             >
                 <template #filters>
                     <div v-if="canManageAttendance" class="w-full min-w-0">
@@ -394,24 +410,41 @@ const handleDeleteSelected = () => {
             </ListingFilters>
         </template>
 
-        <!-- Table -->
         <template #table>
-            <DataTable
-                :columns-count="columns.length"
-                :empty-text="attendancePage.emptyText"
-                :item-label="attendancePage.itemLabel"
-                :page-index="attendances.meta.current_page - 1"
-                :page-size="attendances.meta.per_page"
-                :page-size-options="[10, 25, 50, 100]"
-                :selected-count="selectedCount"
-                :table="table"
-                :total="attendances.meta.total"
-                :row-highlight="getAttendanceRowHighlight"
-            />
+            <Deferred data="attendances">
+                <template #fallback>
+                    <DataTable
+                        :columns-count="columns.length"
+                        :empty-text="attendancePage.emptyText"
+                        :item-label="attendancePage.itemLabel"
+                        :loading="true"
+                        :page-index="0"
+                        :page-size="filters.perPage"
+                        :page-size-options="[10, 25, 50, 100]"
+                        :selected-count="0"
+                        :table="table"
+                        :total="0"
+                    />
+                </template>
+
+                <DataTable
+                    v-if="attendances"
+                    :columns-count="columns.length"
+                    :empty-state="emptyState"
+                    :empty-text="attendancePage.emptyText"
+                    :item-label="attendancePage.itemLabel"
+                    :page-index="attendances.meta.current_page - 1"
+                    :page-size="attendances.meta.per_page"
+                    :page-size-options="[10, 25, 50, 100]"
+                    :row-highlight="getAttendanceRowHighlight"
+                    :selected-count="selectedCount"
+                    :table="table"
+                    :total="attendances.meta.total"
+                />
+            </Deferred>
         </template>
     </ListingLayout>
 
-    <!-- Sync Attendance Dialog -->
     <Dialog :open="syncOpen" @update:open="handleSyncDialogOpenChange">
         <DialogContent
             class="max-h-[90vh] w-[calc(100%-2rem)] overflow-y-auto sm:max-w-lg"
@@ -425,29 +458,28 @@ const handleDeleteSelected = () => {
             </DialogHeader>
 
             <div class="space-y-4">
-                <!-- Sync Type -->
                 <fieldset class="space-y-3">
                     <legend class="text-sm font-medium">
                         Synchronization type
                     </legend>
 
                     <label
-                        for="sync-type-in-out"
-                        class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-muted/50"
                         :class="
                             syncType === 'in_out'
                                 ? 'border-primary bg-muted/30'
                                 : 'border-border'
                         "
+                        class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-muted/50"
+                        for="sync-type-in-out"
                     >
                         <input
                             id="sync-type-in-out"
                             v-model="syncType"
+                            :disabled="syncProcessing"
                             class="mt-1 size-4 shrink-0 accent-primary"
                             name="sync-type"
                             type="radio"
                             value="in_out"
-                            :disabled="syncProcessing"
                         />
 
                         <span class="space-y-1">
@@ -463,22 +495,22 @@ const handleDeleteSelected = () => {
                     </label>
 
                     <label
-                        for="sync-type-punches"
-                        class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-muted/50"
                         :class="
                             syncType === 'punches'
                                 ? 'border-primary bg-muted/30'
                                 : 'border-border'
                         "
+                        class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-muted/50"
+                        for="sync-type-punches"
                     >
                         <input
                             id="sync-type-punches"
                             v-model="syncType"
+                            :disabled="syncProcessing"
                             class="mt-1 size-4 shrink-0 accent-primary"
                             name="sync-type"
                             type="radio"
                             value="punches"
-                            :disabled="syncProcessing"
                         />
 
                         <span class="space-y-1">
@@ -496,13 +528,12 @@ const handleDeleteSelected = () => {
                 </fieldset>
 
                 <div
-                    class="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground"
                     aria-live="polite"
+                    class="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground"
                 >
                     {{ syncDescription }}
                 </div>
 
-                <!-- Employee -->
                 <div class="space-y-2">
                     <label class="text-sm font-medium" for="sync-employee">
                         Employee
@@ -521,7 +552,6 @@ const handleDeleteSelected = () => {
                     </p>
                 </div>
 
-                <!-- Start Date -->
                 <div class="space-y-2">
                     <label class="text-sm font-medium" for="sync-start-date">
                         Start date
@@ -535,7 +565,6 @@ const handleDeleteSelected = () => {
                     />
                 </div>
 
-                <!-- End Date -->
                 <div class="space-y-2">
                     <label class="text-sm font-medium" for="sync-end-date">
                         End date

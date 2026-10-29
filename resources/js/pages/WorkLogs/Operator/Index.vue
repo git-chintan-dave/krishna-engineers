@@ -1,11 +1,10 @@
 <script lang="ts" setup>
-import { router } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import {Deferred, router} from '@inertiajs/vue3';
+import {Database, RotateCcw, SearchX} from '@lucide/vue';
+import {computed, ref} from 'vue';
 
 import AppInput from '@/components/common/AppInput.vue';
-import ListingActions, {
-    type ActionItem,
-} from '@/components/common/ListingActions.vue';
+import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import AppMachineSelect from '@/components/selects/AppMachineSelect.vue';
@@ -14,23 +13,18 @@ import AppSetupSelect from '@/components/selects/AppSetupSelect.vue';
 import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import { useCrudBreadcrumbs } from '@/composables/useCrudBreadcrumbs';
-import { useListingTable } from '@/composables/useListingTable';
-import { operatorWorkLogPage } from '@/config/operatorWorkLogs';
-import {
-    bulkDestroy,
-    create,
-    destroy,
-    index as operatorWorkLogsRoute,
-} from '@/routes/operator';
-import { createOperatorWorkLogColumns } from '@/table/operatorWorkLogs';
+import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
+import {useListingEmptyState} from '@/composables/useListingEmptyState';
+import {useListingTable} from '@/composables/useListingTable';
+import {operatorWorkLogPage} from '@/config/operatorWorkLogs';
+import {bulkDestroy, create, destroy, index as operatorWorkLogsRoute,} from '@/routes/operator';
+import {createOperatorWorkLogColumns} from '@/table/operatorWorkLogs';
 import type {
     OperatorWorkLog,
     OperatorWorkLogFilters,
     OperatorWorkLogSort,
     OperatorWorkLogsResponse,
 } from '@/types/operatorWorkLog';
-import { RotateCcw } from '@lucide/vue';
 
 /*
 |--------------------------------------------------------------------------
@@ -47,7 +41,8 @@ type FilterId = number | 'all';
 */
 
 const props = defineProps<{
-    operatorWorkLogs: OperatorWorkLogsResponse;
+    operatorWorkLogs?: OperatorWorkLogsResponse;
+    hasAnyRecords: boolean;
     filters: OperatorWorkLogFilters;
     canSelectOperator: boolean;
 }>();
@@ -103,6 +98,16 @@ const filterMachineId = ref<FilterId>(
 const filterPartId = ref<FilterId>(normalizeFilterId(props.filters.partId));
 const filterSetupId = ref<FilterId>(normalizeFilterId(props.filters.setupId));
 
+const hasAdditionalFilters = computed(
+    () =>
+        Boolean(filterWorkDate.value) ||
+        filterShift.value !== 'all' ||
+        (props.canSelectOperator && filterUserId.value !== 'all') ||
+        filterMachineId.value !== 'all' ||
+        filterPartId.value !== 'all' ||
+        filterSetupId.value !== 'all',
+);
+
 /*
 |--------------------------------------------------------------------------
 | Table
@@ -116,6 +121,7 @@ const columns = createOperatorWorkLogColumns((uuid) => {
 const {
     table,
     selectedCount,
+    hasActiveFilters,
     search,
     clearFilters,
     deleteSelected,
@@ -142,6 +148,34 @@ const {
         setup_id:
             filterSetupId.value !== 'all' ? filterSetupId.value : undefined,
     }),
+});
+
+/*
+|--------------------------------------------------------------------------
+| Empty State
+|--------------------------------------------------------------------------
+*/
+
+const emptyState = useListingEmptyState({
+    hasAnyRecords: () => props.hasAnyRecords,
+    hasActiveFilters: () =>
+        hasActiveFilters.value || hasAdditionalFilters.value,
+
+    noRecords: {
+        icon: Database,
+        title: 'No operator work logs yet',
+        description: 'Create an operator work log to get started.',
+        actionLabel: operatorWorkLogPage.createLabel,
+        onAction: () => router.visit(create().url),
+    },
+
+    noResults: {
+        icon: SearchX,
+        title: 'No operator work logs found',
+        description: 'Try adjusting or clearing your filters.',
+        actionLabel: operatorWorkLogPage.clearButtonLabel,
+        onAction: () => handleClearFilters(),
+    },
 });
 
 /*
@@ -192,16 +226,6 @@ const handleClearFilters = (): void => {
 |--------------------------------------------------------------------------
 */
 
-const hasFilters = computed(
-    () =>
-        Boolean(filterWorkDate.value) ||
-        filterShift.value !== 'all' ||
-        (props.canSelectOperator && filterUserId.value !== 'all') ||
-        filterMachineId.value !== 'all' ||
-        filterPartId.value !== 'all' ||
-        filterSetupId.value !== 'all',
-);
-
 const actions = computed<ActionItem[]>(() => [
     {
         key: 'reset-preferences',
@@ -245,7 +269,7 @@ const handleDeleteSelected = (): void => {
         <template #filters>
             <ListingFilters
                 :clear-button-label="operatorWorkLogPage.clearButtonLabel"
-                :clear-disabled="!hasFilters"
+                :clear-disabled="!hasAdditionalFilters"
                 :searchable="false"
                 @clear="handleClearFilters"
                 @search="search"
@@ -342,17 +366,36 @@ const handleDeleteSelected = (): void => {
 
         <!-- Table -->
         <template #table>
-            <DataTable
-                :columns-count="columns.length"
-                :empty-text="operatorWorkLogPage.emptyText"
-                :item-label="operatorWorkLogPage.itemLabel"
-                :page-index="operatorWorkLogs.meta.current_page - 1"
-                :page-size="operatorWorkLogs.meta.per_page"
-                :page-size-options="[10, 25, 50, 100]"
-                :selected-count="selectedCount"
-                :table="table"
-                :total="operatorWorkLogs.meta.total"
-            />
+            <Deferred data="operatorWorkLogs">
+                <template #fallback>
+                    <DataTable
+                        :columns-count="columns.length"
+                        :empty-text="operatorWorkLogPage.emptyText"
+                        :item-label="operatorWorkLogPage.itemLabel"
+                        :loading="true"
+                        :page-index="0"
+                        :page-size="10"
+                        :page-size-options="[10, 25, 50, 100]"
+                        :selected-count="selectedCount"
+                        :table="table"
+                        :total="0"
+                    />
+                </template>
+
+                <DataTable
+                    v-if="operatorWorkLogs"
+                    :columns-count="columns.length"
+                    :empty-state="emptyState"
+                    :empty-text="operatorWorkLogPage.emptyText"
+                    :item-label="operatorWorkLogPage.itemLabel"
+                    :page-index="operatorWorkLogs.meta.current_page - 1"
+                    :page-size="operatorWorkLogs.meta.per_page"
+                    :page-size-options="[10, 25, 50, 100]"
+                    :selected-count="selectedCount"
+                    :table="table"
+                    :total="operatorWorkLogs.meta.total"
+                />
+            </Deferred>
         </template>
     </ListingLayout>
 </template>

@@ -473,7 +473,7 @@ const handlePageSizeChange = (
                     <!-- Loading -->
                     <template v-if="loading">
                         <TableRow
-                            v-for="row in 5"
+                            v-for="row in 10"
                             :key="`loading-${row}`"
                         >
                             <TableCell
@@ -483,9 +483,7 @@ const handlePageSizeChange = (
                                 :class="getColumnClass(columnId)"
                                 :style="
                                     getColumnStyle(
-                                        table.getHeaderGroups()[0]?.headers[
-                                            index
-                                        ]?.column,
+                                        table.getHeaderGroups()[0]?.headers[index]?.column,
                                     )
                                 "
                                 class="px-4 py-3"
@@ -494,15 +492,15 @@ const handlePageSizeChange = (
                                     :class="
                                         getPlaceholderAlignmentClass(
                                             getColumnAlign(
-                                                table.getHeaderGroups()[0]
-                                                    ?.headers[index]?.column,
+                                                table.getHeaderGroups()[0]?.headers[index]
+                                                    ?.column,
                                             ),
                                         )
                                     "
-                                    class="flex"
+                                    class="flex min-h-8 items-center"
                                 >
                                     <div
-                                        class="h-4 w-3/4 max-w-32 animate-pulse rounded bg-muted"
+                                        class="h-8 w-3/4 max-w-32 animate-pulse rounded-md bg-muted"
                                     />
                                 </div>
                             </TableCell>

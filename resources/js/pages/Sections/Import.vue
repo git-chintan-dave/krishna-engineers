@@ -19,7 +19,7 @@ defineOptions({
 </script>
 
 <template>
-    <Head title="Import Sections" />
+    <Head title="Import Sections"/>
 
     <div class="space-y-6 p-6">
         <AppPageHeader
@@ -28,18 +28,18 @@ defineOptions({
         />
 
         <ImportFile
-            accepted-files=".xlsx,.xls,.csv"
-            description="Upload the section spreadsheet to import section records."
             :index-url="sections().url"
             :information-items="[
                 'Name is required.',
                 'Section names are used to identify existing records.',
                 'Duplicate section names within the uploaded file are not allowed.',
             ]"
+            :submit-url="submitImport().url"
+            accepted-files=".xlsx,.xls,.csv"
+            description="Upload the section spreadsheet to import section records."
             sample-file="/samples/sections.xlsx"
             sample-file-name="sections.xlsx"
             submit-button-text="Import Sections"
-            :submit-url="submitImport().url"
             title="Import Sections"
             upload-description="Drag and drop your section spreadsheet here, or click to browse."
             upload-text="Upload section spreadsheet"

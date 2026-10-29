@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import type { InertiaForm } from '@inertiajs/vue3';
-import { Image, Settings2, ToggleRight, Wrench } from '@lucide/vue';
+import type {InertiaForm} from '@inertiajs/vue3';
+import {Image, Settings2, ToggleRight, Wrench} from '@lucide/vue';
 
 import AppImagePicker from '@/components/common/AppImagePicker.vue';
 import AppInput from '@/components/common/AppInput.vue';
@@ -9,10 +9,10 @@ import FormActions from '@/components/form/FormActions.vue';
 import FormSection from '@/components/form/FormSection.vue';
 import ToggleCardInput from '@/components/form/ToggleCardInput.vue';
 import AppToolTypeSelect from '@/components/selects/AppToolTypeSelect.vue';
-import { toolPage } from '@/config/tools';
-import { toolSchema } from '@/schemas/toolSchema';
-import type { ToolFormData } from '@/types/tool';
-import { useZodFormValidation } from '@/composables/useZodFormValidation';
+import {toolPage} from '@/config/tools';
+import {toolSchema} from '@/schemas/toolSchema';
+import type {ToolFormData} from '@/types/tool';
+import {useZodFormValidation} from '@/composables/useZodFormValidation';
 
 // Props
 const props = withDefaults(
@@ -38,7 +38,7 @@ const emit = defineEmits<{
 }>();
 
 // Frontend validation
-const { errors: frontendErrors, validate } = useZodFormValidation(
+const {errors: frontendErrors, validate} = useZodFormValidation(
     toolSchema,
     () => props.form,
 );
