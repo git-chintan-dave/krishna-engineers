@@ -65,6 +65,10 @@ class SalaryController extends Controller
                 return SalaryResource::collection($salaries);
             }),
 
+            'statistics' => Inertia::defer(
+                fn () => $this->getStatistics(),
+            ),
+
             'hasAnyRecords' => Salary::query()->exists(),
 
             'can_generate_last_month' => $canGenerateLastMonth,
@@ -292,5 +296,84 @@ class SalaryController extends Controller
 
             return $this->errorResponse('generated');
         }
+    }
+
+
+    private function getStatistics(): array
+    {
+        $stats = Salary::query()
+            ->selectRaw('COUNT(*) AS total')
+
+            // Salary amounts
+            ->selectRaw('COALESCE(SUM(final_payable), 0) AS total_payable')
+            ->selectRaw('COALESCE(AVG(final_payable), 0) AS average_payable')
+            ->selectRaw('COALESCE(SUM(base_salary), 0) AS total_base_salary')
+            ->selectRaw('COALESCE(SUM(incentive), 0) AS total_incentive')
+            ->selectRaw('COALESCE(SUM(deduction), 0) AS total_deduction')
+            ->selectRaw('COALESCE(SUM(upad), 0) AS total_upad')
+            ->selectRaw('COALESCE(SUM(paid_loan), 0) AS total_paid_loan')
+            ->selectRaw('COALESCE(SUM(adjustment), 0) AS total_adjustments')
+
+            // Attendance and punctuality
+            ->selectRaw(
+                'COALESCE(SUM(attendance_days), 0) AS total_attendance_days',
+            )
+            ->selectRaw(
+                'COALESCE(SUM(working_days), 0) AS total_working_days',
+            )
+            ->selectRaw(
+                'COALESCE(SUM(late_days), 0) AS total_late_days',
+            )
+            ->selectRaw(
+                'COALESCE(SUM(total_undertime_seconds), 0) AS total_undertime_seconds',
+            )
+
+            // Confirmed salary statuses
+            ->selectRaw(
+                'SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS draft_count',
+                [SalaryStatus::DRAFT->value],
+            )
+            ->selectRaw(
+                'SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS paid_count',
+                [SalaryStatus::PAID->value],
+            )
+
+            // Amount paid
+            ->selectRaw(
+                'COALESCE(
+                SUM(
+                    CASE
+                        WHEN status = ? THEN final_payable
+                        ELSE 0
+                    END
+                ),
+                0
+            ) AS total_paid',
+                [SalaryStatus::PAID->value],
+            )
+            ->firstOrFail();
+
+        return [
+            'total' => (int) $stats->total,
+
+            'total_payable' => (float) $stats->total_payable,
+            'average_payable' => round((float) $stats->average_payable, 2),
+            'total_base_salary' => (float) $stats->total_base_salary,
+            'total_incentive' => (float) $stats->total_incentive,
+            'total_deduction' => (float) $stats->total_deduction,
+            'total_upad' => (float) $stats->total_upad,
+            'total_paid_loan' => (float) $stats->total_paid_loan,
+            'total_adjustments' => (float) $stats->total_adjustments,
+
+            'total_attendance_days' => (int) $stats->total_attendance_days,
+            'total_working_days' => (int) $stats->total_working_days,
+            'total_late_days' => (int) $stats->total_late_days,
+            'total_undertime_seconds' => (int) $stats->total_undertime_seconds,
+
+            'draft_count' => (int) $stats->draft_count,
+            'paid_count' => (int) $stats->paid_count,
+
+            'total_paid' => (float) $stats->total_paid,
+        ];
     }
 }

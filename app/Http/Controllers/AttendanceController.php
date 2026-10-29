@@ -38,9 +38,7 @@ class AttendanceController extends Controller
 
     private const string INDEX_ROUTE = 'attendances.index';
 
-    public function __construct(private readonly AttendanceService $attendanceService)
-    {
-    }
+    public function __construct(private readonly AttendanceService $attendanceService) {}
 
     /*
     |--------------------------------------------------------------------------
@@ -78,8 +76,8 @@ class AttendanceController extends Controller
                         'breaks',
                     ])
                     ->when(
-                        !$isAdminOrSupervisor,
-                        fn(Builder $query) => $query->forUser($user->id),
+                        ! $isAdminOrSupervisor,
+                        fn (Builder $query) => $query->forUser($user->id),
                     )
                     ->filterQuery($attendanceFilters)
                     ->paginate($filters['per_page'] ?? 10)
@@ -88,10 +86,17 @@ class AttendanceController extends Controller
                 return AttendanceResource::collection($attendances);
             }),
 
+            'statistics' => Inertia::defer(
+                fn () => $this->getStatistics(
+                    $isAdminOrSupervisor,
+                    $user->id,
+                ),
+            ),
+
             'hasAnyRecords' => Attendance::query()
                 ->when(
-                    !$isAdminOrSupervisor,
-                    fn(Builder $query) => $query->forUser($user->id),
+                    ! $isAdminOrSupervisor,
+                    fn (Builder $query) => $query->forUser($user->id),
                 )
                 ->exists(),
 
@@ -112,8 +117,7 @@ class AttendanceController extends Controller
 
     public function edit(
         Attendance $attendance,
-    ): Response
-    {
+    ): Response {
         Gate::authorize(
             'view',
             $attendance,
@@ -139,8 +143,7 @@ class AttendanceController extends Controller
 
     public function store(
         AttendanceRequest $request,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         Gate::authorize(
             'create',
             Attendance::class,
@@ -191,9 +194,8 @@ class AttendanceController extends Controller
 
     public function update(
         AttendanceRequest $request,
-        Attendance        $attendance,
-    ): RedirectResponse
-    {
+        Attendance $attendance,
+    ): RedirectResponse {
         Gate::authorize(
             'update',
             $attendance,
@@ -229,8 +231,7 @@ class AttendanceController extends Controller
 
     public function destroy(
         Attendance $attendance,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         Gate::authorize(
             'delete',
             $attendance,
@@ -256,8 +257,7 @@ class AttendanceController extends Controller
 
     public function bulkDestroy(
         BulkDestroyRequest $request,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         Gate::authorize(
             'deleteAny',
             Attendance::class,
@@ -298,8 +298,7 @@ class AttendanceController extends Controller
 
     public function import(
         AttendanceImportRequest $request,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         Gate::authorize(
             'import',
             Attendance::class,
@@ -392,7 +391,7 @@ class AttendanceController extends Controller
 
         $arguments['--empcode'] = 'ALL';
 
-        if (!empty($validated['user_id'])) {
+        if (! empty($validated['user_id'])) {
             $user = User::query()->findOrFail(
                 $validated['user_id'],
             );
@@ -463,8 +462,7 @@ class AttendanceController extends Controller
 
     public function history(
         Request $request,
-    ): AnonymousResourceCollection
-    {
+    ): AnonymousResourceCollection {
         Gate::authorize(
             'viewAny',
             Attendance::class,
@@ -510,5 +508,60 @@ class AttendanceController extends Controller
             ->paginate($validated['per_page'] ?? 50);
 
         return AttendanceResource::collection($attendances);
+    }
+
+    private function getStatistics(
+        bool $isAdminOrSupervisor,
+        int $userId,
+    ): array {
+        $today = today()->toDateString();
+
+        $stats = Attendance::query()
+            ->when(
+                ! $isAdminOrSupervisor,
+                fn (Builder $query) => $query->forUser($userId),
+            )
+            ->selectRaw('COUNT(*) AS total')
+            ->selectRaw(
+                'SUM(CASE WHEN attendance_date = ? THEN 1 ELSE 0 END) AS today',
+                [$today],
+            )
+            ->selectRaw(
+                'SUM(CASE WHEN attendance_date = ? AND end_at IS NULL THEN 1 ELSE 0 END) AS currently_working',
+                [$today],
+            )
+            ->selectRaw(
+                'SUM(CASE WHEN end_at IS NOT NULL THEN 1 ELSE 0 END) AS completed',
+            )
+            ->selectRaw(
+                'COALESCE(SUM(total_working_seconds), 0) AS total_working_seconds',
+            )
+            ->selectRaw(
+                'COALESCE(SUM(effective_working_seconds), 0) AS total_effective_working_seconds',
+            )
+            ->selectRaw(
+                'COALESCE(SUM(break_seconds), 0) AS total_break_seconds',
+            )
+            ->selectRaw(
+                'COALESCE(SUM(undertime_seconds), 0) AS total_undertime_seconds',
+            )
+            ->selectRaw(
+                'COUNT(DISTINCT user_id) AS unique_employees',
+            )
+            ->firstOrFail();
+
+        return [
+            'total' => (int) $stats->total,
+            'today' => (int) $stats->today,
+            'currently_working' => (int) $stats->currently_working,
+            'completed' => (int) $stats->completed,
+
+            'total_working_seconds' => (int) $stats->total_working_seconds,
+            'total_effective_working_seconds' => (int) $stats->total_effective_working_seconds,
+            'total_break_seconds' => (int) $stats->total_break_seconds,
+            'total_undertime_seconds' => (int) $stats->total_undertime_seconds,
+
+            'unique_employees' => (int) $stats->unique_employees,
+        ];
     }
 }

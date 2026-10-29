@@ -36,23 +36,38 @@ class SectionSizeController extends Controller
         Gate::authorize('viewAny', SectionSize::class);
 
         $filters = $request->validated();
+        $lowStockThreshold = (int) config('inventory.low_stock_threshold', 10);
 
         return Inertia::render('SectionSizes/Index', [
-            'sectionSizes' => Inertia::defer(function () use ($filters) {
+            'sectionSizes' => Inertia::defer(function () use ($filters, $lowStockThreshold) {
+                $stockFilter = $filters['stock'] ?? null;
                 $sectionSizes = SectionSize::query()
                     ->with('section')
                     ->filterQuery($filters)
+                    ->when(
+                        $stockFilter === 'low_stock',
+                        fn ($query) => $query
+                            ->where('quantity', '>', 0)
+                            ->where('quantity', '<=', $lowStockThreshold),
+                    )
+                    ->when(
+                        $stockFilter === 'out_of_stock',
+                        fn ($query) => $query->where('quantity', 0),
+                    )
                     ->paginate($filters['per_page'] ?? 10)
                     ->withQueryString();
 
                 return SectionSizeResource::collection($sectionSizes);
             }),
-
+            'statistics' => Inertia::defer(
+                fn () => $this->getStatistics(),
+            ),
+            'low_stock_threshold' => $lowStockThreshold,
             'hasAnyRecords' => SectionSize::query()->exists(),
-
             'filters' => [
                 ...$this->listingFilters($filters),
                 'sectionId' => $filters['section_id'] ?? 'all',
+                'stock' => $filters['stock'] ?? null,
             ],
         ]);
     }
@@ -179,5 +194,28 @@ class SectionSizeController extends Controller
     public function import()
     {
         return Inertia::render('SectionSizes/Import', []);
+    }
+
+    private function getStatistics(): array
+    {
+        $query = SectionSize::query();
+
+        return [
+            'total' => (clone $query)->count(),
+
+            'total_sections' => (clone $query)
+                ->distinct('section_id')
+                ->count('section_id'),
+
+            'total_stock' => (clone $query)->sum('quantity'),
+
+            'in_stock' => (clone $query)
+                ->where('quantity', '>', 0)
+                ->count(),
+
+            'out_of_stock' => (clone $query)
+                ->where('quantity', 0)
+                ->count(),
+        ];
     }
 }

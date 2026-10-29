@@ -88,3 +88,21 @@ export type EmployeeFilters = {
 export type EmployeesResponse = PaginatedResponse<Employee>;
 
 export type EmployeeOptionsResponse = EmployeeOption[];
+
+
+export interface EmployeeStatistics {
+    total: number;
+    active: number;
+    inactive: number;
+
+    super_admin: number;
+    supervisor: number;
+    operator: number;
+    bandsaw: number;
+    deburring_packaging: number;
+
+    day: number;
+    night: number;
+    '8_hr': number;
+    '8_hr_total': number;
+}

@@ -1,22 +1,43 @@
 ﻿<script lang="ts" setup>
 import {Deferred, router} from '@inertiajs/vue3';
 import {computed, ref} from 'vue';
-import {Database, FileUp, RotateCcw, SearchX} from '@lucide/vue';
+import {
+    Clock3,
+    Cog,
+    Database,
+    FileUp,
+    Moon,
+    Package,
+    RotateCcw,
+    Scissors,
+    SearchX,
+    Shield,
+    ShieldCheck,
+    Sun,
+    UserCheck,
+    Users,
+    UserX,
+    Wrench,
+} from '@lucide/vue';
 
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
+import ListingStats, {type ListingStatItem,} from '@/components/common/ListingStats.vue';
 import AppStatusSelect from '@/components/selects/AppStatusSelect.vue';
 import AppUserRoleSelect from '@/components/selects/AppUserRoleSelect.vue';
 import AppUserShiftSelect from '@/components/selects/AppUserShiftSelect.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
+
 import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
 import {useListingEmptyState} from '@/composables/useListingEmptyState';
 import {useListingTable} from '@/composables/useListingTable';
+
 import {employeePage} from '@/config/employees';
 import {bulkDestroy, create, destroy, index as employeesRoute,} from '@/routes/employees';
 import {view as employeesImportRoute} from '@/routes/employees/import';
 import {createEmployeeColumns} from '@/table/employees';
+
 import type {
     Employee,
     EmployeeFilters,
@@ -24,6 +45,7 @@ import type {
     EmployeeShift,
     EmployeeSort,
     EmployeesResponse,
+    EmployeeStatistics,
 } from '@/types/employee';
 import type {StatusFilter} from '@/types/listing';
 
@@ -37,6 +59,7 @@ const props = defineProps<{
     employees?: EmployeesResponse;
     hasAnyRecords: boolean;
     filters: EmployeeFilters;
+    statistics?: EmployeeStatistics;
 }>();
 
 /*
@@ -64,19 +87,19 @@ const filterRole = ref<EmployeeRole | 'all'>(props.filters.role);
 const filterShift = ref<EmployeeShift | 'all'>(props.filters.shift);
 const filterStatus = ref<StatusFilter>(props.filters.status);
 
-const handleRoleChange = (value: string | null) => {
+const handleRoleChange = (value: string | null): void => {
     filterRole.value = (value as EmployeeRole | null) ?? 'all';
 };
 
-const handleShiftChange = (value: string | null) => {
+const handleShiftChange = (value: string | null): void => {
     filterShift.value = (value as EmployeeShift | null) ?? 'all';
 };
 
-const handleStatusChange = (value: string | null) => {
+const handleStatusChange = (value: string | null): void => {
     filterStatus.value = (value as StatusFilter | null) ?? 'all';
 };
 
-const handleClearFilters = () => {
+const handleClearFilters = (): void => {
     filterRole.value = 'all';
     filterShift.value = 'all';
     filterStatus.value = 'all';
@@ -134,6 +157,13 @@ const hasAnyActiveFilters = computed(
         filterStatus.value !== 'all',
 );
 
+const activeFilterCount = computed(
+    () =>
+        Number(filterRole.value !== 'all') +
+        Number(filterShift.value !== 'all') +
+        Number(filterStatus.value !== 'all'),
+);
+
 /*
 |--------------------------------------------------------------------------
 | Empty State
@@ -181,8 +211,190 @@ const actions = computed<ActionItem[]>(() => [
     },
 ]);
 
-const handleDeleteSelected = () => {
+const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);
+};
+
+/*
+|--------------------------------------------------------------------------
+| Statistics
+|--------------------------------------------------------------------------
+*/
+
+const statistics = computed<ListingStatItem[]>(() => [
+    {
+        label: 'Total Employees',
+        value: props.statistics?.total ?? 0,
+        icon: Users,
+        variant: 'primary',
+        description: 'All employees',
+        clickable: true,
+        active: false,
+    },
+    {
+        label: 'Active',
+        value: props.statistics?.active ?? 0,
+        icon: UserCheck,
+        variant: 'success',
+        description: 'Active employees',
+        clickable: true,
+        active: filterStatus.value === 'active',
+    },
+    {
+        label: 'Inactive',
+        value: props.statistics?.inactive ?? 0,
+        icon: UserX,
+        variant: 'destructive',
+        description: 'Inactive employees',
+        clickable: true,
+        active: filterStatus.value === 'inactive',
+    },
+    {
+        label: 'Super Admin',
+        value: props.statistics?.super_admin ?? 0,
+        icon: ShieldCheck,
+        variant: 'default',
+        description: 'Super administrators',
+        clickable: true,
+        active: filterRole.value === 'super_admin',
+    },
+    {
+        label: 'Supervisor',
+        value: props.statistics?.supervisor ?? 0,
+        icon: Shield,
+        variant: 'info',
+        description: 'Supervisors',
+        clickable: true,
+        active: filterRole.value === 'supervisor',
+    },
+    {
+        label: 'Operator',
+        value: props.statistics?.operator ?? 0,
+        icon: Cog,
+        variant: 'primary',
+        description: 'Machine operators',
+        clickable: true,
+        active: filterRole.value === 'operator',
+    },
+    {
+        label: 'Bandsaw',
+        value: props.statistics?.bandsaw ?? 0,
+        icon: Scissors,
+        variant: 'warning',
+        description: 'Bandsaw operators',
+        clickable: true,
+        active: filterRole.value === 'bandsaw',
+    },
+    {
+        label: 'Deburring & Packaging',
+        value: props.statistics?.deburring_packaging ?? 0,
+        icon: Package,
+        variant: 'default',
+        description: 'Deburring and packaging employees',
+        clickable: true,
+        active: filterRole.value === 'deburring_packaging',
+    },
+    {
+        label: 'Day Shift',
+        value: props.statistics?.day ?? 0,
+        icon: Sun,
+        variant: 'warning',
+        description: 'Day shift employees',
+        clickable: true,
+        active: filterShift.value === 'day',
+    },
+    {
+        label: 'Night Shift',
+        value: props.statistics?.night ?? 0,
+        icon: Moon,
+        variant: 'info',
+        description: 'Night shift employees',
+        clickable: true,
+        active: filterShift.value === 'night',
+    },
+    {
+        label: '8-Hour Shift',
+        value: props.statistics?.['8_hr'] ?? 0,
+        icon: Clock3,
+        variant: 'success',
+        description: '8-hour shift employees',
+        clickable: true,
+        active: filterShift.value === '8_hr',
+    },
+    {
+        label: '8-Hour Total',
+        value: props.statistics?.['8_hr_total'] ?? 0,
+        icon: Wrench,
+        variant: 'default',
+        description: '8-hour total shift employees',
+        clickable: true,
+        active: filterShift.value === '8_hr_total',
+    },
+]);
+
+const handleStatClick = (item: ListingStatItem): void => {
+    switch (item.label) {
+        case 'Active':
+            filterStatus.value =
+                filterStatus.value === 'active' ? 'all' : 'active';
+            break;
+
+        case 'Inactive':
+            filterStatus.value =
+                filterStatus.value === 'inactive' ? 'all' : 'inactive';
+            break;
+
+        case 'Super Admin':
+            filterRole.value =
+                filterRole.value === 'super_admin' ? 'all' : 'super_admin';
+            break;
+
+        case 'Supervisor':
+            filterRole.value =
+                filterRole.value === 'supervisor' ? 'all' : 'supervisor';
+            break;
+
+        case 'Operator':
+            filterRole.value =
+                filterRole.value === 'operator' ? 'all' : 'operator';
+            break;
+
+        case 'Bandsaw':
+            filterRole.value =
+                filterRole.value === 'bandsaw' ? 'all' : 'bandsaw';
+            break;
+
+        case 'Deburring & Packaging':
+            filterRole.value =
+                filterRole.value === 'deburring_packaging'
+                    ? 'all'
+                    : 'deburring_packaging';
+            break;
+
+        case 'Day Shift':
+            filterShift.value =
+                filterShift.value === 'day' ? 'all' : 'day';
+            break;
+
+        case 'Night Shift':
+            filterShift.value =
+                filterShift.value === 'night' ? 'all' : 'night';
+            break;
+
+        case '8-Hour Shift':
+            filterShift.value =
+                filterShift.value === '8_hr' ? 'all' : '8_hr';
+            break;
+
+        case '8-Hour Total':
+            filterShift.value =
+                filterShift.value === '8_hr_total' ? 'all' : '8_hr_total';
+            break;
+
+        default:
+            // Total Employees is informational and does not add a filter.
+            return;
+    }
 };
 </script>
 
@@ -203,14 +415,28 @@ const handleDeleteSelected = () => {
             />
         </template>
 
+        <template #stats>
+            <Deferred data="statistics">
+                <template #fallback>
+                    <ListingStats
+                        :columns="4"
+                        :loading="true"
+                        :skeleton-count="12"
+                    />
+                </template>
+
+                <ListingStats
+                    :items="statistics"
+                    :columns="4"
+                    @stat-click="handleStatClick"
+                />
+            </Deferred>
+        </template>
+
         <template #filters>
             <ListingFilters
                 v-model:search="searchQuery"
-                :active-filter-count="
-                    Number(filterRole !== 'all') +
-                    Number(filterShift !== 'all') +
-                    Number(filterStatus !== 'all')
-                "
+                :active-filter-count="activeFilterCount"
                 :clear-button-label="employeePage.clearButtonLabel"
                 :clear-disabled="!hasAnyActiveFilters"
                 :search-button-label="employeePage.searchButtonLabel"
@@ -246,8 +472,8 @@ const handleDeleteSelected = () => {
                             :model-value="
                                 filterStatus === 'all' ? null : filterStatus
                             "
-                            :placeholder="employeePage.statusPlaceholder"
                             clearable
+                            placeholder="All statuses"
                             @update:model-value="handleStatusChange"
                         />
                     </div>

@@ -126,3 +126,16 @@ export type AttendanceEmployeeOption = {
     value: string;
     label: string;
 };
+
+
+export interface AttendanceStatistics {
+    total: number;
+    today: number;
+    currently_working: number;
+    completed: number;
+    unique_employees: number;
+    total_working_seconds: number;
+    total_effective_working_seconds: number;
+    total_break_seconds: number;
+    total_undertime_seconds: number;
+}

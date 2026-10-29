@@ -1,11 +1,25 @@
 ﻿<script lang="ts" setup>
 import {Deferred, router, usePage} from '@inertiajs/vue3';
 import {computed, ref} from 'vue';
-import {Database, FileUp, RefreshCw, RotateCcw, SearchX} from '@lucide/vue';
+import {
+    Activity,
+    CalendarDays,
+    CheckCircle,
+    Clock3,
+    Coffee,
+    Database,
+    FileUp,
+    RefreshCw,
+    RotateCcw,
+    SearchX,
+    Timer,
+    Users,
+} from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
 import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
+import ListingStats, {type ListingStatItem,} from '@/components/common/ListingStats.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
@@ -23,10 +37,15 @@ import {bulkDestroy, create, destroy, index as attendancesRoute, sync,} from '@/
 import {view as attendancesImportRoute} from '@/routes/attendances/import';
 
 import {createAttendanceColumns} from '@/table/attendances';
-
 import {getAttendanceRowHighlight} from '@/lib/row-highlights';
 
-import type {Attendance, AttendanceFilters, AttendanceResponse, AttendanceSort,} from '@/types/attendance';
+import type {
+    Attendance,
+    AttendanceFilters,
+    AttendanceResponse,
+    AttendanceSort,
+    AttendanceStatistics,
+} from '@/types/attendance';
 
 /*
 |--------------------------------------------------------------------------
@@ -47,6 +66,7 @@ const props = defineProps<{
     attendances?: AttendanceResponse;
     hasAnyRecords: boolean;
     filters: AttendanceFilters;
+    statistics?: AttendanceStatistics;
 }>();
 
 /*
@@ -69,7 +89,9 @@ const page = usePage();
 const userRole = computed(() => page.props.auth.user?.role);
 
 const canManageAttendance = computed(() =>
-    ['super_admin', 'supervisor'].includes((userRole.value) as string ?? ''),
+    ['super_admin', 'supervisor'].includes(
+        (userRole.value as string | undefined) ?? '',
+    ),
 );
 
 const isSuperAdmin = computed(() => userRole.value === 'super_admin');
@@ -87,6 +109,20 @@ const filterEndDate = ref(props.filters.endDate);
 const handleEmployeeChange = (value: number | null): void => {
     filterEmployee.value = value ?? 'all';
 };
+
+const isTodayFilterActive = computed(() => {
+    const today = new Date();
+    const todayString = [
+        today.getFullYear(),
+        String(today.getMonth() + 1).padStart(2, '0'),
+        String(today.getDate()).padStart(2, '0'),
+    ].join('-');
+
+    return (
+        filterStartDate.value === todayString &&
+        filterEndDate.value === todayString
+    );
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -118,7 +154,7 @@ const syncDateError = computed(() => {
 const syncDescription = computed(() =>
     syncType.value === 'in_out'
         ? 'Imports daily IN/OUT summary records from eTimeOffice. Existing attendance records are skipped, so this option does not update existing attendance or breaks.'
-        : 'Imports individual punch timestamps from eTimeOffice, identifies break intervals, and creates or updates attendance with the detailed punch data. The API does not provide today’s raw punches, so use a completed date range.',
+        : 'Imports individual punch timestamps from eTimeOffice, identifies break intervals, and creates or updates attendance with detailed punch data. The API does not provide today’s raw punches, so use a completed date range.',
 );
 
 const syncButtonLabel = computed(() =>
@@ -191,7 +227,7 @@ const handleSync = (): void => {
                 }
 
                 router.reload({
-                    only: ['attendances', 'hasAnyRecords'],
+                    only: ['attendances', 'hasAnyRecords', 'statistics'],
                 });
             },
 
@@ -247,7 +283,9 @@ const {
     searchable: false,
     additionalFilters: () => ({
         user_id:
-            filterEmployee.value !== 'all' ? filterEmployee.value : undefined,
+            filterEmployee.value !== 'all'
+                ? filterEmployee.value
+                : undefined,
         start_date: filterStartDate.value || undefined,
         end_date: filterEndDate.value || undefined,
     }),
@@ -265,10 +303,18 @@ const {
 */
 
 const hasAnyActiveFilters = computed(
-    () => hasActiveFilters.value
-        || (canManageAttendance.value && filterEmployee.value !== 'all')
-        || Boolean(filterStartDate.value)
-        || Boolean(filterEndDate.value),
+    () =>
+        hasActiveFilters.value ||
+        (canManageAttendance.value && filterEmployee.value !== 'all') ||
+        Boolean(filterStartDate.value) ||
+        Boolean(filterEndDate.value),
+);
+
+const activeFilterCount = computed(
+    () =>
+        Number(canManageAttendance.value && filterEmployee.value !== 'all') +
+        Number(Boolean(filterStartDate.value)) +
+        Number(Boolean(filterEndDate.value)),
 );
 
 /*
@@ -323,6 +369,120 @@ const handleClearFilters = (): void => {
 
 /*
 |--------------------------------------------------------------------------
+| Statistics
+|--------------------------------------------------------------------------
+*/
+
+const formatDuration = (seconds: number): string => {
+    const safeSeconds = Math.max(0, Math.floor(seconds));
+    const hours = Math.floor(safeSeconds / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+
+    if (hours >= 100) {
+        return `${hours.toLocaleString()}h`;
+    }
+
+    return `${hours}h ${String(minutes).padStart(2, '0')}m`;
+};
+
+const statistics = computed<ListingStatItem[]>(() => [
+    {
+        label: 'Total Records',
+        value: props.statistics?.total ?? 0,
+        icon: Database,
+        variant: 'primary',
+        description: 'All attendance records',
+        clickable: false,
+    },
+    {
+        label: "Today's Attendance",
+        value: props.statistics?.today ?? 0,
+        icon: CalendarDays,
+        variant: 'info',
+        description: 'Attendance records for today',
+        clickable: true,
+        active: isTodayFilterActive.value,
+    },
+    {
+        label: 'Currently Working',
+        value: props.statistics?.currently_working ?? 0,
+        icon: Activity,
+        variant: 'success',
+        description: 'Today’s records without an end time',
+        clickable: false,
+    },
+    {
+        label: 'Completed',
+        value: props.statistics?.completed ?? 0,
+        icon: CheckCircle,
+        variant: 'default',
+        description: 'Attendance records with an end time',
+        clickable: false,
+    },
+    {
+        label: 'Employees Recorded',
+        value: props.statistics?.unique_employees ?? 0,
+        icon: Users,
+        variant: 'primary',
+        description: 'Distinct employees with attendance',
+        clickable: false,
+    },
+    {
+        label: 'Effective Hours',
+        value: formatDuration(
+            props.statistics?.total_effective_working_seconds ?? 0,
+        ),
+        icon: Clock3,
+        variant: 'success',
+        description: 'Total effective working time',
+        clickable: false,
+    },
+    {
+        label: 'Break Time',
+        value: formatDuration(
+            props.statistics?.total_break_seconds ?? 0,
+        ),
+        icon: Coffee,
+        variant: 'warning',
+        description: 'Total recorded break time',
+        clickable: false,
+    },
+    {
+        label: 'Undertime',
+        value: formatDuration(
+            props.statistics?.total_undertime_seconds ?? 0,
+        ),
+        icon: Timer,
+        variant: 'destructive',
+        description: 'Total recorded undertime',
+        clickable: false,
+    },
+]);
+
+const handleStatClick = (item: ListingStatItem): void => {
+    if (item.label !== "Today's Attendance") {
+        return;
+    }
+
+    if (isTodayFilterActive.value) {
+        filterStartDate.value = '';
+        filterEndDate.value = '';
+        return;
+    }
+
+    const today = new Date();
+    const todayString = [
+        today.getFullYear(),
+        String(today.getMonth() + 1).padStart(2, '0'),
+        String(today.getDate()).padStart(2, '0'),
+    ].join('-');
+
+    filterStartDate.value = todayString;
+    filterEndDate.value = todayString;
+};
+
+/*
+|--------------------------------------------------------------------------
 | Bulk Actions
 |--------------------------------------------------------------------------
 */
@@ -342,7 +502,8 @@ const emptyState = useListingEmptyState({
     hasActiveFilters: () => hasAnyActiveFilters.value,
     noRecords: {
         title: 'No attendance records yet',
-        description: 'Create an attendance record or sync attendance from eTimeOffice.',
+        description:
+            'Create an attendance record or sync attendance from eTimeOffice.',
         actionLabel: canManageAttendance.value
             ? attendancePage.createLabel || 'Add attendance'
             : undefined,
@@ -378,13 +539,27 @@ const emptyState = useListingEmptyState({
             />
         </template>
 
+        <template #stats>
+            <Deferred data="statistics">
+                <template #fallback>
+                    <ListingStats
+                        :columns="4"
+                        :loading="true"
+                        :skeleton-count="8"
+                    />
+                </template>
+
+                <ListingStats
+                    :items="statistics"
+                    :columns="4"
+                    @stat-click="handleStatClick"
+                />
+            </Deferred>
+        </template>
+
         <template #filters>
             <ListingFilters
-                :active-filter-count="
-                    Number(canManageAttendance && filterEmployee !== 'all')
-                    + Number(Boolean(filterStartDate))
-                    + Number(Boolean(filterEndDate))
-                "
+                :active-filter-count="activeFilterCount"
                 :clear-button-label="attendancePage.clearButtonLabel"
                 :clear-disabled="!hasAnyActiveFilters"
                 :search-button-label="attendancePage.searchButtonLabel"
@@ -396,7 +571,9 @@ const emptyState = useListingEmptyState({
                     <div v-if="canManageAttendance" class="w-full min-w-0">
                         <AppEmployeeSelect
                             :model-value="
-                                filterEmployee === 'all' ? null : filterEmployee
+                                filterEmployee === 'all'
+                                    ? null
+                                    : filterEmployee
                             "
                             :placeholder="attendancePage.employeePlaceholder"
                             clearable
@@ -467,7 +644,6 @@ const emptyState = useListingEmptyState({
         >
             <DialogHeader>
                 <DialogTitle>Sync attendance</DialogTitle>
-
                 <DialogDescription>
                     Choose which eTimeOffice data to import.
                 </DialogDescription>
@@ -502,9 +678,8 @@ const emptyState = useListingEmptyState({
                             <span class="block text-sm font-medium">
                                 IN/OUT Summary
                             </span>
-
                             <span class="block text-xs text-muted-foreground">
-                                Imports the daily IN and OUT times. Existing
+                                Imports daily IN and OUT times. Existing
                                 attendance is skipped; breaks are not imported.
                             </span>
                         </span>
@@ -533,11 +708,10 @@ const emptyState = useListingEmptyState({
                             <span class="block text-sm font-medium">
                                 Detailed Punch Data
                             </span>
-
                             <span class="block text-xs text-muted-foreground">
                                 Imports individual punch times and break
-                                intervals. Creates missing attendance or updates
-                                existing attendance with detailed data.
+                                intervals. Creates missing attendance or
+                                updates existing attendance with detailed data.
                             </span>
                         </span>
                     </label>
@@ -572,7 +746,6 @@ const emptyState = useListingEmptyState({
                     <label class="text-sm font-medium" for="sync-start-date">
                         Start date
                     </label>
-
                     <AppInput
                         id="sync-start-date"
                         v-model="syncStartDate"
@@ -585,7 +758,6 @@ const emptyState = useListingEmptyState({
                     <label class="text-sm font-medium" for="sync-end-date">
                         End date
                     </label>
-
                     <AppInput
                         id="sync-end-date"
                         v-model="syncEndDate"
@@ -623,7 +795,6 @@ const emptyState = useListingEmptyState({
                         aria-hidden="true"
                         class="mr-2 size-4"
                     />
-
                     {{ syncProcessing ? 'Syncing...' : syncButtonLabel }}
                 </Button>
             </div>

@@ -31,6 +31,12 @@ class IndexSectionSizeRequest extends FormRequest
                 'integer',
                 Rule::exists('sections', 'id'),
             ],
+
+            'stock' => [
+                'nullable',
+                'string',
+                Rule::in(['low_stock', 'out_of_stock']),
+            ],
         ];
     }
 }

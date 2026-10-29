@@ -43,6 +43,10 @@ class EmployeeController extends Controller
                 return UserResource::collection($employees);
             }),
 
+            'statistics' => Inertia::defer(
+                fn () => $this->getStatistics(),
+            ),
+
             'hasAnyRecords' => User::query()->exists(),
 
             'filters' => [
@@ -151,5 +155,69 @@ class EmployeeController extends Controller
     public function import()
     {
         return Inertia::render('Employees/Import', []);
+    }
+
+    private function getStatistics(): array
+    {
+        $stats = User::query()
+            ->selectRaw('COUNT(*) AS total')
+
+            // Status statistics
+            ->selectRaw(
+                "SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active",
+            )
+            ->selectRaw(
+                "SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) AS inactive",
+            )
+
+            // Role statistics
+            ->selectRaw(
+                "SUM(CASE WHEN role = 'super_admin' THEN 1 ELSE 0 END) AS super_admin",
+            )
+            ->selectRaw(
+                "SUM(CASE WHEN role = 'supervisor' THEN 1 ELSE 0 END) AS supervisor",
+            )
+            ->selectRaw(
+                "SUM(CASE WHEN role = 'operator' THEN 1 ELSE 0 END) AS operator",
+            )
+            ->selectRaw(
+                "SUM(CASE WHEN role = 'bandsaw' THEN 1 ELSE 0 END) AS bandsaw",
+            )
+            ->selectRaw(
+                "SUM(CASE WHEN role = 'deburring_packaging' THEN 1 ELSE 0 END) AS deburring_packaging",
+            )
+
+            // Shift statistics
+            ->selectRaw(
+                "SUM(CASE WHEN shift = 'day' THEN 1 ELSE 0 END) AS day",
+            )
+            ->selectRaw(
+                "SUM(CASE WHEN shift = 'night' THEN 1 ELSE 0 END) AS night",
+            )
+            ->selectRaw(
+                "SUM(CASE WHEN shift = '8_hr' THEN 1 ELSE 0 END) AS eight_hr",
+            )
+            ->selectRaw(
+                "SUM(CASE WHEN shift = '8_hr_total' THEN 1 ELSE 0 END) AS eight_hr_total",
+            )
+            ->firstOrFail();
+
+        return [
+            'total' => (int) $stats->total,
+
+            'active' => (int) $stats->active,
+            'inactive' => (int) $stats->inactive,
+
+            'super_admin' => (int) $stats->super_admin,
+            'supervisor' => (int) $stats->supervisor,
+            'operator' => (int) $stats->operator,
+            'bandsaw' => (int) $stats->bandsaw,
+            'deburring_packaging' => (int) $stats->deburring_packaging,
+
+            'day' => (int) $stats->day,
+            'night' => (int) $stats->night,
+            '8_hr' => (int) $stats->eight_hr,
+            '8_hr_total' => (int) $stats->eight_hr_total,
+        ];
     }
 }

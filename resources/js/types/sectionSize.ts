@@ -1,5 +1,6 @@
 ﻿import type { PaginatedResponse, SortDirection } from '@/types/listing';
 import { SectionSizeSchemaData } from '@/schemas/sectionSizeSchema';
+import {StockFilter} from "@/types/tool";
 
 /*
 |--------------------------------------------------------------------------
@@ -57,6 +58,7 @@ export type SectionSizeFilters = {
     perPage: number;
     sort: SectionSizeSort;
     direction: SortDirection;
+    stock: StockFilter | null;
 };
 
 /*
@@ -68,3 +70,12 @@ export type SectionSizeFilters = {
 export type SectionSizesResponse = PaginatedResponse<SectionSize>;
 
 export type SectionSizeSectionsResponse = SectionSizeSection[];
+
+export interface SectionSizeStatistics {
+    total: number;
+    total_sections: number;
+    total_stock: number;
+    in_stock: number;
+    low_stock: number;
+    out_of_stock: number;
+}

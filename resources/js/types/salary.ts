@@ -1,5 +1,5 @@
-import type { SalarySchemaData } from '@/schemas/salarySchema';
-import type { PaginatedResponse, SortDirection } from '@/types/listing';
+import type {SalarySchemaData} from '@/schemas/salarySchema';
+import type {PaginatedResponse, SortDirection} from '@/types/listing';
 
 export type SalaryStatus = 'draft' | 'paid';
 
@@ -93,3 +93,27 @@ export type SalaryStatusOption = {
     value: SalaryStatus;
     label: string;
 };
+
+
+export interface SalaryStatistics {
+    total: number;
+
+    total_payable: number;
+    average_payable: number;
+    total_base_salary: number;
+    total_incentive: number;
+    total_deduction: number;
+    total_upad: number;
+    total_paid_loan: number;
+    total_adjustments: number;
+
+    total_attendance_days: number;
+    total_working_days: number;
+    total_late_days: number;
+    total_undertime_seconds: number;
+
+    draft_count: number;
+    paid_count: number;
+
+    total_paid: number;
+}
