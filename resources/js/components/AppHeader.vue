@@ -803,7 +803,7 @@ watch(
                 class="mx-auto flex h-12 w-full min-w-0 items-center px-4 text-neutral-500 md:max-w-7xl"
             >
                 <Breadcrumbs
-                    v-if="props.breadcrumbs.length > 1"
+                    v-if="props.breadcrumbs.length > 0"
                     :breadcrumbs="props.breadcrumbs"
                 />
             </div>

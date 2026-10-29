@@ -10,6 +10,16 @@ import DeburringPackagingDashboard from '@/components/dashboard/DeburringPackagi
 
 import type {DashboardPayload, DashboardRole} from '@/types/dashboard';
 
+defineOptions({
+    layout: {
+        breadcrumbs: [
+            {
+                title: 'Dashboard',
+            },
+        ],
+    },
+});
+
 type DashboardSection =
     | 'salaryOverview'
     | 'attendanceOverview'

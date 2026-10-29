@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import AppPageHeader from '@/components/common/AppPageHeader.vue';
+import ScrollToTop from '@/components/common/ScrollToTop.vue';
 
 withDefaults(
     defineProps<{
@@ -36,4 +37,6 @@ withDefaults(
             <slot name="pagination" />
         </section>
     </main>
+
+    <ScrollToTop />
 </template>
