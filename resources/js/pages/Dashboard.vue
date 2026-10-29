@@ -171,7 +171,7 @@ function refreshDashboard(): void {
 </script>
 
 <template>
-    <main class="w-full min-w-0 space-y-6 overflow-x-hidden p-4 md:p-6">
+    <main class="w-full min-w-0 space-y-5 overflow-x-hidden p-4 md:px-6 md:py-5">
         <section v-if="dashboardComponent" class="min-w-0">
             <component
                 :is="dashboardComponent"

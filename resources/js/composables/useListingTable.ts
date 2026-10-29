@@ -7,12 +7,6 @@ import {useDataTable} from '@/composables/useDataTable';
 import {useListingPreferences} from '@/composables/useListingPreferences';
 import type {PaginatedResponse, SortDirection} from '@/types/listing';
 
-/*
-|--------------------------------------------------------------------------
-| Types
-|--------------------------------------------------------------------------
-*/
-
 type Identifiable = {
     id: number;
 };
@@ -32,6 +26,7 @@ type ListingOptions<
     columns: any[];
     filters: ListingFilters<TSort>;
     route: string;
+    reloadProps?: string[];
     searchable?: boolean;
     additionalFilters?: () => Record<string, unknown>;
     onClearFilters?: () => void;
@@ -53,34 +48,16 @@ type PaginationMeta = {
     last_page: number;
 };
 
-/*
-|--------------------------------------------------------------------------
-| Constants
-|--------------------------------------------------------------------------
-*/
-
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 const DEFAULT_PAGE = 1;
 const DEFAULT_PER_PAGE = 10;
 const DEFAULT_SORT = 'id';
 const DEFAULT_DIRECTION: SortDirection = 'desc';
 
-/*
-|--------------------------------------------------------------------------
-| Composable
-|--------------------------------------------------------------------------
-*/
-
 export function useListingTable<
     TData extends RowData & Identifiable,
     TSort extends string,
 >(options: ListingOptions<TData, TSort>) {
-    /*
-    |--------------------------------------------------------------------------
-    | Response Helpers
-    |--------------------------------------------------------------------------
-    */
-
     const getResponse = () => options.data();
 
     const getMeta = (): PaginationMeta => {
@@ -96,12 +73,6 @@ export function useListingTable<
         };
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | Initial State
-    |--------------------------------------------------------------------------
-    */
-
     const searchQuery = ref(
         options.searchable === false ? '' : (options.filters.search ?? ''),
     );
@@ -111,26 +82,25 @@ export function useListingTable<
             options.searchable !== false &&
             Boolean(searchQuery.value.trim());
 
-        const hasAdditionalFilters = Object.values(
+        const additionalFilters = Object.values(
             options.additionalFilters?.() ?? {},
-        ).some((value) => {
-            if (
-                value === undefined ||
-                value === null ||
-                value === '' ||
-                value === 'all'
-            ) {
-                return false;
-            }
+        );
 
-            if (Array.isArray(value) && value.length === 0) {
-                return false;
-            }
+        return (
+            hasSearch ||
+            additionalFilters.some((value) => {
+                if (
+                    value === undefined ||
+                    value === null ||
+                    value === '' ||
+                    value === 'all'
+                ) {
+                    return false;
+                }
 
-            return true;
-        });
-
-        return hasSearch || hasAdditionalFilters;
+                return !Array.isArray(value) || value.length > 0;
+            })
+        );
     });
 
     const defaultSorting: SortingState = [
@@ -148,14 +118,9 @@ export function useListingTable<
         return new URLSearchParams(window.location.search).has(name);
     };
 
-    const hasExplicitSorting = (): boolean =>
+    const hasExplicitPageSize = hasQueryParameter('per_page');
+    const hasExplicitSort =
         hasQueryParameter('sort') || hasQueryParameter('direction');
-
-    /*
-    |--------------------------------------------------------------------------
-    | Preferences
-    |--------------------------------------------------------------------------
-    */
 
     const listingPreferences = useListingPreferences(options.route, {
         defaultPerPage:
@@ -170,22 +135,12 @@ export function useListingTable<
 
     const { features } = listingPreferences;
 
-    const hasExplicitPageSize = hasQueryParameter('per_page');
-    const hasExplicitSort = hasExplicitSorting();
-
-    /*
-    |--------------------------------------------------------------------------
-    | URL Parameters Take Priority
-    |--------------------------------------------------------------------------
-    */
-
     if (hasExplicitPageSize) {
         listingPreferences.setPerPage(getMeta().per_page);
     }
 
     if (hasExplicitSort) {
         listingPreferences.setSorting(defaultSorting);
-
         listingPreferences.setServerSorting(
             options.filters.sort,
             options.filters.direction,
@@ -232,89 +187,82 @@ export function useListingTable<
         return savedSorting.length > 0 ? savedSorting : defaultSorting;
     })();
 
-    /*
-    |--------------------------------------------------------------------------
-    | Data Table
-    |--------------------------------------------------------------------------
-    */
+    const {
+        table,
+        sorting,
+        selectedRows,
+        selectedCount,
+        clearSelection,
+    } = useDataTable<TData>(
+        () => getResponse()?.data ?? [],
+        options.columns,
+        {
+            manualPagination: true,
+            manualSorting: true,
+            pageCount: () => getMeta().last_page,
+            initialPageSize,
+            initialSorting,
+            enableRowSelection: options.enableRowSelection,
 
-    const { table, sorting, selectedRows, selectedCount, clearSelection } =
-        useDataTable<TData>(
-            () => getResponse()?.data ?? [],
-            options.columns,
-            {
-                manualPagination: true,
-                manualSorting: true,
-                pageCount: () => getMeta().last_page,
-                initialPageSize,
-                initialSorting,
-                enableRowSelection: options.enableRowSelection,
+            onPaginationChange: ({ pageIndex, pageSize }) => {
+                if (!getResponse()) {
+                    return;
+                }
 
-                onPaginationChange: ({ pageIndex, pageSize }) => {
-                    if (!getResponse()) {
-                        return;
-                    }
+                const meta = getMeta();
+                const nextPage = pageIndex + 1;
 
-                    const meta = getMeta();
-                    const nextPage = pageIndex + 1;
+                listingPreferences.setPerPage(pageSize);
 
-                    listingPreferences.setPerPage(pageSize);
+                if (
+                    nextPage === meta.current_page &&
+                    pageSize === meta.per_page
+                ) {
+                    return;
+                }
 
-                    if (
-                        nextPage === meta.current_page &&
-                        pageSize === meta.per_page
-                    ) {
-                        return;
-                    }
+                visit({
+                    page: nextPage,
+                    perPage: pageSize,
+                });
+            },
 
-                    visit({
-                        page: nextPage,
-                        perPage: pageSize,
-                    });
-                },
+            onSortingChange: (nextSorting) => {
+                listingPreferences.setSorting(nextSorting);
 
-                onSortingChange: (nextSorting) => {
-                    listingPreferences.setSorting(nextSorting);
+                const currentSorting = nextSorting[0];
 
-                    const currentSorting = nextSorting[0];
-
-                    if (!currentSorting) {
-                        listingPreferences.setServerSorting(
-                            options.filters.sort,
-                            options.filters.direction,
-                        );
-
-                        visit({
-                            page: 1,
-                            clearSorting: true,
-                        });
-
-                        return;
-                    }
-
-                    const nextSort = getSortKey(currentSorting.id);
-                    const nextDirection: SortDirection =
-                        currentSorting.desc ? 'desc' : 'asc';
-
+                if (!currentSorting) {
                     listingPreferences.setServerSorting(
-                        nextSort,
-                        nextDirection,
+                        options.filters.sort,
+                        options.filters.direction,
                     );
 
                     visit({
-                        page: 1,
-                        sort: nextSort,
-                        direction: nextDirection,
+                        page: DEFAULT_PAGE,
+                        clearSorting: true,
                     });
-                },
-            },
-        );
 
-    /*
-    |--------------------------------------------------------------------------
-    | Sorting Helpers
-    |--------------------------------------------------------------------------
-    */
+                    return;
+                }
+
+                const nextSort = getSortKey(currentSorting.id);
+                const nextDirection: SortDirection =
+                    currentSorting.desc ? 'desc' : 'asc';
+
+                listingPreferences.setServerSorting(
+                    nextSort,
+                    nextDirection,
+                );
+
+                visit({
+                    page: DEFAULT_PAGE,
+                    sort: nextSort,
+                    direction: nextDirection,
+                });
+            },
+        },
+    );
 
     const getSortKey = (columnId: string): TSort => {
         const column = table.getAllColumns().find((item) => {
@@ -348,31 +296,18 @@ export function useListingTable<
         };
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | Initialize Current Server Sorting
-    |--------------------------------------------------------------------------
-    */
-
     const initialCurrentSorting = sorting.value[0];
 
-    if (initialCurrentSorting) {
-        listingPreferences.setServerSorting(
-            getSortKey(initialCurrentSorting.id),
-            initialCurrentSorting.desc ? 'desc' : 'asc',
-        );
-    } else {
-        listingPreferences.setServerSorting(
-            options.filters.sort,
-            options.filters.direction,
-        );
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Visit
-    |--------------------------------------------------------------------------
-    */
+    listingPreferences.setServerSorting(
+        initialCurrentSorting
+            ? getSortKey(initialCurrentSorting.id)
+            : options.filters.sort,
+        initialCurrentSorting
+            ? initialCurrentSorting.desc
+                ? 'desc'
+                : 'asc'
+            : options.filters.direction,
+    );
 
     function visit({
                        page = DEFAULT_PAGE,
@@ -383,31 +318,34 @@ export function useListingTable<
                        useServerDefaults = false,
                    }: VisitOptions<TSort> = {}) {
         const additionalFilters = options.additionalFilters?.() ?? {};
+        const only = options.reloadProps;
 
         if (useServerDefaults) {
-            router.get(options.route, additionalFilters as RequestPayload, {
-                preserveState: true,
-                preserveScroll: true,
-                replace: true,
-            });
+            router.get(
+                options.route,
+                additionalFilters as RequestPayload,
+                {
+                    ...(only?.length ? { only } : {}),
+                    preserveState: true,
+                    preserveScroll: true,
+                    replace: true,
+                },
+            );
 
             return;
         }
 
         const currentSorting = getCurrentSorting();
 
-        const sortingParams = clearSorting
-            ? {
-                sort: undefined,
-                direction: undefined,
-            }
-            : {
-                sort: sort ?? currentSorting.sort,
-                direction: direction ?? currentSorting.direction,
-            };
+        const effectiveSort = clearSorting
+            ? undefined
+            : (sort ?? currentSorting.sort);
+
+        const effectiveDirection = clearSorting
+            ? undefined
+            : (direction ?? currentSorting.direction);
 
         const params: Record<string, unknown> = {
-            ...sortingParams,
             ...additionalFilters,
         };
 
@@ -419,16 +357,10 @@ export function useListingTable<
             params.per_page = perPage;
         }
 
-        const effectiveSort = sortingParams.sort;
-        const effectiveDirection = sortingParams.direction;
-
         if (
-            effectiveSort === DEFAULT_SORT &&
-            effectiveDirection === DEFAULT_DIRECTION
+            effectiveSort !== DEFAULT_SORT ||
+            effectiveDirection !== DEFAULT_DIRECTION
         ) {
-            delete params.sort;
-            delete params.direction;
-        } else {
             if (effectiveSort !== undefined) {
                 params.sort = effectiveSort;
             }
@@ -447,17 +379,12 @@ export function useListingTable<
         }
 
         router.get(options.route, params as RequestPayload, {
+            ...(only?.length ? { only } : {}),
             preserveState: true,
             preserveScroll: true,
             replace: true,
         });
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Restore Preferences
-    |--------------------------------------------------------------------------
-    */
 
     let preferencesInitialized = false;
 
@@ -517,12 +444,6 @@ export function useListingTable<
         },
     );
 
-    /*
-    |--------------------------------------------------------------------------
-    | Actions
-    |--------------------------------------------------------------------------
-    */
-
     const search = () => visit({ page: DEFAULT_PAGE });
 
     const clearFilters = () => {
@@ -550,16 +471,13 @@ export function useListingTable<
         });
     };
 
-    const resetPreferences = () => {
+    const resetPreferences = (): void => {
+        options.onClearFilters?.();
+        searchQuery.value = '';
         listingPreferences.reset();
+
         visit({ useServerDefaults: true });
     };
-
-    /*
-    |--------------------------------------------------------------------------
-    | Return
-    |--------------------------------------------------------------------------
-    */
 
     return {
         table,

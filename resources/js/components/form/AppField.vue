@@ -38,10 +38,10 @@ withDefaults(
 
             <span
                 v-if="required"
-                aria-hidden="true"
                 class="ml-0.5 text-destructive"
             >
-                *
+                <span aria-hidden="true">*</span>
+                <span class="sr-only"> (required)</span>
             </span>
         </label>
 

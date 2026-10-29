@@ -162,15 +162,6 @@ useActionShortcuts(
         resetPreferences: {
             handler: resetPreferences,
         },
-        search: {
-            handler: search,
-        },
-        clearSearch: {
-            handler: () => {
-                searchQuery.value = '';
-            },
-            enabled: computed(() => searchQuery.value.trim().length > 0),
-        },
     })),
 );
 </script>

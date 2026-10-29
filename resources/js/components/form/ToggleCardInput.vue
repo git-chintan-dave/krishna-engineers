@@ -94,7 +94,7 @@ const handleUpdate = (value: boolean | 'indeterminate') => {
 <template>
     <section
         :aria-disabled="disabled"
-        class="w-full min-w-0 rounded-md border border-input bg-background p-4"
+        class="w-full min-w-0 rounded-md border border-border bg-muted/30 p-3 md:p-4"
     >
         <div class="min-w-0 space-y-4">
             <!--

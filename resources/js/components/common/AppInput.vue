@@ -1122,7 +1122,7 @@ defineExpose({
 
         <!-- Error -->
 
-        <p v-if="error" class="mt-1 text-xs text-destructive">
+        <p v-if="error" class="mt-1 text-xs text-destructive" role="alert">
             {{ error }}
         </p>
 

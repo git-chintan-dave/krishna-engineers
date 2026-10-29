@@ -12,18 +12,18 @@ withDefaults(
 
 <template>
     <header
-        class="flex w-full min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
+        class="flex w-full min-w-0 flex-col gap-4 pb-5 sm:flex-row sm:items-start sm:justify-between"
     >
         <div class="min-w-0 flex-1">
             <h1
-                class="text-2xl leading-tight font-semibold tracking-tight wrap-break-word text-foreground"
+                class="wrap-break-word text-xl leading-tight font-semibold tracking-tight text-foreground"
             >
                 {{ title }}
             </h1>
 
             <p
                 v-if="description"
-                class="mt-1 max-w-3xl text-sm leading-5 wrap-break-word text-muted-foreground"
+                class="mt-1 max-w-3xl wrap-break-word text-sm leading-5 text-muted-foreground"
             >
                 {{ description }}
             </p>
@@ -37,3 +37,4 @@ withDefaults(
         </div>
     </header>
 </template>
+

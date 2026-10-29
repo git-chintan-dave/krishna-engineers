@@ -330,9 +330,11 @@ watch(
 <template>
     <div class="w-full min-w-0 [scrollbar-gutter:stable]">
         <!-- Main Header -->
-        <header class="h-16 w-full border-b border-sidebar-border/80">
+        <header
+            class="sticky top-0 z-40 h-16 w-full border-b border-border bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80"
+        >
             <div
-                class="mx-auto flex h-16 w-full min-w-0 items-center px-4 md:max-w-7xl"
+                class="mx-auto flex h-16 w-full min-w-0 items-center px-4 md:px-6 md:max-w-7xl"
             >
                 <!-- Mobile / Tablet Menu -->
                 <div class="shrink-0 lg:hidden">

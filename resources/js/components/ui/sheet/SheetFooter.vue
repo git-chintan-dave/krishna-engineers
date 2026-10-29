@@ -1,16 +1,16 @@
-<script lang="ts" setup>
-import type {HTMLAttributes} from "vue"
-import {cn} from "@/lib/utils"
+<script setup lang="ts">
+import type { HTMLAttributes } from "vue"
+import { cn } from "cn"
 
 const props = defineProps<{ class?: HTMLAttributes["class"] }>()
 </script>
 
 <template>
-    <div
-        :class="cn('mt-auto flex flex-col gap-2 p-4', props.class)
+  <div
+    data-slot="sheet-footer"
+    :class="cn('mt-auto flex flex-col gap-2 p-4', props.class)
     "
-        data-slot="sheet-footer"
-    >
-        <slot/>
-    </div>
+  >
+    <slot />
+  </div>
 </template>

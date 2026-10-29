@@ -49,6 +49,12 @@ class IndexToolRequest extends FormRequest
                 'nullable',
                 Rule::enum(Status::class),
             ],
+
+            'stock' => [
+                'nullable',
+                'string',
+                Rule::in(['low_stock', 'out_of_stock']),
+            ],
         ];
     }
 }

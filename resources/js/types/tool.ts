@@ -30,6 +30,8 @@ export type ToolFormData = ToolSchemaData;
 
 export type ToolSort = 'name' | 'type' | 'quantity' | 'status' | 'created_at';
 
+export type StockFilter = 'low_stock' | 'out_of_stock';
+
 export type ToolFilters = {
     search: string;
     type: ToolType | 'all';
@@ -37,8 +39,21 @@ export type ToolFilters = {
     perPage: number;
     sort: ToolSort;
     direction: SortDirection;
+    stock: StockFilter | null;
 };
 
 export type ToolsResponse = PaginatedResponse<Tool>;
 
 export type ToolTypeOptionsResponse = ToolOption[];
+
+export type ToolStatistics = {
+    total: number;
+    low_stock: number;
+    out_of_stock: number;
+    active: number;
+    inactive: number;
+    insert: number;
+    drill: number;
+    endmill: number;
+    special_tools: number;
+};

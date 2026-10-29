@@ -173,60 +173,82 @@ function matchesShortcut(
     );
 }
 
+/**
+ * Child components mount before parents, so the first registered handler
+ * for a shortcut wins. Later (parent) registrations only fill gaps.
+ */
+const shortcutSources = new Set<() => ActionShortcutHandlers>();
+
+function resolveRegisteredActions(): ActionShortcutHandlers {
+    const merged: ActionShortcutHandlers = {};
+
+    for (const getActions of shortcutSources) {
+        for (const [name, action] of Object.entries(getActions()) as [
+            ActionShortcutName,
+            ShortcutAction,
+        ][]) {
+            if (merged[name] === undefined) {
+                merged[name] = action;
+            }
+        }
+    }
+
+    return merged;
+}
+
+function handleWindowKeydown(event: KeyboardEvent): void {
+    if (event.defaultPrevented || event.repeat || event.isComposing) {
+        return;
+    }
+
+    const registeredActions = resolveRegisteredActions();
+    const isEditing = isEditableTarget(event.target);
+
+    for (const [name, action] of Object.entries(registeredActions) as [
+        ActionShortcutName,
+        ShortcutAction,
+    ][]) {
+        const shortcut = ACTION_SHORTCUTS[name];
+
+        if (!matchesShortcut(event, shortcut)) {
+            continue;
+        }
+
+        if (action.enabled !== undefined && !toValue(action.enabled)) {
+            continue;
+        }
+
+        if (isEditing && name !== 'search' && name !== 'clearSearch') {
+            continue;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        action.handler();
+        return;
+    }
+}
+
 export function useActionShortcuts(
     actions: MaybeRefOrGetter<ActionShortcutHandlers>,
 ): void {
-    const handleKeydown = (event: KeyboardEvent): void => {
-        if (
-            event.defaultPrevented ||
-            event.repeat ||
-            event.isComposing
-        ) {
-            return;
-        }
-
-        const registeredActions = toValue(actions);
-        const isEditing = isEditableTarget(event.target);
-
-        for (const [name, action] of Object.entries(
-            registeredActions,
-        ) as [ActionShortcutName, ShortcutAction][]) {
-            const shortcut = ACTION_SHORTCUTS[name];
-
-            if (!matchesShortcut(event, shortcut)) {
-                continue;
-            }
-
-            // A disabled action must not execute or consume the shortcut.
-            if (
-                action.enabled !== undefined &&
-                !toValue(action.enabled)
-            ) {
-                continue;
-            }
-
-            // Search shortcuts are allowed while editing form controls.
-            if (
-                isEditing &&
-                name !== 'search' &&
-                name !== 'clearSearch'
-            ) {
-                continue;
-            }
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            action.handler();
-            return;
-        }
-    };
+    const getActions = (): ActionShortcutHandlers => toValue(actions);
 
     onMounted(() => {
-        window.addEventListener('keydown', handleKeydown);
+        const shouldBind = shortcutSources.size === 0;
+
+        shortcutSources.add(getActions);
+
+        if (shouldBind) {
+            window.addEventListener('keydown', handleWindowKeydown);
+        }
     });
 
     onBeforeUnmount(() => {
-        window.removeEventListener('keydown', handleKeydown);
+        shortcutSources.delete(getActions);
+
+        if (shortcutSources.size === 0) {
+            window.removeEventListener('keydown', handleWindowKeydown);
+        }
     });
 }

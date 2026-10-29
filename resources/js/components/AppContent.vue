@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 import { SidebarInset } from '@/components/ui/sidebar';
 import type { AppVariant } from '@/types';
@@ -20,8 +20,8 @@ const className = computed(() => props.class);
     </SidebarInset>
     <main
         v-else
-        :class="className"
         class="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 rounded-xl"
+        :class="className"
     >
         <slot />
     </main>

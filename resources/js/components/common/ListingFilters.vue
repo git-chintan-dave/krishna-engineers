@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import {computed, ref, useId, useSlots} from 'vue';
-import {ChevronDown, SlidersHorizontal} from '@lucide/vue';
+import {RotateCcw, Search, SlidersHorizontal, X} from '@lucide/vue';
 
 import AppSearch from '@/components/common/AppSearch.vue';
 import {Button} from '@/components/ui/button';
+import {Popover, PopoverContent, PopoverTrigger,} from '@/components/ui/popover';
 
-import {ACTION_SHORTCUTS, useActionShortcuts} from '@/composables/useActionShortcuts';
+import {ACTION_SHORTCUTS, useActionShortcuts,} from '@/composables/useActionShortcuts';
 
 const props = withDefaults(
     defineProps<{
@@ -16,6 +17,7 @@ const props = withDefaults(
         clearButtonLabel?: string;
         searchDisabled?: boolean;
         clearDisabled?: boolean;
+        activeFilterCount?: number;
     }>(),
     {
         search: '',
@@ -25,6 +27,7 @@ const props = withDefaults(
         clearButtonLabel: 'Clear',
         searchDisabled: false,
         clearDisabled: undefined,
+        activeFilterCount: 0,
     },
 );
 
@@ -46,30 +49,34 @@ const isClearDisabled = computed(
     () => props.clearDisabled ?? !props.search.trim(),
 );
 
-const hasFilters = computed(() => Boolean(slots.filters));
+const hasFilterPanel = computed(() => Boolean(slots.filters));
 
-const hasCollapsibleContent = computed(
-    () => props.searchable || hasFilters.value,
-);
+const filtersOpen = ref(false);
 
-const mobileFiltersOpen = ref(false);
+const closeFilters = (): void => {
+    filtersOpen.value = false;
+};
 
-/*
-|--------------------------------------------------------------------------
-| Keyboard Shortcuts
-|--------------------------------------------------------------------------
-*/
+const handleSearch = (): void => {
+    emit('search');
+    closeFilters();
+};
+
+const handleClear = (): void => {
+    emit('clear');
+    closeFilters();
+};
 
 useActionShortcuts(
     computed(() => ({
         search: {
-            handler: () => emit('search'),
+            handler: handleSearch,
             enabled: computed(
                 () => props.searchable && !props.searchDisabled,
             ),
         },
         clearSearch: {
-            handler: () => emit('clear'),
+            handler: handleClear,
             enabled: computed(() => !isClearDisabled.value),
         },
     })),
@@ -77,94 +84,147 @@ useActionShortcuts(
 </script>
 
 <template>
-    <div class="min-w-0 border-y py-3 sm:py-4">
-        <!-- Mobile Toggle -->
-        <button
-            v-if="hasCollapsibleContent"
-            :aria-controls="panelId"
-            :aria-expanded="mobileFiltersOpen"
-            class="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border bg-background px-4 text-sm font-medium transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none sm:hidden"
-            type="button"
-            @click="mobileFiltersOpen = !mobileFiltersOpen"
-        >
-            <span class="flex min-w-0 items-center gap-2">
-                <SlidersHorizontal class="size-4 shrink-0" />
-                <span>
-                    {{ searchable ? 'Search & filters' : 'Filters' }}
-                </span>
-            </span>
-
-            <ChevronDown
-                class="size-4 shrink-0 transition-transform duration-200"
-                :class="{ 'rotate-180': mobileFiltersOpen }"
-            />
-        </button>
-
-        <!-- Filter Panel -->
-        <div
-            :id="panelId"
-            :class="[
-                'min-w-0',
-                hasCollapsibleContent
-                    ? mobileFiltersOpen
-                        ? 'mt-3'
-                        : 'hidden'
-                    : '',
-                'sm:mt-0 sm:block',
-            ]"
-        >
-            <!-- Search + Filters -->
-            <div
-                class="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
-            >
-                <div v-if="searchable" class="min-w-0">
-                    <AppSearch
-                        v-model="searchValue"
-                        :disabled="searchDisabled"
-                        :placeholder="searchPlaceholder"
-                        @search="emit('search')"
-                    />
-                </div>
-
-                <slot name="filters" />
+    <div class="min-w-0" role="search">
+        <div class="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
+            <div v-if="searchable" class="min-w-0 flex-1">
+                <AppSearch
+                    v-model="searchValue"
+                    :disabled="searchDisabled"
+                    :placeholder="searchPlaceholder"
+                    @search="handleSearch"
+                />
             </div>
 
-            <!-- Actions -->
-            <div
-                class="mt-3 flex min-w-0 flex-col gap-2 sm:flex-row sm:justify-end"
-            >
-                <Button
-                    :disabled="searchDisabled"
-                    class="h-9 w-full cursor-pointer sm:w-auto"
-                    size="sm"
-                    type="button"
-                    @click="emit('search')"
+            <div class="grid min-w-0 grid-cols-2 gap-2 sm:flex sm:shrink-0">
+                <Popover
+                    v-if="hasFilterPanel"
+                    v-model:open="filtersOpen"
                 >
-                    <span>{{ searchButtonLabel }}</span>
+                    <PopoverTrigger as-child>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            class="h-10 w-full min-w-0 gap-2 px-3 sm:w-auto"
+                            :disabled="searchDisabled"
+                            :aria-expanded="filtersOpen"
+                            :aria-controls="panelId"
+                        >
+                            <SlidersHorizontal class="size-4 shrink-0" />
+
+                            <span>Filters</span>
+
+                            <span
+                                v-if="activeFilterCount >= 0"
+                                class="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground"
+                                :aria-label="`${activeFilterCount} active filters`"
+                            >
+                                {{ activeFilterCount }}
+                            </span>
+                        </Button>
+                    </PopoverTrigger>
+
+                    <PopoverContent
+                        align="end"
+                        side="bottom"
+                        :side-offset="8"
+                        class="flex max-h-[min(80dvh,36rem)] w-[calc(100vw-2rem)] max-w-[26rem] flex-col gap-0 overflow-hidden p-0 sm:w-[26rem]"
+                    >
+                        <div
+                            class="flex shrink-0 items-start justify-between gap-3 border-b px-4 py-3"
+                        >
+                            <div class="min-w-0 space-y-1">
+                                <h3 class="text-sm font-semibold">
+                                    Filter results
+                                </h3>
+
+                                <p class="text-xs text-muted-foreground">
+                                    Narrow down the table data.
+                                </p>
+                            </div>
+
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                class="size-8 shrink-0"
+                                aria-label="Close filters"
+                                @click="closeFilters"
+                            >
+                                <X class="size-4" />
+                            </Button>
+                        </div>
+
+                        <div
+                            :id="panelId"
+                            class="min-h-0 flex-1 space-y-4 overflow-x-hidden overflow-y-auto overscroll-contain p-4"
+                        >
+                            <slot name="filters" />
+                        </div>
+
+                        <div
+                            class="flex shrink-0 gap-2 border-t bg-background p-3"
+                        >
+                            <Button
+                                type="button"
+                                variant="outline"
+                                class="h-10 min-w-0 flex-1 gap-2 px-3"
+                                :disabled="isClearDisabled"
+                                @click="handleClear"
+                            >
+                                <RotateCcw class="size-4 shrink-0" />
+
+                                <span class="truncate">
+                                    {{ clearButtonLabel }}
+                                </span>
+                            </Button>
+
+                            <Button
+                                type="button"
+                                class="h-10 min-w-0 flex-1 gap-2 px-3"
+                                :disabled="searchDisabled"
+                                @click="handleSearch"
+                            >
+                                <Search class="size-4 shrink-0" />
+
+                                <span class="truncate">
+                                    Apply filters
+                                </span>
+                            </Button>
+                        </div>
+                    </PopoverContent>
+                </Popover>
+
+                <Button
+                    v-if="searchable"
+                    type="button"
+                    class="h-10 w-full min-w-0 gap-2 px-3 sm:w-auto sm:flex-none"
+                    :disabled="searchDisabled"
+                    @click="handleSearch"
+                >
+                    <Search class="size-4 shrink-0" />
+
+                    <span class="truncate">
+                        {{ searchButtonLabel }}
+                    </span>
+
                     <kbd
-                        class="ml-2 hidden rounded border border-current/20 px-1.5 py-0.5 text-[10px] font-normal opacity-70 sm:inline-block"
+                        class="hidden shrink-0 rounded border border-current/20 px-1.5 py-0.5 text-[10px] font-normal opacity-70 lg:inline-block"
                     >
                         {{ ACTION_SHORTCUTS.search.label }}
                     </kbd>
                 </Button>
 
                 <Button
-                    :disabled="isClearDisabled"
-                    class="h-9 w-full cursor-pointer sm:w-auto"
-                    size="sm"
+                    v-if="!hasFilterPanel && !searchable"
                     type="button"
                     variant="outline"
-                    @click="emit('clear')"
+                    class="col-span-2 h-10 w-full sm:col-span-1 sm:w-auto"
+                    :disabled="isClearDisabled"
+                    @click="handleClear"
                 >
-                    <span>{{ clearButtonLabel }}</span>
-                    <kbd
-                        class="ml-2 hidden rounded border border-current/20 px-1.5 py-0.5 text-[10px] font-normal opacity-70 sm:inline-block"
-                    >
-                        {{ ACTION_SHORTCUTS.clearSearch.label }}
-                    </kbd>
+                    {{ clearButtonLabel }}
                 </Button>
             </div>
-
         </div>
     </div>
 </template>
