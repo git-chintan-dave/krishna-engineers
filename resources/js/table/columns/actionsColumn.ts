@@ -5,7 +5,7 @@ import {type Component, h, type VNode,} from 'vue';
 import {Button} from '@/components/ui/button';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '@/components/ui/tooltip';
 import {executeConfirm} from '@/directives/confirm';
-import ActionsDropdown from '@/table/ActionsDropdown.vue';
+import ActionsDropdown from '@/components/table/ActionsDropdown.vue';
 import {COLUMN_DEFAULTS} from '@/table/constants/columns';
 import type {ColumnPin} from '@/table/helpers/createColumn';
 
@@ -18,14 +18,14 @@ import type {ColumnPin} from '@/table/helpers/createColumn';
 type ActionsColumnOptions<TData = unknown> = {
     editUrl: (uuid: string) => string;
     resourceName: string;
-    handleDelete: (uuid: string) => void;
+    handleDelete: (uuid: string) => void | Promise<void>;
 
     detailsUrl?: (uuid: string) => string;
     markAsPaidUrl?: (uuid: string) => string;
     regenerateUrl?: (uuid: string) => string;
 
-    handleMarkAsPaid?: (uuid: string) => void;
-    handleRegenerate?: (uuid: string) => void;
+    handleMarkAsPaid?: (uuid: string) => void | Promise<void>;
+    handleRegenerate?: (uuid: string) => void | Promise<void>;
 
     showDelete?: (row: TData) => boolean;
     showEdit?: (row: TData) => boolean;
@@ -49,7 +49,7 @@ type SecondaryAction = {
     label: string;
     icon: Component;
     confirmation: ConfirmationOptions;
-    action: () => void;
+    action: () => void | Promise<void>;
 };
 
 type ActionRecord = {
@@ -153,7 +153,7 @@ function createIconButton(
             },
 
             ...(options.href
-                ? {asChild: true}
+                ? { asChild: true }
                 : {}),
         },
 
@@ -167,19 +167,13 @@ function createIconButton(
                         },
                         {
                             default: () =>
-                                renderIcon(
-                                    icon,
-                                    label,
-                                ),
+                                renderIcon(icon, label),
                         },
                     ),
             }
             : {
                 default: () =>
-                    renderIcon(
-                        icon,
-                        label,
-                    ),
+                    renderIcon(icon, label),
             },
     );
 
@@ -211,8 +205,7 @@ function createIconButton(
                                     asChild: true,
                                 },
                                 {
-                                    default: () =>
-                                        trigger,
+                                    default: () => trigger,
                                 },
                             ),
 
@@ -222,8 +215,7 @@ function createIconButton(
                                     side: 'top',
                                 },
                                 {
-                                    default: () =>
-                                        label,
+                                    default: () => label,
                                 },
                             ),
                         ],
@@ -239,34 +231,30 @@ function createIconButton(
 |--------------------------------------------------------------------------
 */
 
-export const createActionsColumn = <
-    TData = unknown,
->({
-      editUrl,
-      detailsUrl,
-      markAsPaidUrl,
-      regenerateUrl,
-      resourceName,
-      handleDelete,
-      handleMarkAsPaid,
-      handleRegenerate,
-      showDelete,
-      showEdit,
-      showMarkAsPaid,
-      showRegenerate,
-      size = COLUMN_DEFAULTS.actions.size,
-      minSize = COLUMN_DEFAULTS.actions.minSize,
-      maxSize = COLUMN_DEFAULTS.actions.maxSize,
-      pin,
-  }: ActionsColumnOptions<TData>) => {
+export const createActionsColumn = <TData = unknown>({
+                                                         editUrl,
+                                                         detailsUrl,
+                                                         markAsPaidUrl,
+                                                         regenerateUrl,
+                                                         resourceName,
+                                                         handleDelete,
+                                                         handleMarkAsPaid,
+                                                         handleRegenerate,
+                                                         showDelete,
+                                                         showEdit,
+                                                         showMarkAsPaid,
+                                                         showRegenerate,
+                                                         size = COLUMN_DEFAULTS.actions.size,
+                                                         minSize = COLUMN_DEFAULTS.actions.minSize,
+                                                         maxSize = COLUMN_DEFAULTS.actions.maxSize,
+                                                         pin,
+                                                     }: ActionsColumnOptions<TData>) => {
     const hasMarkAsPaid = Boolean(
-        markAsPaidUrl &&
-        handleMarkAsPaid,
+        markAsPaidUrl && handleMarkAsPaid,
     );
 
     const hasRegenerate = Boolean(
-        regenerateUrl &&
-        handleRegenerate,
+        regenerateUrl && handleRegenerate,
     );
 
     return {
@@ -278,10 +266,7 @@ export const createActionsColumn = <
 
         meta: {
             align: 'center' as const,
-
-            ...(pin
-                ? {pin}
-                : {}),
+            ...(pin ? { pin } : {}),
         },
 
         enableSorting: false,
@@ -293,16 +278,11 @@ export const createActionsColumn = <
                 original: TData;
             };
         }) => {
-            const record =
-                row.original as TData & ActionRecord;
+            const record = row.original as TData & ActionRecord;
+            const { uuid } = record;
 
-            const {uuid} = record;
-
-            const canEdit =
-                showEdit?.(record) ?? true;
-
-            const canDelete =
-                showDelete?.(record) ?? true;
+            const canEdit = showEdit?.(record) ?? true;
+            const canDelete = showDelete?.(record) ?? true;
 
             const canMarkAsPaid =
                 hasMarkAsPaid &&
@@ -354,9 +334,7 @@ export const createActionsColumn = <
                         onClick: canDelete
                             ? async () => {
                                 await executeConfirm({
-                                    action: () =>
-                                        handleDelete(uuid),
-
+                                    action: () => handleDelete(uuid),
                                     options: {
                                         title: `Delete ${resourceName}?`,
                                         description:
@@ -373,10 +351,7 @@ export const createActionsColumn = <
             // Secondary actions.
             const secondaryActions: SecondaryAction[] = [];
 
-            if (
-                canRegenerate &&
-                handleRegenerate
-            ) {
+            if (canRegenerate && handleRegenerate) {
                 secondaryActions.push({
                     key: 'regenerate',
                     label: 'Regenerate',
@@ -390,15 +365,11 @@ export const createActionsColumn = <
                         confirmText: 'Regenerate',
                     },
 
-                    action: () =>
-                        handleRegenerate(uuid),
+                    action: () => handleRegenerate(uuid),
                 });
             }
 
-            if (
-                canMarkAsPaid &&
-                handleMarkAsPaid
-            ) {
+            if (canMarkAsPaid && handleMarkAsPaid) {
                 secondaryActions.push({
                     key: 'mark-as-paid',
                     label: 'Mark as Paid',
@@ -412,8 +383,7 @@ export const createActionsColumn = <
                         confirmText: 'Mark as Paid',
                     },
 
-                    action: () =>
-                        handleMarkAsPaid(uuid),
+                    action: () => handleMarkAsPaid(uuid),
                 });
             }
 

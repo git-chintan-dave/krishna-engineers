@@ -97,10 +97,26 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             resourceName: 'salary',
             handleDelete,
             handleMarkAsPaid: (uuid) => {
-                router.post(markAsPaid(uuid).url);
+                router.post(markAsPaid(uuid).url, {}, {
+                    preserveScroll: true,
+                    preserveState: true,
+                    onSuccess: () => {
+                        router.reload({
+                            only: ['salaries', 'statistics'],
+                        });
+                    },
+                });
             },
             handleRegenerate: (uuid) => {
-                router.post(regenerate(uuid).url);
+                router.post(regenerate(uuid).url, {}, {
+                    preserveScroll: true,
+                    preserveState: true,
+                    onSuccess: () => {
+                        router.reload({
+                            only: ['salaries', 'statistics'],
+                        });
+                    },
+                });
             },
             showEdit: (row: Salary) => row.status === 'draft',
             showMarkAsPaid: (row: Salary) => row.status === 'draft',

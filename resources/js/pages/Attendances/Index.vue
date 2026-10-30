@@ -206,7 +206,6 @@ const handleSync = (): void => {
         },
         {
             preserveScroll: true,
-
             onSuccess: () => {
                 const flash = (
                     page.props as typeof page.props & {
@@ -230,7 +229,6 @@ const handleSync = (): void => {
                     only: ['attendances', 'hasAnyRecords', 'statistics'],
                 });
             },
-
             onError: (errors) => {
                 syncMessage.value =
                     errors.sync_type ??
@@ -241,7 +239,6 @@ const handleSync = (): void => {
 
                 syncMessageType.value = 'error';
             },
-
             onFinish: () => {
                 syncProcessing.value = false;
             },
