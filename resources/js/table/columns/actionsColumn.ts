@@ -1,12 +1,13 @@
 import {Link} from '@inertiajs/vue3';
 import {CheckCircle2, Eye, Pencil, RefreshCw, Trash2,} from '@lucide/vue';
-import {type Component, h, type VNode} from 'vue';
+import {type Component, h, type VNode,} from 'vue';
 
 import {Button} from '@/components/ui/button';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '@/components/ui/tooltip';
 import {executeConfirm} from '@/directives/confirm';
 import ActionsDropdown from '@/table/ActionsDropdown.vue';
 import {COLUMN_DEFAULTS} from '@/table/constants/columns';
+import type {ColumnPin} from '@/table/helpers/createColumn';
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +35,7 @@ type ActionsColumnOptions<TData = unknown> = {
     size?: number;
     minSize?: number;
     maxSize?: number;
+    pin?: ColumnPin;
 };
 
 type ConfirmationOptions = {
@@ -64,8 +66,11 @@ type ActionRecord = {
 |--------------------------------------------------------------------------
 */
 
-const ICON_CLASS = 'size-3.5';
-const ICON_BUTTON_CLASS = 'size-8 shrink-0 cursor-pointer';
+const ICON_CLASS = 'size-3';
+
+const ICON_BUTTON_CLASS = [
+    'size-6 shrink-0 cursor-pointer',
+];
 
 const ACTION_STYLES = {
     view: [
@@ -74,12 +79,14 @@ const ACTION_STYLES = {
         'dark:bg-slate-950/40 dark:text-slate-400',
         'dark:hover:bg-slate-950/60 dark:hover:text-slate-300',
     ],
+
     edit: [
         'bg-blue-50 text-blue-600',
         'hover:bg-blue-100 hover:text-blue-700',
         'dark:bg-blue-950/40 dark:text-blue-400',
         'dark:hover:bg-blue-950/60 dark:hover:text-blue-300',
     ],
+
     delete: [
         'bg-red-50 text-red-600',
         'hover:bg-red-100 hover:text-red-700',
@@ -94,13 +101,23 @@ const ACTION_STYLES = {
 |--------------------------------------------------------------------------
 */
 
-function renderIcon(icon: Component, label: string): VNode[] {
+function renderIcon(
+    icon: Component,
+    label: string,
+): VNode[] {
     return [
         h(icon, {
             class: ICON_CLASS,
             'aria-hidden': 'true',
         }),
-        h('span', { class: 'sr-only' }, label),
+
+        h(
+            'span',
+            {
+                class: 'sr-only',
+            },
+            label,
+        ),
     ];
 }
 
@@ -120,9 +137,13 @@ function createIconButton(
             type: 'button',
             variant: 'ghost',
             size: 'icon',
-            class: [ICON_BUTTON_CLASS, ...colorClass],
+            class: [
+                ICON_BUTTON_CLASS,
+                ...colorClass,
+            ],
             disabled: options.disabled,
             'aria-label': label,
+
             onClick: (event: MouseEvent) => {
                 event.stopPropagation();
 
@@ -130,21 +151,35 @@ function createIconButton(
                     void options.onClick?.();
                 }
             },
-            ...(options.href ? { asChild: true } : {}),
+
+            ...(options.href
+                ? {asChild: true}
+                : {}),
         },
+
         options.href
             ? {
                 default: () =>
                     h(
                         Link,
-                        { href: options.href! },
                         {
-                            default: () => renderIcon(icon, label),
+                            href: options.href!,
+                        },
+                        {
+                            default: () =>
+                                renderIcon(
+                                    icon,
+                                    label,
+                                ),
                         },
                     ),
             }
             : {
-                default: () => renderIcon(icon, label),
+                default: () =>
+                    renderIcon(
+                        icon,
+                        label,
+                    ),
             },
     );
 
@@ -172,18 +207,23 @@ function createIconButton(
                         default: () => [
                             h(
                                 TooltipTrigger,
-                                { asChild: true },
                                 {
-                                    default: () => trigger,
+                                    asChild: true,
+                                },
+                                {
+                                    default: () =>
+                                        trigger,
                                 },
                             ),
+
                             h(
                                 TooltipContent,
                                 {
                                     side: 'top',
                                 },
                                 {
-                                    default: () => label,
+                                    default: () =>
+                                        label,
                                 },
                             ),
                         ],
@@ -199,25 +239,35 @@ function createIconButton(
 |--------------------------------------------------------------------------
 */
 
-export const createActionsColumn = <TData = unknown>({
-                                                         editUrl,
-                                                         detailsUrl,
-                                                         markAsPaidUrl,
-                                                         regenerateUrl,
-                                                         resourceName,
-                                                         handleDelete,
-                                                         handleMarkAsPaid,
-                                                         handleRegenerate,
-                                                         showDelete,
-                                                         showEdit,
-                                                         showMarkAsPaid,
-                                                         showRegenerate,
-                                                         size = COLUMN_DEFAULTS.actions.size,
-                                                         minSize = COLUMN_DEFAULTS.actions.minSize,
-                                                         maxSize = COLUMN_DEFAULTS.actions.maxSize,
-                                                     }: ActionsColumnOptions<TData>) => {
-    const hasMarkAsPaid = Boolean(markAsPaidUrl && handleMarkAsPaid);
-    const hasRegenerate = Boolean(regenerateUrl && handleRegenerate);
+export const createActionsColumn = <
+    TData = unknown,
+>({
+      editUrl,
+      detailsUrl,
+      markAsPaidUrl,
+      regenerateUrl,
+      resourceName,
+      handleDelete,
+      handleMarkAsPaid,
+      handleRegenerate,
+      showDelete,
+      showEdit,
+      showMarkAsPaid,
+      showRegenerate,
+      size = COLUMN_DEFAULTS.actions.size,
+      minSize = COLUMN_DEFAULTS.actions.minSize,
+      maxSize = COLUMN_DEFAULTS.actions.maxSize,
+      pin,
+  }: ActionsColumnOptions<TData>) => {
+    const hasMarkAsPaid = Boolean(
+        markAsPaidUrl &&
+        handleMarkAsPaid,
+    );
+
+    const hasRegenerate = Boolean(
+        regenerateUrl &&
+        handleRegenerate,
+    );
 
     return {
         id: 'actions',
@@ -225,17 +275,34 @@ export const createActionsColumn = <TData = unknown>({
         size,
         minSize,
         maxSize,
+
         meta: {
-            align: 'center',
+            align: 'center' as const,
+
+            ...(pin
+                ? {pin}
+                : {}),
         },
+
         enableSorting: false,
 
-        cell: ({ row }: { row: { original: TData } }) => {
-            const record = row.original as TData & ActionRecord;
-            const { uuid } = record;
+        cell: ({
+                   row,
+               }: {
+            row: {
+                original: TData;
+            };
+        }) => {
+            const record =
+                row.original as TData & ActionRecord;
 
-            const canEdit = showEdit?.(record) ?? true;
-            const canDelete = showDelete?.(record) ?? true;
+            const {uuid} = record;
+
+            const canEdit =
+                showEdit?.(record) ?? true;
+
+            const canDelete =
+                showDelete?.(record) ?? true;
 
             const canMarkAsPaid =
                 hasMarkAsPaid &&
@@ -247,6 +314,7 @@ export const createActionsColumn = <TData = unknown>({
 
             const primaryActions: VNode[] = [];
 
+            // View action.
             if (detailsUrl) {
                 primaryActions.push(
                     createIconButton(
@@ -260,6 +328,7 @@ export const createActionsColumn = <TData = unknown>({
                 );
             }
 
+            // Edit action.
             if (canEdit) {
                 primaryActions.push(
                     createIconButton(
@@ -273,10 +342,7 @@ export const createActionsColumn = <TData = unknown>({
                 );
             }
 
-            /*
-             * Delete with confirmation
-             */
-
+            // Delete action.
             primaryActions.push(
                 createIconButton(
                     Trash2,
@@ -284,10 +350,13 @@ export const createActionsColumn = <TData = unknown>({
                     ACTION_STYLES.delete,
                     {
                         disabled: !canDelete,
+
                         onClick: canDelete
                             ? async () => {
                                 await executeConfirm({
-                                    action: () => handleDelete(uuid),
+                                    action: () =>
+                                        handleDelete(uuid),
+
                                     options: {
                                         title: `Delete ${resourceName}?`,
                                         description:
@@ -301,17 +370,18 @@ export const createActionsColumn = <TData = unknown>({
                 ),
             );
 
-            /*
-             * Secondary actions
-             */
-
+            // Secondary actions.
             const secondaryActions: SecondaryAction[] = [];
 
-            if (canRegenerate && handleRegenerate) {
+            if (
+                canRegenerate &&
+                handleRegenerate
+            ) {
                 secondaryActions.push({
                     key: 'regenerate',
                     label: 'Regenerate',
                     icon: RefreshCw,
+
                     confirmation: {
                         title: `Regenerate ${resourceName}?`,
                         description:
@@ -319,15 +389,21 @@ export const createActionsColumn = <TData = unknown>({
                             'This action is only available for unpaid records.',
                         confirmText: 'Regenerate',
                     },
-                    action: () => handleRegenerate(uuid),
+
+                    action: () =>
+                        handleRegenerate(uuid),
                 });
             }
 
-            if (canMarkAsPaid && handleMarkAsPaid) {
+            if (
+                canMarkAsPaid &&
+                handleMarkAsPaid
+            ) {
                 secondaryActions.push({
                     key: 'mark-as-paid',
                     label: 'Mark as Paid',
                     icon: CheckCircle2,
+
                     confirmation: {
                         title: `Mark ${resourceName} as paid?`,
                         description:
@@ -335,7 +411,9 @@ export const createActionsColumn = <TData = unknown>({
                             'Paid records cannot be edited.',
                         confirmText: 'Mark as Paid',
                     },
-                    action: () => handleMarkAsPaid(uuid),
+
+                    action: () =>
+                        handleMarkAsPaid(uuid),
                 });
             }
 
@@ -351,7 +429,11 @@ export const createActionsColumn = <TData = unknown>({
 
                 primaryActions.push(
                     h(ActionsDropdown, {
-                        name: record.name ?? record.user?.name ?? 'record',
+                        name:
+                            record.name ??
+                            record.user?.name ??
+                            'record',
+
                         actions: secondaryActions,
                     }),
                 );

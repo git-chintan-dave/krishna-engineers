@@ -1,7 +1,7 @@
-import { ArrowDown, ArrowUp, ChevronsUpDown } from '@lucide/vue';
-import { h } from 'vue';
+import {ArrowDown, ArrowUp, ChevronsUpDown} from '@lucide/vue';
+import {h} from 'vue';
 
-import type { ColumnAlign } from '@/table/types';
+import type {ColumnAlign} from '@/table/types';
 
 /*
 |--------------------------------------------------------------------------
@@ -9,9 +9,12 @@ import type { ColumnAlign } from '@/table/types';
 |--------------------------------------------------------------------------
 */
 
+export type ColumnPin = 'left' | 'right';
+
 type ColumnMeta = {
     align: ColumnAlign;
     sortKey?: string;
+    pin?: ColumnPin;
     [key: string]: unknown;
 };
 
@@ -33,7 +36,28 @@ type BaseColumnOptions<TData, TValue> = {
     header: string;
     sortable?: boolean;
     enableSorting?: boolean;
+
+    /**
+     * Marks the column as the primary/important data column.
+     *
+     * Primary:
+     * - text-sm
+     * - font-medium
+     *
+     * Normal:
+     * - text-sm
+     * - font-normal
+     */
     primary?: boolean;
+
+    /**
+     * Pin the column to the left or right side of the table.
+     *
+     * The DataTable is responsible for applying the actual sticky
+     * positioning and calculating the required offset.
+     */
+    pin?: ColumnPin;
+
     size?: number;
     minSize?: number;
     maxSize?: number;
@@ -75,8 +99,10 @@ const getAlignmentClass = (align: ColumnAlign): string => {
     switch (align) {
         case 'center':
             return 'text-center';
+
         case 'right':
             return 'text-right';
+
         default:
             return 'text-left';
     }
@@ -86,8 +112,10 @@ const getHeaderAlignmentClass = (align: ColumnAlign): string => {
     switch (align) {
         case 'center':
             return 'justify-center text-center';
+
         case 'right':
             return 'justify-end text-right';
+
         default:
             return 'justify-start text-left';
     }
@@ -101,18 +129,24 @@ const formatCellValue = (value: unknown): string => {
     return String(value);
 };
 
-const getColumnWidth = (size?: number, minSize?: number, maxSize?: number) => ({
-    ...(size !== undefined ? { size } : {}),
+const getColumnWidth = (
+    size?: number,
+    minSize?: number,
+    maxSize?: number,
+) => ({
+    ...(size !== undefined ? {size} : {}),
+
     ...(minSize !== undefined
-        ? { minSize }
+        ? {minSize}
         : size !== undefined
-          ? { minSize: size }
-          : {}),
+            ? {minSize: size}
+            : {}),
+
     ...(maxSize !== undefined
-        ? { maxSize }
+        ? {maxSize}
         : size !== undefined
-          ? { maxSize: size }
-          : {}),
+            ? {maxSize: size}
+            : {}),
 });
 
 /*
@@ -123,42 +157,48 @@ const getColumnWidth = (size?: number, minSize?: number, maxSize?: number) => ({
 
 const createHeader =
     (label: string, align: ColumnAlign) =>
-    ({ column }: SortableHeaderContext) => {
-        const sorted = column.getIsSorted();
+        ({column}: SortableHeaderContext) => {
+            const sorted = column.getIsSorted();
 
-        const SortIcon =
-            sorted === 'asc'
-                ? ArrowUp
-                : sorted === 'desc'
-                  ? ArrowDown
-                  : ChevronsUpDown;
+            const SortIcon =
+                sorted === 'asc'
+                    ? ArrowUp
+                    : sorted === 'desc'
+                        ? ArrowDown
+                        : ChevronsUpDown;
 
-        return h(
-            'button',
-            {
-                type: 'button',
-                class: [
-                    'flex w-full min-w-0 cursor-pointer items-center gap-2',
-                    'text-sm font-medium leading-5',
-                    'whitespace-normal break-words hover:text-foreground',
-                    getHeaderAlignmentClass(align),
+            return h(
+                'button',
+                {
+                    type: 'button',
+                    class: [
+                        'flex w-full min-w-0 cursor-pointer items-center gap-2',
+                        'text-sm font-medium leading-5',
+                        'whitespace-normal break-words',
+                        'hover:text-foreground',
+                        'focus-visible:outline-none',
+                        'focus-visible:ring-2',
+                        'focus-visible:ring-ring/50',
+                        'focus-visible:ring-offset-1',
+                        getHeaderAlignmentClass(align),
+                    ],
+                    onClick: () => column.toggleSorting(sorted === 'asc'),
+                },
+                [
+                    h(
+                        'span',
+                        {
+                            class: 'min-w-0 whitespace-normal break-words',
+                        },
+                        label,
+                    ),
+
+                    h(SortIcon, {
+                        class: 'size-4 shrink-0',
+                    }),
                 ],
-                onClick: () => column.toggleSorting(sorted === 'asc'),
-            },
-            [
-                h(
-                    'span',
-                    {
-                        class: 'min-w-0 whitespace-normal break-words',
-                    },
-                    label,
-                ),
-                h(SortIcon, {
-                    class: 'size-4 shrink-0',
-                }),
-            ],
-        );
-    };
+            );
+        };
 
 /*
 |--------------------------------------------------------------------------
@@ -174,6 +214,7 @@ export const createColumn = <TData, TValue = unknown>(
         sortable = false,
         enableSorting = sortable,
         primary = false,
+        pin,
         size,
         minSize,
         maxSize,
@@ -186,38 +227,42 @@ export const createColumn = <TData, TValue = unknown>(
     const accessor =
         'accessorFn' in options && options.accessorFn
             ? {
-                  id: options.id,
-                  accessorFn: options.accessorFn,
-              }
+                id: options.id,
+                accessorFn: options.accessorFn,
+            }
             : {
-                  accessorKey: options.accessorKey,
-              };
+                accessorKey: options.accessorKey,
+            };
 
     const columnMeta: ColumnMeta = {
         ...meta,
         align,
-        ...(sortKey !== undefined ? { sortKey } : {}),
+        ...(sortKey !== undefined ? {sortKey} : {}),
+        ...(pin !== undefined ? {pin} : {}),
     };
 
     return {
         ...accessor,
+
         enableSorting,
+
         meta: columnMeta,
 
         header: sortable
             ? createHeader(header, align)
             : () =>
-                  h(
-                      'span',
-                      {
-                          class: [
-                              'block w-full text-sm font-medium leading-5',
-                              'whitespace-normal break-words',
-                              getHeaderAlignmentClass(align),
-                          ],
-                      },
-                      header,
-                  ),
+                h(
+                    'span',
+                    {
+                        class: [
+                            'block w-full',
+                            'text-sm font-medium leading-5',
+                            'whitespace-normal break-words',
+                            getHeaderAlignmentClass(align),
+                        ],
+                    },
+                    header,
+                ),
 
         cell:
             cell ??
@@ -226,8 +271,10 @@ export const createColumn = <TData, TValue = unknown>(
                     'span',
                     {
                         class: [
-                            'block min-w-0 whitespace-normal break-words text-sm',
-                            primary ? 'font-semibold' : 'font-normal',
+                            'block min-w-0 whitespace-normal break-words',
+                            primary
+                                ? 'text-sm font-medium'
+                                : 'text-sm font-normal',
                             getAlignmentClass(align),
                         ],
                     },

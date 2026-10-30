@@ -1,5 +1,5 @@
-import { COLUMN_DEFAULTS } from '@/table/constants/columns';
-import { createColumn } from '@/table/helpers/createColumn';
+import {COLUMN_DEFAULTS} from '@/table/constants/columns';
+import {type ColumnPin, createColumn} from '@/table/helpers/createColumn';
 
 /*
 |--------------------------------------------------------------------------
@@ -10,6 +10,7 @@ import { createColumn } from '@/table/helpers/createColumn';
 type DateColumnOptions = {
     accessorKey?: string;
     header?: string;
+    pin?: ColumnPin;
 };
 
 /*
@@ -19,9 +20,10 @@ type DateColumnOptions = {
 */
 
 export const createDateColumn = ({
-    accessorKey = 'created_at',
-    header = COLUMN_DEFAULTS.date.header,
-}: DateColumnOptions = {}) =>
+                                     accessorKey = 'created_at',
+                                     header = COLUMN_DEFAULTS.date.header,
+                                     pin,
+                                 }: DateColumnOptions = {}) =>
     createColumn({
         accessorKey,
         header,
@@ -30,4 +32,5 @@ export const createDateColumn = ({
         maxSize: COLUMN_DEFAULTS.date.maxSize,
         sortable: true,
         align: 'center',
+        pin,
     });

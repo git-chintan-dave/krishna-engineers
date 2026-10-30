@@ -1,16 +1,13 @@
-import { createColumnHelper } from '@tanstack/vue-table';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit } from '@/routes/tool-transactions';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createDateColumn } from '@/table/columns/dateColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import {
-    createTransactionQuantityColumn,
-    createTransactionTypeColumn,
-} from '@/table/columns/transactionColumns';
-import { createColumn } from '@/table/helpers/createColumn';
-import { COLUMN_DEFAULTS } from '@/table/constants/columns';
-import type { ToolTransaction } from '@/types/toolTransaction';
+import {edit} from '@/routes/tool-transactions';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createDateColumn} from '@/table/columns/dateColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createTransactionQuantityColumn, createTransactionTypeColumn,} from '@/table/columns/transactionColumns';
+import {createColumn} from '@/table/helpers/createColumn';
+import {COLUMN_DEFAULTS} from '@/table/constants/columns';
+import type {ToolTransaction} from '@/types/toolTransaction';
 
 const columnHelper = createColumnHelper<any, ToolTransaction>();
 
@@ -20,6 +17,7 @@ export const createToolTransactionColumns = (
     columnHelper.columns([
         createSelectColumn({
             resourceName: 'tool transactions',
+            pin: 'left',
         }),
 
         createColumn<ToolTransaction, string>({
@@ -29,11 +27,13 @@ export const createToolTransactionColumns = (
             ...COLUMN_DEFAULTS.extraExtraWideColumn,
             sortable: true,
             primary: true,
+            pin: 'left',
         }),
 
         createTransactionTypeColumn<ToolTransaction>({
             accessorKey: 'type',
             getType: (row) => row.type,
+            pin: 'left',
         }),
 
         createTransactionQuantityColumn<ToolTransaction>({
@@ -78,7 +78,7 @@ export const createToolTransactionColumns = (
             ...COLUMN_DEFAULTS.mediumColumn,
             sortable: true,
             align: 'center',
-            cell: ({ row }) => {
+            cell: ({row}) => {
                 const value = row.original.return_scrap;
 
                 if (value === null || value === undefined) {

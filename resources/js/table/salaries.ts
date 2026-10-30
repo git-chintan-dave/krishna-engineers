@@ -1,13 +1,13 @@
-import { router } from '@inertiajs/vue3';
-import { createColumnHelper } from '@tanstack/vue-table';
+import {router} from '@inertiajs/vue3';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit, markAsPaid, show, regenerate } from '@/routes/salaries';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import { createStatusColumn } from '@/table/columns/statusColumn';
-import { createColumn } from '@/table/helpers/createColumn';
-import { COLUMN_DEFAULTS } from '@/table/constants/columns';
-import type { Salary } from '@/types/salary';
+import {edit, markAsPaid, regenerate, show} from '@/routes/salaries';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createStatusColumn} from '@/table/columns/statusColumn';
+import {createColumn} from '@/table/helpers/createColumn';
+import {COLUMN_DEFAULTS} from '@/table/constants/columns';
+import type {Salary} from '@/types/salary';
 
 const columnHelper = createColumnHelper<any, Salary>();
 
@@ -15,6 +15,7 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
     columnHelper.columns([
         createSelectColumn({
             resourceName: 'salaries',
+            pin: 'left',
         }),
 
         createColumn<Salary, string>({
@@ -24,6 +25,7 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             ...COLUMN_DEFAULTS.mediumColumn,
             sortable: true,
             primary: true,
+            pin: 'left',
         }),
 
         createColumn<Salary, string>({
@@ -34,6 +36,7 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             sortable: true,
             primary: true,
             align: 'center',
+            pin: 'left',
         }),
 
         createColumn({
@@ -99,10 +102,10 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             handleRegenerate: (uuid) => {
                 router.post(regenerate(uuid).url);
             },
-            showEdit: (row) => row.status === 'draft',
-            showMarkAsPaid: (row) => row.status === 'draft',
-            showDelete: (row) => row.status === 'draft',
-            showRegenerate: (row) => row.status !== 'paid',
+            showEdit: (row: Salary) => row.status === 'draft',
+            showMarkAsPaid: (row: Salary) => row.status === 'draft',
+            showDelete: (row: Salary) => row.status === 'draft',
+            showRegenerate: (row: Salary) => row.status !== 'paid',
             ...COLUMN_DEFAULTS.wideColumn,
         }),
     ]);

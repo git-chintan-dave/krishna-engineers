@@ -30,11 +30,11 @@ defineProps<{
     <DropdownMenu v-if="actions.length > 0">
         <DropdownMenuTrigger as-child>
             <Button
+                :aria-label="`More actions for ${name}`"
+                class="size-8 shrink-0 cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground"
+                size="icon"
                 type="button"
                 variant="ghost"
-                size="icon"
-                class="size-8 shrink-0 cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground"
-                :aria-label="`More actions for ${name}`"
                 @click.stop
             >
                 <MoreHorizontal

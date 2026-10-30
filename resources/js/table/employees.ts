@@ -15,6 +15,7 @@ export const createEmployeeColumns = (handleDelete: (uuid: string) => void) =>
         createSelectColumn({
             resourceName: 'employees',
             canSelectRow: (row: Employee) => row.role !== 'super_admin',
+            pin: 'left',
         }),
 
         createColumn({
@@ -23,6 +24,7 @@ export const createEmployeeColumns = (handleDelete: (uuid: string) => void) =>
             ...COLUMN_DEFAULTS.flexiblePrimaryColumn,
             sortable: true,
             primary: true,
+            pin: 'left',
         }),
 
         createColumn({

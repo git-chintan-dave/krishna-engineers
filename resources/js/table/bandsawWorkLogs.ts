@@ -1,12 +1,12 @@
-import { createColumnHelper } from '@tanstack/vue-table';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit } from '@/routes/bandsaw';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createDateColumn } from '@/table/columns/dateColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import { createColumn } from '@/table/helpers/createColumn';
-import { COLUMN_DEFAULTS } from '@/table/constants/columns';
-import type { BandsawWorkLog } from '@/types/bandsawWorkLog';
+import {edit} from '@/routes/bandsaw';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createDateColumn} from '@/table/columns/dateColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createColumn} from '@/table/helpers/createColumn';
+import {COLUMN_DEFAULTS} from '@/table/constants/columns';
+import type {BandsawWorkLog} from '@/types/bandsawWorkLog';
 
 const columnHelper = createColumnHelper<any, BandsawWorkLog>();
 
@@ -17,28 +17,31 @@ export const createBandsawWorkLogColumns = (
     columnHelper.columns([
         ...(canManage
             ? [
-                  createSelectColumn({
-                      resourceName: 'bandsaw-work-logs',
-                  }),
-              ]
+                createSelectColumn({
+                    resourceName: 'bandsaw-work-logs',
+                    pin: 'left',
+                }),
+            ]
             : []),
 
         ...(canManage
             ? [
-                  createColumn({
-                      accessorKey: 'user.name',
-                      sortKey: 'user.name',
-                      header: 'Bandsaw',
-                      ...COLUMN_DEFAULTS.smallColumn,
-                      sortable: true,
-                      primary: true,
-                  }),
-              ]
+                createColumn({
+                    accessorKey: 'user.name',
+                    sortKey: 'user.name',
+                    header: 'Bandsaw',
+                    ...COLUMN_DEFAULTS.smallColumn,
+                    sortable: true,
+                    primary: true,
+                    pin: 'left',
+                }),
+            ]
             : []),
 
         createDateColumn({
             accessorKey: 'work_date',
             header: 'Work Date',
+            pin: 'left',
         }),
 
         createColumn({
@@ -74,11 +77,11 @@ export const createBandsawWorkLogColumns = (
 
         ...(canManage
             ? [
-                  createActionsColumn({
-                      editUrl: (uuid) => edit(uuid).url,
-                      resourceName: 'bandsaw work log',
-                      handleDelete,
-                  }),
-              ]
+                createActionsColumn({
+                    editUrl: (uuid) => edit(uuid).url,
+                    resourceName: 'bandsaw work log',
+                    handleDelete,
+                }),
+            ]
             : []),
     ]);

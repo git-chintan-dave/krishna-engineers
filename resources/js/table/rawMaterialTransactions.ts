@@ -1,16 +1,13 @@
-import { createColumnHelper } from '@tanstack/vue-table';
+import {createColumnHelper} from '@tanstack/vue-table';
 
-import { edit } from '@/routes/raw-material-transactions';
-import { createActionsColumn } from '@/table/columns/actionsColumn';
-import { createDateColumn } from '@/table/columns/dateColumn';
-import { createSelectColumn } from '@/table/columns/selectColumn';
-import {
-    createTransactionQuantityColumn,
-    createTransactionTypeColumn,
-} from '@/table/columns/transactionColumns';
-import { createColumn } from '@/table/helpers/createColumn';
-import { COLUMN_DEFAULTS } from '@/table/constants/columns';
-import type { RawMaterialTransaction } from '@/types/rawMaterialTransaction';
+import {edit} from '@/routes/raw-material-transactions';
+import {createActionsColumn} from '@/table/columns/actionsColumn';
+import {createDateColumn} from '@/table/columns/dateColumn';
+import {createSelectColumn} from '@/table/columns/selectColumn';
+import {createTransactionQuantityColumn, createTransactionTypeColumn,} from '@/table/columns/transactionColumns';
+import {createColumn} from '@/table/helpers/createColumn';
+import {COLUMN_DEFAULTS} from '@/table/constants/columns';
+import type {RawMaterialTransaction} from '@/types/rawMaterialTransaction';
 
 const columnHelper = createColumnHelper<any, RawMaterialTransaction>();
 
@@ -22,10 +19,11 @@ export const createRawMaterialTransactionColumns = (
     columnHelper.columns([
         ...(canDelete
             ? [
-                  createSelectColumn({
-                      resourceName: 'raw-material-transactions',
-                  }),
-              ]
+                createSelectColumn({
+                    resourceName: 'raw-material-transactions',
+                    pin: 'left',
+                }),
+            ]
             : []),
 
         createColumn<RawMaterialTransaction, string>({
@@ -35,6 +33,7 @@ export const createRawMaterialTransactionColumns = (
             ...COLUMN_DEFAULTS.flexiblePrimaryColumn,
             sortable: true,
             primary: true,
+            pin: 'left',
         }),
 
         createColumn<RawMaterialTransaction, string>({
@@ -44,12 +43,14 @@ export const createRawMaterialTransactionColumns = (
             ...COLUMN_DEFAULTS.secondaryColumn,
             sortable: true,
             primary: true,
+            pin: 'left',
         }),
 
         createTransactionTypeColumn<RawMaterialTransaction>({
             accessorKey: 'type',
             ...COLUMN_DEFAULTS.secondaryColumn,
             getType: (row) => row.type,
+            pin: 'left',
         }),
 
         createTransactionQuantityColumn<RawMaterialTransaction>({
@@ -68,13 +69,13 @@ export const createRawMaterialTransactionColumns = (
 
         ...(canEdit || canDelete
             ? [
-                  createActionsColumn({
-                      editUrl: (uuid) => edit(uuid).url,
-                      resourceName: 'raw material transaction',
-                      handleDelete,
-                      showEdit: () => canEdit,
-                      showDelete: () => canDelete,
-                  }),
-              ]
+                createActionsColumn({
+                    editUrl: (uuid) => edit(uuid).url,
+                    resourceName: 'raw material transaction',
+                    handleDelete,
+                    showEdit: () => canEdit,
+                    showDelete: () => canDelete,
+                }),
+            ]
             : []),
     ]);

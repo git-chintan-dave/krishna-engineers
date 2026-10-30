@@ -17,7 +17,12 @@ export const createAttendanceColumns = (
 ) =>
     columnHelper.columns([
         ...(canDelete
-            ? [createSelectColumn({ resourceName: 'attendances' })]
+            ? [
+                createSelectColumn({
+                    resourceName: 'attendances',
+                    pin: 'left',
+                })
+            ]
             : []),
 
         ...(canShowUserColumn
@@ -28,6 +33,7 @@ export const createAttendanceColumns = (
                     ...COLUMN_DEFAULTS.primaryColumn,
                     sortable: true,
                     primary: true,
+                    pin: 'left',
                 }),
             ]
             : []),
@@ -40,6 +46,7 @@ export const createAttendanceColumns = (
             align: 'center',
             sortable: true,
             primary: true,
+            pin: 'left',
         }),
 
         createColumn<Attendance, string | null>({
