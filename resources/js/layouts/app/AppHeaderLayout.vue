@@ -15,11 +15,16 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-    <AppShell variant="header">
+    <AppShell
+        variant="header"
+        class="[--app-header-height:4rem] [scrollbar-gutter:stable]"
+    >
         <AppHeader :breadcrumbs="breadcrumbs" />
+
         <AppContent variant="header">
             <slot />
         </AppContent>
+
         <Toaster />
     </AppShell>
 </template>

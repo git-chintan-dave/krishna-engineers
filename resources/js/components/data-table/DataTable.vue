@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {type Component, computed, onBeforeUnmount, onMounted, ref} from 'vue';
+import {type Component, computed, onBeforeUnmount, onMounted, ref,} from 'vue';
 import {FlexRender} from '@tanstack/vue-table';
 import {ChevronLeft, ChevronRight} from '@lucide/vue';
 
@@ -126,8 +126,7 @@ const props = withDefaults(defineProps<Props>(), {
 | Responsive Desktop State
 |--------------------------------------------------------------------------
 |
-| Pinning is enabled only at 768px and above.
-| This component owns the responsive sticky behavior.
+| Column pinning is enabled only at 768px and above.
 |
 */
 
@@ -247,15 +246,6 @@ const handleRowClick = (
 |--------------------------------------------------------------------------
 | Column Sizing
 |--------------------------------------------------------------------------
-|
-| Pinning must never replace the original TanStack column width.
-|
-| `getColumnSize()` is the configured/rendered TanStack width.
-|
-| `getColumnRenderedWidth()` is used only when calculating sticky offsets.
-| It accounts for minSize/maxSize so the sticky offset matches the actual
-| rendered width.
-|
 */
 
 const getColumnSize = (
@@ -324,9 +314,6 @@ const tableStyle = computed(() => ({
 |--------------------------------------------------------------------------
 | Column Classes
 |--------------------------------------------------------------------------
-|
-| The select column deliberately has NO horizontal padding.
-|
 */
 
 const getColumnClass = (
@@ -466,10 +453,7 @@ const getRowClass = (
 | Column Pinning
 |--------------------------------------------------------------------------
 |
-| The DataTable is the final authority for responsive pinning.
-|
-| Even if column metadata contains a pin value on mobile,
-| this method returns undefined and disables sticky positioning.
+| DataTable is the final authority for responsive pinning.
 |
 */
 
@@ -492,10 +476,6 @@ const getColumnPin = (
 |--------------------------------------------------------------------------
 | Sticky Offset
 |--------------------------------------------------------------------------
-|
-| Offset is calculated using the actual rendered width of other pinned
-| columns on the same side.
-|
 */
 
 const getPinnedOffset = (
@@ -545,8 +525,11 @@ const getPinnedOffset = (
 | Column Style
 |--------------------------------------------------------------------------
 |
-| Normal column sizing is kept compatible with the existing implementation.
-| Sticky positioning is applied independently.
+| Sticky layers:
+|
+| AppPageHeader      z-30
+| Table header       z-20
+| Pinned body cells  z-10
 |
 */
 
@@ -607,7 +590,7 @@ const getColumnStyle = (
         style.position = 'sticky';
 
         style.zIndex = isHeader
-            ? '11'
+            ? '20'
             : '10';
 
         if (pin === 'left') {
@@ -616,7 +599,7 @@ const getColumnStyle = (
             style.right = `${getPinnedOffset(column)}px`;
         }
     } else if (isHeader) {
-        style.zIndex = '10';
+        style.zIndex = '20';
     }
 
     /*
@@ -639,9 +622,6 @@ const getColumnStyle = (
 |--------------------------------------------------------------------------
 | Pinned Cell Backgrounds
 |--------------------------------------------------------------------------
-|
-| Sticky cells must have an opaque background.
-|
 */
 
 const PINNED_HIGHLIGHT_CLASSES: Record<
@@ -772,12 +752,15 @@ const showingTo = computed(() =>
 
 const paginationItems = computed<PaginationItem[]>(
     () => {
-        const pageCount = props.table.getPageCount();
-        const currentPage = props.pageIndex + 1;
+        const pageCount =
+            props.table.getPageCount();
+
+        const currentPage =
+            props.pageIndex + 1;
 
         if (pageCount <= 7) {
             return Array.from(
-                { length: pageCount },
+                {length: pageCount},
                 (_, index) => ({
                     type: 'page' as const,
                     page: index + 1,
@@ -787,14 +770,18 @@ const paginationItems = computed<PaginationItem[]>(
 
         const items: PaginationItem[] = [];
 
-        const addPage = (page: number): void => {
+        const addPage = (
+            page: number,
+        ): void => {
             items.push({
                 type: 'page',
                 page,
             });
         };
 
-        const addEllipsis = (key: string): void => {
+        const addEllipsis = (
+            key: string,
+        ): void => {
             items.push({
                 type: 'ellipsis',
                 key,
@@ -808,8 +795,14 @@ const paginationItems = computed<PaginationItem[]>(
         }
 
         for (
-            let page = Math.max(2, currentPage - 1);
-            page <= Math.min(pageCount - 1, currentPage + 1);
+            let page = Math.max(
+                2,
+                currentPage - 1,
+            );
+            page <= Math.min(
+                pageCount - 1,
+                currentPage + 1,
+            );
             page++
         ) {
             addPage(page);
@@ -849,7 +842,9 @@ const handlePageSizeChange = (
 
     if (
         !Number.isInteger(nextPageSize) ||
-        !props.pageSizeOptions.includes(nextPageSize)
+        !props.pageSizeOptions.includes(
+            nextPageSize,
+        )
     ) {
         return;
     }
@@ -872,7 +867,7 @@ const handlePageSizeChange = (
              Table viewport
         ================================================================ -->
 
-        <div class="w-full min-w-0 overflow-x-auto overflow-y-clip overscroll-x-contain">
+        <div class="w-full min-w-0 overflow-x-clip overflow-y-visible">
             <UiTable
                 class="table-fixed border-separate border-spacing-0"
                 :style="tableStyle"
@@ -894,32 +889,49 @@ const handlePageSizeChange = (
                             )"
                             :key="header.id"
                             :class="[
-                                getColumnClass(header.column.id),
-
-                                getAlignmentClass(
-                                    getColumnAlign(header.column),
+                                getColumnClass(
+                                    header.column.id,
                                 ),
 
-                                'bg-muted text-foreground capitalize',
+                                getAlignmentClass(
+                                    getColumnAlign(
+                                        header.column,
+                                    ),
+                                ),
 
-                                getPinnedHeaderClass(header.column),
+                                'sticky bg-muted text-foreground capitalize',
 
-                                header.column.id === SELECT_COLUMN_ID
+                                getPinnedHeaderClass(
+                                    header.column,
+                                ),
+
+                                header.column.id ===
+                                SELECT_COLUMN_ID
                                     ? 'px-0'
                                     : 'px-3',
                             ]"
-                            :style="getColumnStyle(header.column, true)"
-                            class="h-10 text-sm font-medium tracking-wide whitespace-nowrap"
+                            :style="{
+                                ...getColumnStyle(
+                                    header.column,
+                                    true,
+                                ),
+
+                                top: 'calc(var(--app-header-height, 0px) + var(--app-page-header-height, 0px))',
+                            }"
+                            class="h-10 whitespace-nowrap text-sm font-medium tracking-wide"
                         >
                             <div
                                 v-if="!header.isPlaceholder"
                                 :class="
-                                    header.column.id === SELECT_COLUMN_ID
+                                    header.column.id ===
+                                    SELECT_COLUMN_ID
                                         ? 'flex w-full items-center justify-center'
                                         : ''
                                 "
                             >
-                                <FlexRender :header="header" />
+                                <FlexRender
+                                    :header="header"
+                                />
                             </div>
                         </TableHead>
                     </TableRow>
@@ -942,24 +954,34 @@ const handlePageSizeChange = (
                                 :key="column.id"
                                 :data-column-id="column.id"
                                 :class="[
-                                    getColumnClass(column.id),
+                                    getColumnClass(
+                                        column.id,
+                                    ),
 
-                                    getPinnedCellClass(column),
+                                    getPinnedCellClass(
+                                        column,
+                                    ),
 
-                                    column.id === SELECT_COLUMN_ID
+                                    column.id ===
+                                    SELECT_COLUMN_ID
                                         ? 'px-0'
                                         : 'px-3',
                                 ]"
-                                :style="getColumnStyle(column)"
+                                :style="
+                                    getColumnStyle(column)
+                                "
                                 class="py-2.5 align-middle"
                             >
                                 <div
                                     :class="[
                                         getPlaceholderAlignmentClass(
-                                            getColumnAlign(column),
+                                            getColumnAlign(
+                                                column,
+                                            ),
                                         ),
 
-                                        column.id === SELECT_COLUMN_ID
+                                        column.id ===
+                                        SELECT_COLUMN_ID
                                             ? 'justify-center'
                                             : '',
                                     ]"
@@ -967,7 +989,8 @@ const handlePageSizeChange = (
                                 >
                                     <div
                                         :class="
-                                            column.id === SELECT_COLUMN_ID
+                                            column.id ===
+                                            SELECT_COLUMN_ID
                                                 ? 'size-4'
                                                 : 'h-4 min-w-4 w-3/4 max-w-32'
                                         "
@@ -980,7 +1003,10 @@ const handlePageSizeChange = (
 
                     <!-- Data -->
                     <template
-                        v-else-if="table.getRowModel().rows.length"
+                        v-else-if="
+                            table.getRowModel().rows
+                                .length
+                        "
                     >
                         <TableRow
                             v-for="row in table.getRowModel().rows"
@@ -990,40 +1016,66 @@ const handlePageSizeChange = (
                                     ? 'selected'
                                     : undefined
                             "
-                            :class="getRowClass(row)"
-                            @click="handleRowClick($event, row)"
+                            :class="
+                                getRowClass(row)
+                            "
+                            @click="
+                                handleRowClick(
+                                    $event,
+                                    row,
+                                )
+                            "
                         >
                             <TableCell
-                                v-for="cell in row.getAllCells().filter(
-                                    (item: any) =>
-                                        item.column.getIsVisible?.() !== false,
-                                )"
+                                v-for="cell in row
+                                    .getAllCells()
+                                    .filter(
+                                        (item: any) =>
+                                            item.column.getIsVisible?.() !== false,
+                                    )"
                                 :key="cell.id"
-                                :data-column-id="cell.column.id"
+                                :data-column-id="
+                                    cell.column.id
+                                "
                                 :class="[
-                                    getColumnClass(cell.column.id),
-
-                                    getAlignmentClass(
-                                        getColumnAlign(cell.column),
+                                    getColumnClass(
+                                        cell.column.id,
                                     ),
 
-                                    getPinnedCellClass(cell.column, row),
+                                    getAlignmentClass(
+                                        getColumnAlign(
+                                            cell.column,
+                                        ),
+                                    ),
 
-                                    cell.column.id === SELECT_COLUMN_ID
+                                    getPinnedCellClass(
+                                        cell.column,
+                                        row,
+                                    ),
+
+                                    cell.column.id ===
+                                    SELECT_COLUMN_ID
                                         ? 'px-0'
                                         : 'px-3',
                                 ]"
-                                :style="getColumnStyle(cell.column)"
+                                :style="
+                                    getColumnStyle(
+                                        cell.column,
+                                    )
+                                "
                                 class="py-2.5 align-middle"
                             >
                                 <div
                                     :class="
-                                        cell.column.id === SELECT_COLUMN_ID
+                                        cell.column.id ===
+                                        SELECT_COLUMN_ID
                                             ? 'flex w-full items-center justify-center'
                                             : ''
                                     "
                                 >
-                                    <FlexRender :cell="cell" />
+                                    <FlexRender
+                                        :cell="cell"
+                                    />
                                 </div>
                             </TableCell>
                         </TableRow>
@@ -1033,7 +1085,8 @@ const handlePageSizeChange = (
                     <TableRow v-else>
                         <TableCell
                             :colspan="
-                                visibleColumns.length || columnsCount
+                                visibleColumns.length ||
+                                columnsCount
                             "
                             class="p-0"
                         >
@@ -1043,24 +1096,34 @@ const handlePageSizeChange = (
                             >
                                 <EmptyHeader>
                                     <EmptyMedia
-                                        v-if="emptyState.icon"
+                                        v-if="
+                                            emptyState.icon
+                                        "
                                         variant="icon"
                                     >
                                         <component
-                                            :is="emptyState.icon"
+                                            :is="
+                                                emptyState.icon
+                                            "
                                             class="size-6"
                                             aria-hidden="true"
                                         />
                                     </EmptyMedia>
 
                                     <EmptyTitle>
-                                        {{ emptyState.title }}
+                                        {{
+                                            emptyState.title
+                                        }}
                                     </EmptyTitle>
 
                                     <EmptyDescription
-                                        v-if="emptyState.description"
+                                        v-if="
+                                            emptyState.description
+                                        "
                                     >
-                                        {{ emptyState.description }}
+                                        {{
+                                            emptyState.description
+                                        }}
                                     </EmptyDescription>
                                 </EmptyHeader>
 
@@ -1073,9 +1136,13 @@ const handlePageSizeChange = (
                                     <Button
                                         type="button"
                                         size="sm"
-                                        @click="emptyState.onAction"
+                                        @click="
+                                            emptyState.onAction
+                                        "
                                     >
-                                        {{ emptyState.actionLabel }}
+                                        {{
+                                            emptyState.actionLabel
+                                        }}
                                     </Button>
                                 </EmptyContent>
                             </Empty>
@@ -1084,7 +1151,9 @@ const handlePageSizeChange = (
                                 v-else
                                 class="flex min-h-32 items-center justify-center px-4 text-center"
                             >
-                                <span class="text-sm text-muted-foreground">
+                                <span
+                                    class="text-sm text-muted-foreground"
+                                >
                                     {{ emptyText }}
                                 </span>
                             </div>
@@ -1106,11 +1175,21 @@ const handlePageSizeChange = (
                 <!-- Summary -->
                 <div class="min-w-0">
                     <template v-if="loading">
-                        <div class="flex h-5 items-center gap-2">
-                            <Skeleton class="h-4 w-16" />
-                            <Skeleton class="h-4 w-20" />
-                            <Skeleton class="h-4 w-12" />
-                            <Skeleton class="h-4 w-16" />
+                        <div
+                            class="flex h-5 items-center gap-2"
+                        >
+                            <Skeleton
+                                class="h-4 w-16"
+                            />
+                            <Skeleton
+                                class="h-4 w-20"
+                            />
+                            <Skeleton
+                                class="h-4 w-12"
+                            />
+                            <Skeleton
+                                class="h-4 w-16"
+                            />
                         </div>
                     </template>
 
@@ -1120,19 +1199,31 @@ const handlePageSizeChange = (
                         class="text-sm wrap-break-word text-muted-foreground"
                     >
                         Showing
-                        <span class="font-medium text-foreground">
-                            {{ showingFrom }}–{{ showingTo }}
+                        <span
+                            class="font-medium text-foreground"
+                        >
+                            {{ showingFrom }}–{{
+                                showingTo
+                            }}
                         </span>
                         of
-                        <span class="font-medium text-foreground">
+                        <span
+                            class="font-medium text-foreground"
+                        >
                             {{ total }}
                         </span>
                         {{ itemLabel }}
 
-                        <template v-if="selectedCount > 0">
-                            <span class="mx-1.5">·</span>
+                        <template
+                            v-if="selectedCount > 0"
+                        >
+                            <span class="mx-1.5">
+                                ·
+                            </span>
 
-                            <span class="font-medium text-foreground">
+                            <span
+                                class="font-medium text-foreground"
+                            >
                                 {{ selectedCount }}
                             </span>
 
@@ -1146,10 +1237,16 @@ const handlePageSizeChange = (
                     class="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                     <!-- Page size -->
-                    <div class="flex min-w-0 items-center gap-2">
+                    <div
+                        class="flex min-w-0 items-center gap-2"
+                    >
                         <template v-if="loading">
-                            <Skeleton class="h-4 w-24" />
-                            <Skeleton class="h-9 w-24 rounded-md" />
+                            <Skeleton
+                                class="h-4 w-24"
+                            />
+                            <Skeleton
+                                class="h-9 w-24 rounded-md"
+                            />
                         </template>
 
                         <template v-else>
@@ -1159,30 +1256,50 @@ const handlePageSizeChange = (
                                 Rows per page
                             </span>
 
-                            <div class="w-24 shrink-0">
+                            <div
+                                class="w-24 shrink-0"
+                            >
                                 <AppSelect
                                     :disabled="loading"
-                                    :model-value="pageSize"
-                                    :options="pageSizeOptions"
+                                    :model-value="
+                                        pageSize
+                                    "
+                                    :options="
+                                        pageSizeOptions
+                                    "
                                     placeholder="10"
-                                    @update:model-value="handlePageSizeChange"
+                                    @update:model-value="
+                                        handlePageSizeChange
+                                    "
                                 />
                             </div>
                         </template>
                     </div>
 
                     <!-- Pagination -->
-                    <div class="max-w-full min-w-0 overflow-x-auto pb-0.5">
+                    <div
+                        class="max-w-full min-w-0 overflow-x-auto pb-0.5"
+                    >
                         <nav
                             v-if="loading"
                             aria-hidden="true"
                             class="flex w-max items-center gap-1"
                         >
-                            <Skeleton class="size-9 shrink-0 rounded-md" />
-                            <Skeleton class="size-9 shrink-0 rounded-md" />
-                            <Skeleton class="size-9 shrink-0 rounded-md" />
-                            <Skeleton class="size-9 shrink-0 rounded-md" />
-                            <Skeleton class="size-9 shrink-0 rounded-md" />
+                            <Skeleton
+                                class="size-9 shrink-0 rounded-md"
+                            />
+                            <Skeleton
+                                class="size-9 shrink-0 rounded-md"
+                            />
+                            <Skeleton
+                                class="size-9 shrink-0 rounded-md"
+                            />
+                            <Skeleton
+                                class="size-9 shrink-0 rounded-md"
+                            />
+                            <Skeleton
+                                class="size-9 shrink-0 rounded-md"
+                            />
                         </nav>
 
                         <nav
@@ -1191,12 +1308,16 @@ const handlePageSizeChange = (
                             class="flex w-max items-center gap-1"
                         >
                             <Button
-                                :disabled="!table.getCanPreviousPage()"
+                                :disabled="
+                                    !table.getCanPreviousPage()
+                                "
                                 aria-label="Previous page"
                                 class="size-9 shrink-0"
                                 size="icon"
                                 variant="outline"
-                                @click="table.previousPage()"
+                                @click="
+                                    table.previousPage()
+                                "
                             >
                                 <ChevronLeft
                                     aria-hidden="true"
@@ -1207,28 +1328,36 @@ const handlePageSizeChange = (
                             <template
                                 v-for="item in paginationItems"
                                 :key="
-                                    item.type === 'page'
+                                    item.type ===
+                                    'page'
                                         ? item.page
                                         : item.key
                                 "
                             >
                                 <Button
-                                    v-if="item.type === 'page'"
+                                    v-if="
+                                        item.type ===
+                                        'page'
+                                    "
                                     :aria-current="
-                                        pageIndex === item.page - 1
+                                        pageIndex ===
+                                        item.page - 1
                                             ? 'page'
                                             : undefined
                                     "
                                     :aria-label="`Page ${item.page}`"
                                     :variant="
-                                        pageIndex === item.page - 1
+                                        pageIndex ===
+                                        item.page - 1
                                             ? 'default'
                                             : 'ghost'
                                     "
                                     class="size-9 shrink-0"
                                     size="icon"
                                     @click="
-                                        table.setPageIndex(item.page - 1)
+                                        table.setPageIndex(
+                                            item.page - 1,
+                                        )
                                     "
                                 >
                                     {{ item.page }}
@@ -1244,12 +1373,16 @@ const handlePageSizeChange = (
                             </template>
 
                             <Button
-                                :disabled="!table.getCanNextPage()"
+                                :disabled="
+                                    !table.getCanNextPage()
+                                "
                                 aria-label="Next page"
                                 class="size-9 shrink-0"
                                 size="icon"
                                 variant="outline"
-                                @click="table.nextPage()"
+                                @click="
+                                    table.nextPage()
+                                "
                             >
                                 <ChevronRight
                                     aria-hidden="true"
