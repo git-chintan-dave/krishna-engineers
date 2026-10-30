@@ -1,11 +1,10 @@
 import {Link} from '@inertiajs/vue3';
 import {CheckCircle2, Eye, Pencil, RefreshCw, Trash2,} from '@lucide/vue';
-import {type Component, h, type VNode,} from 'vue';
+import {type Component, h, onBeforeUnmount, onMounted, ref, type VNode,} from 'vue';
 
-import {Button} from '@/components/ui/button';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '@/components/ui/tooltip';
-import {executeConfirm} from '@/directives/confirm';
 import ActionsDropdown from '@/components/table/ActionsDropdown.vue';
+import {executeConfirm} from '@/directives/confirm';
 import {COLUMN_DEFAULTS} from '@/table/constants/columns';
 import type {ColumnPin} from '@/table/helpers/createColumn';
 
@@ -68,9 +67,7 @@ type ActionRecord = {
 
 const ICON_CLASS = 'size-3';
 
-const ICON_BUTTON_CLASS = [
-    'size-6 shrink-0 cursor-pointer',
-];
+const DESKTOP_BREAKPOINT = '(min-width: 768px)';
 
 const ACTION_STYLES = {
     view: [
@@ -97,132 +94,134 @@ const ACTION_STYLES = {
 
 /*
 |--------------------------------------------------------------------------
+| Desktop Media Query
+|--------------------------------------------------------------------------
+*/
+
+function useDesktopMediaQuery() {
+    const isDesktop = ref(false);
+
+    let mediaQuery: MediaQueryList | undefined;
+
+    const update = (event?: MediaQueryListEvent) => {
+        isDesktop.value = event?.matches
+            ?? mediaQuery?.matches
+            ?? false;
+    };
+
+    onMounted(() => {
+        mediaQuery = window.matchMedia(DESKTOP_BREAKPOINT);
+
+        update();
+
+        mediaQuery.addEventListener('change', update);
+    });
+
+    onBeforeUnmount(() => {
+        mediaQuery?.removeEventListener('change', update);
+    });
+
+    return isDesktop;
+}
+
+/*
+|--------------------------------------------------------------------------
 | Helpers
 |--------------------------------------------------------------------------
 */
 
-function renderIcon(
-    icon: Component,
+function withTooltip(
+    content: VNode,
     label: string,
-): VNode[] {
-    return [
-        h(icon, {
-            class: ICON_CLASS,
-            'aria-hidden': 'true',
-        }),
+): VNode {
+    return h(
+        Tooltip,
+        {},
+        {
+            default: () => [
+                h(
+                    TooltipTrigger,
+                    {
+                        asChild: true,
+                    },
+                    {
+                        default: () => content,
+                    },
+                ),
 
-        h(
-            'span',
-            {
-                class: 'sr-only',
-            },
-            label,
-        ),
-    ];
+                h(
+                    TooltipContent,
+                    {},
+                    {
+                        default: () => label,
+                    },
+                ),
+            ],
+        },
+    );
 }
 
 function createIconButton(
     icon: Component,
     label: string,
     colorClass: string[],
+    isDesktop: boolean,
     options: {
         href?: string;
         disabled?: boolean;
         onClick?: () => void | Promise<void>;
     } = {},
 ): VNode {
-    const button = h(
-        Button,
-        {
-            type: 'button',
-            variant: 'ghost',
-            size: 'icon',
-            class: [
-                ICON_BUTTON_CLASS,
-                ...colorClass,
-            ],
-            disabled: options.disabled,
-            'aria-label': label,
+    const content = h(icon, {
+        class: ICON_CLASS,
+        'aria-hidden': 'true',
+    });
 
-            onClick: (event: MouseEvent) => {
-                event.stopPropagation();
+    const classes = [
+        'inline-flex size-6 shrink-0 items-center justify-center rounded-md',
+        ...colorClass,
+    ];
 
-                if (!options.disabled) {
-                    void options.onClick?.();
-                }
-            },
+    let button: VNode;
 
-            ...(options.href
-                ? { asChild: true }
-                : {}),
-        },
-
-        options.href
-            ? {
-                default: () =>
-                    h(
-                        Link,
-                        {
-                            href: options.href!,
-                        },
-                        {
-                            default: () =>
-                                renderIcon(icon, label),
-                        },
-                    ),
-            }
-            : {
-                default: () =>
-                    renderIcon(icon, label),
-            },
-    );
-
-    const trigger = options.disabled
-        ? h(
-            'span',
+    if (options.href) {
+        button = h(
+            Link,
             {
-                class: 'inline-flex',
-                tabindex: 0,
+                href: options.href,
                 'aria-label': label,
+                class: classes,
             },
-            [button],
-        )
-        : button;
+            {
+                default: () => content,
+            },
+        );
+    } else {
+        button = h(
+            'button',
+            {
+                type: 'button',
+                disabled: options.disabled,
+                'aria-label': label,
+                class: classes,
+                onClick: (event: MouseEvent) => {
+                    event.stopPropagation();
 
-    return h(
-        TooltipProvider,
-        {},
-        {
-            default: () =>
-                h(
-                    Tooltip,
-                    {},
-                    {
-                        default: () => [
-                            h(
-                                TooltipTrigger,
-                                {
-                                    asChild: true,
-                                },
-                                {
-                                    default: () => trigger,
-                                },
-                            ),
+                    if (!options.disabled) {
+                        void options.onClick?.();
+                    }
+                },
+            },
+            [content],
+        );
+    }
 
-                            h(
-                                TooltipContent,
-                                {
-                                    side: 'top',
-                                },
-                                {
-                                    default: () => label,
-                                },
-                            ),
-                        ],
-                    },
-                ),
-        },
-    );
+    // Never render tooltips on mobile or for disabled buttons.
+    if (!isDesktop || options.disabled) {
+        return button;
+    }
+
+    return withTooltip(button, label);
 }
 
 /*
@@ -249,6 +248,8 @@ export const createActionsColumn = <TData = unknown>({
                                                          maxSize = COLUMN_DEFAULTS.actions.maxSize,
                                                          pin,
                                                      }: ActionsColumnOptions<TData>) => {
+    const isDesktop = useDesktopMediaQuery();
+
     const hasMarkAsPaid = Boolean(
         markAsPaidUrl && handleMarkAsPaid,
     );
@@ -301,6 +302,7 @@ export const createActionsColumn = <TData = unknown>({
                         Eye,
                         'View',
                         ACTION_STYLES.view,
+                        isDesktop.value,
                         {
                             href: detailsUrl(uuid),
                         },
@@ -315,6 +317,7 @@ export const createActionsColumn = <TData = unknown>({
                         Pencil,
                         'Edit',
                         ACTION_STYLES.edit,
+                        isDesktop.value,
                         {
                             href: editUrl(uuid),
                         },
@@ -328,6 +331,7 @@ export const createActionsColumn = <TData = unknown>({
                     Trash2,
                     'Delete',
                     ACTION_STYLES.delete,
+                    isDesktop.value,
                     {
                         disabled: !canDelete,
 
@@ -409,7 +413,7 @@ export const createActionsColumn = <TData = unknown>({
                 );
             }
 
-            return h(
+            const actionContainer = h(
                 'div',
                 {
                     class: [
@@ -419,6 +423,17 @@ export const createActionsColumn = <TData = unknown>({
                 },
                 primaryActions,
             );
+
+            // TooltipProvider is only mounted on desktop.
+            return isDesktop.value
+                ? h(
+                    TooltipProvider,
+                    {},
+                    {
+                        default: () => actionContainer,
+                    },
+                )
+                : actionContainer;
         },
     };
 };

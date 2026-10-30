@@ -19,11 +19,18 @@ defineEmits<{
 
 <template>
     <main class="w-full min-w-0 divide-y divide-border p-4 md:px-6 md:py-5">
-        <AppPageHeader :description="description" :title="title">
-            <template v-if="$slots.actions" #actions>
-                <slot name="actions" />
-            </template>
-        </AppPageHeader>
+        <div
+            class="sticky top-(--app-header-height,0px) z-30 -mx-4 -mt-4 border-b border-border bg-background/95 px-4 backdrop-blur-md md:-mx-6 md:-mt-5 md:px-6"
+        >
+            <AppPageHeader
+                :description="description"
+                :title="title"
+            >
+                <template v-if="$slots.actions" #actions>
+                    <slot name="actions" />
+                </template>
+            </AppPageHeader>
+        </div>
 
         <section
             v-if="$slots.stats"

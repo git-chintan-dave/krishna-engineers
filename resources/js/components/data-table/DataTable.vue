@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {type Component, computed} from 'vue';
+import {type Component, computed, onBeforeUnmount, onMounted, ref} from 'vue';
 import {FlexRender} from '@tanstack/vue-table';
 import {ChevronLeft, ChevronRight} from '@lucide/vue';
 
@@ -7,7 +7,7 @@ import AppSelect from '@/components/common/AppSelect.vue';
 import {Button} from '@/components/ui/button';
 import {Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle,} from '@/components/ui/empty';
 import {Table as UiTable, TableBody, TableCell, TableHead, TableHeader, TableRow,} from '@/components/ui/table';
-import {Skeleton} from "@/components/ui/skeleton";
+import {Skeleton} from '@/components/ui/skeleton';
 
 /*
 |--------------------------------------------------------------------------
@@ -73,6 +73,8 @@ type Props = {
 const SELECT_COLUMN_ID = 'select';
 const ACTIONS_COLUMN_ID = 'actions';
 
+const DESKTOP_BREAKPOINT = '(min-width: 768px)';
+
 const FIXED_COLUMN_IDS = new Set([
     SELECT_COLUMN_ID,
     'status',
@@ -121,6 +123,46 @@ const props = withDefaults(defineProps<Props>(), {
 
 /*
 |--------------------------------------------------------------------------
+| Responsive Desktop State
+|--------------------------------------------------------------------------
+|
+| Pinning is enabled only at 768px and above.
+| This component owns the responsive sticky behavior.
+|
+*/
+
+const isDesktop = ref(false);
+
+let desktopMediaQuery: MediaQueryList | undefined;
+
+const handleDesktopChange = (
+    event: MediaQueryListEvent,
+): void => {
+    isDesktop.value = event.matches;
+};
+
+onMounted(() => {
+    desktopMediaQuery = window.matchMedia(
+        DESKTOP_BREAKPOINT,
+    );
+
+    isDesktop.value = desktopMediaQuery.matches;
+
+    desktopMediaQuery.addEventListener(
+        'change',
+        handleDesktopChange,
+    );
+});
+
+onBeforeUnmount(() => {
+    desktopMediaQuery?.removeEventListener(
+        'change',
+        handleDesktopChange,
+    );
+});
+
+/*
+|--------------------------------------------------------------------------
 | Visible Columns
 |--------------------------------------------------------------------------
 |
@@ -136,8 +178,7 @@ const visibleColumns = computed(() => {
     const table = props.table;
 
     if (
-        typeof table?.getVisibleLeafColumns ===
-        'function'
+        typeof table?.getVisibleLeafColumns === 'function'
     ) {
         return table.getVisibleLeafColumns();
     }
@@ -194,9 +235,7 @@ const handleRowClick = (
     }
 
     if (
-        target.closest(
-            INTERACTIVE_SELECTOR,
-        )
+        target.closest(INTERACTIVE_SELECTOR)
     ) {
         return;
     }
@@ -208,8 +247,6 @@ const handleRowClick = (
 |--------------------------------------------------------------------------
 | Column Sizing
 |--------------------------------------------------------------------------
-|
-| IMPORTANT:
 |
 | Pinning must never replace the original TanStack column width.
 |
@@ -251,22 +288,12 @@ const getColumnRenderedWidth = (
                 ? minSize
                 : 150;
 
-    if (
-        typeof minSize === 'number'
-    ) {
-        width = Math.max(
-            width,
-            minSize,
-        );
+    if (typeof minSize === 'number') {
+        width = Math.max(width, minSize);
     }
 
-    if (
-        typeof maxSize === 'number'
-    ) {
-        width = Math.min(
-            width,
-            maxSize,
-        );
+    if (typeof maxSize === 'number') {
+        width = Math.min(width, maxSize);
     }
 
     return width;
@@ -284,8 +311,7 @@ const tableMinWidth = computed(() =>
             total: number,
             column: any,
         ) =>
-            total +
-            getColumnMinimumWidth(column),
+            total + getColumnMinimumWidth(column),
         0,
     ),
 );
@@ -301,8 +327,6 @@ const tableStyle = computed(() => ({
 |
 | The select column deliberately has NO horizontal padding.
 |
-| This is the important part of the checkbox alignment fix.
-|
 */
 
 const getColumnClass = (
@@ -311,9 +335,7 @@ const getColumnClass = (
     const widthClass =
         props.columnWidths[columnId] ?? '';
 
-    if (
-        columnId === SELECT_COLUMN_ID
-    ) {
+    if (columnId === SELECT_COLUMN_ID) {
         return [
             widthClass,
             'px-0',
@@ -337,8 +359,7 @@ const getColumnAlign = (
     const align =
         column?.columnDef?.meta?.align;
 
-    return align === 'center' ||
-    align === 'right'
+    return align === 'center' || align === 'right'
         ? align
         : 'left';
 };
@@ -423,9 +444,7 @@ const getRowClass = (
     row: any,
 ): string[] => {
     const highlight =
-        props.rowHighlight?.(
-            row.original,
-        );
+        props.rowHighlight?.(row.original);
 
     return [
         'group',
@@ -438,9 +457,7 @@ const getRowClass = (
         'data-[state=selected]:!bg-primary/10',
         'data-[state=selected]:hover:!bg-primary/15',
 
-        getRowHighlightClass(
-            highlight,
-        ),
+        getRowHighlightClass(highlight),
     ];
 };
 
@@ -448,16 +465,25 @@ const getRowClass = (
 |--------------------------------------------------------------------------
 | Column Pinning
 |--------------------------------------------------------------------------
+|
+| The DataTable is the final authority for responsive pinning.
+|
+| Even if column metadata contains a pin value on mobile,
+| this method returns undefined and disables sticky positioning.
+|
 */
 
 const getColumnPin = (
     column: any,
 ): ColumnPin | undefined => {
+    if (!isDesktop.value) {
+        return undefined;
+    }
+
     const pin =
         column?.columnDef?.meta?.pin;
 
-    return pin === 'left' ||
-    pin === 'right'
+    return pin === 'left' || pin === 'right'
         ? pin
         : undefined;
 };
@@ -475,21 +501,17 @@ const getColumnPin = (
 const getPinnedOffset = (
     column: any,
 ): number => {
-    const pin =
-        getColumnPin(column);
+    const pin = getColumnPin(column);
 
     if (!pin) {
         return 0;
     }
 
-    const columns =
-        visibleColumns.value;
+    const columns = visibleColumns.value;
 
-    const columnIndex =
-        columns.findIndex(
-            (item: any) =>
-                item.id === column.id,
-        );
+    const columnIndex = columns.findIndex(
+        (item: any) => item.id === column.id,
+    );
 
     if (columnIndex === -1) {
         return 0;
@@ -497,31 +519,21 @@ const getPinnedOffset = (
 
     const adjacentColumns =
         pin === 'left'
-            ? columns.slice(
-                0,
-                columnIndex,
-            )
-            : columns.slice(
-                columnIndex + 1,
-            );
+            ? columns.slice(0, columnIndex)
+            : columns.slice(columnIndex + 1);
 
     return adjacentColumns.reduce(
         (
             offset: number,
             item: any,
         ) => {
-            if (
-                getColumnPin(item) !==
-                pin
-            ) {
+            if (getColumnPin(item) !== pin) {
                 return offset;
             }
 
             return (
                 offset +
-                getColumnRenderedWidth(
-                    item,
-                )
+                getColumnRenderedWidth(item)
             );
         },
         0,
@@ -533,12 +545,8 @@ const getPinnedOffset = (
 | Column Style
 |--------------------------------------------------------------------------
 |
-| IMPORTANT:
-|
-| Normal column sizing is intentionally kept compatible with the previous
-| working version.
-|
-| Sticky positioning is added independently.
+| Normal column sizing is kept compatible with the existing implementation.
+| Sticky positioning is applied independently.
 |
 */
 
@@ -555,22 +563,12 @@ const getColumnStyle = (
         columnDef,
     } = column;
 
-    const size =
-        getColumnSize(column);
+    const size = getColumnSize(column);
+    const minSize = columnDef?.minSize;
+    const maxSize = columnDef?.maxSize;
+    const pin = getColumnPin(column);
 
-    const minSize =
-        columnDef?.minSize;
-
-    const maxSize =
-        columnDef?.maxSize;
-
-    const pin =
-        getColumnPin(column);
-
-    const style: Record<
-        string,
-        string
-    > = {};
+    const style: Record<string, string> = {};
 
     /*
     |--------------------------------------------------------------------------
@@ -582,28 +580,20 @@ const getColumnStyle = (
         FIXED_COLUMN_IDS.has(id) &&
         typeof size === 'number'
     ) {
-        const width =
-            `${size}px`;
+        const width = `${size}px`;
 
         style.width = width;
         style.minWidth = width;
         style.maxWidth = width;
     } else {
-        if (
-            typeof size === 'number'
-        ) {
-            style.width =
-                `${size}px`;
+        if (typeof size === 'number') {
+            style.width = `${size}px`;
         }
 
-        style.minWidth =
-            `${minSize ?? 20}px`;
+        style.minWidth = `${minSize ?? 20}px`;
 
-        if (
-            typeof maxSize === 'number'
-        ) {
-            style.maxWidth =
-                `${maxSize}px`;
+        if (typeof maxSize === 'number') {
+            style.maxWidth = `${maxSize}px`;
         }
     }
 
@@ -616,35 +606,31 @@ const getColumnStyle = (
     if (pin) {
         style.position = 'sticky';
 
-        style.zIndex =
-            isHeader
-                ? '50'
-                : '20';
+        style.zIndex = isHeader
+            ? '11'
+            : '10';
 
         if (pin === 'left') {
-            style.left =
-                `${getPinnedOffset(column)}px`;
+            style.left = `${getPinnedOffset(column)}px`;
         } else {
-            style.right =
-                `${getPinnedOffset(column)}px`;
+            style.right = `${getPinnedOffset(column)}px`;
         }
     } else if (isHeader) {
-        style.zIndex = '30';
+        style.zIndex = '10';
     }
 
     /*
     |--------------------------------------------------------------------------
     | Column Separator
     |--------------------------------------------------------------------------
-    |
-    | Inset shadows don't affect the column's measured width.
-    |
     */
 
-    style.boxShadow =
-        pin === 'right'
-            ? 'inset 1px 0 0 var(--border), inset 0 -1px 0 var(--border)'
-            : 'inset -1px 0 0 var(--border), inset 0 -1px 0 var(--border)';
+    if (pin) {
+        style.boxShadow =
+            pin === 'right'
+                ? 'inset 1px 0 0 var(--border), inset 0 -1px 0 var(--border)'
+                : 'inset -1px 0 0 var(--border), inset 0 -1px 0 var(--border)';
+    }
 
     return style;
 };
@@ -655,11 +641,6 @@ const getColumnStyle = (
 |--------------------------------------------------------------------------
 |
 | Sticky cells must have an opaque background.
-|
-| IMPORTANT:
-| Do not use `!bg-card` together with `!background-color` highlight classes.
-| Both are important declarations and can conflict depending on generated
-| stylesheet ordering.
 |
 */
 
@@ -707,56 +688,21 @@ const getPinnedCellClass = (
     }
 
     const highlight = row
-        ? props.rowHighlight?.(
-            row.original,
-        )
+        ? props.rowHighlight?.(row.original)
         : undefined;
 
     return [
-        /*
-        |--------------------------------------------------------------------------
-        | Keep sticky content above scrolling cells
-        |--------------------------------------------------------------------------
-        */
-
         'isolate',
-
-        /*
-        |--------------------------------------------------------------------------
-        | Opaque background
-        |--------------------------------------------------------------------------
-        */
-
         'bg-card',
         'bg-clip-padding',
 
-        /*
-        |--------------------------------------------------------------------------
-        | Row highlight
-        |--------------------------------------------------------------------------
-        */
-
         highlight
-            ? PINNED_HIGHLIGHT_CLASSES[
-                highlight
-                ]
+            ? PINNED_HIGHLIGHT_CLASSES[highlight]
             : '',
-
-        /*
-        |--------------------------------------------------------------------------
-        | Selected row
-        |--------------------------------------------------------------------------
-        */
 
         'group-data-[state=selected]:!bg-[color-mix(in_srgb,var(--card)_88%,var(--primary)_12%)]',
 
         'group-data-[state=selected]:group-hover:!bg-[color-mix(in_srgb,var(--card)_85%,var(--primary)_15%)]',
-
-        /*
-        |--------------------------------------------------------------------------
-        | Normal hover
-        |--------------------------------------------------------------------------
-        */
 
         !highlight
             ? 'group-hover:bg-[color-mix(in_srgb,var(--card)_94%,var(--muted)_6%)]'
@@ -781,10 +727,7 @@ const getPinnedHeaderClass = (
 
 const loadingRowCount = computed(() =>
     Math.min(
-        Math.max(
-            props.pageSize || 10,
-            5,
-        ),
+        Math.max(props.pageSize || 10, 5),
         10,
     ),
 );
@@ -796,12 +739,10 @@ const loadingRowCount = computed(() =>
 */
 
 const pageSizeOptions = computed(() =>
-    props.pageSizeOptions.map(
-        (size) => ({
-            value: size,
-            label: String(size),
-        }),
-    ),
+    props.pageSizeOptions.map((size) => ({
+        value: size,
+        label: String(size),
+    })),
 );
 
 /*
@@ -812,16 +753,13 @@ const pageSizeOptions = computed(() =>
 
 const showingFrom = computed(() =>
     props.total > 0
-        ? props.pageIndex *
-        props.pageSize +
-        1
+        ? props.pageIndex * props.pageSize + 1
         : 0,
 );
 
 const showingTo = computed(() =>
     Math.min(
-        (props.pageIndex + 1) *
-        props.pageSize,
+        (props.pageIndex + 1) * props.pageSize,
         props.total,
     ),
 );
@@ -832,84 +770,60 @@ const showingTo = computed(() =>
 |--------------------------------------------------------------------------
 */
 
-const paginationItems =
-    computed<PaginationItem[]>(
-        () => {
-            const pageCount =
-                props.table.getPageCount();
+const paginationItems = computed<PaginationItem[]>(
+    () => {
+        const pageCount = props.table.getPageCount();
+        const currentPage = props.pageIndex + 1;
 
-            const currentPage =
-                props.pageIndex + 1;
+        if (pageCount <= 7) {
+            return Array.from(
+                { length: pageCount },
+                (_, index) => ({
+                    type: 'page' as const,
+                    page: index + 1,
+                }),
+            );
+        }
 
-            if (pageCount <= 7) {
-                return Array.from(
-                    {
-                        length:
-                        pageCount,
-                    },
-                    (_, index) => ({
-                        type:
-                            'page' as const,
-                        page:
-                            index + 1,
-                    }),
-                );
-            }
+        const items: PaginationItem[] = [];
 
-            const items: PaginationItem[] =
-                [];
+        const addPage = (page: number): void => {
+            items.push({
+                type: 'page',
+                page,
+            });
+        };
 
-            const addPage = (
-                page: number,
-            ): void => {
-                items.push({
-                    type: 'page',
-                    page,
-                });
-            };
+        const addEllipsis = (key: string): void => {
+            items.push({
+                type: 'ellipsis',
+                key,
+            });
+        };
 
-            const addEllipsis = (
-                key: string,
-            ): void => {
-                items.push({
-                    type: 'ellipsis',
-                    key,
-                });
-            };
+        addPage(1);
 
-            addPage(1);
+        if (currentPage > 4) {
+            addEllipsis('start');
+        }
 
-            if (currentPage > 4) {
-                addEllipsis('start');
-            }
+        for (
+            let page = Math.max(2, currentPage - 1);
+            page <= Math.min(pageCount - 1, currentPage + 1);
+            page++
+        ) {
+            addPage(page);
+        }
 
-            for (
-                let page = Math.max(
-                    2,
-                    currentPage - 1,
-                );
-                page <=
-                Math.min(
-                    pageCount - 1,
-                    currentPage + 1,
-                );
-                page++
-            ) {
-                addPage(page);
-            }
+        if (currentPage < pageCount - 3) {
+            addEllipsis('end');
+        }
 
-            if (
-                currentPage <
-                pageCount - 3
-            ) {
-                addEllipsis('end');
-            }
+        addPage(pageCount);
 
-            addPage(pageCount);
-
-            return items;
-        },
-    );
+        return items;
+    },
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -931,16 +845,11 @@ const handlePageSizeChange = (
         return;
     }
 
-    const nextPageSize =
-        Number(value);
+    const nextPageSize = Number(value);
 
     if (
-        !Number.isInteger(
-            nextPageSize,
-        ) ||
-        !props.pageSizeOptions.includes(
-            nextPageSize,
-        )
+        !Number.isInteger(nextPageSize) ||
+        !props.pageSizeOptions.includes(nextPageSize)
     ) {
         return;
     }
@@ -954,24 +863,16 @@ const handlePageSizeChange = (
 
 <template>
     <div
-        :aria-busy="
-            loading
-                ? true
-                : undefined
-        "
-        :aria-label="
-            `${itemLabel} table`
-        "
-        class="w-full min-w-0 overflow-hidden rounded-md border border-border bg-card"
+        :aria-busy="loading ? true : undefined"
+        :aria-label="`${itemLabel} table`"
+        class="w-full min-w-0 overflow-clip rounded-md border border-border bg-card"
         role="region"
     >
         <!-- ===============================================================
              Table viewport
         ================================================================ -->
 
-        <div
-            class="w-full min-w-0 overflow-auto overscroll-contain"
-        >
+        <div class="w-full min-w-0 overflow-x-auto overflow-y-clip overscroll-x-contain">
             <UiTable
                 class="table-fixed border-separate border-spacing-0"
                 :style="tableStyle"
@@ -993,51 +894,32 @@ const handlePageSizeChange = (
                             )"
                             :key="header.id"
                             :class="[
-                                getColumnClass(
-                                    header.column.id,
-                                ),
+                                getColumnClass(header.column.id),
 
                                 getAlignmentClass(
-                                    getColumnAlign(
-                                        header.column,
-                                    ),
+                                    getColumnAlign(header.column),
                                 ),
 
-                                'sticky top-0 bg-muted text-foreground capitalize',
+                                'bg-muted text-foreground capitalize',
 
-                                getPinnedHeaderClass(
-                                    header.column,
-                                ),
+                                getPinnedHeaderClass(header.column),
 
-                                header.column.id ===
-                                SELECT_COLUMN_ID
+                                header.column.id === SELECT_COLUMN_ID
                                     ? 'px-0'
                                     : 'px-3',
                             ]"
-                            :style="
-                                getColumnStyle(
-                                    header.column,
-                                    true,
-                                )
-                            "
+                            :style="getColumnStyle(header.column, true)"
                             class="h-10 text-sm font-medium tracking-wide whitespace-nowrap"
                         >
                             <div
-                                v-if="
-                                    !header.isPlaceholder
-                                "
+                                v-if="!header.isPlaceholder"
                                 :class="
-                                    header.column.id ===
-                                    SELECT_COLUMN_ID
+                                    header.column.id === SELECT_COLUMN_ID
                                         ? 'flex w-full items-center justify-center'
                                         : ''
                                 "
                             >
-                                <FlexRender
-                                    :header="
-                                        header
-                                    "
-                                />
+                                <FlexRender :header="header" />
                             </div>
                         </TableHead>
                     </TableRow>
@@ -1058,40 +940,26 @@ const handlePageSizeChange = (
                             <TableCell
                                 v-for="column in loadingColumns"
                                 :key="column.id"
-                                :data-column-id="
-                                    column.id
-                                "
+                                :data-column-id="column.id"
                                 :class="[
-                                    getColumnClass(
-                                        column.id,
-                                    ),
+                                    getColumnClass(column.id),
 
-                                    getPinnedCellClass(
-                                        column,
-                                    ),
+                                    getPinnedCellClass(column),
 
-                                    column.id ===
-                                    SELECT_COLUMN_ID
+                                    column.id === SELECT_COLUMN_ID
                                         ? 'px-0'
                                         : 'px-3',
                                 ]"
-                                :style="
-                                    getColumnStyle(
-                                        column,
-                                    )
-                                "
+                                :style="getColumnStyle(column)"
                                 class="py-2.5 align-middle"
                             >
                                 <div
                                     :class="[
                                         getPlaceholderAlignmentClass(
-                                            getColumnAlign(
-                                                column,
-                                            ),
+                                            getColumnAlign(column),
                                         ),
 
-                                        column.id ===
-                                            SELECT_COLUMN_ID
+                                        column.id === SELECT_COLUMN_ID
                                             ? 'justify-center'
                                             : '',
                                     ]"
@@ -1099,8 +967,7 @@ const handlePageSizeChange = (
                                 >
                                     <div
                                         :class="
-                                            column.id ===
-                                            SELECT_COLUMN_ID
+                                            column.id === SELECT_COLUMN_ID
                                                 ? 'size-4'
                                                 : 'h-4 min-w-4 w-3/4 max-w-32'
                                         "
@@ -1113,9 +980,7 @@ const handlePageSizeChange = (
 
                     <!-- Data -->
                     <template
-                        v-else-if="
-                            table.getRowModel().rows.length
-                        "
+                        v-else-if="table.getRowModel().rows.length"
                     >
                         <TableRow
                             v-for="row in table.getRowModel().rows"
@@ -1125,15 +990,8 @@ const handlePageSizeChange = (
                                     ? 'selected'
                                     : undefined
                             "
-                            :class="
-                                getRowClass(row)
-                            "
-                            @click="
-                                handleRowClick(
-                                    $event,
-                                    row,
-                                )
-                            "
+                            :class="getRowClass(row)"
+                            @click="handleRowClick($event, row)"
                         >
                             <TableCell
                                 v-for="cell in row.getAllCells().filter(
@@ -1141,50 +999,31 @@ const handlePageSizeChange = (
                                         item.column.getIsVisible?.() !== false,
                                 )"
                                 :key="cell.id"
-                                :data-column-id="
-                                    cell.column.id
-                                "
+                                :data-column-id="cell.column.id"
                                 :class="[
-                                    getColumnClass(
-                                        cell.column.id,
-                                    ),
+                                    getColumnClass(cell.column.id),
 
                                     getAlignmentClass(
-                                        getColumnAlign(
-                                            cell.column,
-                                        ),
+                                        getColumnAlign(cell.column),
                                     ),
 
-                                    getPinnedCellClass(
-                                        cell.column,
-                                        row,
-                                    ),
+                                    getPinnedCellClass(cell.column, row),
 
-                                    cell.column.id ===
-                                    SELECT_COLUMN_ID
+                                    cell.column.id === SELECT_COLUMN_ID
                                         ? 'px-0'
                                         : 'px-3',
                                 ]"
-                                :style="
-                                    getColumnStyle(
-                                        cell.column,
-                                    )
-                                "
+                                :style="getColumnStyle(cell.column)"
                                 class="py-2.5 align-middle"
                             >
                                 <div
                                     :class="
-                                        cell.column.id ===
-                                        SELECT_COLUMN_ID
+                                        cell.column.id === SELECT_COLUMN_ID
                                             ? 'flex w-full items-center justify-center'
                                             : ''
                                     "
                                 >
-                                    <FlexRender
-                                        :cell="
-                                            cell
-                                        "
-                                    />
+                                    <FlexRender :cell="cell" />
                                 </div>
                             </TableCell>
                         </TableRow>
@@ -1194,47 +1033,34 @@ const handlePageSizeChange = (
                     <TableRow v-else>
                         <TableCell
                             :colspan="
-                                visibleColumns.length ||
-                                columnsCount
+                                visibleColumns.length || columnsCount
                             "
                             class="p-0"
                         >
                             <Empty
-                                v-if="
-                                    emptyState
-                                "
+                                v-if="emptyState"
                                 class="min-h-64 rounded-none border-0 px-6 py-10"
                             >
                                 <EmptyHeader>
                                     <EmptyMedia
-                                        v-if="
-                                            emptyState.icon
-                                        "
+                                        v-if="emptyState.icon"
                                         variant="icon"
                                     >
                                         <component
-                                            :is="
-                                                emptyState.icon
-                                            "
+                                            :is="emptyState.icon"
                                             class="size-6"
                                             aria-hidden="true"
                                         />
                                     </EmptyMedia>
 
                                     <EmptyTitle>
-                                        {{
-                                            emptyState.title
-                                        }}
+                                        {{ emptyState.title }}
                                     </EmptyTitle>
 
                                     <EmptyDescription
-                                        v-if="
-                                            emptyState.description
-                                        "
+                                        v-if="emptyState.description"
                                     >
-                                        {{
-                                            emptyState.description
-                                        }}
+                                        {{ emptyState.description }}
                                     </EmptyDescription>
                                 </EmptyHeader>
 
@@ -1247,13 +1073,9 @@ const handlePageSizeChange = (
                                     <Button
                                         type="button"
                                         size="sm"
-                                        @click="
-                                            emptyState.onAction
-                                        "
+                                        @click="emptyState.onAction"
                                     >
-                                        {{
-                                            emptyState.actionLabel
-                                        }}
+                                        {{ emptyState.actionLabel }}
                                     </Button>
                                 </EmptyContent>
                             </Empty>
@@ -1262,12 +1084,8 @@ const handlePageSizeChange = (
                                 v-else
                                 class="flex min-h-32 items-center justify-center px-4 text-center"
                             >
-                                <span
-                                    class="text-sm text-muted-foreground"
-                                >
-                                    {{
-                                        emptyText
-                                    }}
+                                <span class="text-sm text-muted-foreground">
+                                    {{ emptyText }}
                                 </span>
                             </div>
                         </TableCell>
@@ -1303,20 +1121,20 @@ const handlePageSizeChange = (
                     >
                         Showing
                         <span class="font-medium text-foreground">
-                    {{ showingFrom }}–{{ showingTo }}
-                </span>
+                            {{ showingFrom }}–{{ showingTo }}
+                        </span>
                         of
                         <span class="font-medium text-foreground">
-                    {{ total }}
-                </span>
+                            {{ total }}
+                        </span>
                         {{ itemLabel }}
 
                         <template v-if="selectedCount > 0">
                             <span class="mx-1.5">·</span>
 
                             <span class="font-medium text-foreground">
-                        {{ selectedCount }}
-                    </span>
+                                {{ selectedCount }}
+                            </span>
 
                             selected
                         </template>
@@ -1335,11 +1153,11 @@ const handlePageSizeChange = (
                         </template>
 
                         <template v-else>
-                    <span
-                        class="shrink-0 text-sm whitespace-nowrap text-muted-foreground"
-                    >
-                        Rows per page
-                    </span>
+                            <span
+                                class="shrink-0 text-sm whitespace-nowrap text-muted-foreground"
+                            >
+                                Rows per page
+                            </span>
 
                             <div class="w-24 shrink-0">
                                 <AppSelect
@@ -1354,9 +1172,7 @@ const handlePageSizeChange = (
                     </div>
 
                     <!-- Pagination -->
-                    <div
-                        class="max-w-full min-w-0 overflow-x-auto pb-0.5"
-                    >
+                    <div class="max-w-full min-w-0 overflow-x-auto pb-0.5">
                         <nav
                             v-if="loading"
                             aria-hidden="true"
@@ -1391,27 +1207,29 @@ const handlePageSizeChange = (
                             <template
                                 v-for="item in paginationItems"
                                 :key="
-                            item.type === 'page'
-                                ? item.page
-                                : item.key
-                        "
+                                    item.type === 'page'
+                                        ? item.page
+                                        : item.key
+                                "
                             >
                                 <Button
                                     v-if="item.type === 'page'"
                                     :aria-current="
-                                pageIndex === item.page - 1
-                                    ? 'page'
-                                    : undefined
-                            "
+                                        pageIndex === item.page - 1
+                                            ? 'page'
+                                            : undefined
+                                    "
                                     :aria-label="`Page ${item.page}`"
                                     :variant="
-                                pageIndex === item.page - 1
-                                    ? 'default'
-                                    : 'ghost'
-                            "
+                                        pageIndex === item.page - 1
+                                            ? 'default'
+                                            : 'ghost'
+                                    "
                                     class="size-9 shrink-0"
                                     size="icon"
-                                    @click="table.setPageIndex(item.page - 1)"
+                                    @click="
+                                        table.setPageIndex(item.page - 1)
+                                    "
                                 >
                                     {{ item.page }}
                                 </Button>
@@ -1421,8 +1239,8 @@ const handlePageSizeChange = (
                                     aria-hidden="true"
                                     class="flex size-9 shrink-0 items-center justify-center text-sm text-muted-foreground"
                                 >
-                            …
-                        </span>
+                                    …
+                                </span>
                             </template>
 
                             <Button

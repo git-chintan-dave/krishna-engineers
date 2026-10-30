@@ -1,5 +1,5 @@
 import {ArrowDown, ArrowUp, ChevronsUpDown} from '@lucide/vue';
-import {h} from 'vue';
+import {h, onBeforeUnmount, onMounted, reactive,} from 'vue';
 
 import type {ColumnAlign} from '@/table/types';
 
@@ -53,8 +53,9 @@ type BaseColumnOptions<TData, TValue> = {
     /**
      * Pin the column to the left or right side of the table.
      *
-     * The DataTable is responsible for applying the actual sticky
-     * positioning and calculating the required offset.
+     * Pinning is enabled only on desktop (768px and above).
+     * The DataTable is responsible for applying sticky positioning
+     * and calculating the required offset.
      */
     pin?: ColumnPin;
 
@@ -88,6 +89,14 @@ type AccessorFnColumnOptions<TData, TValue> = BaseColumnOptions<
 export type CreateColumnOptions<TData, TValue = unknown> =
     | AccessorKeyColumnOptions<TData, TValue>
     | AccessorFnColumnOptions<TData, TValue>;
+
+/*
+|--------------------------------------------------------------------------
+| Constants
+|--------------------------------------------------------------------------
+*/
+
+const DESKTOP_BREAKPOINT = '(min-width: 768px)';
 
 /*
 |--------------------------------------------------------------------------
@@ -134,20 +143,75 @@ const getColumnWidth = (
     minSize?: number,
     maxSize?: number,
 ) => ({
-    ...(size !== undefined ? {size} : {}),
+    ...(size !== undefined ? { size } : {}),
 
     ...(minSize !== undefined
-        ? {minSize}
+        ? { minSize }
         : size !== undefined
-            ? {minSize: size}
+            ? { minSize: size }
             : {}),
 
     ...(maxSize !== undefined
-        ? {maxSize}
+        ? { maxSize }
         : size !== undefined
-            ? {maxSize: size}
+            ? { maxSize: size }
             : {}),
 });
+
+/*
+|--------------------------------------------------------------------------
+| Responsive Column Meta
+|--------------------------------------------------------------------------
+*/
+
+const createColumnMeta = (
+    meta: Record<string, unknown> | undefined,
+    align: ColumnAlign,
+    sortKey: string | undefined,
+    pin: ColumnPin | undefined,
+): ColumnMeta => {
+    const columnMeta = reactive<ColumnMeta>({
+        ...meta,
+        align,
+        ...(sortKey !== undefined ? { sortKey } : {}),
+    });
+
+    if (!pin) {
+        return columnMeta;
+    }
+
+    let mediaQuery: MediaQueryList | undefined;
+
+    const updatePin = (matches: boolean) => {
+        if (matches) {
+            columnMeta.pin = pin;
+        } else {
+            delete columnMeta.pin;
+        }
+    };
+
+    onMounted(() => {
+        mediaQuery = window.matchMedia(DESKTOP_BREAKPOINT);
+
+        updatePin(mediaQuery.matches);
+
+        mediaQuery.addEventListener('change', (event) => {
+            updatePin(event.matches);
+        });
+    });
+
+    onBeforeUnmount(() => {
+        if (mediaQuery) {
+            mediaQuery.removeEventListener('change', handleChange);
+        }
+    });
+
+    function handleChange(event: MediaQueryListEvent) {
+        updatePin(event.matches);
+    }
+
+    return columnMeta;
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -157,7 +221,7 @@ const getColumnWidth = (
 
 const createHeader =
     (label: string, align: ColumnAlign) =>
-        ({column}: SortableHeaderContext) => {
+        ({ column }: SortableHeaderContext) => {
             const sorted = column.getIsSorted();
 
             const SortIcon =
@@ -234,12 +298,12 @@ export const createColumn = <TData, TValue = unknown>(
                 accessorKey: options.accessorKey,
             };
 
-    const columnMeta: ColumnMeta = {
-        ...meta,
+    const columnMeta = createColumnMeta(
+        meta,
         align,
-        ...(sortKey !== undefined ? {sortKey} : {}),
-        ...(pin !== undefined ? {pin} : {}),
-    };
+        sortKey,
+        pin,
+    );
 
     return {
         ...accessor,

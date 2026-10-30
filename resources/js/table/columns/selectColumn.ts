@@ -1,4 +1,4 @@
-import {h} from 'vue';
+import {h, onBeforeUnmount, onMounted, reactive,} from 'vue';
 
 import {Checkbox} from '@/components/ui/checkbox';
 import {COLUMN_DEFAULTS} from '@/table/constants/columns';
@@ -15,6 +15,14 @@ type SelectColumnOptions<TData = unknown> = {
     canSelectRow?: (row: TData) => boolean;
     pin?: ColumnPin;
 };
+
+/*
+|--------------------------------------------------------------------------
+| Constants
+|--------------------------------------------------------------------------
+*/
+
+const DESKTOP_BREAKPOINT = '(min-width: 768px)';
 
 /*
 |--------------------------------------------------------------------------
@@ -48,6 +56,54 @@ const CHECKBOX_CLASS = [
 
 /*
 |--------------------------------------------------------------------------
+| Responsive Column Meta
+|--------------------------------------------------------------------------
+*/
+
+function createColumnMeta(pin?: ColumnPin) {
+    const meta = reactive({
+        align: 'center' as const,
+        ...(pin ? {} : {}),
+    }) as {
+        align: 'center';
+        pin?: ColumnPin;
+    };
+
+    if (!pin) {
+        return meta;
+    }
+
+    let mediaQuery: MediaQueryList | undefined;
+
+    const updatePin = (matches: boolean) => {
+        if (matches) {
+            meta.pin = pin;
+        } else {
+            delete meta.pin;
+        }
+    };
+
+    const handleChange = (event: MediaQueryListEvent) => {
+        updatePin(event.matches);
+    };
+
+    onMounted(() => {
+        mediaQuery = window.matchMedia(DESKTOP_BREAKPOINT);
+
+        updatePin(mediaQuery.matches);
+
+        mediaQuery.addEventListener('change', handleChange);
+    });
+
+    onBeforeUnmount(() => {
+        mediaQuery?.removeEventListener('change', handleChange);
+    });
+
+    return meta;
+}
+
+/*
+|--------------------------------------------------------------------------
 | Column
 |--------------------------------------------------------------------------
 */
@@ -63,12 +119,9 @@ export const createSelectColumn = <TData = unknown>({
     minSize: COLUMN_DEFAULTS.select.minSize,
     maxSize: COLUMN_DEFAULTS.select.maxSize,
 
-    meta: {
-        align: 'center' as const,
-        ...(pin !== undefined ? {pin} : {}),
-    },
+    meta: createColumnMeta(pin),
 
-    header: ({table}: { table: any }) =>
+    header: ({ table }: { table: any }) =>
         h(Checkbox, {
             modelValue:
                 table.getIsAllPageRowsSelected() ||
@@ -82,7 +135,7 @@ export const createSelectColumn = <TData = unknown>({
             class: CHECKBOX_CLASS,
         }),
 
-    cell: ({row}: { row: any }) => {
+    cell: ({ row }: { row: any }) => {
         const selectable = canSelectRow?.(row.original) ?? true;
 
         const label =

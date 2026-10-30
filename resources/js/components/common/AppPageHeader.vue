@@ -12,7 +12,7 @@ withDefaults(
 
 <template>
     <header
-        class="flex w-full min-w-0 flex-col gap-4 pb-5 sm:flex-row sm:items-start sm:justify-between"
+        class="flex w-full min-w-0 flex-col gap-4 py-5 sm:flex-row sm:items-start sm:justify-between"
     >
         <div class="min-w-0 flex-1">
             <h1
@@ -31,7 +31,7 @@ withDefaults(
 
         <div
             v-if="$slots.actions"
-            class="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto sm:max-w-full sm:shrink-0 sm:justify-end"
+            class="flex w-full min-w-0 items-center gap-2 sm:w-auto sm:max-w-full sm:shrink-0 sm:justify-end"
         >
             <slot name="actions" />
         </div>
