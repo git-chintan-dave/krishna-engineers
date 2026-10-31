@@ -447,6 +447,7 @@ const handleStatClick = (item: ListingStatItem): void => {
                 <template #filters>
                     <div class="w-full min-w-0">
                         <AppUserRoleSelect
+                            multiple
                             :model-value="
                                 filterRole === 'all' ? null : filterRole
                             "
@@ -458,6 +459,7 @@ const handleStatClick = (item: ListingStatItem): void => {
 
                     <div class="w-full min-w-0">
                         <AppUserShiftSelect
+                            multiple
                             :model-value="
                                 filterShift === 'all' ? null : filterShift
                             "

@@ -37,11 +37,17 @@ class IndexUserRequest extends FormRequest
 
             'role' => [
                 'nullable',
+                'array',
+            ],
+            'role.*' => [
                 Rule::enum(UserRole::class),
             ],
 
             'shift' => [
                 'nullable',
+                'array'
+            ],
+            'shift.*' => [
                 Rule::enum(UserShift::class),
             ],
 

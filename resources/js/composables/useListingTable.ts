@@ -40,6 +40,7 @@ type VisitOptions<TSort extends string> = {
     direction?: SortDirection;
     clearSorting?: boolean;
     useServerDefaults?: boolean;
+    reloadProps?: string[];
 };
 
 type PaginationMeta = {
@@ -133,7 +134,7 @@ export function useListingTable<
         allowedPageSizes: PAGE_SIZE_OPTIONS,
     });
 
-    const { features } = listingPreferences;
+    const {features} = listingPreferences;
 
     if (hasExplicitPageSize) {
         listingPreferences.setPerPage(getMeta().per_page);
@@ -161,7 +162,7 @@ export function useListingTable<
             .map((item) => {
                 const column = options.columns.find((column) => {
                     const meta = column.meta as
-                        | { sortKey?: string }
+                        | {sortKey?: string}
                         | undefined;
 
                     return (
@@ -180,7 +181,7 @@ export function useListingTable<
                 };
             })
             .filter(
-                (item): item is { id: string; desc: boolean } =>
+                (item): item is {id: string; desc: boolean} =>
                     item !== null,
             );
 
@@ -204,7 +205,7 @@ export function useListingTable<
             initialSorting,
             enableRowSelection: options.enableRowSelection,
 
-            onPaginationChange: ({ pageIndex, pageSize }) => {
+            onPaginationChange: ({pageIndex, pageSize}) => {
                 if (!getResponse()) {
                     return;
                 }
@@ -267,14 +268,14 @@ export function useListingTable<
     const getSortKey = (columnId: string): TSort => {
         const column = table.getAllColumns().find((item) => {
             const sortKey = (
-                item.columnDef.meta as { sortKey?: string } | undefined
+                item.columnDef.meta as {sortKey?: string} | undefined
             )?.sortKey;
 
             return item.id === columnId || sortKey === columnId;
         });
 
         const sortKey = (
-            column?.columnDef.meta as { sortKey?: TSort } | undefined
+            column?.columnDef.meta as {sortKey?: TSort} | undefined
         )?.sortKey;
 
         return (sortKey ?? column?.id ?? columnId) as TSort;
@@ -316,16 +317,17 @@ export function useListingTable<
                        direction,
                        clearSorting = false,
                        useServerDefaults = false,
+                       reloadProps,
                    }: VisitOptions<TSort> = {}) {
         const additionalFilters = options.additionalFilters?.() ?? {};
-        const only = options.reloadProps;
+        const only = reloadProps ?? options.reloadProps;
 
         if (useServerDefaults) {
             router.get(
                 options.route,
                 additionalFilters as RequestPayload,
                 {
-                    ...(only?.length ? { only } : {}),
+                    ...(only?.length ? {only} : {}),
                     preserveState: true,
                     preserveScroll: true,
                     replace: true,
@@ -379,7 +381,7 @@ export function useListingTable<
         }
 
         router.get(options.route, params as RequestPayload, {
-            ...(only?.length ? { only } : {}),
+            ...(only?.length ? {only} : {}),
             preserveState: true,
             preserveScroll: true,
             replace: true,
@@ -444,12 +446,12 @@ export function useListingTable<
         },
     );
 
-    const search = () => visit({ page: DEFAULT_PAGE });
+    const search = () => visit({page: DEFAULT_PAGE});
 
     const clearFilters = () => {
         options.onClearFilters?.();
         searchQuery.value = '';
-        visit({ page: DEFAULT_PAGE });
+        visit({page: DEFAULT_PAGE});
     };
 
     const deleteSelected = (
@@ -463,7 +465,7 @@ export function useListingTable<
         }
 
         router.delete(bulkDeleteUrl, {
-            data: { ids },
+            data: {ids},
             onSuccess: () => {
                 clearSelection();
                 onSuccess?.();
@@ -476,7 +478,7 @@ export function useListingTable<
         searchQuery.value = '';
         listingPreferences.reset();
 
-        visit({ useServerDefaults: true });
+        visit({useServerDefaults: true});
     };
 
     return {
