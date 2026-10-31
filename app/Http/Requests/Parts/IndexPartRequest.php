@@ -32,6 +32,10 @@ class IndexPartRequest extends FormRequest
 
             'section_id' => [
                 'nullable',
+                'array',
+            ],
+            'section_id.*' => [
+                'nullable',
                 'integer',
                 Rule::exists('sections', 'id'),
             ],

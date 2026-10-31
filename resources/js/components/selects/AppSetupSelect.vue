@@ -5,6 +5,8 @@ import {RefreshCw} from '@lucide/vue';
 import AppSelect from '@/components/common/AppSelect.vue';
 import {useLookup} from '@/composables/useLookup';
 import type {SelectOption} from '@/types/common';
+import type {AppSelectValue, NumericSelectValue,} from '@/utils/selectUtils';
+import {normalizeSelectValue} from '@/utils/selectUtils';
 
 /*
 |--------------------------------------------------------------------------
@@ -68,10 +70,11 @@ let requestId = 0;
 
 const fetchSetups = async (): Promise<void> => {
     const currentRequestId = ++requestId;
+    const partId = props.partId;
 
     options.value = [];
 
-    if (!props.partId) {
+    if (!partId) {
         loading.value = false;
         return;
     }
@@ -79,7 +82,7 @@ const fetchSetups = async (): Promise<void> => {
     loading.value = true;
 
     try {
-        const result = await setups(props.partId, {
+        const result = await setups(partId, {
             cache: 'memory',
         });
 
@@ -95,6 +98,7 @@ const fetchSetups = async (): Promise<void> => {
         }
 
         console.error('Failed to load setups:', error);
+
         options.value = [];
     } finally {
         if (currentRequestId === requestId) {
@@ -122,10 +126,9 @@ const refreshSetups = async (): Promise<void> => {
     refreshing.value = true;
 
     try {
-        // Build the cache key for the current part.
+        // Invalidate only the current part's setups cache.
         const cacheKey = `setups:part_id=${props.partId}`;
 
-        // Invalidate only the current part's setups cache.
         clearLookupCache(cacheKey);
 
         // Fetch fresh data and cache it in memory.
@@ -141,18 +144,22 @@ const refreshSetups = async (): Promise<void> => {
 |--------------------------------------------------------------------------
 */
 
-const handleUpdate = (
-    value: string | number | null | (string | number)[],
-): void => {
-    if (value === null || typeof value === 'number') {
-        emit('update:modelValue', value);
-        emit('change', value);
+const handleUpdate = (value: AppSelectValue): void => {
+    const normalizedValue: NumericSelectValue =
+        normalizeSelectValue(value);
+
+    // This component supports single selection only.
+    if (Array.isArray(normalizedValue)) {
+        return;
     }
+
+    emit('update:modelValue', normalizedValue);
+    emit('change', normalizedValue);
 };
 
 /*
 |--------------------------------------------------------------------------
-| Lifecycle & Watchers
+| Watchers
 |--------------------------------------------------------------------------
 */
 
@@ -168,7 +175,7 @@ watch(
         <div class="min-w-0 flex-1">
             <AppSelect
                 :clearable="clearable"
-                :disabled="disabled || loading || !partId"
+                :disabled="disabled || loading || refreshing || !partId"
                 :error="error"
                 :loading="loading"
                 :model-value="modelValue"

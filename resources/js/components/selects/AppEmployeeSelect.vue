@@ -5,6 +5,8 @@ import {RefreshCw} from '@lucide/vue';
 import AppSelect from '@/components/common/AppSelect.vue';
 import {useLookup} from '@/composables/useLookup';
 import type {SelectOption} from '@/types/common';
+import type {AppSelectValue, NumericSelectValue,} from '@/utils/selectUtils';
+import {isValidSelectionMode, normalizeSelectValue,} from '@/utils/selectUtils';
 
 /*
 |--------------------------------------------------------------------------
@@ -19,7 +21,7 @@ type EmployeeRole =
     | 'bandsaw'
     | 'deburring_packaging';
 
-type AppSelectValue = string | number | null | (string | number)[];
+type SelectValue = NumericSelectValue;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,13 +31,14 @@ type AppSelectValue = string | number | null | (string | number)[];
 
 const props = withDefaults(
     defineProps<{
-        modelValue?: number | null;
+        modelValue?: SelectValue;
         placeholder?: string;
         searchable?: boolean;
         clearable?: boolean;
         disabled?: boolean;
         error?: string;
         role?: EmployeeRole | null;
+        multiple?: boolean;
         showRefresh?: boolean;
     }>(),
     {
@@ -46,6 +49,7 @@ const props = withDefaults(
         disabled: false,
         error: undefined,
         role: null,
+        multiple: false,
         showRefresh: true,
     },
 );
@@ -57,8 +61,8 @@ const props = withDefaults(
 */
 
 const emit = defineEmits<{
-    'update:modelValue': [value: number | null];
-    change: [value: number | null];
+    'update:modelValue': [value: SelectValue];
+    change: [value: SelectValue];
 }>();
 
 /*
@@ -148,10 +152,19 @@ const refreshEmployees = async (): Promise<void> => {
 */
 
 const handleUpdate = (value: AppSelectValue): void => {
-    if (value === null || typeof value === 'number') {
-        emit('update:modelValue', value);
-        emit('change', value);
+    if (!isValidSelectionMode(value, props.multiple)) {
+        return;
     }
+
+    emit('update:modelValue', normalizeSelectValue(value));
+};
+
+const handleChange = (value: AppSelectValue): void => {
+    if (!isValidSelectionMode(value, props.multiple)) {
+        return;
+    }
+
+    emit('change', normalizeSelectValue(value));
 };
 
 /*
@@ -172,13 +185,15 @@ watch(
         <div class="min-w-0 flex-1">
             <AppSelect
                 :clearable="clearable"
-                :disabled="disabled || loading"
+                :disabled="disabled || loading || refreshing"
                 :error="error"
                 :loading="loading"
                 :model-value="modelValue"
+                :multiple="multiple"
                 :options="options"
                 :placeholder="placeholder"
                 :searchable="searchable"
+                @change="handleChange"
                 @update:model-value="handleUpdate"
             />
         </div>

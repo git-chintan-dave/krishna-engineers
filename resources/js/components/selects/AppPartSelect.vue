@@ -5,6 +5,8 @@ import {RefreshCw} from '@lucide/vue';
 import AppSelect from '@/components/common/AppSelect.vue';
 import {useLookup} from '@/composables/useLookup';
 import type {SelectOption} from '@/types/common';
+import type {AppSelectValue, NumericSelectValue,} from '@/utils/selectUtils';
+import {isValidSelectionMode, normalizeSelectValue,} from '@/utils/selectUtils';
 
 /*
 |--------------------------------------------------------------------------
@@ -17,7 +19,7 @@ type PartSelectOption = SelectOption<number> & {
     section_id: number | null;
 };
 
-type AppSelectValue = string | number | null | (string | number)[];
+type SelectValue = NumericSelectValue;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,12 +29,13 @@ type AppSelectValue = string | number | null | (string | number)[];
 
 const props = withDefaults(
     defineProps<{
-        modelValue?: number | null;
+        modelValue?: SelectValue;
         placeholder?: string;
         searchable?: boolean;
         clearable?: boolean;
         disabled?: boolean;
         error?: string;
+        multiple?: boolean;
         showRefresh?: boolean;
     }>(),
     {
@@ -42,6 +45,7 @@ const props = withDefaults(
         clearable: false,
         disabled: false,
         error: '',
+        multiple: false,
         showRefresh: true,
     },
 );
@@ -53,9 +57,9 @@ const props = withDefaults(
 */
 
 const emit = defineEmits<{
-    'update:modelValue': [value: number | null];
-    change: [value: number | null];
-    part: [part: PartSelectOption | null];
+    'update:modelValue': [value: SelectValue];
+    change: [value: SelectValue];
+    part: [part: PartSelectOption | PartSelectOption[] | null];
 }>();
 
 /*
@@ -78,20 +82,6 @@ let requestId = 0;
 |--------------------------------------------------------------------------
 */
 
-const normalizeValue = (value: unknown): number | null => {
-    if (typeof value === 'number') {
-        return value;
-    }
-
-    if (typeof value === 'string' && value.trim() !== '') {
-        const numberValue = Number(value);
-
-        return Number.isFinite(numberValue) ? numberValue : null;
-    }
-
-    return null;
-};
-
 const getPart = (value: number | null): PartSelectOption | null => {
     if (value === null) {
         return null;
@@ -100,27 +90,45 @@ const getPart = (value: number | null): PartSelectOption | null => {
     return options.value.find((option) => option.value === value) ?? null;
 };
 
-const emitSelectedPart = (value: number | null): void => {
-    emit('part', getPart(value));
+const getSelectedParts = (
+    value: SelectValue,
+): PartSelectOption | PartSelectOption[] | null => {
+    if (Array.isArray(value)) {
+        return value
+            .map((id) => getPart(id))
+            .filter((part): part is PartSelectOption => part !== null);
+    }
+
+    return getPart(value);
+};
+
+const emitSelectedPart = (value: SelectValue): void => {
+    emit('part', getSelectedParts(value));
 };
 
 /*
 |--------------------------------------------------------------------------
-| Value Changes
+| Value Handling
 |--------------------------------------------------------------------------
 */
 
 const handleModelValue = (value: AppSelectValue): void => {
-    const partId = normalizeValue(value);
+    if (!isValidSelectionMode(value, props.multiple)) {
+        return;
+    }
 
-    emit('update:modelValue', partId);
-    emitSelectedPart(partId);
+    const normalizedValue = normalizeSelectValue(value);
+
+    emit('update:modelValue', normalizedValue);
+    emitSelectedPart(normalizedValue);
 };
 
 const handleChange = (value: AppSelectValue): void => {
-    const partId = normalizeValue(value);
+    if (!isValidSelectionMode(value, props.multiple)) {
+        return;
+    }
 
-    emit('change', partId);
+    emit('change', normalizeSelectValue(value));
 };
 
 /*
@@ -146,7 +154,7 @@ const loadOptions = async (): Promise<void> => {
 
         options.value = result as PartSelectOption[];
 
-        // Resolve the selected part after options are loaded.
+        // Resolve selected parts after options are loaded.
         emitSelectedPart(props.modelValue);
     } catch (error) {
         if (currentRequestId !== requestId) {
@@ -154,6 +162,7 @@ const loadOptions = async (): Promise<void> => {
         }
 
         console.error('Failed to load parts:', error);
+
         options.value = [];
         emitSelectedPart(props.modelValue);
     } finally {
@@ -216,10 +225,11 @@ watch(
         <div class="min-w-0 flex-1">
             <AppSelect
                 :clearable="clearable"
-                :disabled="disabled"
+                :disabled="disabled || loading || refreshing"
                 :error="error"
                 :loading="loading"
                 :model-value="modelValue"
+                :multiple="multiple"
                 :options="options"
                 :placeholder="placeholder"
                 :searchable="searchable"

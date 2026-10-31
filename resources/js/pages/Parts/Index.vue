@@ -178,6 +178,7 @@ const handleDeleteSelected = (): void => {
                 <template #filters>
                     <div class="w-full min-w-0">
                         <AppSectionSelect
+                            multiple
                             :model-value="filterSectionId === 'all' ? null : filterSectionId"
                             :placeholder="partPage.sectionPlaceholder"
                             clearable
@@ -187,6 +188,7 @@ const handleDeleteSelected = (): void => {
 
                     <div class="w-full min-w-0">
                         <AppStatusSelect
+                            multiple
                             :model-value="filterStatus === 'all' ? null : filterStatus"
                             clearable
                             placeholder="All statuses"

@@ -5,6 +5,16 @@ import {RefreshCw} from '@lucide/vue';
 import AppSelect from '@/components/common/AppSelect.vue';
 import {useLookup} from '@/composables/useLookup';
 import type {SelectOption} from '@/types/common';
+import type {AppSelectValue, NumericSelectValue,} from '@/utils/selectUtils';
+import {isValidSelectionMode, normalizeSelectValue,} from '@/utils/selectUtils';
+
+/*
+|--------------------------------------------------------------------------
+| Types
+|--------------------------------------------------------------------------
+*/
+
+type SelectValue = NumericSelectValue;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,12 +24,13 @@ import type {SelectOption} from '@/types/common';
 
 const props = withDefaults(
     defineProps<{
-        modelValue?: number | null;
+        modelValue?: SelectValue;
         placeholder?: string;
         searchable?: boolean;
         clearable?: boolean;
         disabled?: boolean;
         error?: string;
+        multiple?: boolean;
         showRefresh?: boolean;
     }>(),
     {
@@ -29,6 +40,7 @@ const props = withDefaults(
         clearable: false,
         disabled: false,
         error: '',
+        multiple: false,
         showRefresh: true,
     },
 );
@@ -40,8 +52,8 @@ const props = withDefaults(
 */
 
 const emit = defineEmits<{
-    'update:modelValue': [value: number | null];
-    change: [value: number | null];
+    'update:modelValue': [value: SelectValue];
+    change: [value: SelectValue];
 }>();
 
 /*
@@ -86,6 +98,7 @@ const loadOptions = async (): Promise<void> => {
         }
 
         console.error('Failed to load machines:', error);
+
         options.value = [];
     } finally {
         if (currentRequestId === requestId) {
@@ -120,6 +133,28 @@ const refreshOptions = async (): Promise<void> => {
 
 /*
 |--------------------------------------------------------------------------
+| Value Handling
+|--------------------------------------------------------------------------
+*/
+
+const handleUpdate = (value: AppSelectValue): void => {
+    if (!isValidSelectionMode(value, props.multiple)) {
+        return;
+    }
+
+    emit('update:modelValue', normalizeSelectValue(value));
+};
+
+const handleChange = (value: AppSelectValue): void => {
+    if (!isValidSelectionMode(value, props.multiple)) {
+        return;
+    }
+
+    emit('change', normalizeSelectValue(value));
+};
+
+/*
+|--------------------------------------------------------------------------
 | Lifecycle
 |--------------------------------------------------------------------------
 */
@@ -132,15 +167,16 @@ onMounted(loadOptions);
         <div class="min-w-0 flex-1">
             <AppSelect
                 :clearable="clearable"
-                :disabled="disabled || loading"
+                :disabled="disabled || loading || refreshing"
                 :error="error"
                 :loading="loading"
                 :model-value="modelValue"
+                :multiple="multiple"
                 :options="options"
                 :placeholder="placeholder"
                 :searchable="searchable"
-                @change="emit('change', $event as number | null)"
-                @update:model-value="emit('update:modelValue', $event as number | null)"
+                @change="handleChange"
+                @update:model-value="handleUpdate"
             />
         </div>
 
