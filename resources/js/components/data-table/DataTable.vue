@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {type Component, computed, onBeforeUnmount, onMounted, ref,} from 'vue';
+import {type Component, computed, nextTick, onBeforeUnmount, onMounted, ref,} from 'vue';
 import {FlexRender} from '@tanstack/vue-table';
 import {ChevronLeft, ChevronRight} from '@lucide/vue';
 
@@ -8,12 +8,6 @@ import {Button} from '@/components/ui/button';
 import {Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle,} from '@/components/ui/empty';
 import {Table as UiTable, TableBody, TableCell, TableHead, TableHeader, TableRow,} from '@/components/ui/table';
 import {Skeleton} from '@/components/ui/skeleton';
-
-/*
-|--------------------------------------------------------------------------
-| Types
-|--------------------------------------------------------------------------
-*/
 
 type ColumnAlign = 'left' | 'center' | 'right';
 type ColumnPin = 'left' | 'right';
@@ -64,12 +58,6 @@ type Props = {
     rowHighlight?: RowHighlightResolver<any>;
 };
 
-/*
-|--------------------------------------------------------------------------
-| Constants
-|--------------------------------------------------------------------------
-*/
-
 const SELECT_COLUMN_ID = 'select';
 const ACTIONS_COLUMN_ID = 'actions';
 
@@ -95,12 +83,6 @@ const INTERACTIVE_SELECTOR = [
     '[data-row-selection-ignore]',
 ].join(', ');
 
-/*
-|--------------------------------------------------------------------------
-| Props
-|--------------------------------------------------------------------------
-*/
-
 const props = withDefaults(defineProps<Props>(), {
     selectedCount: 0,
     loading: false,
@@ -121,18 +103,16 @@ const props = withDefaults(defineProps<Props>(), {
     itemLabel: 'records',
 });
 
-/*
-|--------------------------------------------------------------------------
-| Responsive Desktop State
-|--------------------------------------------------------------------------
-|
-| Column pinning is enabled only at 768px and above.
-|
-*/
-
 const isDesktop = ref(false);
 
 let desktopMediaQuery: MediaQueryList | undefined;
+
+const tableScrollRef = ref<HTMLElement | null>(null);
+const tableHeaderRef = ref<HTMLElement | null>(null);
+const tableHeaderTableRef =
+    ref<HTMLElement | null>(null);
+
+const tableScrollLeft = ref(0);
 
 const handleDesktopChange = (
     event: MediaQueryListEvent,
@@ -140,7 +120,17 @@ const handleDesktopChange = (
     isDesktop.value = event.matches;
 };
 
-onMounted(() => {
+const syncTableHeaderScroll = (): void => {
+    const container = tableScrollRef.value;
+
+    if (!container) {
+        return;
+    }
+
+    tableScrollLeft.value = container.scrollLeft;
+};
+
+onMounted(async () => {
     desktopMediaQuery = window.matchMedia(
         DESKTOP_BREAKPOINT,
     );
@@ -151,6 +141,20 @@ onMounted(() => {
         'change',
         handleDesktopChange,
     );
+
+    await nextTick();
+
+    const container = tableScrollRef.value;
+
+    if (container) {
+        container.addEventListener(
+            'scroll',
+            syncTableHeaderScroll,
+            { passive: true },
+        );
+
+        syncTableHeaderScroll();
+    }
 });
 
 onBeforeUnmount(() => {
@@ -158,26 +162,19 @@ onBeforeUnmount(() => {
         'change',
         handleDesktopChange,
     );
-});
 
-/*
-|--------------------------------------------------------------------------
-| Visible Columns
-|--------------------------------------------------------------------------
-|
-| Only visible leaf columns participate in:
-| - table width
-| - sticky offsets
-| - loading rows
-| - empty-state colspan
-|
-*/
+    tableScrollRef.value?.removeEventListener(
+        'scroll',
+        syncTableHeaderScroll,
+    );
+});
 
 const visibleColumns = computed(() => {
     const table = props.table;
 
     if (
-        typeof table?.getVisibleLeafColumns === 'function'
+        typeof table?.getVisibleLeafColumns ===
+        'function'
     ) {
         return table.getVisibleLeafColumns();
     }
@@ -193,12 +190,6 @@ const visibleColumns = computed(() => {
 const loadingColumns = computed(
     () => visibleColumns.value,
 );
-
-/*
-|--------------------------------------------------------------------------
-| Row Selection
-|--------------------------------------------------------------------------
-*/
 
 const hasSelectionColumn = computed(() =>
     visibleColumns.value.some(
@@ -241,12 +232,6 @@ const handleRowClick = (
 
     row.toggleSelected();
 };
-
-/*
-|--------------------------------------------------------------------------
-| Column Sizing
-|--------------------------------------------------------------------------
-*/
 
 const getColumnSize = (
     column: any,
@@ -301,7 +286,8 @@ const tableMinWidth = computed(() =>
             total: number,
             column: any,
         ) =>
-            total + getColumnMinimumWidth(column),
+            total +
+            getColumnMinimumWidth(column),
         0,
     ),
 );
@@ -309,12 +295,6 @@ const tableMinWidth = computed(() =>
 const tableStyle = computed(() => ({
     width: `max(100%, ${tableMinWidth.value}px)`,
 }));
-
-/*
-|--------------------------------------------------------------------------
-| Column Classes
-|--------------------------------------------------------------------------
-*/
 
 const getColumnClass = (
     columnId: string,
@@ -334,19 +314,14 @@ const getColumnClass = (
     return widthClass;
 };
 
-/*
-|--------------------------------------------------------------------------
-| Column Alignment
-|--------------------------------------------------------------------------
-*/
-
 const getColumnAlign = (
     column?: any,
 ): ColumnAlign => {
     const align =
         column?.columnDef?.meta?.align;
 
-    return align === 'center' || align === 'right'
+    return align === 'center' ||
+    align === 'right'
         ? align
         : 'left';
 };
@@ -366,12 +341,6 @@ const getPlaceholderAlignmentClass = (
     'justify-center': align === 'center',
     'justify-end': align === 'right',
 });
-
-/*
-|--------------------------------------------------------------------------
-| Row Highlight
-|--------------------------------------------------------------------------
-*/
 
 const ROW_HIGHLIGHT_CLASSES: Record<
     RowHighlight,
@@ -427,19 +396,16 @@ const getRowHighlightClass = (
         ? ROW_HIGHLIGHT_CLASSES[highlight]
         : '';
 
-const getRowClass = (
-    row: any,
-): string[] => {
-    const highlight =
-        props.rowHighlight?.(row.original);
+const getRowClass = (row: any): string[] => {
+    const highlight = props.rowHighlight?.(row.original);
 
     return [
         'group',
-        'transition-colors',
+        'transition-none',
 
-        hasSelectionColumn.value
-            ? 'cursor-pointer'
-            : '',
+        hasSelectionColumn.value ? 'cursor-pointer' : '',
+
+        !highlight ? 'hover:bg-muted/50' : '',
 
         'data-[state=selected]:!bg-primary/10',
         'data-[state=selected]:hover:!bg-primary/15',
@@ -447,15 +413,6 @@ const getRowClass = (
         getRowHighlightClass(highlight),
     ];
 };
-
-/*
-|--------------------------------------------------------------------------
-| Column Pinning
-|--------------------------------------------------------------------------
-|
-| DataTable is the final authority for responsive pinning.
-|
-*/
 
 const getColumnPin = (
     column: any,
@@ -472,12 +429,6 @@ const getColumnPin = (
         : undefined;
 };
 
-/*
-|--------------------------------------------------------------------------
-| Sticky Offset
-|--------------------------------------------------------------------------
-*/
-
 const getPinnedOffset = (
     column: any,
 ): number => {
@@ -490,7 +441,8 @@ const getPinnedOffset = (
     const columns = visibleColumns.value;
 
     const columnIndex = columns.findIndex(
-        (item: any) => item.id === column.id,
+        (item: any) =>
+            item.id === column.id,
     );
 
     if (columnIndex === -1) {
@@ -507,7 +459,9 @@ const getPinnedOffset = (
             offset: number,
             item: any,
         ) => {
-            if (getColumnPin(item) !== pin) {
+            if (
+                getColumnPin(item) !== pin
+            ) {
                 return offset;
             }
 
@@ -519,19 +473,6 @@ const getPinnedOffset = (
         0,
     );
 };
-
-/*
-|--------------------------------------------------------------------------
-| Column Style
-|--------------------------------------------------------------------------
-|
-| Sticky layers:
-|
-| AppPageHeader      z-30
-| Table header       z-20
-| Pinned body cells  z-10
-|
-*/
 
 const getColumnStyle = (
     column?: any,
@@ -552,12 +493,6 @@ const getColumnStyle = (
     const pin = getColumnPin(column);
 
     const style: Record<string, string> = {};
-
-    /*
-    |--------------------------------------------------------------------------
-    | Column Width
-    |--------------------------------------------------------------------------
-    */
 
     if (
         FIXED_COLUMN_IDS.has(id) &&
@@ -580,15 +515,8 @@ const getColumnStyle = (
         }
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Sticky Position
-    |--------------------------------------------------------------------------
-    */
-
     if (pin) {
         style.position = 'sticky';
-
         style.zIndex = isHeader
             ? '20'
             : '10';
@@ -602,60 +530,79 @@ const getColumnStyle = (
         style.zIndex = '20';
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Column Separator
-    |--------------------------------------------------------------------------
-    */
+    style.boxShadow = 'inset 0 -1px 0 var(--border)';
+    // style.boxShadow = 'inset -1px 0 0 var(--border), inset 0 -1px 0 var(--border)';
 
-    if (pin) {
+    if (pin === 'left') {
         style.boxShadow =
-            pin === 'right'
-                ? 'inset 1px 0 0 var(--border), inset 0 -1px 0 var(--border)'
-                : 'inset -1px 0 0 var(--border), inset 0 -1px 0 var(--border)';
+            'inset -1px 0 0 var(--border), inset 0 -1px 0 var(--border)';
+    } else if (pin === 'right') {
+        style.boxShadow =
+            'inset 1px 0 0 var(--border), inset 0 -1px 0 var(--border)';
     }
 
     return style;
 };
 
-/*
-|--------------------------------------------------------------------------
-| Pinned Cell Backgrounds
-|--------------------------------------------------------------------------
-*/
+const getHeaderColumnStyle = (
+    column: any,
+): Record<string, string> => {
+    const style =
+        getColumnStyle(
+            column,
+            true,
+        ) ?? {};
 
-const PINNED_HIGHLIGHT_CLASSES: Record<
-    RowHighlight,
-    string
-> = {
+    const pin = getColumnPin(column);
+
+    if (pin) {
+        style.transform = `translateX(${tableScrollLeft.value}px)`;
+    }
+
+    return style;
+};
+
+const PINNED_HIGHLIGHT_CLASSES: Record<RowHighlight, string> = {
     danger: [
-        'bg-[color-mix(in_srgb,var(--card)_96%,#ef4444_4%)]',
-        'group-hover:bg-[color-mix(in_srgb,var(--card)_93%,#ef4444_7%)]',
+        'bg-[color-mix(in_srgb,var(--card)_95.5%,#ef4444_4.5%)]',
+        'group-hover:bg-[color-mix(in_srgb,var(--card)_92.5%,#ef4444_7.5%)]',
+        'dark:bg-[color-mix(in_srgb,var(--card)_93%,#f87171_7%)]',
+        'dark:group-hover:bg-[color-mix(in_srgb,var(--card)_89%,#f87171_11%)]',
     ].join(' '),
 
     warning: [
-        'bg-[color-mix(in_srgb,var(--card)_96%,#f59e0b_4%)]',
-        'group-hover:bg-[color-mix(in_srgb,var(--card)_93%,#f59e0b_7%)]',
+        'bg-[color-mix(in_srgb,var(--card)_94.5%,#f59e0b_5.5%)]',
+        'group-hover:bg-[color-mix(in_srgb,var(--card)_91.5%,#f59e0b_8.5%)]',
+        'dark:bg-[color-mix(in_srgb,var(--card)_93%,#fbbf24_7%)]',
+        'dark:group-hover:bg-[color-mix(in_srgb,var(--card)_89%,#fbbf24_11%)]',
     ].join(' '),
 
     success: [
-        'bg-[color-mix(in_srgb,var(--card)_96%,#10b981_4%)]',
-        'group-hover:bg-[color-mix(in_srgb,var(--card)_93%,#10b981_7%)]',
+        'bg-[color-mix(in_srgb,var(--card)_95.5%,#10b981_4.5%)]',
+        'group-hover:bg-[color-mix(in_srgb,var(--card)_92.5%,#10b981_7.5%)]',
+        'dark:bg-[color-mix(in_srgb,var(--card)_93%,#34d399_7%)]',
+        'dark:group-hover:bg-[color-mix(in_srgb,var(--card)_89%,#34d399_11%)]',
     ].join(' '),
 
     info: [
-        'bg-[color-mix(in_srgb,var(--card)_96%,#0ea5e9_4%)]',
-        'group-hover:bg-[color-mix(in_srgb,var(--card)_93%,#0ea5e9_7%)]',
+        'bg-[color-mix(in_srgb,var(--card)_95.5%,#0ea5e9_4.5%)]',
+        'group-hover:bg-[color-mix(in_srgb,var(--card)_92.5%,#0ea5e9_7.5%)]',
+        'dark:bg-[color-mix(in_srgb,var(--card)_93%,#38bdf8_7%)]',
+        'dark:group-hover:bg-[color-mix(in_srgb,var(--card)_89%,#38bdf8_11%)]',
     ].join(' '),
 
     primary: [
-        'bg-[color-mix(in_srgb,var(--card)_96%,var(--primary)_4%)]',
-        'group-hover:bg-[color-mix(in_srgb,var(--card)_93%,var(--primary)_7%)]',
+        'bg-[color-mix(in_srgb,var(--card)_95.5%,var(--primary)_4.5%)]',
+        'group-hover:bg-[color-mix(in_srgb,var(--card)_92.5%,var(--primary)_7.5%)]',
+        'dark:bg-[color-mix(in_srgb,var(--card)_91%,var(--primary)_9%)]',
+        'dark:group-hover:bg-[color-mix(in_srgb,var(--card)_87%,var(--primary)_13%)]',
     ].join(' '),
 
     muted: [
-        'bg-[color-mix(in_srgb,var(--card)_96%,var(--muted)_4%)]',
-        'group-hover:bg-[color-mix(in_srgb,var(--card)_93%,var(--muted)_7%)]',
+        'bg-[color-mix(in_srgb,var(--card)_60%,var(--muted)_40%)]',
+        'group-hover:bg-[color-mix(in_srgb,var(--card)_40%,var(--muted)_60%)]',
+        'dark:bg-[color-mix(in_srgb,var(--card)_65%,var(--muted)_35%)]',
+        'dark:group-hover:bg-[color-mix(in_srgb,var(--card)_45%,var(--muted)_55%)]',
     ].join(' '),
 };
 
@@ -675,18 +622,14 @@ const getPinnedCellClass = (
         'isolate',
         'bg-card',
         'bg-clip-padding',
+        'transition-none',
 
         highlight
             ? PINNED_HIGHLIGHT_CLASSES[highlight]
-            : '',
+            : 'group-hover:bg-[color-mix(in_srgb,var(--card)_50%,var(--muted)_50%)]',
 
         'group-data-[state=selected]:!bg-[color-mix(in_srgb,var(--card)_88%,var(--primary)_12%)]',
-
         'group-data-[state=selected]:group-hover:!bg-[color-mix(in_srgb,var(--card)_85%,var(--primary)_15%)]',
-
-        !highlight
-            ? 'group-hover:bg-[color-mix(in_srgb,var(--card)_94%,var(--muted)_6%)]'
-            : '',
     ]
         .filter(Boolean)
         .join(' ');
@@ -699,24 +642,15 @@ const getPinnedHeaderClass = (
         ? 'bg-muted bg-clip-padding'
         : '';
 
-/*
-|--------------------------------------------------------------------------
-| Loading
-|--------------------------------------------------------------------------
-*/
-
 const loadingRowCount = computed(() =>
     Math.min(
-        Math.max(props.pageSize || 10, 5),
+        Math.max(
+            props.pageSize || 10,
+            5,
+        ),
         10,
     ),
 );
-
-/*
-|--------------------------------------------------------------------------
-| Pagination Options
-|--------------------------------------------------------------------------
-*/
 
 const pageSizeOptions = computed(() =>
     props.pageSizeOptions.map((size) => ({
@@ -725,104 +659,93 @@ const pageSizeOptions = computed(() =>
     })),
 );
 
-/*
-|--------------------------------------------------------------------------
-| Pagination Summary
-|--------------------------------------------------------------------------
-*/
-
 const showingFrom = computed(() =>
     props.total > 0
-        ? props.pageIndex * props.pageSize + 1
+        ? props.pageIndex *
+        props.pageSize +
+        1
         : 0,
 );
 
 const showingTo = computed(() =>
     Math.min(
-        (props.pageIndex + 1) * props.pageSize,
+        (props.pageIndex + 1) *
+        props.pageSize,
         props.total,
     ),
 );
 
-/*
-|--------------------------------------------------------------------------
-| Pagination Items
-|--------------------------------------------------------------------------
-*/
+const paginationItems = computed<
+    PaginationItem[]
+>(() => {
+    const pageCount =
+        props.table.getPageCount();
 
-const paginationItems = computed<PaginationItem[]>(
-    () => {
-        const pageCount =
-            props.table.getPageCount();
+    const currentPage =
+        props.pageIndex + 1;
 
-        const currentPage =
-            props.pageIndex + 1;
+    if (pageCount <= 7) {
+        return Array.from(
+            { length: pageCount },
+            (_, index) => ({
+                type: 'page' as const,
+                page: index + 1,
+            }),
+        );
+    }
 
-        if (pageCount <= 7) {
-            return Array.from(
-                {length: pageCount},
-                (_, index) => ({
-                    type: 'page' as const,
-                    page: index + 1,
-                }),
-            );
-        }
+    const items: PaginationItem[] = [];
 
-        const items: PaginationItem[] = [];
+    const addPage = (
+        page: number,
+    ): void => {
+        items.push({
+            type: 'page',
+            page,
+        });
+    };
 
-        const addPage = (
-            page: number,
-        ): void => {
-            items.push({
-                type: 'page',
-                page,
-            });
-        };
+    const addEllipsis = (
+        key: string,
+    ): void => {
+        items.push({
+            type: 'ellipsis',
+            key,
+        });
+    };
 
-        const addEllipsis = (
-            key: string,
-        ): void => {
-            items.push({
-                type: 'ellipsis',
-                key,
-            });
-        };
+    addPage(1);
 
-        addPage(1);
+    if (currentPage > 4) {
+        addEllipsis('start');
+    }
 
-        if (currentPage > 4) {
-            addEllipsis('start');
-        }
+    for (
+        let page = Math.max(
+            2,
+            currentPage - 1,
+        );
+        page <=
+        Math.min(
+            pageCount - 1,
+            currentPage + 1,
+        );
+        page++
+    ) {
+        addPage(page);
+    }
 
-        for (
-            let page = Math.max(
-                2,
-                currentPage - 1,
-            );
-            page <= Math.min(
-                pageCount - 1,
-                currentPage + 1,
-            );
-            page++
-        ) {
-            addPage(page);
-        }
+    if (
+        currentPage <
+        pageCount - 3
+    ) {
+        addEllipsis('end');
+    }
 
-        if (currentPage < pageCount - 3) {
-            addEllipsis('end');
-        }
+    addPage(pageCount);
 
-        addPage(pageCount);
-
-        return items;
-    },
-);
-
-/*
-|--------------------------------------------------------------------------
-| Pagination Actions
-|--------------------------------------------------------------------------
-*/
+    return items;
+});
 
 const handlePageSizeChange = (
     value:
@@ -841,7 +764,9 @@ const handlePageSizeChange = (
     const nextPageSize = Number(value);
 
     if (
-        !Number.isInteger(nextPageSize) ||
+        !Number.isInteger(
+            nextPageSize,
+        ) ||
         !props.pageSizeOptions.includes(
             nextPageSize,
         )
@@ -858,24 +783,25 @@ const handlePageSizeChange = (
 
 <template>
     <div
-        :aria-busy="loading ? true : undefined"
+        :aria-busy="
+            loading ? true : undefined
+        "
         :aria-label="`${itemLabel} table`"
         class="w-full min-w-0 overflow-clip rounded-md border border-border bg-card"
         role="region"
     >
-        <!-- ===============================================================
-             Table viewport
-        ================================================================ -->
-
-        <div class="w-full min-w-0 overflow-x-clip overflow-y-visible">
+        <div
+            ref="tableHeaderRef"
+            class="sticky top-[calc(var(--app-header-height,0px)+var(--app-page-header-height,0px))] z-20 w-full min-w-0 overflow-hidden border-b border-border bg-muted"
+        >
             <UiTable
+                ref="tableHeaderTableRef"
                 class="table-fixed border-separate border-spacing-0"
-                :style="tableStyle"
+                :style="{
+                    ...tableStyle,
+                    transform: `translateX(-${tableScrollLeft}px)`,
+                }"
             >
-                <!-- =========================================================
-                     Header
-                ========================================================== -->
-
                 <TableHeader>
                     <TableRow
                         v-for="headerGroup in table.getHeaderGroups()"
@@ -899,7 +825,7 @@ const handlePageSizeChange = (
                                     ),
                                 ),
 
-                                'sticky bg-muted text-foreground capitalize',
+                                'bg-muted text-foreground capitalize',
 
                                 getPinnedHeaderClass(
                                     header.column,
@@ -910,18 +836,17 @@ const handlePageSizeChange = (
                                     ? 'px-0'
                                     : 'px-3',
                             ]"
-                            :style="{
-                                ...getColumnStyle(
+                            :style="
+                                getHeaderColumnStyle(
                                     header.column,
-                                    true,
-                                ),
-
-                                top: 'calc(var(--app-header-height, 0px) + var(--app-page-header-height, 0px))',
-                            }"
+                                )
+                            "
                             class="h-10 whitespace-nowrap text-sm font-medium tracking-wide"
                         >
                             <div
-                                v-if="!header.isPlaceholder"
+                                v-if="
+                                    !header.isPlaceholder
+                                "
                                 :class="
                                     header.column.id ===
                                     SELECT_COLUMN_ID
@@ -936,14 +861,21 @@ const handlePageSizeChange = (
                         </TableHead>
                     </TableRow>
                 </TableHeader>
+            </UiTable>
+        </div>
 
-                <!-- =========================================================
-                     Body
-                ========================================================== -->
-
+        <div
+            ref="tableScrollRef"
+            class="w-full min-w-0 overflow-x-auto overflow-y-visible overscroll-x-contain"
+        >
+            <UiTable
+                class="table-fixed border-separate border-spacing-0"
+                :style="tableStyle"
+            >
                 <TableBody>
-                    <!-- Loading -->
-                    <template v-if="loading">
+                    <template
+                        v-if="loading"
+                    >
                         <TableRow
                             v-for="rowIndex in loadingRowCount"
                             :key="`loading-${rowIndex}`"
@@ -952,7 +884,9 @@ const handlePageSizeChange = (
                             <TableCell
                                 v-for="column in loadingColumns"
                                 :key="column.id"
-                                :data-column-id="column.id"
+                                :data-column-id="
+                                    column.id
+                                "
                                 :class="[
                                     getColumnClass(
                                         column.id,
@@ -968,7 +902,9 @@ const handlePageSizeChange = (
                                         : 'px-3',
                                 ]"
                                 :style="
-                                    getColumnStyle(column)
+                                    getColumnStyle(
+                                        column,
+                                    )
                                 "
                                 class="py-2.5 align-middle"
                             >
@@ -1001,7 +937,6 @@ const handlePageSizeChange = (
                         </TableRow>
                     </template>
 
-                    <!-- Data -->
                     <template
                         v-else-if="
                             table.getRowModel().rows
@@ -1081,7 +1016,6 @@ const handlePageSizeChange = (
                         </TableRow>
                     </template>
 
-                    <!-- Empty -->
                     <TableRow v-else>
                         <TableCell
                             :colspan="
@@ -1163,16 +1097,11 @@ const handlePageSizeChange = (
             </UiTable>
         </div>
 
-        <!-- ===============================================================
-             Pagination
-        ================================================================ -->
-
         <div
             v-if="total > 0 || loading"
             class="border-t border-border px-4 py-3 sm:px-5"
         >
             <div class="flex flex-col gap-4">
-                <!-- Summary -->
                 <div class="min-w-0">
                     <template v-if="loading">
                         <div
@@ -1217,7 +1146,9 @@ const handlePageSizeChange = (
                         <template
                             v-if="selectedCount > 0"
                         >
-                            <span class="mx-1.5">
+                            <span
+                                class="mx-1.5"
+                            >
                                 ·
                             </span>
 
@@ -1232,11 +1163,9 @@ const handlePageSizeChange = (
                     </p>
                 </div>
 
-                <!-- Controls -->
                 <div
                     class="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
                 >
-                    <!-- Page size -->
                     <div
                         class="flex min-w-0 items-center gap-2"
                     >
@@ -1276,7 +1205,6 @@ const handlePageSizeChange = (
                         </template>
                     </div>
 
-                    <!-- Pagination -->
                     <div
                         class="max-w-full min-w-0 overflow-x-auto pb-0.5"
                     >
