@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import { onMounted, ref, watch } from 'vue';
+import {ref, watch} from 'vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import type { SelectOption } from '@/types/common';
+import {useLookup} from '@/composables/useLookup';
+import type {SelectOption} from '@/types/common';
 
 /*
 |--------------------------------------------------------------------------
@@ -66,6 +67,10 @@ const emit = defineEmits<{
 const options = ref<SelectOption<number>[]>([]);
 const loading = ref(false);
 
+const { employees } = useLookup();
+
+let requestId = 0;
+
 /*
 |--------------------------------------------------------------------------
 | Fetch Employees
@@ -73,38 +78,33 @@ const loading = ref(false);
 */
 
 const fetchEmployees = async () => {
+    const currentRequestId = ++requestId;
+
     loading.value = true;
 
     try {
-        const params = new URLSearchParams();
+        const result = await employees(props.role, {
+            cache: 'memory',
+        });
 
-        if (props.role) {
-            params.set('role', props.role);
+        // Ignore outdated requests.
+        if (currentRequestId !== requestId) {
+            return;
         }
 
-        const query = params.toString();
-
-        const response = await fetch(
-            `/lookups/employees${query ? `?${query}` : ''}`,
-        );
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch employees.');
-        }
-
-        const data = await response.json();
-
-        options.value = Array.isArray(data)
-            ? data
-            : Array.isArray(data.data)
-              ? data.data
-              : [];
+        options.value = result;
     } catch (error) {
+        if (currentRequestId !== requestId) {
+            return;
+        }
+
         console.error('Failed to load employees:', error);
 
         options.value = [];
     } finally {
-        loading.value = false;
+        if (currentRequestId === requestId) {
+            loading.value = false;
+        }
     }
 };
 
@@ -127,9 +127,11 @@ const handleUpdate = (value: AppSelectValue) => {
 |--------------------------------------------------------------------------
 */
 
-onMounted(fetchEmployees);
-
-watch(() => props.role, fetchEmployees);
+watch(
+    () => props.role,
+    fetchEmployees,
+    { immediate: true },
+);
 </script>
 
 <template>
@@ -137,6 +139,7 @@ watch(() => props.role, fetchEmployees);
         :clearable="clearable"
         :disabled="disabled || loading"
         :error="error"
+        :loading="loading"
         :model-value="modelValue"
         :options="options"
         :placeholder="placeholder"

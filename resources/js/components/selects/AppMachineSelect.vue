@@ -58,7 +58,9 @@ const { loading, machines } = useLookup();
 */
 
 const loadOptions = async () => {
-    options.value = await machines();
+    options.value = await machines({
+        cache: 'memory',
+    });
 };
 
 onMounted(loadOptions);

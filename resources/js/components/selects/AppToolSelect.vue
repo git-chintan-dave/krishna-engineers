@@ -62,7 +62,9 @@ const { loading, tools } = useLookup();
 const loadOptions = async () => {
     options.value = [];
 
-    options.value = await tools(props.type);
+    options.value = await tools(props.type, {
+        cache: 'memory',
+    });
 };
 
 /*

@@ -58,7 +58,9 @@ const { loading, sections } = useLookup();
 */
 
 const loadOptions = async () => {
-    options.value = await sections();
+    options.value = await sections({
+        cache: 'memory',
+    });
 };
 
 onMounted(loadOptions);

@@ -126,7 +126,9 @@ const handleChange = (value: unknown): void => {
 */
 
 const loadOptions = async (): Promise<void> => {
-    options.value = (await parts()) as PartSelectOption[];
+    options.value = (await parts({
+        cache: 'memory',
+    })) as PartSelectOption[];
 
     /*
      * Important for:

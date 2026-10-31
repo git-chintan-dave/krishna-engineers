@@ -66,7 +66,9 @@ const loadOptions = async (): Promise<void> => {
         return;
     }
 
-    options.value = await sectionSizes(props.sectionId);
+    options.value = await sectionSizes(props.sectionId, {
+        cache: 'memory',
+    });
 };
 
 /*

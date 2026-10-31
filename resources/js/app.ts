@@ -1,12 +1,13 @@
-import { createInertiaApp } from '@inertiajs/vue3';
+import {createInertiaApp} from '@inertiajs/vue3';
 
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 
 import vConfirm from '@/directives/confirm';
-import { initializeFlashToast } from '@/lib/flashToast';
-import { initializeTheme } from '@/composables/useAppearance';
+import {initializeFlashToast} from '@/lib/flashToast';
+import {initializeTheme} from '@/composables/useAppearance';
+import {useLookup} from '@/composables/useLookup';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -32,6 +33,7 @@ void createInertiaApp({
                 }
             },
         });
+
         app.directive('confirm', vConfirm);
     },
     progress: {
@@ -44,6 +46,9 @@ initializeTheme();
 
 // Initialize flash toast notifications.
 initializeFlashToast();
+
+// Prefetch all enum lookups once when the application starts.
+void useLookup().prefetchEnumOptions();
 
 // Register the service worker.
 if ('serviceWorker' in navigator && import.meta.env.PROD) {

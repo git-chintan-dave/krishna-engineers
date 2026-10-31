@@ -58,7 +58,9 @@ const { loading, enumOptions } = useLookup();
 */
 
 const loadOptions = async () => {
-    options.value = await enumOptions<string>('status');
+    options.value = await enumOptions<string>('status', {
+        cache: 'localStorage',
+    });
 };
 
 onMounted(loadOptions);
