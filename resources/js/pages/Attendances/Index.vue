@@ -1,6 +1,6 @@
 ﻿<script lang="ts" setup>
 import {Deferred, router, usePage} from '@inertiajs/vue3';
-import {computed, ref} from 'vue';
+import {computed, ref, watch} from 'vue';
 import {
     Activity,
     CalendarDays,
@@ -23,8 +23,8 @@ import ListingStats, {type ListingStatItem,} from '@/components/common/ListingSt
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
-import {Button} from '@/components/ui/button';
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from '@/components/ui/dialog';
+import {Button} from '@/components/ui/button';
 
 import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
 import {useListingEmptyState} from '@/composables/useListingEmptyState';
@@ -46,6 +46,8 @@ import type {
     AttendanceSort,
     AttendanceStatistics,
 } from '@/types/attendance';
+
+import type {NumericSelectValue} from '@/utils/selectUtils';
 
 /*
 |--------------------------------------------------------------------------
@@ -102,16 +104,47 @@ const isSuperAdmin = computed(() => userRole.value === 'super_admin');
 |--------------------------------------------------------------------------
 */
 
-const filterEmployee = ref<number | 'all'>(props.filters.userId);
-const filterStartDate = ref(props.filters.startDate);
-const filterEndDate = ref(props.filters.endDate);
+const filterEmployee = ref<number | number[] | 'all'>(
+    props.filters.user_id,
+);
 
-const handleEmployeeChange = (value: number | null): void => {
+const filterStartDate = ref(props.filters.start_date);
+const filterEndDate = ref(props.filters.end_date);
+
+/*
+|--------------------------------------------------------------------------
+| Synchronize Server Filters
+|--------------------------------------------------------------------------
+|
+| Keep this consistent with the working Salary listing.
+| The server-provided filter is the source of truth after
+| an Inertia navigation/reload.
+|--------------------------------------------------------------------------
+*/
+
+watch(
+    () => props.filters,
+    (filters) => {
+        filterEmployee.value = filters.user_id;
+        filterStartDate.value = filters.start_date;
+        filterEndDate.value = filters.end_date;
+    },
+    {deep: true},
+);
+
+const handleEmployeeChange = (value: NumericSelectValue): void => {
     filterEmployee.value = value ?? 'all';
 };
 
+/*
+|--------------------------------------------------------------------------
+| Date Filter
+|--------------------------------------------------------------------------
+*/
+
 const isTodayFilterActive = computed(() => {
     const today = new Date();
+
     const todayString = [
         today.getFullYear(),
         String(today.getMonth() + 1).padStart(2, '0'),
@@ -171,6 +204,7 @@ const openSyncDialog = (): void => {
     syncOpen.value = true;
 
     const today = new Date();
+
     const date = [
         today.getFullYear(),
         String(today.getMonth() + 1).padStart(2, '0'),
@@ -206,6 +240,7 @@ const handleSync = (): void => {
         },
         {
             preserveScroll: true,
+
             onSuccess: () => {
                 const flash = (
                     page.props as typeof page.props & {
@@ -226,9 +261,14 @@ const handleSync = (): void => {
                 }
 
                 router.reload({
-                    only: ['attendances', 'hasAnyRecords', 'statistics'],
+                    only: [
+                        'attendances',
+                        'hasAnyRecords',
+                        'statistics',
+                    ],
                 });
             },
+
             onError: (errors) => {
                 syncMessage.value =
                     errors.sync_type ??
@@ -239,6 +279,7 @@ const handleSync = (): void => {
 
                 syncMessageType.value = 'error';
             },
+
             onFinish: () => {
                 syncProcessing.value = false;
             },
@@ -272,20 +313,26 @@ const {
 } = useListingTable<Attendance, AttendanceSort>({
     data: () => props.attendances,
     columns,
+
     filters: {
         sort: props.filters.sort,
         direction: props.filters.direction,
     },
+
     route: attendancesRoute.url(),
+
     searchable: false,
+
     additionalFilters: () => ({
         user_id:
             filterEmployee.value !== 'all'
                 ? filterEmployee.value
                 : undefined,
+
         start_date: filterStartDate.value || undefined,
         end_date: filterEndDate.value || undefined,
     }),
+
     onClearFilters: () => {
         filterEmployee.value = 'all';
         filterStartDate.value = '';
@@ -302,14 +349,18 @@ const {
 const hasAnyActiveFilters = computed(
     () =>
         hasActiveFilters.value ||
-        (canManageAttendance.value && filterEmployee.value !== 'all') ||
+        (canManageAttendance.value &&
+            filterEmployee.value !== 'all') ||
         Boolean(filterStartDate.value) ||
         Boolean(filterEndDate.value),
 );
 
 const activeFilterCount = computed(
     () =>
-        Number(canManageAttendance.value && filterEmployee.value !== 'all') +
+        Number(
+            canManageAttendance.value &&
+            filterEmployee.value !== 'all',
+        ) +
         Number(Boolean(filterStartDate.value)) +
         Number(Boolean(filterEndDate.value)),
 );
@@ -468,6 +519,7 @@ const handleStatClick = (item: ListingStatItem): void => {
     }
 
     const today = new Date();
+
     const todayString = [
         today.getFullYear(),
         String(today.getMonth() + 1).padStart(2, '0'),
@@ -497,6 +549,7 @@ const handleDeleteSelected = (): void => {
 const emptyState = useListingEmptyState({
     hasAnyRecords: () => props.hasAnyRecords,
     hasActiveFilters: () => hasAnyActiveFilters.value,
+
     noRecords: {
         title: 'No attendance records yet',
         description:
@@ -509,10 +562,13 @@ const emptyState = useListingEmptyState({
             ? () => router.visit(create().url)
             : undefined,
     },
+
     noResults: {
         title: 'No results found',
-        description: 'Try adjusting your employee or date filters.',
-        actionLabel: attendancePage.clearButtonLabel || 'Clear filters',
+        description:
+            'Try adjusting your employee or date filters.',
+        actionLabel:
+            attendancePage.clearButtonLabel || 'Clear filters',
         icon: SearchX,
         onAction: handleClearFilters,
     },
@@ -529,7 +585,11 @@ const emptyState = useListingEmptyState({
             <ListingActions
                 :actions="actions"
                 :create-label="attendancePage.createLabel"
-                :create-url="canManageAttendance ? create().url : undefined"
+                :create-url="
+                    canManageAttendance
+                        ? create().url
+                        : undefined
+                "
                 :resource-label="attendancePage.resourceLabel"
                 :selected-count="selectedCount"
                 @delete-selected="handleDeleteSelected"
@@ -565,14 +625,20 @@ const emptyState = useListingEmptyState({
                 @search="search"
             >
                 <template #filters>
-                    <div v-if="canManageAttendance" class="w-full min-w-0">
+                    <div
+                        v-if="canManageAttendance"
+                        class="w-full min-w-0"
+                    >
                         <AppEmployeeSelect
+                            multiple
                             :model-value="
                                 filterEmployee === 'all'
                                     ? null
                                     : filterEmployee
                             "
-                            :placeholder="attendancePage.employeePlaceholder"
+                            :placeholder="
+                                attendancePage.employeePlaceholder
+                            "
                             clearable
                             searchable
                             @update:model-value="handleEmployeeChange"
@@ -623,7 +689,9 @@ const emptyState = useListingEmptyState({
                     :empty-state="emptyState"
                     :empty-text="attendancePage.emptyText"
                     :item-label="attendancePage.itemLabel"
-                    :page-index="attendances.meta.current_page - 1"
+                    :page-index="
+                        attendances.meta.current_page - 1
+                    "
                     :page-size="attendances.meta.per_page"
                     :page-size-options="[10, 25, 50, 100]"
                     :row-highlight="getAttendanceRowHighlight"
@@ -635,12 +703,16 @@ const emptyState = useListingEmptyState({
         </template>
     </ListingLayout>
 
-    <Dialog :open="syncOpen" @update:open="handleSyncDialogOpenChange">
+    <Dialog
+        :open="syncOpen"
+        @update:open="handleSyncDialogOpenChange"
+    >
         <DialogContent
             class="max-h-[90vh] w-[calc(100%-2rem)] overflow-y-auto sm:max-w-lg"
         >
             <DialogHeader>
                 <DialogTitle>Sync attendance</DialogTitle>
+
                 <DialogDescription>
                     Choose which eTimeOffice data to import.
                 </DialogDescription>
@@ -675,7 +747,10 @@ const emptyState = useListingEmptyState({
                             <span class="block text-sm font-medium">
                                 IN/OUT Summary
                             </span>
-                            <span class="block text-xs text-muted-foreground">
+
+                            <span
+                                class="block text-xs text-muted-foreground"
+                            >
                                 Imports daily IN and OUT times. Existing
                                 attendance is skipped; breaks are not imported.
                             </span>
@@ -705,7 +780,10 @@ const emptyState = useListingEmptyState({
                             <span class="block text-sm font-medium">
                                 Detailed Punch Data
                             </span>
-                            <span class="block text-xs text-muted-foreground">
+
+                            <span
+                                class="block text-xs text-muted-foreground"
+                            >
                                 Imports individual punch times and break
                                 intervals. Creates missing attendance or
                                 updates existing attendance with detailed data.
@@ -722,7 +800,10 @@ const emptyState = useListingEmptyState({
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-sm font-medium" for="sync-employee">
+                    <label
+                        class="text-sm font-medium"
+                        for="sync-employee"
+                    >
                         Employee
                     </label>
 
@@ -740,9 +821,13 @@ const emptyState = useListingEmptyState({
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-sm font-medium" for="sync-start-date">
+                    <label
+                        class="text-sm font-medium"
+                        for="sync-start-date"
+                    >
                         Start date
                     </label>
+
                     <AppInput
                         id="sync-start-date"
                         v-model="syncStartDate"
@@ -752,9 +837,13 @@ const emptyState = useListingEmptyState({
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-sm font-medium" for="sync-end-date">
+                    <label
+                        class="text-sm font-medium"
+                        for="sync-end-date"
+                    >
                         End date
                     </label>
+
                     <AppInput
                         id="sync-end-date"
                         v-model="syncEndDate"
@@ -763,7 +852,10 @@ const emptyState = useListingEmptyState({
                     />
                 </div>
 
-                <p v-if="syncDateError" class="text-sm text-destructive">
+                <p
+                    v-if="syncDateError"
+                    class="text-sm text-destructive"
+                >
                     {{ syncDateError }}
                 </p>
 
@@ -792,7 +884,12 @@ const emptyState = useListingEmptyState({
                         aria-hidden="true"
                         class="mr-2 size-4"
                     />
-                    {{ syncProcessing ? 'Syncing...' : syncButtonLabel }}
+
+                    {{
+                        syncProcessing
+                            ? 'Syncing...'
+                            : syncButtonLabel
+                    }}
                 </Button>
             </div>
         </DialogContent>

@@ -100,10 +100,10 @@ export type AttendanceSort =
     | 'created_at';
 
 export type AttendanceFilters = {
-    userId: number | 'all';
-    startDate: string;
-    endDate: string;
-    perPage: number;
+    user_id: number | 'all';
+    start_date: string;
+    end_date: string;
+    per_page: number;
     sort: AttendanceSort;
     direction: SortDirection;
 };

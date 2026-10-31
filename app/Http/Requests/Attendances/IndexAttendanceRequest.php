@@ -29,8 +29,9 @@ class IndexAttendanceRequest extends FormRequest
 
             'user_id' => [
                 'nullable',
-                'integer',
-                'exists:users,id',
+                'array',
+            ],
+            'user_id.*' => [
                 Rule::excludeIf(
                     ! in_array(
                         $this->user()?->role?->value ?? $this->user()?->role,

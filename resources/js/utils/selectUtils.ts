@@ -5,6 +5,7 @@ export type AppSelectValue =
     | (string | number)[];
 
 export type NumericSelectValue = number | number[] | null;
+export type StringSelectValue = string | string[] | null;
 
 export const normalizeSelectValue = (
     value: AppSelectValue,

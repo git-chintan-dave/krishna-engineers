@@ -24,6 +24,7 @@ import {createPartColumns} from '@/table/parts';
 
 import type {Part, PartFilters, PartSort, PartsResponse} from '@/types/part';
 import type {StatusFilter} from '@/types/listing';
+import {NumericSelectValue} from "@/utils/selectUtils";
 
 const props = defineProps<{
     parts?: PartsResponse;
@@ -40,10 +41,10 @@ defineOptions({
     },
 });
 
-const filterSectionId = ref<number | 'all'>(props.filters.sectionId);
+const filterSectionId = ref<number | number[] | 'all'>(props.filters.sectionId);
 const filterStatus = ref<StatusFilter>(props.filters.status);
 
-const handleSectionChange = (value: number | null): void => {
+const handleSectionChange = (value: NumericSelectValue): void => {
     filterSectionId.value = value ?? 'all';
 };
 
@@ -188,7 +189,6 @@ const handleDeleteSelected = (): void => {
 
                     <div class="w-full min-w-0">
                         <AppStatusSelect
-                            multiple
                             :model-value="filterStatus === 'all' ? null : filterStatus"
                             clearable
                             placeholder="All statuses"

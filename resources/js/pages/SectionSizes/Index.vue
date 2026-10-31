@@ -32,6 +32,7 @@ import type {
     SectionSizesResponse,
     SectionSizeStatistics,
 } from '@/types/sectionSize';
+import {NumericSelectValue} from "@/utils/selectUtils";
 
 const props = defineProps<{
     sectionSizes?: SectionSizesResponse;
@@ -50,7 +51,7 @@ defineOptions({
     },
 });
 
-const filterSectionId = ref<number | 'all'>(props.filters.sectionId);
+const filterSectionId = ref<number | number[] | 'all'>(props.filters.sectionId);
 const stockFilter = ref<StockFilter | null>(props.filters.stock);
 
 watch(
@@ -62,7 +63,7 @@ watch(
     {deep: true},
 );
 
-const handleSectionChange = (value: number | null): void => {
+const handleSectionChange = (value: NumericSelectValue): void => {
     filterSectionId.value = value ?? 'all';
 };
 
@@ -284,6 +285,7 @@ const handleStatClick = (item: ListingStatItem): void => {
                 <template #filters>
                     <div class="w-full min-w-0">
                         <AppSectionSelect
+                            multiple
                             :model-value="filterSectionId === 'all' ? null : filterSectionId"
                             :placeholder="sectionSizePage.sectionPlaceholder"
                             clearable

@@ -116,18 +116,24 @@ class LookupService
     /**
      * Get all setups.
      *
-     * @return array<int, array{value: int, label: string}>
+     * @return array<string, array{value: int, label: string}>
      */
-    public function setups(?int $partId = null): array
+    public function setups(?string $partId = null): array
     {
+        $partIds = collect(explode(',', $partId ?? ''))
+            ->filter(fn (string $id): bool => $id !== '')
+            ->map(fn (string $id): int => (int) $id)
+            ->unique()
+            ->values();
+
         return Setup::query()
             ->when(
-                $partId,
+                $partIds->isNotEmpty(),
                 fn ($query) => $query->whereHas(
                     'partSetups',
-                    fn ($partSetupQuery) => $partSetupQuery->where(
+                    fn ($partSetupQuery) => $partSetupQuery->whereIn(
                         'part_id',
-                        $partId,
+                        $partIds,
                     ),
                 ),
             )

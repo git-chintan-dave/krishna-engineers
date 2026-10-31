@@ -361,19 +361,21 @@ export function useLookup() {
     }
 
     async function setups(
-        partId?: number | null,
+        partId?: number | number[] | null,
         options: LookupCacheOptions = {},
     ): Promise<SelectOption<number>[]> {
+        const partIds = Array.isArray(partId) ? partId : partId ? [partId] : [];
+
         const params = new URLSearchParams();
 
-        if (partId) {
-            params.set('part_id', String(partId));
+        if (partIds.length) {
+            params.set('part_id', partIds.join(','));
         }
 
         const queryString = params.toString();
 
         return databaseOptions<number>(
-            `setups:${queryString}`,
+            `setups:part_id=${partIds.join(',')}`,
             `/lookups/setups${queryString ? `?${queryString}` : ''}`,
             options,
         );

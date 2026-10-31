@@ -165,6 +165,7 @@ const handleDeleteSelected = (): void => {
                 <template #filters>
                     <div class="w-full min-w-0">
                         <AppPartSelect
+                            multiple
                             v-model="filterPart"
                             :placeholder="partSetupPage.partPlaceholder"
                             clearable
@@ -173,6 +174,7 @@ const handleDeleteSelected = (): void => {
 
                     <div class="w-full min-w-0">
                         <AppSetupSelect
+                            multiple
                             v-model="filterSetup"
                             :part-id="filterPart"
                             :placeholder="partSetupPage.setupPlaceholder"

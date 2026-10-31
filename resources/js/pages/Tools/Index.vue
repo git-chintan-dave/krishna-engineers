@@ -26,6 +26,7 @@ import {createToolColumns} from '@/table/tools';
 
 import type {StatusFilter} from '@/types/listing';
 import type {StockFilter, Tool, ToolFilters, ToolSort, ToolsResponse, ToolStatistics, ToolType,} from '@/types/tool';
+import {StringSelectValue} from "@/utils/selectUtils";
 
 const props = defineProps<{
     tools?: ToolsResponse;
@@ -44,12 +45,12 @@ defineOptions({
     },
 });
 
-const filterType = ref<ToolType | 'all'>(props.filters.type);
+const filterType = ref<ToolType | ToolType[] | 'all'>(props.filters.type);
 const filterStatus = ref<StatusFilter>(props.filters.status);
 const stockFilter = ref<StockFilter | null>(props.filters.stock);
 
-const handleTypeChange = (value: string | null): void => {
-    filterType.value = (value as ToolType | null) ?? 'all';
+const handleTypeChange = (value: StringSelectValue): void => {
+    filterType.value = (value ?? 'all') as ToolType | ToolType[] | 'all';
 };
 
 const handleStatusChange = (value: string | null): void => {
@@ -156,6 +157,12 @@ const handleDeleteSelected = (): void => {
     deleteSelected(bulkDestroy().url);
 };
 
+const isToolTypeActive = (type: ToolType): boolean => {
+    return Array.isArray(filterType.value)
+        ? filterType.value.includes(type)
+        : filterType.value === type;
+};
+
 const statistics = computed<ListingStatItem[]>(() => [
     {
         label: 'Low Stock',
@@ -200,7 +207,7 @@ const statistics = computed<ListingStatItem[]>(() => [
         variant: 'primary',
         description: 'Insert tools',
         clickable: true,
-        active: filterType.value === 'insert',
+        active: isToolTypeActive('insert'),
     },
     {
         label: 'Drill',
@@ -209,7 +216,7 @@ const statistics = computed<ListingStatItem[]>(() => [
         variant: 'info',
         description: 'Drill tools',
         clickable: true,
-        active: filterType.value === 'drill',
+        active: isToolTypeActive('drill'),
     },
     {
         label: 'Endmill',
@@ -218,7 +225,7 @@ const statistics = computed<ListingStatItem[]>(() => [
         variant: 'success',
         description: 'Endmill tools',
         clickable: true,
-        active: filterType.value === 'endmill',
+        active: isToolTypeActive('endmill'),
     },
     {
         label: 'Special Tools',
@@ -227,7 +234,7 @@ const statistics = computed<ListingStatItem[]>(() => [
         variant: 'default',
         description: 'Special tools',
         clickable: true,
-        active: filterType.value === 'special_tools',
+        active: isToolTypeActive('special_tools'),
     },
 ]);
 
@@ -259,8 +266,20 @@ const handleStatClick = (item: ListingStatItem): void => {
         case 'Special Tools': {
             const type = item.label.toLowerCase().replace(' ', '_') as ToolType;
 
-            filterType.value =
-                filterType.value === type ? 'all' : type;
+            const selectedTypes = Array.isArray(filterType.value)
+                ? [...filterType.value]
+                : filterType.value === 'all'
+                    ? []
+                    : [filterType.value];
+
+            const updatedTypes = selectedTypes.includes(type)
+                ? selectedTypes.filter((selectedType) => selectedType !== type)
+                : [...selectedTypes, type];
+
+            filterType.value = updatedTypes.length
+                ? updatedTypes
+                : 'all';
+
             break;
         }
     }
@@ -306,10 +325,10 @@ const handleStatClick = (item: ListingStatItem): void => {
             <ListingFilters
                 v-model:search="searchQuery"
                 :active-filter-count="
-            Number(filterType !== 'all') +
-            Number(filterStatus !== 'all') +
-            Number(stockFilter !== null)
-        "
+                    Number(filterType !== 'all') +
+                    Number(filterStatus !== 'all') +
+                    Number(stockFilter !== null)
+                "
                 :clear-button-label="toolPage.clearButtonLabel"
                 :clear-disabled="!hasAnyActiveFilters"
                 :search-button-label="toolPage.searchButtonLabel"
@@ -320,6 +339,7 @@ const handleStatClick = (item: ListingStatItem): void => {
                 <template #filters>
                     <div class="w-full min-w-0">
                         <AppToolTypeSelect
+                            multiple
                             :model-value="filterType === 'all' ? null : filterType"
                             clearable
                             placeholder="All types"

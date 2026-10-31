@@ -6,7 +6,7 @@ import AppSelect from '@/components/common/AppSelect.vue';
 import {useLookup} from '@/composables/useLookup';
 import type {SelectOption} from '@/types/common';
 import type {AppSelectValue, NumericSelectValue,} from '@/utils/selectUtils';
-import {normalizeSelectValue} from '@/utils/selectUtils';
+import {isValidSelectionMode, normalizeSelectValue,} from '@/utils/selectUtils';
 
 /*
 |--------------------------------------------------------------------------
@@ -16,14 +16,15 @@ import {normalizeSelectValue} from '@/utils/selectUtils';
 
 const props = withDefaults(
     defineProps<{
-        modelValue?: number | null;
-        partId?: number | null;
+        modelValue?: NumericSelectValue;
+        partId?: number | number[] | null;
         placeholder?: string;
         searchable?: boolean;
         clearable?: boolean;
         disabled?: boolean;
         error?: string;
         showRefresh?: boolean;
+        multiple?: boolean;
     }>(),
     {
         modelValue: null,
@@ -34,6 +35,7 @@ const props = withDefaults(
         disabled: false,
         error: '',
         showRefresh: true,
+        multiple: false,
     },
 );
 
@@ -44,8 +46,8 @@ const props = withDefaults(
 */
 
 const emit = defineEmits<{
-    'update:modelValue': [value: number | null];
-    change: [value: number | null];
+    'update:modelValue': [value: NumericSelectValue];
+    change: [value: NumericSelectValue];
 }>();
 
 /*
@@ -64,17 +66,33 @@ let requestId = 0;
 
 /*
 |--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
+
+const getPartIds = (): number[] => {
+    const ids = Array.isArray(props.partId)
+        ? props.partId
+        : props.partId
+            ? [props.partId]
+            : [];
+
+    return [...new Set(ids.filter((id) => Number.isFinite(id) && id > 0))];
+};
+
+/*
+|--------------------------------------------------------------------------
 | Fetch Setups
 |--------------------------------------------------------------------------
 */
 
 const fetchSetups = async (): Promise<void> => {
     const currentRequestId = ++requestId;
-    const partId = props.partId;
+    const partIds = getPartIds();
 
     options.value = [];
 
-    if (!partId) {
+    if (!partIds.length) {
         loading.value = false;
         return;
     }
@@ -82,9 +100,12 @@ const fetchSetups = async (): Promise<void> => {
     loading.value = true;
 
     try {
-        const result = await setups(partId, {
-            cache: 'memory',
-        });
+        const result = await setups(
+            partIds.length === 1 ? partIds[0] : partIds,
+            {
+                cache: 'memory',
+            },
+        );
 
         // Ignore outdated requests.
         if (currentRequestId !== requestId) {
@@ -114,9 +135,11 @@ const fetchSetups = async (): Promise<void> => {
 */
 
 const refreshSetups = async (): Promise<void> => {
+    const partIds = getPartIds();
+
     if (
         props.disabled ||
-        !props.partId ||
+        !partIds.length ||
         loading.value ||
         refreshing.value
     ) {
@@ -126,10 +149,8 @@ const refreshSetups = async (): Promise<void> => {
     refreshing.value = true;
 
     try {
-        // Invalidate only the current part's setups cache.
-        const cacheKey = `setups:part_id=${props.partId}`;
-
-        clearLookupCache(cacheKey);
+        // Invalidate only the current part IDs' setups cache.
+        clearLookupCache(`setups:part_id=${partIds.join(',')}`);
 
         // Fetch fresh data and cache it in memory.
         await fetchSetups();
@@ -145,13 +166,13 @@ const refreshSetups = async (): Promise<void> => {
 */
 
 const handleUpdate = (value: AppSelectValue): void => {
-    const normalizedValue: NumericSelectValue =
-        normalizeSelectValue(value);
-
-    // This component supports single selection only.
-    if (Array.isArray(normalizedValue)) {
+    // Ensure the emitted value matches the selection mode.
+    if (!isValidSelectionMode(value, props.multiple)) {
         return;
     }
+
+    const normalizedValue: NumericSelectValue =
+        normalizeSelectValue(value);
 
     emit('update:modelValue', normalizedValue);
     emit('change', normalizedValue);
@@ -166,7 +187,7 @@ const handleUpdate = (value: AppSelectValue): void => {
 watch(
     () => props.partId,
     fetchSetups,
-    { immediate: true },
+    { immediate: true, deep: true },
 );
 </script>
 
@@ -175,10 +196,16 @@ watch(
         <div class="min-w-0 flex-1">
             <AppSelect
                 :clearable="clearable"
-                :disabled="disabled || loading || refreshing || !partId"
+                :disabled="
+                    disabled ||
+                    loading ||
+                    refreshing ||
+                    !getPartIds().length
+                "
                 :error="error"
                 :loading="loading"
                 :model-value="modelValue"
+                :multiple="multiple"
                 :options="options"
                 :placeholder="placeholder"
                 :searchable="searchable"
@@ -190,7 +217,12 @@ watch(
             v-if="showRefresh"
             type="button"
             class="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-input text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
-            :disabled="disabled || !partId || loading || refreshing"
+            :disabled="
+                disabled ||
+                !getPartIds().length ||
+                loading ||
+                refreshing
+            "
             title="Refresh setups"
             aria-label="Refresh setups"
             @click="refreshSetups"

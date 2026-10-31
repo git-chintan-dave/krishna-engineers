@@ -42,6 +42,9 @@ class IndexToolRequest extends FormRequest
 
             'type' => [
                 'nullable',
+                'array',
+            ],
+            'type.*' => [
                 Rule::enum(ToolType::class),
             ],
 

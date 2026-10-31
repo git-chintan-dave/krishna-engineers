@@ -33,6 +33,7 @@ import {bulkDestroy, create, destroy, generateLastMonth, index as salariesRoute,
 import {createSalaryColumns} from '@/table/salaries';
 
 import type {Salary, SalaryFilters, SalaryResponse, SalarySort, SalaryStatistics, SalaryStatus,} from '@/types/salary';
+import {NumericSelectValue} from "@/utils/selectUtils";
 
 /*
 |--------------------------------------------------------------------------
@@ -69,7 +70,7 @@ defineOptions({
 |--------------------------------------------------------------------------
 */
 
-const filterEmployee = ref<number | 'all'>(props.filters.user_id);
+const filterEmployee = ref<number | number[] | 'all'>(props.filters.user_id);
 const filterStatus = ref<SalaryFilters['status']>(props.filters.status);
 const filterStartDate = ref(props.filters.start_date);
 
@@ -119,7 +120,7 @@ watch(
     { deep: true },
 );
 
-const handleEmployeeChange = (value: number | null): void => {
+const handleEmployeeChange = (value: NumericSelectValue): void => {
     filterEmployee.value = value ?? 'all';
 };
 
@@ -472,6 +473,7 @@ const handleStatClick = (item: ListingStatItem): void => {
                 <template #filters>
                     <div class="w-full min-w-0">
                         <AppEmployeeSelect
+                            multiple
                             :model-value="
                                 filterEmployee === 'all'
                                     ? null

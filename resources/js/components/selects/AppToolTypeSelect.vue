@@ -4,6 +4,7 @@ import { onMounted, ref } from 'vue';
 import AppSelect from '@/components/common/AppSelect.vue';
 import { useLookup } from '@/composables/useLookup';
 import type { SelectOption } from '@/types/common';
+import {StringSelectValue} from "@/utils/selectUtils";
 
 /*
 |--------------------------------------------------------------------------
@@ -13,7 +14,7 @@ import type { SelectOption } from '@/types/common';
 
 const props = withDefaults(
     defineProps<{
-        modelValue?: string | null;
+        modelValue?: StringSelectValue;
         placeholder?: string;
         searchable?: boolean;
         clearable?: boolean;
@@ -37,8 +38,8 @@ const props = withDefaults(
 */
 
 const emit = defineEmits<{
-    'update:modelValue': [value: string | null];
-    change: [value: string | null];
+    'update:modelValue': [value: StringSelectValue];
+    change: [value: StringSelectValue];
 }>();
 
 /*

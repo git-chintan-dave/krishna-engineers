@@ -28,7 +28,9 @@ class IndexSectionSizeRequest extends FormRequest
 
             'section_id' => [
                 'nullable',
-                'integer',
+                'array',
+            ],
+            'section_id.*' => [
                 Rule::exists('sections', 'id'),
             ],
 

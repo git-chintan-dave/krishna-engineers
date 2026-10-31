@@ -34,7 +34,9 @@ class IndexSalaryRequest extends FormRequest
 
             'user_id' => [
                 'nullable',
-                'integer',
+                'array',
+            ],
+            'user_id.*' => [
                 'exists:users,id',
             ],
 

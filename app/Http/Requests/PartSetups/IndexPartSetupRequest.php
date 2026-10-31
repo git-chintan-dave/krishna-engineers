@@ -31,13 +31,17 @@ class IndexPartSetupRequest extends FormRequest
 
             'part_id' => [
                 'nullable',
-                'integer',
+                'array',
+            ],
+            'part_id.*' => [
                 'exists:parts,id',
             ],
 
             'setup_id' => [
                 'nullable',
-                'integer',
+                'array',
+            ],
+            'setup_id.*' => [
                 'exists:setups,id',
             ],
         ];
