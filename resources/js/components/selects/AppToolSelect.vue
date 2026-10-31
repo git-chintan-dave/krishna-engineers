@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-import { onMounted, ref, watch } from 'vue';
+import {ref, watch} from 'vue';
+import {RefreshCw} from '@lucide/vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import { useLookup } from '@/composables/useLookup';
-import type { SelectOption } from '@/types/common';
+import {useLookup} from '@/composables/useLookup';
+import type {SelectOption} from '@/types/common';
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +21,7 @@ const props = withDefaults(
         clearable?: boolean;
         disabled?: boolean;
         error?: string;
+        showRefresh?: boolean;
     }>(),
     {
         modelValue: null,
@@ -29,6 +31,7 @@ const props = withDefaults(
         clearable: false,
         disabled: false,
         error: '',
+        showRefresh: true,
     },
 );
 
@@ -50,8 +53,12 @@ const emit = defineEmits<{
 */
 
 const options = ref<SelectOption<number>[]>([]);
+const loading = ref(false);
+const refreshing = ref(false);
 
-const { loading, tools } = useLookup();
+const { tools, clearLookupCache } = useLookup();
+
+let requestId = 0;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,49 +66,114 @@ const { loading, tools } = useLookup();
 |--------------------------------------------------------------------------
 */
 
-const loadOptions = async () => {
-    options.value = [];
+const loadOptions = async (): Promise<void> => {
+    const currentRequestId = ++requestId;
 
-    options.value = await tools(props.type, {
-        cache: 'memory',
-    });
+    loading.value = true;
+
+    try {
+        const result = await tools(props.type, {
+            cache: 'memory',
+        });
+
+        // Ignore outdated requests.
+        if (currentRequestId !== requestId) {
+            return;
+        }
+
+        options.value = result;
+    } catch (error) {
+        if (currentRequestId !== requestId) {
+            return;
+        }
+
+        console.error('Failed to load tools:', error);
+        options.value = [];
+    } finally {
+        if (currentRequestId === requestId) {
+            loading.value = false;
+        }
+    }
 };
 
 /*
 |--------------------------------------------------------------------------
-| Lifecycle
+| Refresh Options
 |--------------------------------------------------------------------------
 */
 
-onMounted(loadOptions);
+const refreshOptions = async (): Promise<void> => {
+    if (props.disabled || loading.value || refreshing.value) {
+        return;
+    }
+
+    refreshing.value = true;
+
+    try {
+        /*
+         * Invalidate the current tool lookup cache.
+         * The cache key must match the key used by tools()
+         * in useLookup.ts.
+         */
+        clearLookupCache();
+
+        // Fetch fresh data and cache it in memory.
+        await loadOptions();
+    } finally {
+        refreshing.value = false;
+    }
+};
 
 /*
 |--------------------------------------------------------------------------
-| Watchers
+| Lifecycle & Watchers
 |--------------------------------------------------------------------------
 */
 
 watch(
     () => props.type,
     async () => {
+        // Preserve existing behavior when tool type changes.
         emit('update:modelValue', null);
+
+        options.value = [];
 
         await loadOptions();
     },
+    { immediate: true },
 );
 </script>
 
 <template>
-    <AppSelect
-        :clearable="clearable"
-        :disabled="disabled"
-        :error="error"
-        :loading="loading"
-        :model-value="modelValue"
-        :options="options"
-        :placeholder="placeholder"
-        :searchable="searchable"
-        @change="emit('change', $event as number | null)"
-        @update:model-value="emit('update:modelValue', $event as number | null)"
-    />
+    <div class="flex items-start gap-1.5">
+        <div class="min-w-0 flex-1">
+            <AppSelect
+                :clearable="clearable"
+                :disabled="disabled || loading"
+                :error="error"
+                :loading="loading"
+                :model-value="modelValue"
+                :options="options"
+                :placeholder="placeholder"
+                :searchable="searchable"
+                @change="emit('change', $event as number | null)"
+                @update:model-value="emit('update:modelValue', $event as number | null)"
+            />
+        </div>
+
+        <button
+            v-if="showRefresh"
+            type="button"
+            class="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-input text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
+            :disabled="disabled || loading || refreshing"
+            title="Refresh tools"
+            aria-label="Refresh tools"
+            @click="refreshOptions"
+        >
+            <RefreshCw
+                class="size-4"
+                :class="{ 'animate-spin': refreshing }"
+            />
+        </button>
+    </div>
 </template>

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import {ref, watch} from 'vue';
+import {RefreshCw} from '@lucide/vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
 import {useLookup} from '@/composables/useLookup';
@@ -20,6 +21,7 @@ const props = withDefaults(
         clearable?: boolean;
         disabled?: boolean;
         error?: string;
+        showRefresh?: boolean;
     }>(),
     {
         modelValue: null,
@@ -29,6 +31,7 @@ const props = withDefaults(
         clearable: false,
         disabled: false,
         error: '',
+        showRefresh: true,
     },
 );
 
@@ -51,8 +54,9 @@ const emit = defineEmits<{
 
 const options = ref<SelectOption<number>[]>([]);
 const loading = ref(false);
+const refreshing = ref(false);
 
-const { setups } = useLookup();
+const { setups, clearLookupCache } = useLookup();
 
 let requestId = 0;
 
@@ -64,6 +68,13 @@ let requestId = 0;
 
 const fetchSetups = async (): Promise<void> => {
     const currentRequestId = ++requestId;
+
+    options.value = [];
+
+    if (!props.partId) {
+        loading.value = false;
+        return;
+    }
 
     loading.value = true;
 
@@ -84,12 +95,43 @@ const fetchSetups = async (): Promise<void> => {
         }
 
         console.error('Failed to load setups:', error);
-
         options.value = [];
     } finally {
         if (currentRequestId === requestId) {
             loading.value = false;
         }
+    }
+};
+
+/*
+|--------------------------------------------------------------------------
+| Refresh Setups
+|--------------------------------------------------------------------------
+*/
+
+const refreshSetups = async (): Promise<void> => {
+    if (
+        props.disabled ||
+        !props.partId ||
+        loading.value ||
+        refreshing.value
+    ) {
+        return;
+    }
+
+    refreshing.value = true;
+
+    try {
+        // Build the cache key for the current part.
+        const cacheKey = `setups:part_id=${props.partId}`;
+
+        // Invalidate only the current part's setups cache.
+        clearLookupCache(cacheKey);
+
+        // Fetch fresh data and cache it in memory.
+        await fetchSetups();
+    } finally {
+        refreshing.value = false;
     }
 };
 
@@ -110,7 +152,7 @@ const handleUpdate = (
 
 /*
 |--------------------------------------------------------------------------
-| Lifecycle
+| Lifecycle & Watchers
 |--------------------------------------------------------------------------
 */
 
@@ -122,15 +164,34 @@ watch(
 </script>
 
 <template>
-    <AppSelect
-        :clearable="clearable"
-        :disabled="disabled || loading"
-        :error="error"
-        :loading="loading"
-        :model-value="modelValue"
-        :options="options"
-        :placeholder="placeholder"
-        :searchable="searchable"
-        @update:model-value="handleUpdate"
-    />
+    <div class="flex items-start gap-1.5">
+        <div class="min-w-0 flex-1">
+            <AppSelect
+                :clearable="clearable"
+                :disabled="disabled || loading || !partId"
+                :error="error"
+                :loading="loading"
+                :model-value="modelValue"
+                :options="options"
+                :placeholder="placeholder"
+                :searchable="searchable"
+                @update:model-value="handleUpdate"
+            />
+        </div>
+
+        <button
+            v-if="showRefresh"
+            type="button"
+            class="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-input text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
+            :disabled="disabled || !partId || loading || refreshing"
+            title="Refresh setups"
+            aria-label="Refresh setups"
+            @click="refreshSetups"
+        >
+            <RefreshCw
+                class="size-4"
+                :class="{ 'animate-spin': refreshing }"
+            />
+        </button>
+    </div>
 </template>

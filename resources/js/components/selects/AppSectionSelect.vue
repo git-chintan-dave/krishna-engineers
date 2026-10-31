@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import {onMounted, ref} from 'vue';
+import {RefreshCw} from '@lucide/vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import { useLookup } from '@/composables/useLookup';
-import type { SelectOption } from '@/types/common';
+import {useLookup} from '@/composables/useLookup';
+import type {SelectOption} from '@/types/common';
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +20,7 @@ const props = withDefaults(
         clearable?: boolean;
         disabled?: boolean;
         error?: string;
+        showRefresh?: boolean;
     }>(),
     {
         modelValue: null,
@@ -27,6 +29,7 @@ const props = withDefaults(
         clearable: false,
         disabled: false,
         error: '',
+        showRefresh: true,
     },
 );
 
@@ -48,8 +51,12 @@ const emit = defineEmits<{
 */
 
 const options = ref<SelectOption<number>[]>([]);
+const loading = ref(false);
+const refreshing = ref(false);
 
-const { loading, sections } = useLookup();
+const { sections, clearLookupCache } = useLookup();
+
+let requestId = 0;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,26 +64,99 @@ const { loading, sections } = useLookup();
 |--------------------------------------------------------------------------
 */
 
-const loadOptions = async () => {
-    options.value = await sections({
-        cache: 'memory',
-    });
+const loadOptions = async (): Promise<void> => {
+    const currentRequestId = ++requestId;
+
+    loading.value = true;
+
+    try {
+        const result = await sections({
+            cache: 'memory',
+        });
+
+        // Ignore outdated requests.
+        if (currentRequestId !== requestId) {
+            return;
+        }
+
+        options.value = result;
+    } catch (error) {
+        if (currentRequestId !== requestId) {
+            return;
+        }
+
+        console.error('Failed to load sections:', error);
+        options.value = [];
+    } finally {
+        if (currentRequestId === requestId) {
+            loading.value = false;
+        }
+    }
 };
+
+/*
+|--------------------------------------------------------------------------
+| Refresh Options
+|--------------------------------------------------------------------------
+*/
+
+const refreshOptions = async (): Promise<void> => {
+    if (props.disabled || loading.value || refreshing.value) {
+        return;
+    }
+
+    refreshing.value = true;
+
+    try {
+        // Invalidate the existing sections lookup cache.
+        clearLookupCache('sections');
+
+        // Fetch fresh data and cache it in memory.
+        await loadOptions();
+    } finally {
+        refreshing.value = false;
+    }
+};
+
+/*
+|--------------------------------------------------------------------------
+| Lifecycle
+|--------------------------------------------------------------------------
+*/
 
 onMounted(loadOptions);
 </script>
 
 <template>
-    <AppSelect
-        :clearable="clearable"
-        :disabled="disabled"
-        :error="error"
-        :loading="loading"
-        :model-value="modelValue"
-        :options="options"
-        :placeholder="placeholder"
-        :searchable="searchable"
-        @change="emit('change', $event as number | null)"
-        @update:model-value="emit('update:modelValue', $event as number | null)"
-    />
+    <div class="flex items-start gap-1.5">
+        <div class="min-w-0 flex-1">
+            <AppSelect
+                :clearable="clearable"
+                :disabled="disabled || loading"
+                :error="error"
+                :loading="loading"
+                :model-value="modelValue"
+                :options="options"
+                :placeholder="placeholder"
+                :searchable="searchable"
+                @change="emit('change', $event as number | null)"
+                @update:model-value="emit('update:modelValue', $event as number | null)"
+            />
+        </div>
+
+        <button
+            v-if="showRefresh"
+            type="button"
+            class="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-input text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
+            :disabled="disabled || loading || refreshing"
+            title="Refresh sections"
+            aria-label="Refresh sections"
+            @click="refreshOptions"
+        >
+            <RefreshCw
+                class="size-4"
+                :class="{ 'animate-spin': refreshing }"
+            />
+        </button>
+    </div>
 </template>

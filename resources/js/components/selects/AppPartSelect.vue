@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-import { onMounted, ref, watch } from 'vue';
+import {onMounted, ref, watch} from 'vue';
+import {RefreshCw} from '@lucide/vue';
 
 import AppSelect from '@/components/common/AppSelect.vue';
-import { useLookup } from '@/composables/useLookup';
-import type { SelectOption } from '@/types/common';
+import {useLookup} from '@/composables/useLookup';
+import type {SelectOption} from '@/types/common';
 
 /*
 |--------------------------------------------------------------------------
@@ -15,6 +16,8 @@ type PartSelectOption = SelectOption<number> & {
     cutting_size: string | null;
     section_id: number | null;
 };
+
+type AppSelectValue = string | number | null | (string | number)[];
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +33,7 @@ const props = withDefaults(
         clearable?: boolean;
         disabled?: boolean;
         error?: string;
+        showRefresh?: boolean;
     }>(),
     {
         modelValue: null,
@@ -38,6 +42,7 @@ const props = withDefaults(
         clearable: false,
         disabled: false,
         error: '',
+        showRefresh: true,
     },
 );
 
@@ -49,9 +54,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
     'update:modelValue': [value: number | null];
-
     change: [value: number | null];
-
     part: [part: PartSelectOption | null];
 }>();
 
@@ -62,14 +65,32 @@ const emit = defineEmits<{
 */
 
 const options = ref<PartSelectOption[]>([]);
+const loading = ref(false);
+const refreshing = ref(false);
 
-const { loading, parts } = useLookup();
+const { parts, clearLookupCache } = useLookup();
+
+let requestId = 0;
 
 /*
 |--------------------------------------------------------------------------
 | Helpers
 |--------------------------------------------------------------------------
 */
+
+const normalizeValue = (value: unknown): number | null => {
+    if (typeof value === 'number') {
+        return value;
+    }
+
+    if (typeof value === 'string' && value.trim() !== '') {
+        const numberValue = Number(value);
+
+        return Number.isFinite(numberValue) ? numberValue : null;
+    }
+
+    return null;
+};
 
 const getPart = (value: number | null): PartSelectOption | null => {
     if (value === null) {
@@ -89,34 +110,17 @@ const emitSelectedPart = (value: number | null): void => {
 |--------------------------------------------------------------------------
 */
 
-const normalizeValue = (value: unknown): number | null => {
-    if (typeof value === 'number') {
-        return value;
-    }
-
-    if (typeof value === 'string' && value !== '') {
-        const numberValue = Number(value);
-
-        return Number.isNaN(numberValue) ? null : numberValue;
-    }
-
-    return null;
-};
-
-const handleModelValue = (value: unknown): void => {
+const handleModelValue = (value: AppSelectValue): void => {
     const partId = normalizeValue(value);
 
     emit('update:modelValue', partId);
-
     emitSelectedPart(partId);
 };
 
-const handleChange = (value: unknown): void => {
+const handleChange = (value: AppSelectValue): void => {
     const partId = normalizeValue(value);
 
     emit('change', partId);
-
-    emitSelectedPart(partId);
 };
 
 /*
@@ -126,31 +130,68 @@ const handleChange = (value: unknown): void => {
 */
 
 const loadOptions = async (): Promise<void> => {
-    options.value = (await parts({
-        cache: 'memory',
-    })) as PartSelectOption[];
+    const currentRequestId = ++requestId;
 
-    /*
-     * Important for:
-     * - Edit
-     * - Last report autofill
-     *
-     * modelValue may already contain a Part ID
-     * before lookup options finish loading.
-     */
-    emitSelectedPart(props.modelValue);
+    loading.value = true;
+
+    try {
+        const result = await parts({
+            cache: 'memory',
+        });
+
+        // Ignore outdated requests.
+        if (currentRequestId !== requestId) {
+            return;
+        }
+
+        options.value = result as PartSelectOption[];
+
+        // Resolve the selected part after options are loaded.
+        emitSelectedPart(props.modelValue);
+    } catch (error) {
+        if (currentRequestId !== requestId) {
+            return;
+        }
+
+        console.error('Failed to load parts:', error);
+        options.value = [];
+        emitSelectedPart(props.modelValue);
+    } finally {
+        if (currentRequestId === requestId) {
+            loading.value = false;
+        }
+    }
 };
 
-onMounted(loadOptions);
+/*
+|--------------------------------------------------------------------------
+| Refresh Options
+|--------------------------------------------------------------------------
+*/
 
-watch(
-    () => props.modelValue,
-    (value) => {
-        if (options.value.length > 0) {
-            emitSelectedPart(value);
-        }
-    },
-);
+const refreshOptions = async (): Promise<void> => {
+    if (props.disabled || loading.value || refreshing.value) {
+        return;
+    }
+
+    refreshing.value = true;
+
+    try {
+        // Invalidate the existing parts lookup cache.
+        clearLookupCache('parts');
+
+        // Fetch fresh data and cache it in memory.
+        await loadOptions();
+    } finally {
+        refreshing.value = false;
+    }
+};
+
+/*
+|--------------------------------------------------------------------------
+| Lifecycle
+|--------------------------------------------------------------------------
+*/
 
 onMounted(loadOptions);
 
@@ -163,13 +204,7 @@ onMounted(loadOptions);
 watch(
     () => props.modelValue,
     (value) => {
-        /*
-         * If the lookup has already loaded, immediately
-         * resolve the selected Part.
-         *
-         * This handles last-report autofill.
-         */
-        if (options.value.length > 0) {
+        if (!loading.value) {
             emitSelectedPart(value);
         }
     },
@@ -177,16 +212,35 @@ watch(
 </script>
 
 <template>
-    <AppSelect
-        :clearable="clearable"
-        :disabled="disabled"
-        :error="error"
-        :loading="loading"
-        :model-value="modelValue"
-        :options="options"
-        :placeholder="placeholder"
-        :searchable="searchable"
-        @change="handleChange"
-        @update:model-value="handleModelValue"
-    />
+    <div class="flex items-start gap-1.5">
+        <div class="min-w-0 flex-1">
+            <AppSelect
+                :clearable="clearable"
+                :disabled="disabled"
+                :error="error"
+                :loading="loading"
+                :model-value="modelValue"
+                :options="options"
+                :placeholder="placeholder"
+                :searchable="searchable"
+                @change="handleChange"
+                @update:model-value="handleModelValue"
+            />
+        </div>
+
+        <button
+            v-if="showRefresh"
+            type="button"
+            class="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-input text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
+            :disabled="disabled || loading || refreshing"
+            title="Refresh parts"
+            aria-label="Refresh parts"
+            @click="refreshOptions"
+        >
+            <RefreshCw
+                class="size-4"
+                :class="{ 'animate-spin': refreshing }"
+            />
+        </button>
+    </div>
 </template>
