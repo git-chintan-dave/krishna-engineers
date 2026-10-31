@@ -921,7 +921,7 @@ const handlePageSizeChange = (
                                             ? 'justify-center'
                                             : '',
                                     ]"
-                                    class="flex min-h-7 items-center"
+                                    class="flex min-h-8 items-center"
                                 >
                                     <div
                                         :class="

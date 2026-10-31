@@ -75,7 +75,7 @@ onBeforeUnmount(() => {
 <template>
     <main
         ref="listingContentRef"
-        class="w-full min-w-0 max-w-full divide-y divide-border p-4 md:px-6 md:py-5"
+        class="w-full min-w-0 max-w-full divide-y divide-border p-4 md:px-6 md:pb-5 pt-0"
     >
         <div
             ref="pageHeaderRef"
