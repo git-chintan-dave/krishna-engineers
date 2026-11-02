@@ -194,7 +194,6 @@ const clear = (): void => {
                     initial-focus
                     @update:model-value="handleRangeChange"
                 />
-                aa
             </PopoverContent>
         </Popover>
 

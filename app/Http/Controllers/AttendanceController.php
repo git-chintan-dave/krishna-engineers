@@ -510,6 +510,7 @@ class AttendanceController extends Controller
         return AttendanceResource::collection($attendances);
     }
 
+
     private function getStatistics(
         bool $isAdminOrSupervisor,
         int $userId,
@@ -521,14 +522,10 @@ class AttendanceController extends Controller
                 ! $isAdminOrSupervisor,
                 fn (Builder $query) => $query->forUser($userId),
             )
+            ->whereDate('attendance_date', $today)
             ->selectRaw('COUNT(*) AS total')
             ->selectRaw(
-                'SUM(CASE WHEN attendance_date = ? THEN 1 ELSE 0 END) AS today',
-                [$today],
-            )
-            ->selectRaw(
-                'SUM(CASE WHEN attendance_date = ? AND end_at IS NULL THEN 1 ELSE 0 END) AS currently_working',
-                [$today],
+                'SUM(CASE WHEN end_at IS NULL THEN 1 ELSE 0 END) AS currently_working',
             )
             ->selectRaw(
                 'SUM(CASE WHEN end_at IS NOT NULL THEN 1 ELSE 0 END) AS completed',
@@ -545,14 +542,11 @@ class AttendanceController extends Controller
             ->selectRaw(
                 'COALESCE(SUM(undertime_seconds), 0) AS total_undertime_seconds',
             )
-            ->selectRaw(
-                'COUNT(DISTINCT user_id) AS unique_employees',
-            )
+            ->selectRaw('COUNT(DISTINCT user_id) AS unique_employees')
             ->firstOrFail();
 
         return [
             'total' => (int) $stats->total,
-            'today' => (int) $stats->today,
             'currently_working' => (int) $stats->currently_working,
             'completed' => (int) $stats->completed,
 

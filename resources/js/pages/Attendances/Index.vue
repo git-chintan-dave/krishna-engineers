@@ -558,100 +558,71 @@ const formatDuration = (
     return `${hours}h ${String(minutes).padStart(2, '0')}m`;
 };
 
-const statistics =
-    computed<ListingStatItem[]>(() => [
-        {
-            label: 'Total Records',
-            value:
-                props.statistics?.total ?? 0,
-            icon: Database,
-            variant: 'primary',
-            description:
-                'All attendance records',
-            clickable: false,
-        },
-        {
-            label: "Today's Attendance",
-            value:
-                props.statistics?.today ?? 0,
-            icon: CalendarDays,
-            variant: 'info',
-            description:
-                'Attendance records for today',
-            clickable: true,
-            active:
-            isTodayFilterActive.value,
-        },
-        {
-            label: 'Currently Working',
-            value:
-                props.statistics
-                    ?.currently_working ?? 0,
-            icon: Activity,
-            variant: 'success',
-            description:
-                'Today’s records without an end time',
-            clickable: false,
-        },
-        {
-            label: 'Completed',
-            value:
-                props.statistics?.completed ?? 0,
-            icon: CheckCircle,
-            variant: 'default',
-            description:
-                'Attendance records with an end time',
-            clickable: false,
-        },
-        {
-            label: 'Employees Recorded',
-            value:
-                props.statistics
-                    ?.unique_employees ?? 0,
-            icon: Users,
-            variant: 'primary',
-            description:
-                'Distinct employees with attendance',
-            clickable: false,
-        },
-        {
-            label: 'Effective Hours',
-            value: formatDuration(
-                props.statistics
-                    ?.total_effective_working_seconds ??
-                0,
-            ),
-            icon: Clock3,
-            variant: 'success',
-            description:
-                'Total effective working time',
-            clickable: false,
-        },
-        {
-            label: 'Break Time',
-            value: formatDuration(
-                props.statistics
-                    ?.total_break_seconds ?? 0,
-            ),
-            icon: Coffee,
-            variant: 'warning',
-            description:
-                'Total recorded break time',
-            clickable: false,
-        },
-        {
-            label: 'Undertime',
-            value: formatDuration(
-                props.statistics
-                    ?.total_undertime_seconds ?? 0,
-            ),
-            icon: Timer,
-            variant: 'destructive',
-            description:
-                'Total recorded undertime',
-            clickable: false,
-        },
-    ]);
+
+const statistics = computed<ListingStatItem[]>(() => [
+    {
+        label: "Today's Attendance",
+        value: props.statistics?.total ?? 0,
+        icon: CalendarDays,
+        variant: 'primary',
+        description: 'Total attendance records for today',
+        clickable: false,
+    },
+    {
+        label: 'Currently Working',
+        value: props.statistics?.currently_working ?? 0,
+        icon: Activity,
+        variant: 'success',
+        description: 'Employees currently working today',
+        clickable: false,
+    },
+    {
+        label: 'Completed',
+        value: props.statistics?.completed ?? 0,
+        icon: CheckCircle,
+        variant: 'default',
+        description: 'Attendance records with an end time',
+        clickable: false,
+    },
+    {
+        label: 'Employees Recorded',
+        value: props.statistics?.unique_employees ?? 0,
+        icon: Users,
+        variant: 'info',
+        description: 'Distinct employees recorded today',
+        clickable: false,
+    },
+    {
+        label: 'Effective Hours',
+        value: formatDuration(
+            props.statistics?.total_effective_working_seconds ?? 0,
+        ),
+        icon: Clock3,
+        variant: 'success',
+        description: 'Total effective working time today',
+        clickable: false,
+    },
+    {
+        label: 'Break Time',
+        value: formatDuration(
+            props.statistics?.total_break_seconds ?? 0,
+        ),
+        icon: Coffee,
+        variant: 'warning',
+        description: 'Total recorded break time today',
+        clickable: false,
+    },
+    {
+        label: 'Undertime',
+        value: formatDuration(
+            props.statistics?.total_undertime_seconds ?? 0,
+        ),
+        icon: Timer,
+        variant: 'destructive',
+        description: 'Total recorded undertime today',
+        clickable: false,
+    },
+]);
 
 const handleStatClick = (
     item: ListingStatItem,
@@ -911,220 +882,194 @@ const emptyState = useListingEmptyState({
     <!-- Attendance Sync -->
     <Dialog
         :open="syncOpen"
-        @update:open="
-            handleSyncDialogOpenChange
-        "
+        @update:open="handleSyncDialogOpenChange"
     >
         <DialogContent
-            class="max-h-[90vh] w-[calc(100%-2rem)] overflow-y-auto sm:max-w-lg"
+            class="flex max-h-[90dvh] w-[calc(100%-1.5rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-lg"
         >
-            <DialogHeader>
-                <DialogTitle>
-                    Sync attendance
-                </DialogTitle>
+            <!-- Header -->
+            <DialogHeader class="shrink-0 border-b px-5 py-4 sm:px-6">
+                <div class="flex items-start gap-3">
+                    <div
+                        class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
+                    >
+                        <RefreshCw class="size-5" aria-hidden="true" />
+                    </div>
 
-                <DialogDescription>
-                    Choose which eTimeOffice data to
-                    import.
-                </DialogDescription>
+                    <div class="min-w-0 space-y-1">
+                        <DialogTitle class="text-base font-semibold">
+                            Sync attendance
+                        </DialogTitle>
+
+                        <DialogDescription class="text-sm">
+                            Import employee punch records and break intervals
+                            from eTimeOffice.
+                        </DialogDescription>
+                    </div>
+                </div>
             </DialogHeader>
 
-            <div class="space-y-5">
+            <!-- Scrollable Content -->
+            <div class="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5 sm:px-6">
                 <!-- Sync Type -->
-                <fieldset class="space-y-3">
-                    <legend
-                        class="text-sm font-medium"
+                <section class="space-y-3">
+                    <div class="space-y-1">
+                        <h3 class="text-sm font-semibold">
+                            Synchronization type
+                        </h3>
+
+                        <p class="text-xs text-muted-foreground">
+                            Select the attendance data to import.
+                        </p>
+                    </div>
+
+                    <div
+                        class="rounded-lg border border-primary/40 bg-primary/[0.04] p-3.5 dark:bg-primary/[0.08]"
                     >
-                        Synchronization type
-                    </legend>
-
-                    <label
-                        :class="
-                            syncType === 'in_out'
-                                ? 'border-primary bg-muted/30'
-                                : 'border-border'
-                        "
-                        class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-muted/50"
-                        for="sync-type-in-out"
-                    >
-                        <input
-                            id="sync-type-in-out"
-                            v-model="syncType"
-                            :disabled="
-                                syncProcessing
-                            "
-                            class="mt-1 size-4 shrink-0 accent-primary"
-                            name="sync-type"
-                            type="radio"
-                            value="in_out"
-                        />
-
-                        <span class="space-y-1">
-                            <span
-                                class="block text-sm font-medium"
+                        <div class="flex items-start gap-3">
+                            <div
+                                class="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"
                             >
-                                IN/OUT Summary
-                            </span>
+                                <RefreshCw class="size-4" aria-hidden="true" />
+                            </div>
 
-                            <span
-                                class="block text-xs text-muted-foreground"
-                            >
-                                Imports daily IN and
-                                OUT times. Existing
-                                attendance is skipped;
-                                breaks are not
-                                imported.
-                            </span>
-                        </span>
-                    </label>
+                            <div class="min-w-0 flex-1 space-y-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                <span class="text-sm font-medium">
+                                    Detailed Punch Data
+                                </span>
 
-                    <label
-                        :class="
-                            syncType === 'punches'
-                                ? 'border-primary bg-muted/30'
-                                : 'border-border'
-                        "
-                        class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-muted/50"
-                        for="sync-type-punches"
-                    >
-                        <input
-                            id="sync-type-punches"
-                            v-model="syncType"
-                            :disabled="
-                                syncProcessing
-                            "
-                            class="mt-1 size-4 shrink-0 accent-primary"
-                            name="sync-type"
-                            type="radio"
-                            value="punches"
-                        />
+                                    <span
+                                        class="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary"
+                                    >
+                                    Selected
+                                </span>
+                                </div>
 
-                        <span class="space-y-1">
-                            <span
-                                class="block text-sm font-medium"
-                            >
-                                Detailed Punch Data
-                            </span>
-
-                            <span
-                                class="block text-xs text-muted-foreground"
-                            >
-                                Imports individual
-                                punch times and break
-                                intervals. Creates
-                                missing attendance or
-                                updates existing
-                                attendance with
-                                detailed data.
-                            </span>
-                        </span>
-                    </label>
-                </fieldset>
+                                <p class="text-xs leading-relaxed text-muted-foreground">
+                                    Imports individual punch times and break
+                                    intervals. Creates missing attendance records
+                                    or updates existing records with detailed
+                                    punch data.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
                 <!-- Sync Description -->
                 <div
                     aria-live="polite"
-                    class="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground"
+                    class="flex gap-2.5 rounded-lg border bg-muted/30 p-3"
                 >
-                    {{ syncDescription }}
+                    <Info
+                        class="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                        aria-hidden="true"
+                    />
+
+                    <p class="text-xs leading-relaxed text-muted-foreground">
+                        {{ syncDescription }}
+                    </p>
                 </div>
 
                 <!-- Employee -->
-                <div class="space-y-2">
-                    <label
-                        class="text-sm font-medium"
-                        for="sync-employee"
-                    >
-                        Employee
-                    </label>
+                <section class="space-y-2.5">
+                    <div class="space-y-1">
+                        <label
+                            class="text-sm font-medium"
+                            for="sync-employee"
+                        >
+                            Employee
+                        </label>
+
+                        <p class="text-xs text-muted-foreground">
+                            Choose one employee or synchronize all employees.
+                        </p>
+                    </div>
 
                     <AppEmployeeSelect
                         id="sync-employee"
                         v-model="syncEmployee"
                         clearable
+                        :disabled="syncProcessing"
                         placeholder="All employees"
                         searchable
                     />
-
-                    <p
-                        class="text-xs text-muted-foreground"
-                    >
-                        Leave empty to sync all
-                        employees.
-                    </p>
-                </div>
+                </section>
 
                 <!-- Date Range -->
-                <div class="space-y-2">
-                    <label
-                        class="text-sm font-medium"
-                    >
-                        Date range
-                    </label>
+                <section class="space-y-2.5">
+                    <div class="space-y-1">
+                        <label class="text-sm font-medium">
+                            Date range
+                        </label>
+
+                        <p class="text-xs text-muted-foreground">
+                            Select the period to synchronize from eTimeOffice.
+                        </p>
+                    </div>
 
                     <DateRangePicker
-                        :start-date="
-                            syncStartDate
-                        "
-                        :end-date="
-                            syncEndDate
-                        "
-                        :disabled="
-                            syncProcessing
-                        "
+                        :start-date="syncStartDate"
+                        :end-date="syncEndDate"
+                        :disabled="syncProcessing"
                         clearable
                         placeholder="Select sync date range"
-                        @change="
-                            handleSyncDateRangeChange
-                        "
+                        @change="handleSyncDateRangeChange"
                         disable-future
                     />
 
                     <p
-                        class="text-xs text-muted-foreground"
+                        v-if="syncDateError"
+                        class="text-sm leading-relaxed text-destructive"
+                        role="alert"
                     >
-                        Select the period to synchronize
-                        from eTimeOffice.
+                        {{ syncDateError }}
                     </p>
-                </div>
-
-                <!-- Date Validation -->
-                <p
-                    v-if="syncDateError"
-                    class="text-sm text-destructive"
-                >
-                    {{ syncDateError }}
-                </p>
+                </section>
 
                 <!-- Sync Message -->
                 <div
                     v-if="syncMessage"
                     :class="
-                        syncMessageType === 'success'
-                            ? 'border-green-600/30 text-green-700 dark:text-green-400'
-                            : 'border-destructive/30 text-destructive'
-                    "
+                    syncMessageType === 'success'
+                        ? 'border-green-600/30 bg-green-500/5 text-green-700 dark:text-green-400'
+                        : 'border-destructive/30 bg-destructive/5 text-destructive'
+                "
                     aria-live="polite"
-                    class="max-h-40 overflow-y-auto rounded-md border p-3 text-sm whitespace-pre-wrap"
+                    class="max-h-40 overflow-y-auto rounded-lg border p-3 text-sm leading-relaxed whitespace-pre-wrap"
                     role="status"
                 >
                     {{ syncMessage }}
                 </div>
+            </div>
 
-                <!-- Submit -->
+            <!-- Footer -->
+            <div
+                class="flex shrink-0 flex-col-reverse gap-2 border-t bg-background px-5 py-4 sm:flex-row sm:justify-end sm:px-6"
+            >
+                <Button
+                    class="w-full cursor-pointer sm:w-auto"
+                    type="button"
+                    variant="outline"
+                    :disabled="syncProcessing"
+                    @click="handleSyncDialogOpenChange(false)"
+                >
+                    Cancel
+                </Button>
+
                 <Button
                     :disabled="syncDisabled"
-                    class="w-full cursor-pointer"
+                    class="w-full cursor-pointer gap-2 sm:w-auto"
                     type="button"
                     @click="handleSync"
                 >
                     <RefreshCw
                         :class="{
-                            'animate-spin':
-                                syncProcessing,
-                        }"
+                        'animate-spin': syncProcessing,
+                    }"
                         aria-hidden="true"
-                        class="mr-2 size-4"
+                        class="size-4"
                     />
 
                     {{
