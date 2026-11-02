@@ -15,14 +15,14 @@ import {
     Timer,
     Users,
 } from '@lucide/vue';
-
-import AppInput from '@/components/common/AppInput.vue';
+import DateRangePicker from '@/components/common/DateRangePicker.vue';
 import ListingActions, {type ActionItem,} from '@/components/common/ListingActions.vue';
 import ListingFilters from '@/components/common/ListingFilters.vue';
 import ListingStats, {type ListingStatItem,} from '@/components/common/ListingStats.vue';
 import AppEmployeeSelect from '@/components/selects/AppEmployeeSelect.vue';
 import DataTable from '@/components/data-table/DataTable.vue';
 import ListingLayout from '@/components/layouts/ListingLayout.vue';
+
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from '@/components/ui/dialog';
 import {Button} from '@/components/ui/button';
 
@@ -34,7 +34,7 @@ import {ACTION_SHORTCUTS} from '@/composables/useActionShortcuts';
 import {attendancePage} from '@/config/attendances';
 
 import {bulkDestroy, create, destroy, index as attendancesRoute, sync,} from '@/routes/attendances';
-import {view as attendancesImportRoute} from '@/routes/attendances/import';
+import {view as attendancesImportRoute,} from '@/routes/attendances/import';
 
 import {createAttendanceColumns} from '@/table/attendances';
 import {getAttendanceRowHighlight} from '@/lib/row-highlights';
@@ -57,6 +57,7 @@ import type {NumericSelectValue} from '@/utils/selectUtils';
 
 type SyncType = 'in_out' | 'punches';
 type SyncMessageType = 'success' | 'error' | null;
+type EmployeeFilter = number[] | 'all';
 
 /*
 |--------------------------------------------------------------------------
@@ -88,7 +89,9 @@ defineOptions({
 
 const page = usePage();
 
-const userRole = computed(() => page.props.auth.user?.role);
+const userRole = computed(
+    () => page.props.auth.user?.role,
+);
 
 const canManageAttendance = computed(() =>
     ['super_admin', 'supervisor'].includes(
@@ -96,64 +99,125 @@ const canManageAttendance = computed(() =>
     ),
 );
 
-const isSuperAdmin = computed(() => userRole.value === 'super_admin');
+const isSuperAdmin = computed(
+    () => userRole.value === 'super_admin',
+);
 
 /*
 |--------------------------------------------------------------------------
-| Filters
+| Helpers
 |--------------------------------------------------------------------------
 */
 
-const filterEmployee = ref<number | number[] | 'all'>(
-    props.filters.user_id,
-);
+const getTodayString = (): string => {
+    const date = new Date();
 
-const filterStartDate = ref(props.filters.start_date);
-const filterEndDate = ref(props.filters.end_date);
+    return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, '0'),
+        String(date.getDate()).padStart(2, '0'),
+    ].join('-');
+};
 
-/*
-|--------------------------------------------------------------------------
-| Synchronize Server Filters
-|--------------------------------------------------------------------------
-|
-| Keep this consistent with the working Salary listing.
-| The server-provided filter is the source of truth after
-| an Inertia navigation/reload.
-|--------------------------------------------------------------------------
-*/
+const normalizeEmployeeFilter = (
+    value: AttendanceFilters['user_id'],
+): EmployeeFilter => {
+    if (value === null || value === undefined) {
+        return 'all';
+    }
 
-watch(
-    () => props.filters,
-    (filters) => {
-        filterEmployee.value = filters.user_id;
-        filterStartDate.value = filters.start_date;
-        filterEndDate.value = filters.end_date;
-    },
-    {deep: true},
-);
+    const values = Array.isArray(value)
+        ? value
+        : [value];
 
-const handleEmployeeChange = (value: NumericSelectValue): void => {
-    filterEmployee.value = value ?? 'all';
+    const employeeIds = values
+        .map(Number)
+        .filter(Number.isFinite);
+
+    return employeeIds.length
+        ? employeeIds
+        : 'all';
 };
 
 /*
 |--------------------------------------------------------------------------
-| Date Filter
+| Listing Filters
+|--------------------------------------------------------------------------
+*/
+
+const filterEmployee = ref<EmployeeFilter>(
+    normalizeEmployeeFilter(
+        props.filters.user_id,
+    ),
+);
+
+const filterStartDate = ref(
+    props.filters.start_date ?? '',
+);
+
+const filterEndDate = ref(
+    props.filters.end_date ?? '',
+);
+
+watch(
+    () => props.filters,
+    (filters) => {
+        filterEmployee.value =
+            normalizeEmployeeFilter(
+                filters.user_id,
+            );
+
+        filterStartDate.value =
+            filters.start_date ?? '';
+
+        filterEndDate.value =
+            filters.end_date ?? '';
+    },
+    {
+        deep: true,
+    },
+);
+
+const handleEmployeeChange = (
+    value: NumericSelectValue,
+): void => {
+    if (Array.isArray(value)) {
+        filterEmployee.value = value
+            .map(Number)
+            .filter(Number.isFinite);
+
+        return;
+    }
+
+    if (typeof value === 'number') {
+        filterEmployee.value = [value];
+
+        return;
+    }
+
+    filterEmployee.value = 'all';
+};
+
+const handleDateRangeChange = (value: {
+    startDate: string;
+    endDate: string;
+}): void => {
+    filterStartDate.value = value.startDate;
+    filterEndDate.value = value.endDate;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Date Filter State
 |--------------------------------------------------------------------------
 */
 
 const isTodayFilterActive = computed(() => {
-    const today = new Date();
-
-    const todayString = [
-        today.getFullYear(),
-        String(today.getMonth() + 1).padStart(2, '0'),
-        String(today.getDate()).padStart(2, '0'),
-    ].join('-');
+    const today = getTodayString();
 
     return (
-        filterStartDate.value === todayString &&
-        filterEndDate.value === todayString
+        filterStartDate.value === today &&
+        filterEndDate.value === today
     );
 });
 
@@ -170,14 +234,21 @@ const syncStartDate = ref('');
 const syncEndDate = ref('');
 const syncProcessing = ref(false);
 const syncMessage = ref('');
-const syncMessageType = ref<SyncMessageType>(null);
+const syncMessageType =
+    ref<SyncMessageType>(null);
 
 const syncDateError = computed(() => {
-    if (!syncStartDate.value || !syncEndDate.value) {
+    if (
+        !syncStartDate.value ||
+        !syncEndDate.value
+    ) {
         return 'Please select both start and end dates.';
     }
 
-    if (syncStartDate.value > syncEndDate.value) {
+    if (
+        syncStartDate.value >
+        syncEndDate.value
+    ) {
         return 'The start date must be before or equal to the end date.';
     }
 
@@ -197,28 +268,35 @@ const syncButtonLabel = computed(() =>
 );
 
 const syncDisabled = computed(
-    () => syncProcessing.value || Boolean(syncDateError.value),
+    () =>
+        syncProcessing.value ||
+        Boolean(syncDateError.value),
 );
 
 const openSyncDialog = (): void => {
     syncOpen.value = true;
 
-    const today = new Date();
+    const today = getTodayString();
 
-    const date = [
-        today.getFullYear(),
-        String(today.getMonth() + 1).padStart(2, '0'),
-        String(today.getDate()).padStart(2, '0'),
-    ].join('-');
+    syncStartDate.value ||= today;
+    syncEndDate.value ||= today;
 
-    syncStartDate.value ||= date;
-    syncEndDate.value ||= date;
     syncMessage.value = '';
     syncMessageType.value = null;
 };
 
-const handleSyncDialogOpenChange = (open: boolean): void => {
+const handleSyncDialogOpenChange = (
+    open: boolean,
+): void => {
     syncOpen.value = open;
+};
+
+const handleSyncDateRangeChange = (value: {
+    startDate: string;
+    endDate: string;
+}): void => {
+    syncStartDate.value = value.startDate;
+    syncEndDate.value = value.endDate;
 };
 
 const handleSync = (): void => {
@@ -234,7 +312,8 @@ const handleSync = (): void => {
         sync().url,
         {
             sync_type: syncType.value,
-            user_id: syncEmployee.value ?? undefined,
+            user_id:
+                syncEmployee.value ?? undefined,
             from: syncStartDate.value,
             to: syncEndDate.value,
         },
@@ -252,12 +331,16 @@ const handleSync = (): void => {
                 ).flash;
 
                 if (flash?.error) {
-                    syncMessage.value = flash.error;
-                    syncMessageType.value = 'error';
+                    syncMessage.value =
+                        flash.error;
+                    syncMessageType.value =
+                        'error';
                 } else {
                     syncMessage.value =
-                        flash?.success ?? 'Attendance sync completed.';
-                    syncMessageType.value = 'success';
+                        flash?.success ??
+                        'Attendance sync completed.';
+                    syncMessageType.value =
+                        'success';
                 }
 
                 router.reload({
@@ -277,7 +360,8 @@ const handleSync = (): void => {
                     errors.user_id ??
                     'Unable to sync attendance. Please check your input and try again.';
 
-                syncMessageType.value = 'error';
+                syncMessageType.value =
+                    'error';
             },
 
             onFinish: () => {
@@ -295,7 +379,9 @@ const handleSync = (): void => {
 
 const columns = createAttendanceColumns(
     (uuid) => {
-        router.delete(destroy(uuid).url);
+        router.delete(
+            destroy(uuid).url,
+        );
     },
     canManageAttendance.value,
     canManageAttendance.value,
@@ -310,7 +396,12 @@ const {
     deleteSelected,
     resetPreferences,
     hasActiveFilters,
-} = useListingTable<Attendance, AttendanceSort>({
+    refresh,
+    refreshing,
+} = useListingTable<
+    Attendance,
+    AttendanceSort
+>({
     data: () => props.attendances,
     columns,
 
@@ -329,9 +420,27 @@ const {
                 ? filterEmployee.value
                 : undefined,
 
-        start_date: filterStartDate.value || undefined,
-        end_date: filterEndDate.value || undefined,
+        start_date:
+            filterStartDate.value || undefined,
+
+        end_date:
+            filterEndDate.value || undefined,
     }),
+
+    refreshScope: 'tableAndStats',
+
+    refreshProps: {
+        table: [
+            'attendances',
+            'hasAnyRecords',
+        ],
+
+        tableAndStats: [
+            'attendances',
+            'hasAnyRecords',
+            'statistics',
+        ],
+    },
 
     onClearFilters: () => {
         filterEmployee.value = 'all';
@@ -349,8 +458,10 @@ const {
 const hasAnyActiveFilters = computed(
     () =>
         hasActiveFilters.value ||
-        (canManageAttendance.value &&
-            filterEmployee.value !== 'all') ||
+        (
+            canManageAttendance.value &&
+            filterEmployee.value !== 'all'
+        ) ||
         Boolean(filterStartDate.value) ||
         Boolean(filterEndDate.value),
 );
@@ -379,14 +490,16 @@ const actions = computed<ActionItem[]>(() => [
                 label: 'Import',
                 icon: FileUp,
                 href: attendancesImportRoute().url,
-                shortcut: ACTION_SHORTCUTS.import.label,
+                shortcut:
+                ACTION_SHORTCUTS.import.label,
             },
             {
                 key: 'sync',
                 label: 'Sync attendance',
                 icon: RefreshCw,
                 action: openSyncDialog,
-                shortcut: ACTION_SHORTCUTS.sync.label,
+                shortcut:
+                ACTION_SHORTCUTS.sync.label,
             },
         ]
         : []),
@@ -396,7 +509,8 @@ const actions = computed<ActionItem[]>(() => [
         label: 'Reset preferences',
         icon: RotateCcw,
         action: resetPreferences,
-        shortcut: ACTION_SHORTCUTS.resetPreferences.label,
+        shortcut:
+        ACTION_SHORTCUTS.resetPreferences.label,
         separatorBefore: true,
     },
 ]);
@@ -421,10 +535,21 @@ const handleClearFilters = (): void => {
 |--------------------------------------------------------------------------
 */
 
-const formatDuration = (seconds: number): string => {
-    const safeSeconds = Math.max(0, Math.floor(seconds));
-    const hours = Math.floor(safeSeconds / 3600);
-    const minutes = Math.floor((safeSeconds % 3600) / 60);
+const formatDuration = (
+    seconds: number,
+): string => {
+    const safeSeconds = Math.max(
+        0,
+        Math.floor(seconds),
+    );
+
+    const hours = Math.floor(
+        safeSeconds / 3600,
+    );
+
+    const minutes = Math.floor(
+        (safeSeconds % 3600) / 60,
+    );
 
     if (hours >= 100) {
         return `${hours.toLocaleString()}h`;
@@ -433,82 +558,107 @@ const formatDuration = (seconds: number): string => {
     return `${hours}h ${String(minutes).padStart(2, '0')}m`;
 };
 
-const statistics = computed<ListingStatItem[]>(() => [
-    {
-        label: 'Total Records',
-        value: props.statistics?.total ?? 0,
-        icon: Database,
-        variant: 'primary',
-        description: 'All attendance records',
-        clickable: false,
-    },
-    {
-        label: "Today's Attendance",
-        value: props.statistics?.today ?? 0,
-        icon: CalendarDays,
-        variant: 'info',
-        description: 'Attendance records for today',
-        clickable: true,
-        active: isTodayFilterActive.value,
-    },
-    {
-        label: 'Currently Working',
-        value: props.statistics?.currently_working ?? 0,
-        icon: Activity,
-        variant: 'success',
-        description: 'Today’s records without an end time',
-        clickable: false,
-    },
-    {
-        label: 'Completed',
-        value: props.statistics?.completed ?? 0,
-        icon: CheckCircle,
-        variant: 'default',
-        description: 'Attendance records with an end time',
-        clickable: false,
-    },
-    {
-        label: 'Employees Recorded',
-        value: props.statistics?.unique_employees ?? 0,
-        icon: Users,
-        variant: 'primary',
-        description: 'Distinct employees with attendance',
-        clickable: false,
-    },
-    {
-        label: 'Effective Hours',
-        value: formatDuration(
-            props.statistics?.total_effective_working_seconds ?? 0,
-        ),
-        icon: Clock3,
-        variant: 'success',
-        description: 'Total effective working time',
-        clickable: false,
-    },
-    {
-        label: 'Break Time',
-        value: formatDuration(
-            props.statistics?.total_break_seconds ?? 0,
-        ),
-        icon: Coffee,
-        variant: 'warning',
-        description: 'Total recorded break time',
-        clickable: false,
-    },
-    {
-        label: 'Undertime',
-        value: formatDuration(
-            props.statistics?.total_undertime_seconds ?? 0,
-        ),
-        icon: Timer,
-        variant: 'destructive',
-        description: 'Total recorded undertime',
-        clickable: false,
-    },
-]);
+const statistics =
+    computed<ListingStatItem[]>(() => [
+        {
+            label: 'Total Records',
+            value:
+                props.statistics?.total ?? 0,
+            icon: Database,
+            variant: 'primary',
+            description:
+                'All attendance records',
+            clickable: false,
+        },
+        {
+            label: "Today's Attendance",
+            value:
+                props.statistics?.today ?? 0,
+            icon: CalendarDays,
+            variant: 'info',
+            description:
+                'Attendance records for today',
+            clickable: true,
+            active:
+            isTodayFilterActive.value,
+        },
+        {
+            label: 'Currently Working',
+            value:
+                props.statistics
+                    ?.currently_working ?? 0,
+            icon: Activity,
+            variant: 'success',
+            description:
+                'Today’s records without an end time',
+            clickable: false,
+        },
+        {
+            label: 'Completed',
+            value:
+                props.statistics?.completed ?? 0,
+            icon: CheckCircle,
+            variant: 'default',
+            description:
+                'Attendance records with an end time',
+            clickable: false,
+        },
+        {
+            label: 'Employees Recorded',
+            value:
+                props.statistics
+                    ?.unique_employees ?? 0,
+            icon: Users,
+            variant: 'primary',
+            description:
+                'Distinct employees with attendance',
+            clickable: false,
+        },
+        {
+            label: 'Effective Hours',
+            value: formatDuration(
+                props.statistics
+                    ?.total_effective_working_seconds ??
+                0,
+            ),
+            icon: Clock3,
+            variant: 'success',
+            description:
+                'Total effective working time',
+            clickable: false,
+        },
+        {
+            label: 'Break Time',
+            value: formatDuration(
+                props.statistics
+                    ?.total_break_seconds ?? 0,
+            ),
+            icon: Coffee,
+            variant: 'warning',
+            description:
+                'Total recorded break time',
+            clickable: false,
+        },
+        {
+            label: 'Undertime',
+            value: formatDuration(
+                props.statistics
+                    ?.total_undertime_seconds ?? 0,
+            ),
+            icon: Timer,
+            variant: 'destructive',
+            description:
+                'Total recorded undertime',
+            clickable: false,
+        },
+    ]);
 
-const handleStatClick = (item: ListingStatItem): void => {
-    if (item.label !== "Today's Attendance") {
+const handleStatClick = (
+    item: ListingStatItem,
+): void => {
+    if (
+        item.label !== "Today's Attendance"
+    ) {
         return;
     }
 
@@ -518,16 +668,10 @@ const handleStatClick = (item: ListingStatItem): void => {
         return;
     }
 
-    const today = new Date();
+    const today = getTodayString();
 
-    const todayString = [
-        today.getFullYear(),
-        String(today.getMonth() + 1).padStart(2, '0'),
-        String(today.getDate()).padStart(2, '0'),
-    ].join('-');
-
-    filterStartDate.value = todayString;
-    filterEndDate.value = todayString;
+    filterStartDate.value = today;
+    filterEndDate.value = today;
 };
 
 /*
@@ -537,7 +681,9 @@ const handleStatClick = (item: ListingStatItem): void => {
 */
 
 const handleDeleteSelected = (): void => {
-    deleteSelected(bulkDestroy().url);
+    deleteSelected(
+        bulkDestroy().url,
+    );
 };
 
 /*
@@ -547,20 +693,29 @@ const handleDeleteSelected = (): void => {
 */
 
 const emptyState = useListingEmptyState({
-    hasAnyRecords: () => props.hasAnyRecords,
-    hasActiveFilters: () => hasAnyActiveFilters.value,
+    hasAnyRecords: () =>
+        props.hasAnyRecords,
+
+    hasActiveFilters: () =>
+        hasAnyActiveFilters.value,
 
     noRecords: {
         title: 'No attendance records yet',
         description:
             'Create an attendance record or sync attendance from eTimeOffice.',
-        actionLabel: canManageAttendance.value
-            ? attendancePage.createLabel || 'Add attendance'
-            : undefined,
+        actionLabel:
+            canManageAttendance.value
+                ? attendancePage.createLabel ||
+                'Add attendance'
+                : undefined,
         icon: Database,
-        onAction: canManageAttendance.value
-            ? () => router.visit(create().url)
-            : undefined,
+        onAction:
+            canManageAttendance.value
+                ? () =>
+                    router.visit(
+                        create().url,
+                    )
+                : undefined,
     },
 
     noResults: {
@@ -568,9 +723,11 @@ const emptyState = useListingEmptyState({
         description:
             'Try adjusting your employee or date filters.',
         actionLabel:
-            attendancePage.clearButtonLabel || 'Clear filters',
+            attendancePage.clearButtonLabel ||
+            'Clear filters',
         icon: SearchX,
-        onAction: handleClearFilters,
+        onAction:
+        handleClearFilters,
     },
 });
 </script>
@@ -581,6 +738,7 @@ const emptyState = useListingEmptyState({
         :title="attendancePage.title"
         @reset-preferences="resetPreferences"
     >
+        <!-- Actions -->
         <template #actions>
             <ListingActions
                 :actions="actions"
@@ -592,10 +750,14 @@ const emptyState = useListingEmptyState({
                 "
                 :resource-label="attendancePage.resourceLabel"
                 :selected-count="selectedCount"
+                :show-refresh="true"
+                :refreshing="refreshing"
+                @refresh="refresh('tableAndStats')"
                 @delete-selected="handleDeleteSelected"
             />
         </template>
 
+        <!-- Statistics -->
         <template #stats>
             <Deferred data="statistics">
                 <template #fallback>
@@ -614,17 +776,27 @@ const emptyState = useListingEmptyState({
             </Deferred>
         </template>
 
+        <!-- Filters -->
         <template #filters>
             <ListingFilters
-                :active-filter-count="activeFilterCount"
-                :clear-button-label="attendancePage.clearButtonLabel"
-                :clear-disabled="!hasAnyActiveFilters"
-                :search-button-label="attendancePage.searchButtonLabel"
+                :active-filter-count="
+                    activeFilterCount
+                "
+                :clear-button-label="
+                    attendancePage.clearButtonLabel
+                "
+                :clear-disabled="
+                    !hasAnyActiveFilters
+                "
+                :search-button-label="
+                    attendancePage.searchButtonLabel
+                "
                 :searchable="false"
                 @clear="handleClearFilters"
                 @search="search"
             >
                 <template #filters>
+                    <!-- Employee -->
                     <div
                         v-if="canManageAttendance"
                         class="w-full min-w-0"
@@ -632,7 +804,8 @@ const emptyState = useListingEmptyState({
                         <AppEmployeeSelect
                             multiple
                             :model-value="
-                                filterEmployee === 'all'
+                                filterEmployee ===
+                                'all'
                                     ? null
                                     : filterEmployee
                             "
@@ -641,42 +814,57 @@ const emptyState = useListingEmptyState({
                             "
                             clearable
                             searchable
-                            @update:model-value="handleEmployeeChange"
+                            @update:model-value="
+                                handleEmployeeChange
+                            "
                         />
                     </div>
 
-                    <div class="w-full min-w-0">
-                        <AppInput
-                            v-model="filterStartDate"
-                            aria-label="Start date"
-                            class="w-full min-w-0"
-                            type="date"
-                        />
-                    </div>
-
-                    <div class="w-full min-w-0">
-                        <AppInput
-                            v-model="filterEndDate"
-                            aria-label="End date"
-                            class="w-full min-w-0"
-                            type="date"
+                    <!-- Date Range -->
+                    <div
+                        class="w-full min-w-0"
+                    >
+                        <DateRangePicker
+                            :start-date="
+                                filterStartDate
+                            "
+                            :end-date="
+                                filterEndDate
+                            "
+                            clearable
+                            placeholder="Select date range"
+                            @change="
+                                handleDateRangeChange
+                            "
+                            disable-future
                         />
                     </div>
                 </template>
             </ListingFilters>
         </template>
 
+        <!-- Table -->
         <template #table>
             <Deferred data="attendances">
                 <template #fallback>
                     <DataTable
-                        :columns-count="columns.length"
-                        :empty-text="attendancePage.emptyText"
-                        :item-label="attendancePage.itemLabel"
+                        :columns-count="
+                            columns.length
+                        "
+                        :empty-text="
+                            attendancePage.emptyText
+                        "
+                        :item-label="
+                            attendancePage.itemLabel
+                        "
                         :loading="true"
                         :page-index="0"
-                        :page-size="filters.perPage"
-                        :page-size-options="[10, 25, 50, 100]"
+                        :page-size="
+                            filters.per_page
+                        "
+                        :page-size-options="
+                            [10, 25, 50, 100]
+                        "
                         :selected-count="0"
                         :table="table"
                         :total="0"
@@ -685,42 +873,68 @@ const emptyState = useListingEmptyState({
 
                 <DataTable
                     v-if="attendances"
-                    :columns-count="columns.length"
-                    :empty-state="emptyState"
-                    :empty-text="attendancePage.emptyText"
-                    :item-label="attendancePage.itemLabel"
-                    :page-index="
-                        attendances.meta.current_page - 1
+                    :columns-count="
+                        columns.length
                     "
-                    :page-size="attendances.meta.per_page"
-                    :page-size-options="[10, 25, 50, 100]"
-                    :row-highlight="getAttendanceRowHighlight"
-                    :selected-count="selectedCount"
+                    :empty-state="emptyState"
+                    :empty-text="
+                        attendancePage.emptyText
+                    "
+                    :item-label="
+                        attendancePage.itemLabel
+                    "
+                    :page-index="
+                        attendances.meta.current_page -
+                        1
+                    "
+                    :page-size="
+                        attendances.meta.per_page
+                    "
+                    :page-size-options="
+                        [10, 25, 50, 100]
+                    "
+                    :row-highlight="
+                        getAttendanceRowHighlight
+                    "
+                    :selected-count="
+                        selectedCount
+                    "
                     :table="table"
-                    :total="attendances.meta.total"
+                    :total="
+                        attendances.meta.total
+                    "
                 />
             </Deferred>
         </template>
     </ListingLayout>
 
+    <!-- Attendance Sync -->
     <Dialog
         :open="syncOpen"
-        @update:open="handleSyncDialogOpenChange"
+        @update:open="
+            handleSyncDialogOpenChange
+        "
     >
         <DialogContent
             class="max-h-[90vh] w-[calc(100%-2rem)] overflow-y-auto sm:max-w-lg"
         >
             <DialogHeader>
-                <DialogTitle>Sync attendance</DialogTitle>
+                <DialogTitle>
+                    Sync attendance
+                </DialogTitle>
 
                 <DialogDescription>
-                    Choose which eTimeOffice data to import.
+                    Choose which eTimeOffice data to
+                    import.
                 </DialogDescription>
             </DialogHeader>
 
-            <div class="space-y-4">
+            <div class="space-y-5">
+                <!-- Sync Type -->
                 <fieldset class="space-y-3">
-                    <legend class="text-sm font-medium">
+                    <legend
+                        class="text-sm font-medium"
+                    >
                         Synchronization type
                     </legend>
 
@@ -736,7 +950,9 @@ const emptyState = useListingEmptyState({
                         <input
                             id="sync-type-in-out"
                             v-model="syncType"
-                            :disabled="syncProcessing"
+                            :disabled="
+                                syncProcessing
+                            "
                             class="mt-1 size-4 shrink-0 accent-primary"
                             name="sync-type"
                             type="radio"
@@ -744,15 +960,20 @@ const emptyState = useListingEmptyState({
                         />
 
                         <span class="space-y-1">
-                            <span class="block text-sm font-medium">
+                            <span
+                                class="block text-sm font-medium"
+                            >
                                 IN/OUT Summary
                             </span>
 
                             <span
                                 class="block text-xs text-muted-foreground"
                             >
-                                Imports daily IN and OUT times. Existing
-                                attendance is skipped; breaks are not imported.
+                                Imports daily IN and
+                                OUT times. Existing
+                                attendance is skipped;
+                                breaks are not
+                                imported.
                             </span>
                         </span>
                     </label>
@@ -769,7 +990,9 @@ const emptyState = useListingEmptyState({
                         <input
                             id="sync-type-punches"
                             v-model="syncType"
-                            :disabled="syncProcessing"
+                            :disabled="
+                                syncProcessing
+                            "
                             class="mt-1 size-4 shrink-0 accent-primary"
                             name="sync-type"
                             type="radio"
@@ -777,21 +1000,28 @@ const emptyState = useListingEmptyState({
                         />
 
                         <span class="space-y-1">
-                            <span class="block text-sm font-medium">
+                            <span
+                                class="block text-sm font-medium"
+                            >
                                 Detailed Punch Data
                             </span>
 
                             <span
                                 class="block text-xs text-muted-foreground"
                             >
-                                Imports individual punch times and break
-                                intervals. Creates missing attendance or
-                                updates existing attendance with detailed data.
+                                Imports individual
+                                punch times and break
+                                intervals. Creates
+                                missing attendance or
+                                updates existing
+                                attendance with
+                                detailed data.
                             </span>
                         </span>
                     </label>
                 </fieldset>
 
+                <!-- Sync Description -->
                 <div
                     aria-live="polite"
                     class="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground"
@@ -799,6 +1029,7 @@ const emptyState = useListingEmptyState({
                     {{ syncDescription }}
                 </div>
 
+                <!-- Employee -->
                 <div class="space-y-2">
                     <label
                         class="text-sm font-medium"
@@ -815,43 +1046,49 @@ const emptyState = useListingEmptyState({
                         searchable
                     />
 
-                    <p class="text-xs text-muted-foreground">
-                        Leave empty to sync all employees.
+                    <p
+                        class="text-xs text-muted-foreground"
+                    >
+                        Leave empty to sync all
+                        employees.
                     </p>
                 </div>
 
+                <!-- Date Range -->
                 <div class="space-y-2">
                     <label
                         class="text-sm font-medium"
-                        for="sync-start-date"
                     >
-                        Start date
+                        Date range
                     </label>
 
-                    <AppInput
-                        id="sync-start-date"
-                        v-model="syncStartDate"
-                        aria-label="Sync start date"
-                        type="date"
+                    <DateRangePicker
+                        :start-date="
+                            syncStartDate
+                        "
+                        :end-date="
+                            syncEndDate
+                        "
+                        :disabled="
+                            syncProcessing
+                        "
+                        clearable
+                        placeholder="Select sync date range"
+                        @change="
+                            handleSyncDateRangeChange
+                        "
+                        disable-future
                     />
-                </div>
 
-                <div class="space-y-2">
-                    <label
-                        class="text-sm font-medium"
-                        for="sync-end-date"
+                    <p
+                        class="text-xs text-muted-foreground"
                     >
-                        End date
-                    </label>
-
-                    <AppInput
-                        id="sync-end-date"
-                        v-model="syncEndDate"
-                        aria-label="Sync end date"
-                        type="date"
-                    />
+                        Select the period to synchronize
+                        from eTimeOffice.
+                    </p>
                 </div>
 
+                <!-- Date Validation -->
                 <p
                     v-if="syncDateError"
                     class="text-sm text-destructive"
@@ -859,6 +1096,7 @@ const emptyState = useListingEmptyState({
                     {{ syncDateError }}
                 </p>
 
+                <!-- Sync Message -->
                 <div
                     v-if="syncMessage"
                     :class="
@@ -873,6 +1111,7 @@ const emptyState = useListingEmptyState({
                     {{ syncMessage }}
                 </div>
 
+                <!-- Submit -->
                 <Button
                     :disabled="syncDisabled"
                     class="w-full cursor-pointer"
@@ -880,7 +1119,10 @@ const emptyState = useListingEmptyState({
                     @click="handleSync"
                 >
                     <RefreshCw
-                        :class="{ 'animate-spin': syncProcessing }"
+                        :class="{
+                            'animate-spin':
+                                syncProcessing,
+                        }"
                         aria-hidden="true"
                         class="mr-2 size-4"
                     />

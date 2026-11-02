@@ -11,6 +11,13 @@ type Identifiable = {
     id: number;
 };
 
+type ListingRefreshScope = 'table' | 'tableAndStats';
+
+type ListingRefreshProps = {
+    table: string[];
+    tableAndStats?: string[];
+};
+
 type ListingFilters<TSort extends string> = {
     search?: string;
     sort: TSort;
@@ -31,6 +38,21 @@ type ListingOptions<
     additionalFilters?: () => Record<string, unknown>;
     onClearFilters?: () => void;
     enableRowSelection?: (row: TData) => boolean;
+
+    /**
+     * Defines which Inertia props should be reloaded when refresh()
+     * is called.
+     *
+     * Example:
+     *
+     * refreshScope: 'tableAndStats',
+     * refreshProps: {
+     *     table: ['attendance'],
+     *     tableAndStats: ['attendance', 'attendanceStats'],
+     * },
+     */
+    refreshScope?: ListingRefreshScope;
+    refreshProps?: ListingRefreshProps;
 };
 
 type VisitOptions<TSort extends string> = {
@@ -78,6 +100,8 @@ export function useListingTable<
         options.searchable === false ? '' : (options.filters.search ?? ''),
     );
 
+    const refreshing = ref(false);
+
     const hasActiveFilters = computed(() => {
         const hasSearch =
             options.searchable !== false &&
@@ -120,6 +144,7 @@ export function useListingTable<
     };
 
     const hasExplicitPageSize = hasQueryParameter('per_page');
+
     const hasExplicitSort =
         hasQueryParameter('sort') || hasQueryParameter('direction');
 
@@ -388,6 +413,42 @@ export function useListingTable<
         });
     }
 
+    const refresh = (
+        scope: ListingRefreshScope = options.refreshScope ?? 'table',
+    ) => {
+        if (refreshing.value) {
+            return;
+        }
+
+        const refreshProps = options.refreshProps;
+
+        const reloadProps =
+            scope === 'tableAndStats'
+                ? (refreshProps?.tableAndStats ?? refreshProps?.table)
+                : refreshProps?.table;
+
+        refreshing.value = true;
+
+        visit({
+            page: getMeta().current_page,
+            perPage: getMeta().per_page,
+            reloadProps,
+        });
+
+        /*
+         * Inertia does not expose the request lifecycle through the
+         * visit() helper above, so reset this after the current request
+         * completes.
+         *
+         * router.get() updates the page asynchronously. A small timeout
+         * prevents the button from remaining permanently disabled while
+         * still giving the UI enough time to display the refreshing state.
+         */
+        window.setTimeout(() => {
+            refreshing.value = false;
+        }, 500);
+    };
+
     let preferencesInitialized = false;
 
     const restorePreferencesIfNecessary = () => {
@@ -489,6 +550,8 @@ export function useListingTable<
         selectedCount,
         clearSelection,
         hasActiveFilters,
+        refreshing,
+        refresh,
         visit,
         search,
         clearFilters,

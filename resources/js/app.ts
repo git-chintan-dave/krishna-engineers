@@ -50,35 +50,74 @@ initializeFlashToast();
 // Prefetch all enum lookups once when the application starts.
 void useLookup().prefetchEnumOptions();
 
-// Register the service worker.
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
+// Service worker:
+// - Production: register and update the PWA service worker.
+// - Development: remove any previously registered service worker so it
+//   cannot serve stale production assets while using Vite HMR.
+if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        void navigator.serviceWorker
-            .register('/sw.js')
-            .then((registration) => {
-                console.info('Service worker registered:', registration.scope);
+        if (import.meta.env.PROD) {
+            void navigator.serviceWorker
+                .register('/sw.js')
+                .then((registration) => {
+                    console.info(
+                        'Service worker registered:',
+                        registration.scope,
+                    );
 
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
 
-                    if (!newWorker) {
-                        return;
-                    }
-
-                    newWorker.addEventListener('statechange', () => {
-                        if (
-                            newWorker.state === 'installed' &&
-                            navigator.serviceWorker.controller
-                        ) {
-                            console.info(
-                                'New service worker available. Reload to update.',
-                            );
+                        if (!newWorker) {
+                            return;
                         }
+
+                        newWorker.addEventListener('statechange', () => {
+                            if (
+                                newWorker.state === 'installed' &&
+                                navigator.serviceWorker.controller
+                            ) {
+                                console.info(
+                                    'New service worker available. Reload to update.',
+                                );
+                            }
+                        });
                     });
+                })
+                .catch((error) => {
+                    console.error(
+                        'Service worker registration failed:',
+                        error,
+                    );
                 });
+
+            return;
+        }
+
+        // Development: unregister previously installed service workers.
+        void navigator.serviceWorker
+            .getRegistrations()
+            .then((registrations) => {
+                if (!registrations.length) {
+                    return;
+                }
+
+                return Promise.all(
+                    registrations.map((registration) =>
+                        registration.unregister(),
+                    ),
+                );
+            })
+            .then(() => {
+                console.info(
+                    'Development mode: existing service workers unregistered.',
+                );
             })
             .catch((error) => {
-                console.error('Service worker registration failed:', error);
+                console.error(
+                    'Development service worker cleanup failed:',
+                    error,
+                );
             });
     });
 }

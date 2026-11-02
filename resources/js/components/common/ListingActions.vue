@@ -1,10 +1,9 @@
-
 <script lang="ts" setup>
 import {Link, router} from '@inertiajs/vue3';
-import {EllipsisVertical, Plus, Trash2} from '@lucide/vue';
+import {EllipsisVertical, Plus, RefreshCw, Trash2,} from '@lucide/vue';
 import type {Component} from 'vue';
 
-import vConfirm, {executeConfirm,} from '@/directives/confirm';
+import vConfirm, {executeConfirm} from '@/directives/confirm';
 
 import {Button} from '@/components/ui/button';
 import {
@@ -64,6 +63,11 @@ const props = withDefaults(
         deleteTitle?: string;
         deleteDescription?: string;
         deleteConfirmLabel?: string;
+
+        // Optional table refresh
+        showRefresh?: boolean;
+        refreshing?: boolean;
+        refreshLabel?: string;
     }>(),
     {
         createLabel: 'Add',
@@ -75,6 +79,10 @@ const props = withDefaults(
         deleteDescription:
             'This action cannot be undone. The selected records will be permanently deleted.',
         deleteConfirmLabel: 'Delete',
+
+        showRefresh: false,
+        refreshing: false,
+        refreshLabel: 'Refresh',
     },
 );
 
@@ -86,6 +94,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
     deleteSelected: [];
+    refresh: [];
 }>();
 
 /*
@@ -103,6 +112,14 @@ const handleAdd = (): void => {
     if (props.createUrl) {
         router.visit(props.createUrl);
     }
+};
+
+const handleRefresh = (): void => {
+    if (!props.showRefresh || props.refreshing) {
+        return;
+    }
+
+    emit('refresh');
 };
 
 const handleDeleteSelected = (): void => {
@@ -198,6 +215,30 @@ useActionShortcuts(() => ({
             >
                 {{ ACTION_SHORTCUTS.bulkDelete.label }}
             </kbd>
+        </Button>
+
+        <!-- Refresh -->
+        <Button
+            v-if="showRefresh"
+            :aria-label="refreshLabel"
+            :disabled="refreshing"
+            class="h-9 shrink-0 cursor-pointer gap-1.5 px-3"
+            size="sm"
+            type="button"
+            variant="outline"
+            @click="handleRefresh"
+        >
+            <RefreshCw
+                aria-hidden="true"
+                :class="[
+                    'size-4 shrink-0',
+                    refreshing && 'animate-spin',
+                ]"
+            />
+
+            <span class="hidden sm:inline">
+                {{ refreshing ? 'Refreshing...' : refreshLabel }}
+            </span>
         </Button>
 
         <!-- Add -->
