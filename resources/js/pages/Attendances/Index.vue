@@ -613,13 +613,13 @@ const statistics = computed<ListingStatItem[]>(() => [
         clickable: false,
     },
     {
-        label: 'Undertime',
+        label: 'Late By',
         value: formatDuration(
             props.statistics?.total_undertime_seconds ?? 0,
         ),
         icon: Timer,
         variant: 'destructive',
-        description: 'Total recorded undertime today',
+        description: 'Total recorded late by today',
         clickable: false,
     },
 ]);

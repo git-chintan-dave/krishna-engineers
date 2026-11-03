@@ -119,4 +119,5 @@ export interface SalaryStatistics {
     paid_count: number;
 
     total_paid: number;
+    total_draft: number;
 }

@@ -34,6 +34,7 @@ export const createAttendanceColumns = (
                     sortable: true,
                     primary: true,
                     pin: 'left',
+                    cell: ({row}) => `${row.original.user.employee_code} - ${row.original.user.name}`,
                 }),
             ]
             : []),

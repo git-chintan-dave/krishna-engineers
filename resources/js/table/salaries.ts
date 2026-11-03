@@ -26,6 +26,7 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
             sortable: true,
             primary: true,
             pin: 'left',
+            cell: ({row}) => `${row.original.user.employee_code} - ${row.original.user.name}`,
         }),
 
         createColumn<Salary, string>({

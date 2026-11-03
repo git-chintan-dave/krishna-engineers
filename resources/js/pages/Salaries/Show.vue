@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 import {router} from '@inertiajs/vue3';
-import {ArrowLeft, CalendarDays, Printer,} from '@lucide/vue';
+import {ArrowLeft, CalendarDays, CheckCircle2, Download, Printer, Trash2,} from '@lucide/vue';
 import {computed, ref} from 'vue';
 
 import AttendanceHistoryDialog from '@/components/attendance/AttendanceHistoryDialog.vue';
 import {Button} from '@/components/ui/button';
 import {useCrudBreadcrumbs} from '@/composables/useCrudBreadcrumbs';
 import {salaryPage} from '@/config/salaries';
-import {index as salaries} from '@/routes/salaries';
+import {destroy, index as salaries, markAsPaid,} from '@/routes/salaries';
 import type {Salary} from '@/types/salary';
 
 const props = defineProps<{
@@ -25,48 +25,12 @@ defineOptions({
     },
 });
 
-/*
-|--------------------------------------------------------------------------
-| Company Information
-|--------------------------------------------------------------------------
-*/
-
 const companyName = 'Krishna Engineers';
 
 const companyAddress =
     '437/49 Amar Estate, B/H Asarva Chemical, Nr. Bhikshukh Gruh, Odhav GIDC, Odhav, Ahmedabad, 382415.';
 
-/*
-|--------------------------------------------------------------------------
-| Salary Calculations
-|--------------------------------------------------------------------------
-*/
-
-const currencyFormatter = new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-});
-
-const formatCurrency = (value: number | string): string =>
-    currencyFormatter.format(Number(value) || 0);
-
-const dailyBaseSalary = computed(() =>
-    Math.max(0, Number(props.salary.base_salary) || 0),
-);
-
-const baseSalaryPayable = computed(
-    () => dailyBaseSalary.value * props.salary.working_days,
-);
-
-const bonusAmount = computed(() =>
-    Math.max(0, Number(props.salary.bonus) || 0),
-);
-
-const adjustmentAmount = computed(
-    () => Number(props.salary.adjustment) || 0,
-);
+const isPaid = computed(() => props.salary.status === 'paid');
 
 const totalUndertimeSeconds = computed(() =>
     Math.max(0, Number(props.salary.total_undertime_seconds) || 0),
@@ -84,26 +48,21 @@ const formatDuration = (seconds: number): string => {
     return `${hours}h ${String(minutes).padStart(2, '0')}m`;
 };
 
-/*
-|--------------------------------------------------------------------------
-| Salary Components
-|--------------------------------------------------------------------------
-*/
-
 const earnings = computed(() => {
     const items = [
         {
             label: 'Base Salary',
-            amount: formatCurrency(baseSalaryPayable.value),
-            description: `${props.salary.working_days} working days × ${formatCurrency(dailyBaseSalary.value)} per day`,
+            amount: props.salary.base_salary_formatted,
+            description: `${props.salary.working_days} working days × ${props.salary.base_salary_formatted} per day`,
         },
         {
             label: 'Incentive',
             amount: props.salary.incentive_formatted,
+            description: undefined,
         },
     ];
 
-    if (adjustmentAmount.value > 0) {
+    if (Number(props.salary.adjustment) > 0) {
         items.push({
             label: 'Adjustment',
             amount: props.salary.adjustment_formatted,
@@ -130,21 +89,15 @@ const deductions = computed(() => {
         },
     ];
 
-    if (adjustmentAmount.value < 0) {
+    if (Number(props.salary.adjustment) < 0) {
         items.push({
             label: 'Adjustment',
-            amount: formatCurrency(Math.abs(adjustmentAmount.value)),
+            amount: props.salary.adjustment_formatted,
         });
     }
 
     return items;
 });
-
-/*
-|--------------------------------------------------------------------------
-| Attendance Summary
-|--------------------------------------------------------------------------
-*/
 
 const attendanceSummary = computed(() => [
     {
@@ -152,7 +105,7 @@ const attendanceSummary = computed(() => [
         value: String(props.salary.attendance_days),
     },
     {
-        label: 'Total Undertime',
+        label: 'Total Late By',
         value: formatDuration(totalUndertimeSeconds.value),
     },
     {
@@ -170,19 +123,7 @@ const attendanceSummary = computed(() => [
     },
 ]);
 
-/*
-|--------------------------------------------------------------------------
-| Attendance Dialog
-|--------------------------------------------------------------------------
-*/
-
 const attendanceDialogOpen = ref(false);
-
-/*
-|--------------------------------------------------------------------------
-| Actions
-|--------------------------------------------------------------------------
-*/
 
 const printSalarySlip = (): void => {
     window.print();
@@ -190,6 +131,26 @@ const printSalarySlip = (): void => {
 
 const goBack = (): void => {
     router.visit(salaries().url);
+};
+
+const handleMarkAsPaid = (): void => {
+    if (isPaid.value) {
+        return;
+    }
+
+    router.post(markAsPaid(props.salary.uuid).url, {}, {
+        preserveScroll: true,
+    });
+};
+
+const handleDelete = (): void => {
+    router.delete(destroy(props.salary.uuid).url, {
+        preserveScroll: true,
+    });
+};
+
+const exportSalaryReport = (): void => {
+    window.location.href = `/people/salaries/${props.salary.uuid}/export`;
 };
 </script>
 
@@ -200,17 +161,81 @@ const goBack = (): void => {
         >
             <!-- Page Actions -->
             <div
-                class="mb-4 flex items-center justify-between gap-3 print:hidden"
+                class="mb-4 flex flex-wrap items-center justify-between gap-3 print:hidden"
             >
-                <Button variant="outline" @click="goBack">
+                <Button
+                    class="h-9"
+                    variant="outline"
+                    @click="goBack"
+                >
                     <ArrowLeft class="mr-2 size-4" />
                     Back
                 </Button>
 
-                <Button @click="printSalarySlip">
-                    <Printer class="mr-2 size-4" />
-                    Print Salary Slip
-                </Button>
+                <div class="flex flex-wrap items-center justify-end gap-2">
+        <span
+            v-if="isPaid"
+            class="inline-flex h-9 shrink-0 items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 text-sm font-medium text-emerald-700 dark:text-emerald-400"
+        >
+            <CheckCircle2 class="size-4" />
+            Paid
+        </span>
+
+                    <Button
+                        v-else
+                        class="h-9"
+                        v-confirm="{
+                            action: handleMarkAsPaid,
+                            options: {
+                                title: 'Mark salary as paid?',
+                                description: `Are you sure you have paid this salary to ${salary.user.name}? This will update the salary status and record the payment date.`,
+                                confirmText: 'Mark as Paid',
+                            },
+                        }"
+                        type="button"
+                    >
+                        <CheckCircle2 class="mr-2 size-4" />
+                        Mark as Paid
+                    </Button>
+
+                    <Button
+                        class="h-9"
+                        variant="outline"
+                        type="button"
+                        @click="exportSalaryReport"
+                    >
+                        <Download class="mr-2 size-4" />
+                        Export Excel
+                    </Button>
+
+                    <Button
+                        class="inline-flex h-9 items-center justify-center leading-none"
+                        variant="outline"
+                        type="button"
+                        @click="printSalarySlip"
+                    >
+                        <Printer class="mr-2 size-4 shrink-0 align-middle" />
+                        <span class="leading-none">Print Slip</span>
+                    </Button>
+
+                    <Button
+                        v-if="!isPaid"
+                        class="h-9"
+                        v-confirm="{
+                            action: handleDelete,
+                            options: {
+                                title: 'Delete salary record?',
+                                description: `Are you sure you want to delete the salary record for ${salary.user.name}? This action cannot be undone.`,
+                                confirmText: 'Delete Salary',
+                            },
+                        }"
+                        type="button"
+                        variant="destructive"
+                    >
+                        <Trash2 class="mr-2 size-4" />
+                        Delete
+                    </Button>
+                </div>
             </div>
 
             <!-- Salary Slip -->
@@ -219,9 +244,7 @@ const goBack = (): void => {
                 class="overflow-hidden rounded-xl border bg-background shadow-sm print:rounded-none print:border-0 print:shadow-none"
             >
                 <!-- Company Header -->
-                <div
-                    class="border-b px-6 py-6 sm:px-8 print:px-5 print:py-4"
-                >
+                <div class="border-b px-6 py-6 sm:px-8 print:px-5 print:py-4">
                     <div class="flex items-center justify-between gap-6">
                         <div class="flex min-w-0 items-center gap-3">
                             <img
@@ -252,13 +275,9 @@ const goBack = (): void => {
                                 Salary Slip
                             </p>
 
-                            <p
-                                class="mt-2 text-sm font-medium print:mt-1 print:text-xs"
-                            >
+                            <p class="mt-2 text-sm font-medium print:mt-1 print:text-xs">
                                 {{ salary.salary_period_start_formatted }}
-                                <span class="px-1 text-muted-foreground">
-                                    –
-                                </span>
+                                <span class="px-1 text-muted-foreground">–</span>
                                 {{ salary.salary_period_end_formatted }}
                             </p>
                         </div>
@@ -266,9 +285,7 @@ const goBack = (): void => {
                 </div>
 
                 <!-- Employee Information -->
-                <div
-                    class="border-b px-6 py-5 sm:px-8 print:px-5 print:py-3"
-                >
+                <div class="border-b px-6 py-5 sm:px-8 print:px-5 print:py-3">
                     <div
                         :class="
                             show_production_efficiency
@@ -383,9 +400,7 @@ const goBack = (): void => {
                                 >
                                     <span>{{ item.label }}</span>
 
-                                    <span
-                                        class="text-right font-medium tabular-nums"
-                                    >
+                                    <span class="text-right font-medium tabular-nums">
                                         {{ item.value }}
                                     </span>
                                 </div>
@@ -426,9 +441,7 @@ const goBack = (): void => {
                                         </p>
                                     </div>
 
-                                    <span
-                                        class="text-right font-medium tabular-nums"
-                                    >
+                                    <span class="text-right font-medium tabular-nums">
                                         {{ item.amount }}
                                     </span>
                                 </div>
@@ -448,9 +461,7 @@ const goBack = (): void => {
                             class="flex items-center justify-between gap-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-4 print:px-3 print:py-2"
                         >
                             <div>
-                                <p class="text-sm font-medium">
-                                    Bonus Amount
-                                </p>
+                                <p class="text-sm font-medium">Bonus Amount</p>
 
                                 <p
                                     class="mt-1 text-xs text-muted-foreground print:text-[9px]"
@@ -492,9 +503,7 @@ const goBack = (): void => {
                                 >
                                     <span>{{ item.label }}</span>
 
-                                    <span
-                                        class="text-right font-medium tabular-nums"
-                                    >
+                                    <span class="text-right font-medium tabular-nums">
                                         {{ item.amount }}
                                     </span>
                                 </div>
@@ -549,9 +558,7 @@ const goBack = (): void => {
                 </div>
 
                 <!-- Payment Status -->
-                <div
-                    class="border-t px-6 py-5 sm:px-8 print:px-5 print:py-3"
-                >
+                <div class="border-t px-6 py-5 sm:px-8 print:px-5 print:py-3">
                     <div
                         class="flex items-center justify-between gap-4 text-sm print:text-xs"
                     >
@@ -564,9 +571,7 @@ const goBack = (): void => {
                         </div>
 
                         <div v-if="salary.paid_at_formatted">
-                            <span class="text-muted-foreground">
-                                Paid On:
-                            </span>
+                            <span class="text-muted-foreground">Paid On:</span>
 
                             <span class="ml-1 font-medium">
                                 {{ salary.paid_at_formatted }}
@@ -604,7 +609,6 @@ const goBack = (): void => {
 </template>
 
 <style>
-
 @media print {
     @page {
         size: A4 portrait;

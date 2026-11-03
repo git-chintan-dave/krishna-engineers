@@ -2,17 +2,18 @@
 import {Deferred, router} from '@inertiajs/vue3';
 import {computed, ref, watch} from 'vue';
 import {
-    CalendarDays,
     CheckCircle,
-    Clock3,
     Database,
+    Download,
     FileClock,
+    Gift,
+    HandCoins,
     RotateCcw,
     SearchX,
+    SlidersHorizontal,
     TrendingDown,
     TrendingUp,
     Wallet,
-    Download,
 } from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
@@ -30,7 +31,7 @@ import {useListingTable} from '@/composables/useListingTable';
 
 import {salaryPage} from '@/config/salaries';
 
-import {bulkDestroy, create, destroy, generateLastMonth, index as salariesRoute, exportZip} from '@/routes/salaries';
+import {bulkDestroy, create, destroy, exportZip, generateLastMonth, index as salariesRoute} from '@/routes/salaries';
 
 import {createSalaryColumns} from '@/table/salaries';
 
@@ -399,167 +400,83 @@ const handleDeleteSelected = (): void => {
 
 /*
 |--------------------------------------------------------------------------
-| Statistics Formatting
-|--------------------------------------------------------------------------
-*/
-
-const formatCurrency = (amount: number): string =>
-    new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
-        maximumFractionDigits: 0,
-    }).format(amount);
-
-const formatDuration = (seconds: number): string => {
-    const safeSeconds = Math.max(
-        0,
-        Math.floor(seconds),
-    );
-
-    const hours = Math.floor(
-        safeSeconds / 3600,
-    );
-
-    const minutes = Math.floor(
-        (safeSeconds % 3600) / 60,
-    );
-
-    if (hours >= 100) {
-        return `${hours.toLocaleString()}h`;
-    }
-
-    return `${hours}h ${String(minutes).padStart(2, '0')}m`;
-};
-
-/*
-|--------------------------------------------------------------------------
 | Statistics
 |--------------------------------------------------------------------------
 */
 
 const statistics = computed<ListingStatItem[]>(() => [
     {
-        label: 'Total Records',
-        value: props.statistics?.total ?? 0,
-        icon: Database,
-        variant: 'primary',
-        description: 'All salary records',
-        clickable: false,
-    },
-    {
         label: 'Total Payable',
-        value: formatCurrency(
-            props.statistics?.total_payable ?? 0,
-        ),
+        value: props.statistics?.total_payable ?? 0,
         icon: Wallet,
         variant: 'primary',
-        description: 'Sum of final payable across all records',
+        description: 'Sum of final payable across all salary records',
         clickable: false,
     },
     {
-        label: 'Paid Amount',
-        value: formatCurrency(
-            props.statistics?.total_paid ?? 0,
-        ),
+        label: 'Total Paid',
+        value: props.statistics?.total_paid ?? 0,
         icon: CheckCircle,
         variant: 'success',
-        description: 'Final payable for paid records',
+        description: 'Sum of final payable for paid salary records',
         clickable: true,
         active: filterStatus.value === 'paid',
     },
     {
-        label: 'Draft Records',
-        value: props.statistics?.draft_count ?? 0,
+        label: 'Total Draft',
+        value: props.statistics?.total_draft ?? 0,
         icon: FileClock,
         variant: 'warning',
-        description: 'Salary records in draft status',
+        description: 'Sum of final payable for draft salary records',
         clickable: true,
         active: filterStatus.value === 'draft',
     },
     {
-        label: 'Base Salary',
-        value: formatCurrency(
-            props.statistics?.total_base_salary ?? 0,
-        ),
-        icon: Wallet,
-        variant: 'default',
-        description: 'Total recorded base salary',
-        clickable: false,
-    },
-    {
-        label: 'Incentives',
-        value: formatCurrency(
-            props.statistics?.total_incentive ?? 0,
-        ),
+        label: 'Total Incentive',
+        value: props.statistics?.total_incentive ?? 0,
         icon: TrendingUp,
         variant: 'success',
         description: 'Total recorded incentives',
         clickable: false,
     },
     {
-        label: 'Deductions',
-        value: formatCurrency(
-            props.statistics?.total_deduction ?? 0,
-        ),
+        label: 'Total Deduction',
+        value: props.statistics?.total_deduction ?? 0,
         icon: TrendingDown,
         variant: 'destructive',
         description: 'Total recorded deductions',
         clickable: false,
     },
     {
-        label: 'UPAD',
-        value: formatCurrency(
-            props.statistics?.total_upad ?? 0,
-        ),
+        label: 'Total Bonus',
+        value: props.statistics?.total_bonus ?? 0,
+        icon: Gift,
+        variant: 'success',
+        description: 'Total recorded bonuses',
+        clickable: false,
+    },
+    {
+        label: 'Total Adjustment',
+        value: props.statistics?.total_adjustments ?? 0,
+        icon: SlidersHorizontal,
+        variant: 'info',
+        description: 'Net sum of recorded adjustments',
+        clickable: false,
+    },
+    {
+        label: 'Total UPAD',
+        value: props.statistics?.total_upad ?? 0,
         icon: Wallet,
         variant: 'warning',
         description: 'Total recorded UPAD',
         clickable: false,
     },
     {
-        label: 'Paid Loans',
-        value: formatCurrency(
-            props.statistics?.total_paid_loan ?? 0,
-        ),
-        icon: Wallet,
+        label: 'Total Paid Loan',
+        value: props.statistics?.total_paid_loan ?? 0,
+        icon: HandCoins,
         variant: 'default',
         description: 'Total paid-loan amount recorded',
-        clickable: false,
-    },
-    {
-        label: 'Adjustments',
-        value: formatCurrency(
-            props.statistics?.total_adjustments ?? 0,
-        ),
-        icon: TrendingUp,
-        variant: 'info',
-        description: 'Net sum of recorded adjustments',
-        clickable: false,
-    },
-    {
-        label: 'Attendance Days',
-        value: props.statistics?.total_attendance_days ?? 0,
-        icon: CalendarDays,
-        variant: 'primary',
-        description: 'Total attendance days across salary records',
-        clickable: false,
-    },
-    {
-        label: 'Late Days',
-        value: props.statistics?.total_late_days ?? 0,
-        icon: Clock3,
-        variant: 'warning',
-        description: 'Total recorded late days',
-        clickable: false,
-    },
-    {
-        label: 'Undertime',
-        value: formatDuration(
-            props.statistics?.total_undertime_seconds ?? 0,
-        ),
-        icon: Clock3,
-        variant: 'destructive',
-        description: 'Total recorded undertime',
         clickable: false,
     },
 ]);
@@ -568,14 +485,14 @@ const handleStatClick = (
     item: ListingStatItem,
 ): void => {
     switch (item.label) {
-        case 'Paid Amount':
+        case 'Total Paid':
             filterStatus.value =
                 filterStatus.value === 'paid'
                     ? 'all'
                     : 'paid';
             break;
 
-        case 'Draft Records':
+        case 'Total Draft':
             filterStatus.value =
                 filterStatus.value === 'draft'
                     ? 'all'

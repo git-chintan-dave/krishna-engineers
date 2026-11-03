@@ -369,31 +369,33 @@ export const createActionsColumn = <TData = unknown>({
             }
 
             // Delete action.
-            primaryActions.push(
-                createIconButton(
-                    Trash2,
-                    'Delete',
-                    ACTION_STYLES.delete,
-                    isDesktop.value,
-                    {
-                        disabled: !canDelete,
+            if (canDelete) {
+                primaryActions.push(
+                    createIconButton(
+                        Trash2,
+                        'Delete',
+                        ACTION_STYLES.delete,
+                        isDesktop.value,
+                        {
+                            disabled: !canDelete,
 
-                        onClick: canDelete
-                            ? async () => {
-                                await executeConfirm({
-                                    action: () => handleDelete(uuid),
-                                    options: {
-                                        title: `Delete ${resourceName}?`,
-                                        description:
-                                            'This action cannot be undone. The selected record will be permanently deleted.',
-                                        confirmText: 'Delete',
-                                    },
-                                });
-                            }
-                            : undefined,
-                    },
-                ),
-            );
+                            onClick: canDelete
+                                ? async () => {
+                                    await executeConfirm({
+                                        action: () => handleDelete(uuid),
+                                        options: {
+                                            title: `Delete ${resourceName}?`,
+                                            description:
+                                                'This action cannot be undone. The selected record will be permanently deleted.',
+                                            confirmText: 'Delete',
+                                        },
+                                    });
+                                }
+                                : undefined,
+                        },
+                    ),
+                );
+            }
 
             // Secondary actions.
             const secondaryActions: SecondaryAction[] = [];

@@ -24,6 +24,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -40,7 +41,9 @@ class SalaryController extends Controller
 
     private const string INDEX_ROUTE = 'salaries.index';
 
-    public function __construct(private readonly SalaryService $salaryService) {}
+    public function __construct(
+        private readonly SalaryService $salaryService,
+    ) {}
 
     public function index(IndexSalaryRequest $request): Response
     {
@@ -48,10 +51,10 @@ class SalaryController extends Controller
 
         $filters = $request->validated();
 
-        $now = now()->subMonthNoOverflow();
+        $lastMonth = now()->subMonthNoOverflow();
 
-        $periodStart = $now->copy()->startOfMonth()->toDateString();
-        $periodEnd = $now->copy()->endOfMonth()->toDateString();
+        $periodStart = $lastMonth->copy()->startOfMonth()->toDateString();
+        $periodEnd = $lastMonth->copy()->endOfMonth()->toDateString();
 
         $canGenerateLastMonth = ! Salary::query()
             ->whereDate('salary_period_start', $periodStart)
@@ -70,7 +73,7 @@ class SalaryController extends Controller
             }),
 
             'statistics' => Inertia::defer(
-                fn () => $this->getStatistics(),
+                fn () => $this->getStatistics($filters),
             ),
 
             'hasAnyRecords' => Salary::query()->exists(),
@@ -173,15 +176,6 @@ class SalaryController extends Controller
         return $this->successResponse('updated');
     }
 
-    public function markAsPaid(Salary $salary): RedirectResponse
-    {
-        Gate::authorize('markAsPaid', $salary);
-
-        $this->salaryService->markAsPaid($salary);
-
-        return $this->successResponse('paid');
-    }
-
     public function destroy(Salary $salary): RedirectResponse
     {
         Gate::authorize('delete', $salary);
@@ -202,6 +196,15 @@ class SalaryController extends Controller
             ->delete();
 
         return $this->successResponse('bulk_deleted');
+    }
+
+    public function markAsPaid(Salary $salary): RedirectResponse
+    {
+        Gate::authorize('markAsPaid', $salary);
+
+        $this->salaryService->markAsPaid($salary);
+
+        return $this->successResponse('paid');
     }
 
     public function preview(
@@ -239,12 +242,10 @@ class SalaryController extends Controller
         ]);
     }
 
-    public function generateSalary(
-        SalaryService $salaryService,
-        ?int $userId = null,
-    ): RedirectResponse {
+    public function generateSalary(?int $userId = null): RedirectResponse
+    {
         try {
-            $result = $salaryService->generateForEmployees(
+            $result = $this->salaryService->generateForEmployees(
                 userId: $userId,
             );
 
@@ -256,36 +257,34 @@ class SalaryController extends Controller
                     $result['skipped'],
                 ),
             );
-        } catch (RuntimeException $e) {
+        } catch (RuntimeException $exception) {
             return $this->errorResponse(
                 'generated',
-                $e->getMessage(),
+                $exception->getMessage(),
             );
-        } catch (Throwable $e) {
-            report($e);
+        } catch (Throwable $exception) {
+            report($exception);
 
             return $this->errorResponse('generated');
         }
     }
 
-    public function regenerate(
-        Salary $salary,
-        SalaryService $salaryService,
-    ): RedirectResponse {
+    public function regenerate(Salary $salary): RedirectResponse
+    {
         try {
-            $salaryService->regenerate($salary);
+            $this->salaryService->regenerate($salary);
 
             return $this->successResponse(
                 'generated',
                 'Salary regenerated successfully.',
             );
-        } catch (RuntimeException $e) {
+        } catch (RuntimeException $exception) {
             return $this->errorResponse(
                 'generated',
-                $e->getMessage(),
+                $exception->getMessage(),
             );
-        } catch (Throwable $e) {
-            report($e);
+        } catch (Throwable $exception) {
+            report($exception);
 
             return $this->errorResponse('generated');
         }
@@ -318,13 +317,20 @@ class SalaryController extends Controller
     ) {
         Gate::authorize('viewAny', Salary::class);
 
-        // Allow this export to run beyond the default PHP execution limit.
         set_time_limit(0);
         @ini_set('max_execution_time', '0');
 
         $validated = $request->validate([
-            'user_id' => ['nullable', 'integer', 'exists:users,id'],
-            'start_date' => ['nullable', 'required_with:end_date', 'date'],
+            'user_id' => [
+                'nullable',
+                'integer',
+                'exists:users,id',
+            ],
+            'start_date' => [
+                'nullable',
+                'required_with:end_date',
+                'date',
+            ],
             'end_date' => [
                 'nullable',
                 'required_with:start_date',
@@ -337,8 +343,10 @@ class SalaryController extends Controller
             $periodStart = Carbon::parse($validated['start_date'])->startOfDay();
             $periodEnd = Carbon::parse($validated['end_date'])->endOfDay();
         } else {
-            $periodStart = now()->subMonthNoOverflow()->startOfMonth();
-            $periodEnd = now()->subMonthNoOverflow()->endOfMonth();
+            $lastMonth = now()->subMonthNoOverflow();
+
+            $periodStart = $lastMonth->copy()->startOfMonth();
+            $periodEnd = $lastMonth->copy()->endOfMonth();
         }
 
         $salaryQuery = Salary::query()
@@ -347,8 +355,16 @@ class SalaryController extends Controller
                 $validated['user_id'] ?? null,
                 fn ($query, $userId) => $query->where('user_id', $userId),
             )
-            ->whereDate('salary_period_start', '>=', $periodStart->toDateString())
-            ->whereDate('salary_period_end', '<=', $periodEnd->toDateString())
+            ->whereDate(
+                'salary_period_start',
+                '>=',
+                $periodStart->toDateString(),
+            )
+            ->whereDate(
+                'salary_period_end',
+                '<=',
+                $periodEnd->toDateString(),
+            )
             ->orderBy('user_id')
             ->orderBy('id');
 
@@ -369,8 +385,8 @@ class SalaryController extends Controller
         }
 
         $temporaryDirectory = 'salary-exports/'.Str::uuid();
-        $disk = Storage::disk('local');
 
+        $disk = Storage::disk('local');
         $disk->makeDirectory($temporaryDirectory);
 
         $zip = new ZipArchive;
@@ -388,7 +404,6 @@ class SalaryController extends Controller
 
             $zipOpened = true;
 
-            // Process records in batches to keep memory usage manageable.
             $salaryQuery->chunk(20, function ($salaries) use (
                 $attendanceService,
                 $disk,
@@ -405,10 +420,8 @@ class SalaryController extends Controller
                     );
 
                     $fileName = SalaryReportFileName::make($salary);
-
                     $relativePath = "{$temporaryDirectory}/{$fileName}";
 
-                    // Store the Excel workbook directly on disk instead of memory.
                     $stored = Excel::store(
                         new SalaryAttendanceSheet($salary, $history),
                         $relativePath,
@@ -432,15 +445,16 @@ class SalaryController extends Controller
 
                     unset($history, $excelPath);
 
-                    // Release memory after each employee.
                     gc_collect_cycles();
                 }
             });
 
-            $zip->close();
+            if (! $zip->close()) {
+                throw new RuntimeException('Unable to finalize the ZIP file.');
+            }
+
             $zipOpened = false;
 
-            // Excel files are no longer needed after the ZIP is closed.
             $disk->deleteDirectory($temporaryDirectory);
 
             $downloadName = sprintf(
@@ -467,62 +481,22 @@ class SalaryController extends Controller
         }
     }
 
-    private function getStatistics(): array
+    private function getStatistics(array $filters): array
     {
+        unset($filters['status']);
+
         $stats = Salary::query()
-            ->selectRaw('COUNT(*) AS total')
+            ->filterQuery($filters)
+            ->reorder()
+            ->select([])
             ->selectRaw(
-                'COALESCE(SUM(final_payable), 0) AS total_payable',
-            )
-            ->selectRaw(
-                'COALESCE(AVG(final_payable), 0) AS average_payable',
-            )
-            ->selectRaw(
-                'COALESCE(SUM(base_salary), 0) AS total_base_salary',
-            )
-            ->selectRaw(
-                'COALESCE(SUM(incentive), 0) AS total_incentive',
-            )
-            ->selectRaw(
-                'COALESCE(SUM(deduction), 0) AS total_deduction',
-            )
-            ->selectRaw(
-                'COALESCE(SUM(bonus), 0) AS total_bonus',
-            )
-            ->selectRaw(
-                'COALESCE(SUM(upad), 0) AS total_upad',
-            )
-            ->selectRaw(
-                'COALESCE(SUM(paid_loan), 0) AS total_paid_loan',
-            )
-            ->selectRaw(
-                'COALESCE(SUM(adjustment), 0) AS total_adjustments',
-            )
-            ->selectRaw(
-                'COALESCE(SUM(attendance_days), 0) AS total_attendance_days',
-            )
-            ->selectRaw(
-                'COALESCE(SUM(working_days), 0) AS total_working_days',
-            )
-            ->selectRaw(
-                'COALESCE(SUM(late_days), 0) AS total_late_days',
-            )
-            ->selectRaw(
-                'COALESCE(SUM(total_undertime_seconds), 0) AS total_undertime_seconds',
-            )
-            ->selectRaw(
-                'SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS draft_count',
-                [SalaryStatus::DRAFT->value],
-            )
-            ->selectRaw(
-                'SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS paid_count',
-                [SalaryStatus::PAID->value],
+                'COALESCE(SUM(salaries.final_payable), 0) AS total_payable',
             )
             ->selectRaw(
                 'COALESCE(
                     SUM(
                         CASE
-                            WHEN status = ? THEN final_payable
+                            WHEN salaries.status = ? THEN salaries.final_payable
                             ELSE 0
                         END
                     ),
@@ -530,33 +504,48 @@ class SalaryController extends Controller
                 ) AS total_paid',
                 [SalaryStatus::PAID->value],
             )
-            ->firstOrFail();
+            ->selectRaw(
+                'COALESCE(
+                    SUM(
+                        CASE
+                            WHEN salaries.status = ? THEN salaries.final_payable
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS total_draft',
+                [SalaryStatus::DRAFT->value],
+            )
+            ->selectRaw(
+                'COALESCE(SUM(salaries.incentive), 0) AS total_incentive',
+            )
+            ->selectRaw(
+                'COALESCE(SUM(salaries.deduction), 0) AS total_deduction',
+            )
+            ->selectRaw(
+                'COALESCE(SUM(salaries.bonus), 0) AS total_bonus',
+            )
+            ->selectRaw(
+                'COALESCE(SUM(salaries.adjustment), 0) AS total_adjustments',
+            )
+            ->selectRaw(
+                'COALESCE(SUM(salaries.upad), 0) AS total_upad',
+            )
+            ->selectRaw(
+                'COALESCE(SUM(salaries.paid_loan), 0) AS total_paid_loan',
+            )
+            ->first();
 
         return [
-            'total' => (int) $stats->total,
-
-            'total_payable' => (float) $stats->total_payable,
-            'average_payable' => round(
-                (float) $stats->average_payable,
-                2,
-            ),
-            'total_base_salary' => (float) $stats->total_base_salary,
-            'total_incentive' => (float) $stats->total_incentive,
-            'total_deduction' => (float) $stats->total_deduction,
-            'total_bonus' => (float) $stats->total_bonus,
-            'total_upad' => (float) $stats->total_upad,
-            'total_paid_loan' => (float) $stats->total_paid_loan,
-            'total_adjustments' => (float) $stats->total_adjustments,
-
-            'total_attendance_days' => (int) $stats->total_attendance_days,
-            'total_working_days' => (int) $stats->total_working_days,
-            'total_late_days' => (int) $stats->total_late_days,
-            'total_undertime_seconds' => (int) $stats->total_undertime_seconds,
-
-            'draft_count' => (int) $stats->draft_count,
-            'paid_count' => (int) $stats->paid_count,
-
-            'total_paid' => (float) $stats->total_paid,
+            'total_payable' => Number::currency($stats->total_payable, in: 'INR'),
+            'total_paid' => Number::currency($stats->total_paid, in: 'INR'),
+            'total_draft' => Number::currency($stats->total_draft, in: 'INR'),
+            'total_incentive' => Number::currency($stats->total_incentive, in: 'INR'),
+            'total_deduction' => Number::currency($stats->total_deduction, in: 'INR'),
+            'total_bonus' => Number::currency($stats->total_bonus, in: 'INR'),
+            'total_adjustments' => Number::currency($stats->total_adjustments, in: 'INR'),
+            'total_upad' => Number::currency($stats->total_upad, in: 'INR'),
+            'total_paid_loan' => Number::currency($stats->total_paid_loan, in: 'INR'),
         ];
     }
 }
