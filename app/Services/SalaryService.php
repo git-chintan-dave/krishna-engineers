@@ -8,7 +8,6 @@ use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
@@ -17,19 +16,14 @@ class SalaryService
 {
     private const int SECONDS_PER_LATE_DAY = 12 * 60 * 60;
 
-    /**
-     * Generate draft salaries for all active employees for the
-     * previous calendar month. Existing records are skipped.
-     *
-     * @return array{
-     *     period_start: string,
-     *     period_end: string,
-     *     total_employees: int,
-     *     generated: int,
-     *     skipped: int,
-     *     salaries: Collection<int, Salary>
-     * }
-     */
+    private const int BONUS_DAYS_PER_MONTH = 26;
+
+    private const float BONUS_RATE = 8.33;
+
+    private const float BONUS_ANNUAL_LIMIT = 15000;
+
+    private const float BONUS_MONTHLY_LIMIT = self::BONUS_ANNUAL_LIMIT / 12;
+
     public function generateForEmployees(
         ?int $userId = null,
         ?CarbonInterface $referenceDate = null,
@@ -102,53 +96,6 @@ class SalaryService
         });
     }
 
-    /**
-     * Regenerate an existing unpaid salary using the latest employee
-     * salary settings and attendance records.
-     *
-     * Preserve manually entered adjustments and the confirmed late days.
-     */
-    public function regenerate(Salary $salary): Salary
-    {
-        return DB::transaction(function () use ($salary): Salary {
-            $salary = Salary::query()
-                ->whereKey($salary->getKey())
-                ->lockForUpdate()
-                ->firstOrFail();
-
-            if ($salary->isPaid()) {
-                throw new RuntimeException(
-                    'Paid salaries cannot be regenerated.',
-                );
-            }
-
-            $salary->loadMissing('user');
-
-            $attributes = $this->salaryCalculationAttributes(
-                user: $salary->user,
-                periodStart: $salary->salary_period_start,
-                periodEnd: $salary->salary_period_end,
-                lateDays: (int) $salary->late_days,
-                upad: (float) $salary->upad,
-                paidLoan: (float) $salary->paid_loan,
-                adjustment: (float) $salary->adjustment,
-            );
-
-            $salary->update([
-                ...$attributes,
-                'adjustment_reason' => $salary->adjustment_reason,
-            ]);
-
-            return $salary->refresh();
-        });
-    }
-
-    /**
-     * Generate a salary record.
-     *
-     * When lateDays is null, use the automatically calculated value.
-     * When supplied, use the client's confirmed late-day value.
-     */
     public function generate(
         User $user,
         CarbonInterface $periodStart,
@@ -223,19 +170,96 @@ class SalaryService
         });
     }
 
-    /**
-     * Calculate attendance days and total undertime for the period.
-     *
-     * Only attendance records with a start time are counted,
-     * matching the existing working-day calculation.
-     *
-     * @return array{
-     *     attendance_days: int,
-     *     total_undertime_seconds: int,
-     *     calculated_late_days: int,
-     *     working_days: int
-     * }
-     */
+    public function regenerate(Salary $salary): Salary
+    {
+        return DB::transaction(function () use ($salary): Salary {
+            $salary = Salary::query()
+                ->whereKey($salary->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($salary->isPaid()) {
+                throw new RuntimeException(
+                    'Paid salaries cannot be regenerated.',
+                );
+            }
+
+            $salary->loadMissing('user');
+
+            $attributes = $this->salaryCalculationAttributes(
+                user: $salary->user,
+                periodStart: $salary->salary_period_start,
+                periodEnd: $salary->salary_period_end,
+                lateDays: (int) $salary->late_days,
+                upad: (float) $salary->upad,
+                paidLoan: (float) $salary->paid_loan,
+                adjustment: (float) $salary->adjustment,
+                incentive: (float) $salary->incentive,
+                deduction: (float) $salary->deduction,
+                bonus: (float) $salary->bonus,
+            );
+
+            $salary->update([
+                ...$attributes,
+                'adjustment_reason' => $salary->adjustment_reason,
+            ]);
+
+            return $salary->refresh();
+        });
+    }
+
+    public function recalculate(
+        Salary $salary,
+        float $upad = 0,
+        float $paidLoan = 0,
+        float $adjustment = 0,
+        ?string $adjustmentReason = null,
+        ?int $lateDays = null,
+        ?float $incentive = null,
+        ?float $deduction = null,
+        ?float $bonus = null,
+    ): Salary {
+        if ($salary->isPaid()) {
+            throw new RuntimeException(
+                'A paid salary cannot be recalculated.',
+            );
+        }
+
+        return DB::transaction(function () use (
+            $salary,
+            $upad,
+            $paidLoan,
+            $adjustment,
+            $adjustmentReason,
+            $lateDays,
+            $incentive,
+            $deduction,
+            $bonus,
+        ): Salary {
+            $salary->loadMissing('user');
+
+            $attributes = $this->salaryCalculationAttributes(
+                user: $salary->user,
+                periodStart: $salary->salary_period_start,
+                periodEnd: $salary->salary_period_end,
+                lateDays: $lateDays ?? (int) $salary->late_days,
+                upad: $upad,
+                paidLoan: $paidLoan,
+                adjustment: $adjustment,
+                incentive: $incentive,
+                deduction: $deduction,
+                bonus: $bonus,
+            );
+
+            $salary->update([
+                ...$attributes,
+                'adjustment_reason' => $adjustmentReason,
+            ]);
+
+            return $salary->fresh();
+        });
+    }
+
     public function calculateAttendance(
         User $user,
         CarbonInterface $periodStart,
@@ -276,9 +300,6 @@ class SalaryService
         ];
     }
 
-    /**
-     * Calculate incentive using the existing rule.
-     */
     public function calculateIncentive(
         int $workingDays,
         float $incentiveRate,
@@ -290,9 +311,6 @@ class SalaryService
         return round(($workingDays - 23) * $incentiveRate, 2);
     }
 
-    /**
-     * Calculate deduction using the existing rule.
-     */
     public function calculateDeduction(
         int $workingDays,
         float $deductionRate,
@@ -304,11 +322,19 @@ class SalaryService
         return round((21 - $workingDays) * $deductionRate, 2);
     }
 
-    /**
-     * Calculate final payable salary.
-     *
-     * baseSalary is the per-day base salary.
-     */
+    public function calculateBonus(float $baseSalary): float
+    {
+        $monthlyBaseSalary = $baseSalary * self::BONUS_DAYS_PER_MONTH;
+
+        return round(
+            min(
+                $monthlyBaseSalary * (self::BONUS_RATE / 100),
+                self::BONUS_MONTHLY_LIMIT,
+            ),
+            2,
+        );
+    }
+
     public function calculateFinalPayable(
         float $baseSalary,
         int $workingDays,
@@ -329,14 +355,102 @@ class SalaryService
         );
     }
 
-    /**
-     * Build all salary calculation attributes.
-     *
-     * The selected lateDays value is persisted as the client's
-     * confirmed value. It is not rounded or recalculated after saving.
-     *
-     * @return array<string, int|float>
-     */
+    public function preview(
+        User $user,
+        CarbonInterface $periodStart,
+        CarbonInterface $periodEnd,
+    ): array {
+        $attendance = $this->calculateAttendance(
+            $user,
+            $periodStart,
+            $periodEnd,
+        );
+
+        $attendanceDays = $attendance['attendance_days'];
+        $lateDays = min(
+            $attendanceDays,
+            $attendance['calculated_late_days'],
+        );
+
+        $workingDays = $attendanceDays - $lateDays;
+
+        $baseSalary = (float) $user->salary;
+        $incentiveRate = (float) $user->incentive_per_day;
+        $deductionRate = (float) $user->deduction_per_day;
+
+        $incentive = $this->calculateIncentive(
+            $workingDays,
+            $incentiveRate,
+        );
+
+        $deduction = $this->calculateDeduction(
+            $workingDays,
+            $deductionRate,
+        );
+
+        $bonus = $this->calculateBonus($baseSalary);
+
+        $finalPayable = $this->calculateFinalPayable(
+            baseSalary: $baseSalary,
+            workingDays: $workingDays,
+            incentive: $incentive,
+            adjustment: 0,
+            upad: 0,
+            paidLoan: 0,
+            deduction: $deduction,
+        );
+
+        return [
+            'base_salary' => number_format($baseSalary, 2, '.', ''),
+
+            'attendance_days' => $attendanceDays,
+            'total_undertime_seconds' => $attendance['total_undertime_seconds'],
+            'calculated_late_days' => $lateDays,
+            'late_days' => $lateDays,
+            'working_days' => $workingDays,
+
+            'incentive_rate' => number_format(
+                $incentiveRate,
+                2,
+                '.',
+                '',
+            ),
+            'incentive' => number_format(
+                $incentive,
+                2,
+                '.',
+                '',
+            ),
+
+            'deduction_rate' => number_format(
+                $deductionRate,
+                2,
+                '.',
+                '',
+            ),
+            'deduction' => number_format(
+                $deduction,
+                2,
+                '.',
+                '',
+            ),
+
+            'bonus' => number_format(
+                $bonus,
+                2,
+                '.',
+                '',
+            ),
+
+            'final_payable' => number_format(
+                $finalPayable,
+                2,
+                '.',
+                '',
+            ),
+        ];
+    }
+
     private function salaryCalculationAttributes(
         User $user,
         CarbonInterface $periodStart,
@@ -345,6 +459,9 @@ class SalaryService
         float $upad,
         float $paidLoan,
         float $adjustment,
+        ?float $incentive = null,
+        ?float $deduction = null,
+        ?float $bonus = null,
     ): array {
         $attendance = $this->calculateAttendance(
             $user,
@@ -364,15 +481,17 @@ class SalaryService
         $incentiveRate = (float) $user->incentive_per_day;
         $deductionRate = (float) $user->deduction_per_day;
 
-        $incentive = $this->calculateIncentive(
+        $incentive ??= $this->calculateIncentive(
             $workingDays,
             $incentiveRate,
         );
 
-        $deduction = $this->calculateDeduction(
+        $deduction ??= $this->calculateDeduction(
             $workingDays,
             $deductionRate,
         );
+
+        $bonus ??= $this->calculateBonus($baseSalary);
 
         $finalPayable = $this->calculateFinalPayable(
             baseSalary: $baseSalary,
@@ -393,10 +512,12 @@ class SalaryService
             'base_salary' => $baseSalary,
 
             'incentive_rate' => $incentiveRate,
-            'incentive' => $incentive,
+            'incentive' => round($incentive, 2),
 
             'deduction_rate' => $deductionRate,
-            'deduction' => $deduction,
+            'deduction' => round($deduction, 2),
+
+            'bonus' => round($bonus, 2),
 
             'upad' => $upad,
             'paid_loan' => $paidLoan,
@@ -406,9 +527,6 @@ class SalaryService
         ];
     }
 
-    /**
-     * Ensure late days cannot exceed attendance days.
-     */
     private function validateLateDays(
         int $attendanceDays,
         int $lateDays,
@@ -423,67 +541,12 @@ class SalaryService
         }
     }
 
-    /**
-     * Determine whether the exception represents a unique violation.
-     */
     private function isUniqueViolation(
         QueryException $exception,
     ): bool {
         return $exception->getCode() === '23000';
     }
 
-    /**
-     * Recalculate a draft salary.
-     *
-     * Pass lateDays to apply the client's edited value.
-     * If omitted, retain the previously saved late-day value.
-     */
-    public function recalculate(
-        Salary $salary,
-        float $upad = 0,
-        float $paidLoan = 0,
-        float $adjustment = 0,
-        ?string $adjustmentReason = null,
-        ?int $lateDays = null,
-    ): Salary {
-        if ($salary->isPaid()) {
-            throw new RuntimeException(
-                'A paid salary cannot be recalculated.',
-            );
-        }
-
-        return DB::transaction(function () use (
-            $salary,
-            $upad,
-            $paidLoan,
-            $adjustment,
-            $adjustmentReason,
-            $lateDays,
-        ): Salary {
-            $salary->loadMissing('user');
-
-            $attributes = $this->salaryCalculationAttributes(
-                user: $salary->user,
-                periodStart: $salary->salary_period_start,
-                periodEnd: $salary->salary_period_end,
-                lateDays: $lateDays ?? (int) $salary->late_days,
-                upad: $upad,
-                paidLoan: $paidLoan,
-                adjustment: $adjustment,
-            );
-
-            $salary->update([
-                ...$attributes,
-                'adjustment_reason' => $adjustmentReason,
-            ]);
-
-            return $salary->fresh();
-        });
-    }
-
-    /**
-     * Mark salary as paid.
-     */
     public function markAsPaid(
         Salary $salary,
         ?Carbon $paidAt = null,
@@ -505,75 +568,5 @@ class SalaryService
 
             return $salary->fresh();
         });
-    }
-
-    /**
-     * Preview salary calculations for a user and period.
-     *
-     * Returns the automatically calculated late days.
-     * The client can edit that value before submitting the form.
-     *
-     * @return array<string, int|string>
-     */
-    public function preview(
-        User $user,
-        CarbonInterface $periodStart,
-        CarbonInterface $periodEnd,
-    ): array {
-        $attendance = $this->calculateAttendance(
-            $user,
-            $periodStart,
-            $periodEnd,
-        );
-
-        $attendanceDays = $attendance['attendance_days'];
-        $lateDays = $attendance['calculated_late_days'];
-
-        // A preview must remain valid even if undertime exceeds
-        // the number of attendance days.
-        $lateDays = min($attendanceDays, $lateDays);
-        $workingDays = $attendanceDays - $lateDays;
-
-        $baseSalary = (float) $user->salary;
-        $incentiveRate = (float) $user->incentive_per_day;
-        $deductionRate = (float) $user->deduction_per_day;
-
-        $incentive = $this->calculateIncentive(
-            $workingDays,
-            $incentiveRate,
-        );
-
-        $deduction = $this->calculateDeduction(
-            $workingDays,
-            $deductionRate,
-        );
-
-        $finalPayable = $this->calculateFinalPayable(
-            baseSalary: $baseSalary,
-            workingDays: $workingDays,
-            incentive: $incentive,
-            adjustment: 0,
-            upad: 0,
-            paidLoan: 0,
-            deduction: $deduction,
-        );
-
-        return [
-            'base_salary' => number_format($baseSalary, 2, '.', ''),
-
-            'attendance_days' => $attendanceDays,
-            'total_undertime_seconds' => $attendance['total_undertime_seconds'],
-            'calculated_late_days' => $lateDays,
-            'late_days' => $lateDays,
-            'working_days' => $workingDays,
-
-            'incentive_rate' => number_format($incentiveRate, 2, '.', ''),
-            'incentive' => number_format($incentive, 2, '.', ''),
-
-            'deduction_rate' => number_format($deductionRate, 2, '.', ''),
-            'deduction' => number_format($deduction, 2, '.', ''),
-
-            'final_payable' => number_format($finalPayable, 2, '.', ''),
-        ];
     }
 }

@@ -26,6 +26,7 @@ class IndexSalaryRequest extends FormRequest
                 'base_salary',
                 'incentive',
                 'deduction',
+                'bonus',
                 'final_payable',
                 'status',
                 'user.name',

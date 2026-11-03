@@ -38,6 +38,24 @@ class SalaryRequest extends FormRequest
                 'min:0',
             ],
 
+            'incentive' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
+
+            'deduction' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
+
+            'bonus' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
+
             'upad' => [
                 'required',
                 'numeric',

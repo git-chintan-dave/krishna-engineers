@@ -15,24 +15,46 @@ class AttendanceResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $attendanceService = app(AttendanceService::class);
+        $isMissing = (bool) ($this->is_missing ?? false);
 
-        $productionEfficiencyService = app(
-            OperatorProductionEfficiencyService::class,
-        );
+        $attendanceType = $this->attendance_type ?? ($isMissing ? 'on_leave' : 'attendance');
 
-        $productionSeconds = (int) $productionEfficiencyService
-            ->getProductionSecondsForDay(
-                $this->user_id,
-                $this->attendance_date,
+        $dayStatus = $this->day_status
+            ?? match ($attendanceType) {
+                'week_off' => 'Week Off',
+                'on_leave' => 'On Leave',
+                default => 'Attendance',
+            };
+
+        $productionSeconds = 0;
+        $productionEfficiency = 0;
+        $isLocked = false;
+        $isOpen = false;
+        $needsAttention = false;
+
+        if (! $isMissing) {
+            $productionEfficiencyService = app(
+                OperatorProductionEfficiencyService::class,
             );
 
-        $effectiveWorkingSeconds = (int) $this->effective_working_seconds;
+            $productionSeconds = (int) $productionEfficiencyService
+                ->getProductionSecondsForDay(
+                    $this->user_id,
+                    $this->attendance_date,
+                );
 
-        $productionEfficiency = $productionEfficiencyService->calculate(
-            $productionSeconds,
-            $effectiveWorkingSeconds,
-        );
+            $productionEfficiency = $productionEfficiencyService->calculate(
+                $productionSeconds,
+                (int) $this->effective_working_seconds,
+            );
+
+            $isOpen = $this->isOpen();
+            $needsAttention = $this->needsAttention();
+
+            $isLocked = app(AttendanceService::class)->isLocked(
+                $this->resource,
+            );
+        }
 
         $startAt = $this->start_at;
         $endAt = $this->end_at;
@@ -70,6 +92,12 @@ class AttendanceResource extends JsonResource
                 'd M Y',
             ),
 
+            'attendance_type' => $attendanceType,
+
+            'day_status' => $dayStatus,
+
+            'is_missing' => $isMissing,
+
             'start_at' => $startAt?->format('Y-m-d H:i:s'),
 
             'end_at' => $endAt?->format('Y-m-d H:i:s'),
@@ -78,9 +106,9 @@ class AttendanceResource extends JsonResource
 
             'end_at_formatted' => $endAt?->format('h:i A'),
 
-            'is_open' => $this->isOpen(),
+            'is_open' => $isOpen,
 
-            'needs_attention' => $this->needsAttention(),
+            'needs_attention' => $needsAttention,
 
             /*
             |--------------------------------------------------------------------------
@@ -152,13 +180,10 @@ class AttendanceResource extends JsonResource
             |--------------------------------------------------------------------------
             */
 
-            'is_locked' => $attendanceService->isLocked($this->resource),
+            'is_locked' => $isLocked,
         ];
     }
 
-    /**
-     * Format seconds as HH:MM:SS without wrapping after 24 hours.
-     */
     private static function formatDuration(int|string|null $seconds): string
     {
         $seconds = max(0, (int) $seconds);

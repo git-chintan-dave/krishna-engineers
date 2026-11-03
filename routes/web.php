@@ -298,6 +298,12 @@ Route::middleware('auth')->group(function () {
                 Route::post('/generate-last-month', 'generateSalary')
                     ->name('salaries.generate-last-month');
 
+                Route::get('/export-zip', [SalaryController::class, 'exportZip'])
+                    ->name('salaries.export-zip');
+
+                Route::get('/{salary}/export', [SalaryController::class, 'export'])
+                    ->name('salaries.export');
+
                 Route::post('/{salary}/regenerate', 'regenerate')
                     ->name('salaries.regenerate');
             });

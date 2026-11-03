@@ -61,6 +61,8 @@ class SalaryResource extends JsonResource
             'deduction_rate_formatted' => Number::currency($this->deduction_rate, in: 'INR'),
             'deduction' => $this->deduction,
             'deduction_formatted' => Number::currency($this->deduction, in: 'INR'),
+            'bonus' => $this->bonus,
+            'bonus_formatted' => Number::currency($this->bonus, in: 'INR'),
 
             // Payment Adjustments
             'upad' => $this->upad,

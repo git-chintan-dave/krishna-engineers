@@ -1,15 +1,20 @@
 <script lang="ts" setup>
 import axios from 'axios';
-import { CalendarDays, LoaderCircle } from '@lucide/vue';
-import { computed, ref, watch } from 'vue';
+import {CalendarDays, LoaderCircle} from '@lucide/vue';
+import {computed, ref, watch} from 'vue';
 
-import { Button } from '@/components/ui/button';
+import {Button} from '@/components/ui/button';
+
+type AttendanceType = 'attendance' | 'week_off' | 'on_leave';
 
 type AttendanceRecord = {
-    id: number | string;
+    id: number | string | null;
+    uuid?: string | null;
     attendance_date?: string | null;
     attendance_date_formatted?: string | null;
-    shift?: string | null;
+    attendance_type?: AttendanceType;
+    day_status?: string;
+    is_missing?: boolean;
     start_at?: string | null;
     end_at?: string | null;
     start_at_formatted?: string | null;
@@ -51,10 +56,6 @@ const hasFilters = computed(
         Boolean(props.endDate),
 );
 
-const dateRangeLabel = computed(
-    () => `${props.startDate ?? ''} – ${props.endDate ?? ''}`,
-);
-
 const formatDate = (value?: string | null): string => {
     if (!value) {
         return '—';
@@ -73,15 +74,62 @@ const formatDate = (value?: string | null): string => {
     });
 };
 
+const getRecordType = (record: AttendanceRecord): AttendanceType => {
+    if (record.attendance_type) {
+        return record.attendance_type;
+    }
+
+    return record.is_missing ? 'on_leave' : 'attendance';
+};
+
+const getStatusLabel = (record: AttendanceRecord): string => {
+    return (
+        record.day_status ??
+        {
+            attendance: 'Attendance',
+            week_off: 'Week Off',
+            on_leave: 'On Leave',
+        }[getRecordType(record)]
+    );
+};
+
+const getStatusClass = (record: AttendanceRecord): string => {
+    return {
+        attendance:
+            'border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+        week_off:
+            'border-border bg-muted text-muted-foreground',
+        on_leave:
+            'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400',
+    }[getRecordType(record)];
+};
+
+const getRowClass = (record: AttendanceRecord): string => {
+    return {
+        attendance: '',
+        week_off: 'bg-muted/40 text-muted-foreground',
+        on_leave: 'bg-amber-500/5',
+    }[getRecordType(record)];
+};
+
+const getRecordKey = (record: AttendanceRecord): string => {
+    return (
+        record.uuid ??
+        record.attendance_date ??
+        String(record.id)
+    );
+};
+
 const loadAttendance = async (): Promise<void> => {
+    const currentVersion = ++requestVersion.value;
+
     if (!hasFilters.value) {
         records.value = [];
+        loading.value = false;
         errorMessage.value =
             'Select an employee and salary period to view attendance.';
         return;
     }
-
-    const currentVersion = ++requestVersion.value;
 
     loading.value = true;
     errorMessage.value = '';
@@ -138,14 +186,17 @@ const closeDialog = (): void => {
     open.value = false;
 };
 
-watch(open, (isOpen) => {
-    if (isOpen) {
-        void loadAttendance();
-    } else {
-        requestVersion.value++;
-        loading.value = false;
-    }
-});
+watch(
+    () => [open.value, props.userId, props.startDate, props.endDate],
+    ([isOpen]) => {
+        if (isOpen) {
+            void loadAttendance();
+        } else {
+            requestVersion.value++;
+            loading.value = false;
+        }
+    },
+);
 </script>
 
 <template>
@@ -153,8 +204,8 @@ watch(open, (isOpen) => {
         <div
             v-if="open"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-            @click.self="open = false"
-            @keydown.esc="open = false"
+            @click.self="closeDialog"
+            @keydown.esc="closeDialog"
         >
             <section
                 aria-labelledby="attendance-history-title"
@@ -184,7 +235,7 @@ watch(open, (isOpen) => {
                     <Button
                         type="button"
                         variant="outline"
-                        @click="open = false"
+                        @click="closeDialog"
                     >
                         Close
                     </Button>
@@ -201,7 +252,7 @@ watch(open, (isOpen) => {
 
                     <div
                         v-else-if="errorMessage"
-                        class="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm"
+                        class="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
                     >
                         {{ errorMessage }}
                     </div>
@@ -213,11 +264,46 @@ watch(open, (isOpen) => {
                         No attendance records found for this period.
                     </div>
 
-                    <div v-else class="overflow-x-auto rounded-lg border">
-                        <table class="w-full min-w-[700px] text-sm">
-                            <thead class="bg-muted/50 text-left">
+                    <template v-else>
+                        <div class="mb-4 flex flex-wrap items-center gap-3 text-xs">
+                            <div class="flex items-center gap-1.5">
+                                <span
+                                    class="size-2 rounded-full bg-emerald-500"
+                                />
+                                <span class="text-muted-foreground">
+                                    Attendance
+                                </span>
+                            </div>
+
+                            <div class="flex items-center gap-1.5">
+                                <span
+                                    class="size-2 rounded-full bg-muted-foreground"
+                                />
+                                <span class="text-muted-foreground">
+                                    Week Off
+                                </span>
+                            </div>
+
+                            <div class="flex items-center gap-1.5">
+                                <span
+                                    class="size-2 rounded-full bg-amber-500"
+                                />
+                                <span class="text-muted-foreground">
+                                    On Leave
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="max-h-[60vh] overflow-auto rounded-lg border">
+                            <table class="w-full min-w-212 text-sm">
+                                <thead class="sticky top-0 z-10 bg-muted text-left shadow-sm">
                                 <tr>
-                                    <th class="px-4 py-3 font-medium">Date</th>
+                                    <th class="px-4 py-3 font-medium">
+                                        Date
+                                    </th>
+                                    <th class="px-4 py-3 font-medium">
+                                        Status
+                                    </th>
                                     <th class="px-4 py-3 font-medium">
                                         Clock In
                                     </th>
@@ -234,61 +320,93 @@ watch(open, (isOpen) => {
                                         Effective Hours
                                     </th>
                                     <th class="px-4 py-3 font-medium">
-                                        Late By
+                                        Undertime
                                     </th>
                                 </tr>
-                            </thead>
+                                </thead>
 
-                            <tbody class="divide-y">
-                                <tr v-for="record in records" :key="record.id">
-                                    <td class="px-4 py-3 whitespace-nowrap">
+                                <tbody class="divide-y">
+                                <tr
+                                    v-for="record in records"
+                                    :key="getRecordKey(record)"
+                                    :class="getRowClass(record)"
+                                >
+                                    <td
+                                        class="px-4 py-3 whitespace-nowrap font-medium"
+                                    >
                                         {{
                                             record.attendance_date_formatted ??
                                             formatDate(record.attendance_date)
                                         }}
                                     </td>
+
                                     <td class="px-4 py-3 whitespace-nowrap">
-                                        {{
-                                            record.start_at_formatted ??
-                                            record.start_at ??
-                                            '—'
-                                        }}
+                                            <span
+                                                class="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium"
+                                                :class="getStatusClass(record)"
+                                            >
+                                                {{ getStatusLabel(record) }}
+                                            </span>
                                     </td>
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        {{
-                                            record.end_at_formatted ??
-                                            record.end_at ??
-                                            '—'
-                                        }}
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        {{
-                                            record.total_working_seconds_formatted ??
-                                            '—'
-                                        }}
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        {{
-                                            record.break_seconds_formatted ??
-                                            '—'
-                                        }}
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        {{
-                                            record.effective_working_seconds_formatted ??
-                                            '—'
-                                        }}
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        {{
-                                            record.undertime_seconds_formatted ??
-                                            '—'
-                                        }}
+
+                                    <template v-if="!record.is_missing">
+                                        <td class="px-4 py-3 whitespace-nowrap">
+                                            {{
+                                                record.start_at_formatted ??
+                                                record.start_at ??
+                                                '—'
+                                            }}
+                                        </td>
+
+                                        <td class="px-4 py-3 whitespace-nowrap">
+                                            {{
+                                                record.end_at_formatted ??
+                                                record.end_at ??
+                                                '—'
+                                            }}
+                                        </td>
+
+                                        <td class="px-4 py-3 whitespace-nowrap">
+                                            {{
+                                                record.total_working_seconds_formatted ??
+                                                '—'
+                                            }}
+                                        </td>
+
+                                        <td class="px-4 py-3 whitespace-nowrap">
+                                            {{
+                                                record.break_seconds_formatted ??
+                                                '—'
+                                            }}
+                                        </td>
+
+                                        <td class="px-4 py-3 whitespace-nowrap">
+                                            {{
+                                                record.effective_working_seconds_formatted ??
+                                                '—'
+                                            }}
+                                        </td>
+
+                                        <td class="px-4 py-3 whitespace-nowrap">
+                                            {{
+                                                record.undertime_seconds_formatted ??
+                                                '—'
+                                            }}
+                                        </td>
+                                    </template>
+
+                                    <td
+                                        v-else
+                                        colspan="6"
+                                        class="px-4 py-3 text-center text-xs italic text-muted-foreground"
+                                    >
+                                        No attendance recorded
                                     </td>
                                 </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                                </tbody>
+                            </table>
+                        </div>
+                    </template>
                 </div>
             </section>
         </div>

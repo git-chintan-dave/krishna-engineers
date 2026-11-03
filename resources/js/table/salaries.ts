@@ -76,6 +76,15 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
         }),
 
         createColumn({
+            accessorKey: 'bonus_formatted',
+            sortKey: 'bonus',
+            header: 'Bonus',
+            ...COLUMN_DEFAULTS.secondaryColumn,
+            sortable: true,
+            align: 'center',
+        }),
+
+        createColumn({
             accessorKey: 'final_payable_formatted',
             sortKey: 'final_payable',
             header: 'Final Payable',
@@ -92,10 +101,13 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
         createActionsColumn({
             editUrl: (uuid) => edit(uuid).url,
             detailsUrl: (uuid) => show(uuid).url,
+            exportUrl: (uuid) => `/people/salaries/${uuid}/export`,
             markAsPaidUrl: (uuid) => markAsPaid(uuid).url,
             regenerateUrl: (uuid) => regenerate(uuid).url,
+
             resourceName: 'salary',
             handleDelete,
+
             handleMarkAsPaid: (uuid) => {
                 router.post(markAsPaid(uuid).url, {}, {
                     preserveScroll: true,
@@ -107,6 +119,7 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
                     },
                 });
             },
+
             handleRegenerate: (uuid) => {
                 router.post(regenerate(uuid).url, {}, {
                     preserveScroll: true,
@@ -118,10 +131,12 @@ export const createSalaryColumns = (handleDelete: (uuid: string) => void) =>
                     },
                 });
             },
+
             showEdit: (row: Salary) => row.status === 'draft',
             showMarkAsPaid: (row: Salary) => row.status === 'draft',
             showDelete: (row: Salary) => row.status === 'draft',
             showRegenerate: (row: Salary) => row.status !== 'paid',
+
             ...COLUMN_DEFAULTS.wideColumn,
         }),
     ]);

@@ -70,7 +70,7 @@ export const createAttendanceColumns = (
         createColumn<Attendance, number | null>({
             accessorKey: 'total_working_seconds_formatted',
             sortKey: 'total_working_seconds',
-            header: 'Total hours',
+            header: 'Total Hours',
             ...COLUMN_DEFAULTS.secondaryColumn,
             align: 'center',
             sortable: true,

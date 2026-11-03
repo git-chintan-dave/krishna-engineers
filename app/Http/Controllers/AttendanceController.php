@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -462,11 +463,9 @@ class AttendanceController extends Controller
 
     public function history(
         Request $request,
+        AttendanceService $attendanceService,
     ): AnonymousResourceCollection {
-        Gate::authorize(
-            'viewAny',
-            Attendance::class,
-        );
+        Gate::authorize('viewAny', Attendance::class);
 
         $validated = $request->validate([
             'user_id' => [
@@ -474,18 +473,15 @@ class AttendanceController extends Controller
                 'integer',
                 'exists:users,id',
             ],
-
             'start_date' => [
                 'required',
                 'date_format:Y-m-d',
             ],
-
             'end_date' => [
                 'required',
                 'date_format:Y-m-d',
                 'after_or_equal:start_date',
             ],
-
             'per_page' => [
                 'sometimes',
                 'integer',
@@ -494,20 +490,29 @@ class AttendanceController extends Controller
             ],
         ]);
 
-        $attendances = Attendance::query()
-            ->with([
-                'user:id,name,employee_code',
-                'breaks',
-            ])
-            ->where('user_id', $validated['user_id'])
-            ->whereBetween('attendance_date', [
-                $validated['start_date'],
-                $validated['end_date'],
-            ])
-            ->orderBy('attendance_date', 'asc')
-            ->paginate($validated['per_page'] ?? 50);
+        $user = User::query()->findOrFail($validated['user_id']);
 
-        return AttendanceResource::collection($attendances);
+        $history = $attendanceService->history(
+            $user,
+            $validated['start_date'],
+            $validated['end_date'],
+        );
+
+        $perPage = $validated['per_page'] ?? 50;
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+
+        $paginatedHistory = new LengthAwarePaginator(
+            $history->forPage($currentPage, $perPage)->values(),
+            $history->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ],
+        );
+
+        return AttendanceResource::collection($paginatedHistory);
     }
 
 

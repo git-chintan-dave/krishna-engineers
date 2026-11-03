@@ -12,6 +12,7 @@ import {
     TrendingDown,
     TrendingUp,
     Wallet,
+    Download,
 } from '@lucide/vue';
 
 import AppInput from '@/components/common/AppInput.vue';
@@ -28,12 +29,14 @@ import {useListingEmptyState} from '@/composables/useListingEmptyState';
 import {useListingTable} from '@/composables/useListingTable';
 
 import {salaryPage} from '@/config/salaries';
-import {bulkDestroy, create, destroy, generateLastMonth, index as salariesRoute,} from '@/routes/salaries';
+
+import {bulkDestroy, create, destroy, generateLastMonth, index as salariesRoute, exportZip} from '@/routes/salaries';
 
 import {createSalaryColumns} from '@/table/salaries';
 
 import type {Salary, SalaryFilters, SalaryResponse, SalarySort, SalaryStatistics, SalaryStatus,} from '@/types/salary';
-import {NumericSelectValue} from "@/utils/selectUtils";
+
+import type {NumericSelectValue} from '@/utils/selectUtils';
 
 /*
 |--------------------------------------------------------------------------
@@ -66,43 +69,87 @@ defineOptions({
 
 /*
 |--------------------------------------------------------------------------
-| Filters
+| Filter State
+|--------------------------------------------------------------------------
+|
+| Salary records are monthly. The user selects a month, while the
+| backend continues receiving start_date and end_date.
+|
+*/
+
+const filterEmployee = ref<
+    number | number[] | 'all'
+>(props.filters.user_id ?? 'all');
+
+const filterStatus = ref<SalaryFilters['status']>(
+    props.filters.status ?? 'all',
+);
+
+const filterMonth = ref(
+    props.filters.start_date?.slice(0, 7) ?? '',
+);
+
+/*
+|--------------------------------------------------------------------------
+| Month Date Helpers
 |--------------------------------------------------------------------------
 */
 
-const filterEmployee = ref<number | number[] | 'all'>(props.filters.user_id);
-const filterStatus = ref<SalaryFilters['status']>(props.filters.status);
-const filterStartDate = ref(props.filters.start_date);
-
-/**
- * Calculate the last calendar day of the selected month
- * without parsing the date string as UTC.
- */
-const filterEndDate = computed(() => {
-    if (!filterStartDate.value) {
+const getMonthStartDate = (month: string): string => {
+    if (!/^\d{4}-\d{2}$/.test(month)) {
         return '';
     }
 
-    const [year, month, day] = filterStartDate.value.split('-').map(Number);
-
-    if (!year || !month || !day) {
-        return '';
-    }
-
-    const selectedDate = new Date(year, month - 1, day);
+    const [year, monthNumber] = month
+        .split('-')
+        .map(Number);
 
     if (
-        selectedDate.getFullYear() !== year ||
-        selectedDate.getMonth() !== month - 1 ||
-        selectedDate.getDate() !== day
+        !year ||
+        !monthNumber ||
+        monthNumber < 1 ||
+        monthNumber > 12
     ) {
         return '';
     }
 
-    const lastDay = new Date(year, month, 0).getDate();
+    return `${month}-01`;
+};
 
-    return `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-});
+const getMonthEndDate = (month: string): string => {
+    if (!/^\d{4}-\d{2}$/.test(month)) {
+        return '';
+    }
+
+    const [year, monthNumber] = month
+        .split('-')
+        .map(Number);
+
+    if (
+        !year ||
+        !monthNumber ||
+        monthNumber < 1 ||
+        monthNumber > 12
+    ) {
+        return '';
+    }
+
+    const lastDay = new Date(
+        year,
+        monthNumber,
+        0,
+    ).getDate();
+
+    return `${month}-${String(lastDay).padStart(2, '0')}`;
+};
+
+const filterStartDate = computed(() =>
+    getMonthStartDate(filterMonth.value),
+);
+
+const filterEndDate = computed(() =>
+    getMonthEndDate(filterMonth.value),
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -113,21 +160,53 @@ const filterEndDate = computed(() => {
 watch(
     () => props.filters,
     (filters) => {
-        filterEmployee.value = filters.user_id;
-        filterStatus.value = filters.status;
-        filterStartDate.value = filters.start_date;
+        filterEmployee.value =
+            filters.user_id ?? 'all';
+
+        filterStatus.value =
+            filters.status ?? 'all';
+
+        filterMonth.value =
+            filters.start_date?.slice(0, 7) ?? '';
     },
     { deep: true },
 );
 
-const handleEmployeeChange = (value: NumericSelectValue): void => {
-    filterEmployee.value = value ?? 'all';
+/*
+|--------------------------------------------------------------------------
+| Filter Handlers
+|--------------------------------------------------------------------------
+*/
+
+const handleEmployeeChange = (
+    value: NumericSelectValue,
+): void => {
+    if (Array.isArray(value)) {
+        filterEmployee.value = value
+            .map(Number)
+            .filter(Number.isFinite);
+
+        if (!filterEmployee.value.length) {
+            filterEmployee.value = 'all';
+        }
+
+        return;
+    }
+
+    if (typeof value === 'number') {
+        filterEmployee.value = value;
+        return;
+    }
+
+    filterEmployee.value = 'all';
 };
 
-const handleStatusChange = (value: string | null): void => {
+const handleStatusChange = (
+    value: string | null,
+): void => {
     filterStatus.value =
         value === 'draft' || value === 'paid'
-            ? (value as SalaryStatus)
+            ? value as SalaryStatus
             : 'all';
 };
 
@@ -149,27 +228,54 @@ const {
     deleteSelected,
     resetPreferences,
     hasActiveFilters,
+    refresh,
+    refreshing,
 } = useListingTable<Salary, SalarySort>({
     data: () => props.salaries,
     columns,
+
     filters: {
         sort: props.filters.sort,
         direction: props.filters.direction,
     },
+
     route: salariesRoute.url(),
+
     searchable: false,
+
     additionalFilters: () => ({
         user_id:
             filterEmployee.value !== 'all'
                 ? filterEmployee.value
                 : undefined,
+
         status:
             filterStatus.value !== 'all'
                 ? filterStatus.value
                 : undefined,
-        start_date: filterStartDate.value || undefined,
-        end_date: filterEndDate.value || undefined,
+
+        start_date:
+            filterStartDate.value || undefined,
+
+        end_date:
+            filterEndDate.value || undefined,
     }),
+
+    refreshScope: 'tableAndStats',
+
+    refreshProps: {
+        table: [
+            'salaries',
+            'hasAnyRecords',
+        ],
+
+        tableAndStats: [
+            'salaries',
+            'hasAnyRecords',
+            'statistics',
+            'can_generate_last_month',
+        ],
+    },
 });
 
 /*
@@ -183,20 +289,20 @@ const hasAnyActiveFilters = computed(
         hasActiveFilters.value ||
         filterEmployee.value !== 'all' ||
         filterStatus.value !== 'all' ||
-        Boolean(filterStartDate.value),
+        Boolean(filterMonth.value),
 );
 
 const activeFilterCount = computed(
     () =>
         Number(filterEmployee.value !== 'all') +
         Number(filterStatus.value !== 'all') +
-        Number(Boolean(filterStartDate.value)),
+        Number(Boolean(filterMonth.value)),
 );
 
 const handleClearFilters = (): void => {
     filterEmployee.value = 'all';
     filterStatus.value = 'all';
-    filterStartDate.value = '';
+    filterMonth.value = '';
 
     clearFilters();
 };
@@ -209,17 +315,23 @@ const handleClearFilters = (): void => {
 
 const emptyState = useListingEmptyState({
     hasAnyRecords: () => props.hasAnyRecords,
-    hasActiveFilters: () => hasAnyActiveFilters.value,
+
+    hasActiveFilters: () =>
+        hasAnyActiveFilters.value,
+
     noRecords: {
         title: 'No salary records yet',
-        description: 'Generate or create salary records to get started.',
+        description:
+            'Generate or create salary records to get started.',
         actionLabel: salaryPage.createLabel,
         icon: Database,
         onAction: () => router.visit(create().url),
     },
+
     noResults: {
         title: 'No salaries found',
-        description: 'Try adjusting the employee, status, or date filters.',
+        description:
+            'Try adjusting the employee, status, or month filters.',
         actionLabel: salaryPage.clearButtonLabel,
         icon: SearchX,
         onAction: handleClearFilters,
@@ -234,7 +346,12 @@ const emptyState = useListingEmptyState({
 
 const generateButtonLabel = computed(() => {
     const now = new Date();
-    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+    const lastMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() - 1,
+        1,
+    );
 
     return `Generate ${lastMonth.toLocaleString(undefined, {
         month: 'long',
@@ -253,6 +370,20 @@ const actions = computed<ActionItem[]>(() => [
             },
         ]
         : []),
+    {
+        key: 'download-zip',
+        label: 'Export salary reports (ZIP)',
+        icon: Download,
+        action: () => {
+            const link = document.createElement('a');
+            link.href = exportZip().url;
+            link.download = '';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        },
+        separatorBefore: true,
+    },
     {
         key: 'reset-preferences',
         label: 'Reset preferences',
@@ -280,9 +411,18 @@ const formatCurrency = (amount: number): string =>
     }).format(amount);
 
 const formatDuration = (seconds: number): string => {
-    const safeSeconds = Math.max(0, Math.floor(seconds));
-    const hours = Math.floor(safeSeconds / 3600);
-    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    const safeSeconds = Math.max(
+        0,
+        Math.floor(seconds),
+    );
+
+    const hours = Math.floor(
+        safeSeconds / 3600,
+    );
+
+    const minutes = Math.floor(
+        (safeSeconds % 3600) / 60,
+    );
 
     if (hours >= 100) {
         return `${hours.toLocaleString()}h`;
@@ -308,7 +448,9 @@ const statistics = computed<ListingStatItem[]>(() => [
     },
     {
         label: 'Total Payable',
-        value: formatCurrency(props.statistics?.total_payable ?? 0),
+        value: formatCurrency(
+            props.statistics?.total_payable ?? 0,
+        ),
         icon: Wallet,
         variant: 'primary',
         description: 'Sum of final payable across all records',
@@ -316,7 +458,9 @@ const statistics = computed<ListingStatItem[]>(() => [
     },
     {
         label: 'Paid Amount',
-        value: formatCurrency(props.statistics?.total_paid ?? 0),
+        value: formatCurrency(
+            props.statistics?.total_paid ?? 0,
+        ),
         icon: CheckCircle,
         variant: 'success',
         description: 'Final payable for paid records',
@@ -334,7 +478,9 @@ const statistics = computed<ListingStatItem[]>(() => [
     },
     {
         label: 'Base Salary',
-        value: formatCurrency(props.statistics?.total_base_salary ?? 0),
+        value: formatCurrency(
+            props.statistics?.total_base_salary ?? 0,
+        ),
         icon: Wallet,
         variant: 'default',
         description: 'Total recorded base salary',
@@ -342,7 +488,9 @@ const statistics = computed<ListingStatItem[]>(() => [
     },
     {
         label: 'Incentives',
-        value: formatCurrency(props.statistics?.total_incentive ?? 0),
+        value: formatCurrency(
+            props.statistics?.total_incentive ?? 0,
+        ),
         icon: TrendingUp,
         variant: 'success',
         description: 'Total recorded incentives',
@@ -350,7 +498,9 @@ const statistics = computed<ListingStatItem[]>(() => [
     },
     {
         label: 'Deductions',
-        value: formatCurrency(props.statistics?.total_deduction ?? 0),
+        value: formatCurrency(
+            props.statistics?.total_deduction ?? 0,
+        ),
         icon: TrendingDown,
         variant: 'destructive',
         description: 'Total recorded deductions',
@@ -358,7 +508,9 @@ const statistics = computed<ListingStatItem[]>(() => [
     },
     {
         label: 'UPAD',
-        value: formatCurrency(props.statistics?.total_upad ?? 0),
+        value: formatCurrency(
+            props.statistics?.total_upad ?? 0,
+        ),
         icon: Wallet,
         variant: 'warning',
         description: 'Total recorded UPAD',
@@ -366,7 +518,9 @@ const statistics = computed<ListingStatItem[]>(() => [
     },
     {
         label: 'Paid Loans',
-        value: formatCurrency(props.statistics?.total_paid_loan ?? 0),
+        value: formatCurrency(
+            props.statistics?.total_paid_loan ?? 0,
+        ),
         icon: Wallet,
         variant: 'default',
         description: 'Total paid-loan amount recorded',
@@ -374,7 +528,9 @@ const statistics = computed<ListingStatItem[]>(() => [
     },
     {
         label: 'Adjustments',
-        value: formatCurrency(props.statistics?.total_adjustments ?? 0),
+        value: formatCurrency(
+            props.statistics?.total_adjustments ?? 0,
+        ),
         icon: TrendingUp,
         variant: 'info',
         description: 'Net sum of recorded adjustments',
@@ -408,21 +564,37 @@ const statistics = computed<ListingStatItem[]>(() => [
     },
 ]);
 
-const handleStatClick = (item: ListingStatItem): void => {
+const handleStatClick = (
+    item: ListingStatItem,
+): void => {
     switch (item.label) {
         case 'Paid Amount':
             filterStatus.value =
-                filterStatus.value === 'paid' ? 'all' : 'paid';
+                filterStatus.value === 'paid'
+                    ? 'all'
+                    : 'paid';
             break;
 
         case 'Draft Records':
             filterStatus.value =
-                filterStatus.value === 'draft' ? 'all' : 'draft';
+                filterStatus.value === 'draft'
+                    ? 'all'
+                    : 'draft';
             break;
 
         default:
             return;
     }
+};
+
+/*
+|--------------------------------------------------------------------------
+| Filter Submission
+|--------------------------------------------------------------------------
+*/
+
+const handleSearch = (): void => {
+    search();
 };
 </script>
 
@@ -432,6 +604,7 @@ const handleStatClick = (item: ListingStatItem): void => {
         :title="salaryPage.title"
         @reset-preferences="resetPreferences"
     >
+        <!-- Actions -->
         <template #actions>
             <ListingActions
                 :actions="actions"
@@ -439,10 +612,14 @@ const handleStatClick = (item: ListingStatItem): void => {
                 :create-url="create().url"
                 :resource-label="salaryPage.resourceLabel"
                 :selected-count="selectedCount"
+                :show-refresh="true"
+                :refreshing="refreshing"
+                @refresh="refresh"
                 @delete-selected="handleDeleteSelected"
             />
         </template>
 
+        <!-- Statistics -->
         <template #stats>
             <Deferred data="statistics">
                 <template #fallback>
@@ -461,6 +638,7 @@ const handleStatClick = (item: ListingStatItem): void => {
             </Deferred>
         </template>
 
+        <!-- Filters -->
         <template #filters>
             <ListingFilters
                 :active-filter-count="activeFilterCount"
@@ -468,9 +646,10 @@ const handleStatClick = (item: ListingStatItem): void => {
                 :clear-disabled="!hasAnyActiveFilters"
                 :searchable="false"
                 @clear="handleClearFilters"
-                @search="search"
+                @search="handleSearch"
             >
                 <template #filters>
+                    <!-- Employee -->
                     <div class="w-full min-w-0">
                         <AppEmployeeSelect
                             multiple
@@ -486,27 +665,24 @@ const handleStatClick = (item: ListingStatItem): void => {
                         />
                     </div>
 
+                    <!-- Salary Month -->
                     <div class="w-full min-w-0">
                         <AppInput
-                            v-model="filterStartDate"
-                            placeholder="Start date"
-                            type="date"
+                            v-model="filterMonth"
+                            type="month"
+                            :max="new Date().toISOString().slice(0, 7)"
+                            placeholder="Select salary month"
+                            helper="Future salary months are unavailable."
                         />
                     </div>
 
-                    <div class="w-full min-w-0">
-                        <AppInput
-                            :model-value="filterEndDate"
-                            placeholder="End date"
-                            readonly
-                            type="date"
-                        />
-                    </div>
-
+                    <!-- Salary Status -->
                     <div class="w-full min-w-0">
                         <AppSalaryStatusSelect
                             :model-value="
-                                filterStatus === 'all' ? null : filterStatus
+                                filterStatus === 'all'
+                                    ? null
+                                    : filterStatus
                             "
                             :placeholder="salaryPage.statusPlaceholder"
                             clearable
@@ -518,6 +694,7 @@ const handleStatClick = (item: ListingStatItem): void => {
             </ListingFilters>
         </template>
 
+        <!-- Table -->
         <template #table>
             <Deferred data="salaries">
                 <template #fallback>
@@ -528,7 +705,7 @@ const handleStatClick = (item: ListingStatItem): void => {
                         :page-index="0"
                         :page-size="filters.perPage ?? 10"
                         :page-size-options="[10, 25, 50, 100]"
-                        :selected-count="selectedCount"
+                        :selected-count="0"
                         :table="table"
                         :total="0"
                     />

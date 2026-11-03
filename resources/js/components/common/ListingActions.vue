@@ -324,7 +324,7 @@ useActionShortcuts(() => ({
                                 class="size-4 shrink-0"
                             />
 
-                            <span class="min-w-0 flex-1 truncate">
+                            <span class="min-w-0 flex-1 truncate text-left">
                                 {{ item.label }}
                             </span>
 
@@ -353,7 +353,7 @@ useActionShortcuts(() => ({
                             class="size-4 shrink-0"
                         />
 
-                        <span class="min-w-0 flex-1 truncate">
+                        <span class="min-w-0 flex-1 truncate text-left">
                             {{ item.label }}
                         </span>
 

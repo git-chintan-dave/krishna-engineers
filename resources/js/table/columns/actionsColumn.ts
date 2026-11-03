@@ -1,5 +1,5 @@
 import {Link} from '@inertiajs/vue3';
-import {CheckCircle2, Eye, Pencil, RefreshCw, Trash2,} from '@lucide/vue';
+import {CheckCircle2, Download, Eye, Pencil, RefreshCw, Trash2,} from '@lucide/vue';
 import {type Component, h, onBeforeUnmount, onMounted, ref, type VNode,} from 'vue';
 
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '@/components/ui/tooltip';
@@ -20,6 +20,7 @@ type ActionsColumnOptions<TData = unknown> = {
     handleDelete: (uuid: string) => void | Promise<void>;
 
     detailsUrl?: (uuid: string) => string;
+    exportUrl?: (uuid: string) => string;
     markAsPaidUrl?: (uuid: string) => string;
     regenerateUrl?: (uuid: string) => string;
 
@@ -28,6 +29,7 @@ type ActionsColumnOptions<TData = unknown> = {
 
     showDelete?: (row: TData) => boolean;
     showEdit?: (row: TData) => boolean;
+    showExport?: (row: TData) => boolean;
     showMarkAsPaid?: (row: TData) => boolean;
     showRegenerate?: (row: TData) => boolean;
 
@@ -82,6 +84,13 @@ const ACTION_STYLES = {
         'hover:bg-blue-100 hover:text-blue-700',
         'dark:bg-blue-950/40 dark:text-blue-400',
         'dark:hover:bg-blue-950/60 dark:hover:text-blue-300',
+    ],
+
+    export: [
+        'bg-emerald-50 text-emerald-600',
+        'hover:bg-emerald-100 hover:text-emerald-700',
+        'dark:bg-emerald-950/40 dark:text-emerald-400',
+        'dark:hover:bg-emerald-950/60 dark:hover:text-emerald-300',
     ],
 
     delete: [
@@ -168,6 +177,7 @@ function createIconButton(
     isDesktop: boolean,
     options: {
         href?: string;
+        download?: boolean;
         disabled?: boolean;
         onClick?: () => void | Promise<void>;
     } = {},
@@ -184,7 +194,18 @@ function createIconButton(
 
     let button: VNode;
 
-    if (options.href) {
+    if (options.href && options.download) {
+        button = h(
+            'a',
+            {
+                href: options.href,
+                'aria-label': label,
+                title: label,
+                class: classes,
+            },
+            [content],
+        );
+    } else if (options.href) {
         button = h(
             Link,
             {
@@ -233,6 +254,7 @@ function createIconButton(
 export const createActionsColumn = <TData = unknown>({
                                                          editUrl,
                                                          detailsUrl,
+                                                         exportUrl,
                                                          markAsPaidUrl,
                                                          regenerateUrl,
                                                          resourceName,
@@ -241,6 +263,7 @@ export const createActionsColumn = <TData = unknown>({
                                                          handleRegenerate,
                                                          showDelete,
                                                          showEdit,
+                                                         showExport,
                                                          showMarkAsPaid,
                                                          showRegenerate,
                                                          size = COLUMN_DEFAULTS.actions.size,
@@ -285,6 +308,10 @@ export const createActionsColumn = <TData = unknown>({
             const canEdit = showEdit?.(record) ?? true;
             const canDelete = showDelete?.(record) ?? true;
 
+            const canExport =
+                Boolean(exportUrl) &&
+                (showExport?.(record) ?? true);
+
             const canMarkAsPaid =
                 hasMarkAsPaid &&
                 (showMarkAsPaid?.(record) ?? true);
@@ -320,6 +347,22 @@ export const createActionsColumn = <TData = unknown>({
                         isDesktop.value,
                         {
                             href: editUrl(uuid),
+                        },
+                    ),
+                );
+            }
+
+            // Export action.
+            if (canExport && exportUrl) {
+                primaryActions.push(
+                    createIconButton(
+                        Download,
+                        'Export',
+                        ACTION_STYLES.export,
+                        isDesktop.value,
+                        {
+                            href: exportUrl(uuid),
+                            download: true,
                         },
                     ),
                 );

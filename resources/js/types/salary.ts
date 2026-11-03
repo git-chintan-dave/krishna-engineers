@@ -45,6 +45,9 @@ export type Salary = {
     deduction: string;
     deduction_formatted: string;
 
+    bonus: string;
+    bonus_formatted: string;
+
     adjustment: string;
     adjustment_formatted: string;
     adjustment_reason: string | null;
@@ -94,7 +97,6 @@ export type SalaryStatusOption = {
     label: string;
 };
 
-
 export interface SalaryStatistics {
     total: number;
 
@@ -103,6 +105,7 @@ export interface SalaryStatistics {
     total_base_salary: number;
     total_incentive: number;
     total_deduction: number;
+    total_bonus: number;
     total_upad: number;
     total_paid_loan: number;
     total_adjustments: number;

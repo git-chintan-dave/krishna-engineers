@@ -22,6 +22,11 @@ const form = useForm<SalaryFormData>({
     salary_period_start: '',
     salary_period_end: '',
     late_days: 0,
+
+    incentive: 0,
+    deduction: 0,
+    bonus: 0,
+
     upad: 0,
     paid_loan: 0,
     adjustment: 0,
@@ -31,7 +36,13 @@ const form = useForm<SalaryFormData>({
 const handleSubmit = (): void => {
     form.transform((data) => ({
         ...data,
+
         late_days: Number(data.late_days),
+
+        incentive: Number(data.incentive),
+        deduction: Number(data.deduction),
+        bonus: Number(data.bonus),
+
         upad: Number(data.upad),
         paid_loan: Number(data.paid_loan),
         adjustment: Number(data.adjustment),
