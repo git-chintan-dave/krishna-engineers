@@ -50,6 +50,18 @@ void createInertiaApp({
 
         app.directive('confirm', vConfirm);
     },
+    defaults: {
+        visitOptions: (href, options) => {
+            // Skip view transitions for background deferred/partial reloads
+            if (options.only && options.only.length > 0) {
+                return {}
+            }
+
+            return {
+                viewTransition: true,
+            }
+        },
+    },
     progress: {
         color: '#4B5563',
     },
