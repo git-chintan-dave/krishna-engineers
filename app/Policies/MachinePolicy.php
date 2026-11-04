@@ -13,7 +13,7 @@ class MachinePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /**
@@ -21,7 +21,7 @@ class MachinePolicy
      */
     public function view(User $user, Machine $machine): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /**
@@ -29,7 +29,7 @@ class MachinePolicy
      */
     public function create(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /**
@@ -37,7 +37,7 @@ class MachinePolicy
      */
     public function update(User $user, Machine $machine): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /**
@@ -45,11 +45,11 @@ class MachinePolicy
      */
     public function delete(User $user, Machine $machine): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     public function deleteAny(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 }

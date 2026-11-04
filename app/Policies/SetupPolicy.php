@@ -13,7 +13,7 @@ class SetupPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /**
@@ -21,7 +21,7 @@ class SetupPolicy
      */
     public function view(User $user, Setup $setup): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /**
@@ -29,7 +29,7 @@ class SetupPolicy
      */
     public function create(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /**
@@ -37,7 +37,7 @@ class SetupPolicy
      */
     public function update(User $user, Setup $setup): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /**
@@ -45,7 +45,7 @@ class SetupPolicy
      */
     public function delete(User $user, Setup $setup): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /**
@@ -53,6 +53,6 @@ class SetupPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 }

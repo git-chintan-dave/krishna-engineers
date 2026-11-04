@@ -10,31 +10,31 @@ class SectionPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     public function view(User $user, Section $section): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     public function create(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     public function update(User $user, Section $section): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     public function delete(User $user, Section $section): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     public function deleteAny(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 }

@@ -16,12 +16,12 @@ class ToolPolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     public function view(User $user, Tool $tool): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /*
@@ -32,7 +32,7 @@ class ToolPolicy
 
     public function create(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /*
@@ -43,7 +43,7 @@ class ToolPolicy
 
     public function update(User $user, Tool $tool): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /*
@@ -54,11 +54,11 @@ class ToolPolicy
 
     public function delete(User $user, Tool $tool): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     public function deleteAny(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 }

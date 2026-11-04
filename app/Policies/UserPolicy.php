@@ -2,80 +2,47 @@
 
 namespace App\Policies;
 
-use App\Enums\UserRole;
 use App\Models\User;
 
 class UserPolicy
 {
-    // View Any
-
     public function viewAny(User $user): bool
     {
-        return $this->canManageEmployees($user);
+        return $user->role->canManageCompany();
     }
-
-    // View
-
-    private function canManageEmployees(User $user): bool
-    {
-        return in_array(
-            $user->role,
-            [
-                UserRole::SUPER_ADMIN,
-                UserRole::SUPERVISOR,
-            ],
-            true,
-        );
-    }
-
-    // Create
 
     public function view(User $user, User $model): bool
     {
-        return $this->canManageEmployees($user);
+        return $user->role->canManageCompany();
     }
-
-    // Update
 
     public function create(User $user): bool
     {
-        return $this->canManageEmployees($user);
+        return $user->role->canManageCompany();
     }
-
-    // Delete
 
     public function update(User $user, User $model): bool
     {
-        return $this->canManageEmployees($user);
+        return $user->role->canManageCompany();
     }
-
-    // Restore
 
     public function delete(User $user, User $model): bool
     {
-        return $this->canManageEmployees($user)
-            && ! $model->isSuperAdmin();
+        return $user->role->canManageCompany() && ! $model->isSuperAdmin();
     }
-
-    // Force Delete
 
     public function restore(User $user, User $model): bool
     {
-        return $this->canManageEmployees($user);
+        return $user->role->canManageCompany();
     }
-
-    // Delete Any
 
     public function forceDelete(User $user, User $model): bool
     {
-        return $this->canManageEmployees($user)
-            && ! $model->isSuperAdmin();
+        return $user->role->canManageCompany() && ! $model->isSuperAdmin();
     }
-
-    // Helpers
 
     public function deleteAny(User $user): bool
     {
-        return $this->canManageEmployees($user);
+        return $user->role->canManageCompany();
     }
 }

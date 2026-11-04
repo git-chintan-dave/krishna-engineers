@@ -30,4 +30,12 @@ enum UserRole: string
             self::DEBURRING_PACKAGING => 'Deburring & Packaging',
         };
     }
+
+    public function canManageCompany(): bool
+    {
+        return in_array($this, [
+            self::SUPER_ADMIN,
+            self::SUPERVISOR,
+        ], true);
+    }
 }

@@ -13,7 +13,7 @@ class PartPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /**
@@ -21,7 +21,7 @@ class PartPolicy
      */
     public function view(User $user, Part $part): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /**
@@ -29,7 +29,7 @@ class PartPolicy
      */
     public function create(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /**
@@ -37,7 +37,7 @@ class PartPolicy
      */
     public function update(User $user, Part $part): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /**
@@ -45,7 +45,7 @@ class PartPolicy
      */
     public function delete(User $user, Part $part): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /**
@@ -53,6 +53,6 @@ class PartPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 }

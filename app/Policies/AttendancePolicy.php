@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\UserRole;
 use App\Models\Attendance;
 use App\Models\User;
 
@@ -12,26 +13,7 @@ class AttendancePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $this->isAdminOrSupervisor($user)
-            || $this->isOperatorOrBandsaw($user);
-    }
-
-    private function isAdminOrSupervisor(User $user): bool
-    {
-        return $this->hasRole($user, 'super_admin')
-            || $this->hasRole($user, 'supervisor');
-    }
-
-    private function hasRole(User $user, string $role): bool
-    {
-        return $user->role?->value === $role
-            || $user->role === $role;
-    }
-
-    private function isOperatorOrBandsaw(User $user): bool
-    {
-        return $this->hasRole($user, 'operator')
-            || $this->hasRole($user, 'bandsaw');
+        return true;
     }
 
     /**
@@ -39,9 +21,13 @@ class AttendancePolicy
      */
     public function view(User $user, Attendance $attendance): bool
     {
-        return $this->isAdminOrSupervisor($user)
+        return $user->role->canManageCompany()
             || (
-                $this->isOperatorOrBandsaw($user)
+                in_array($user->role, [
+                    UserRole::OPERATOR,
+                    UserRole::BANDSAW,
+                    UserRole::DEBURRING_PACKAGING,
+                ], true)
                 && $attendance->user_id === $user->id
             );
     }
@@ -51,7 +37,7 @@ class AttendancePolicy
      */
     public function create(User $user): bool
     {
-        return $this->isAdminOrSupervisor($user);
+        return $user->role->canManageCompany();
     }
 
     /**
@@ -59,21 +45,15 @@ class AttendancePolicy
      */
     public function update(User $user, Attendance $attendance): bool
     {
-        return $this->isAdminOrSupervisor($user);
+        return $user->role->canManageCompany();
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Private Helpers
-    |--------------------------------------------------------------------------
-    */
 
     /**
      * Determine whether the user can delete the attendance record.
      */
     public function delete(User $user, Attendance $attendance): bool
     {
-        return $this->isAdminOrSupervisor($user);
+        return $user->role->canManageCompany();
     }
 
     /**
@@ -81,7 +61,7 @@ class AttendancePolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $this->isAdminOrSupervisor($user);
+        return $user->role->canManageCompany();
     }
 
     /**
@@ -89,6 +69,6 @@ class AttendancePolicy
      */
     public function import(User $user): bool
     {
-        return $this->hasRole($user, 'super_admin');
+        return $user->role === UserRole::SUPER_ADMIN;
     }
 }

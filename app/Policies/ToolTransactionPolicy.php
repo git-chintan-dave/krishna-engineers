@@ -12,28 +12,28 @@ class ToolTransactionPolicy
         User $user,
         ToolTransaction $toolTransaction,
     ): bool {
-        return $this->viewAny($user);
+        return $user->role->canManageCompany();
     }
 
     public function viewAny(User $user): bool
     {
-        return in_array(
-            $user->role,
-            [UserRole::SUPER_ADMIN, UserRole::SUPERVISOR],
-            true,
-        );
+        return $user->role->canManageCompany();
     }
 
     public function create(User $user): bool
     {
-        return $this->viewAny($user);
+        return $user->role->canManageCompany();
     }
 
     public function delete(
         User $user,
         ToolTransaction $toolTransaction,
     ): bool {
-        return $this->update($user, $toolTransaction);
+        return $user->role === UserRole::SUPER_ADMIN
+            || (
+                $user->role === UserRole::SUPERVISOR
+                && $toolTransaction->created_by_user_id === $user->id
+            );
     }
 
     public function update(
@@ -49,6 +49,6 @@ class ToolTransactionPolicy
 
     public function deleteAny(User $user): bool
     {
-        return $this->viewAny($user);
+        return $user->role->canManageCompany();
     }
 }

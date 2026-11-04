@@ -16,7 +16,7 @@ class SectionSizePolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /*
@@ -27,7 +27,7 @@ class SectionSizePolicy
 
     public function view(User $user, SectionSize $sectionSize): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /*
@@ -38,7 +38,7 @@ class SectionSizePolicy
 
     public function create(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /*
@@ -49,7 +49,7 @@ class SectionSizePolicy
 
     public function update(User $user, SectionSize $sectionSize): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /*
@@ -60,7 +60,7 @@ class SectionSizePolicy
 
     public function delete(User $user, SectionSize $sectionSize): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 
     /*
@@ -71,6 +71,6 @@ class SectionSizePolicy
 
     public function deleteAny(User $user): bool
     {
-        return $user->role === UserRole::SUPER_ADMIN;
+        return $user->role->canManageCompany();
     }
 }
