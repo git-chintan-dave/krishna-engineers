@@ -1,4 +1,4 @@
-import {createInertiaApp} from '@inertiajs/vue3';
+import {createInertiaApp, router} from '@inertiajs/vue3';
 
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
@@ -10,6 +10,20 @@ import {initializeTheme} from '@/composables/useAppearance';
 import {useLookup} from '@/composables/useLookup';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+let enumOptionsPrefetched = false;
+
+function prefetchEnumOptionsForAuthenticatedUser(
+    isAuthenticated: boolean,
+): void {
+    if (!isAuthenticated || enumOptionsPrefetched) {
+        return;
+    }
+
+    enumOptionsPrefetched = true;
+
+    void useLookup().prefetchEnumOptions();
+}
 
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
@@ -47,8 +61,12 @@ initializeTheme();
 // Initialize flash toast notifications.
 initializeFlashToast();
 
-// Prefetch all enum lookups once when the application starts.
-void useLookup().prefetchEnumOptions();
+// Prefetch enum lookups only for authenticated users.
+router.on('navigate', (event) => {
+    const user = event.detail.page.props.auth?.user;
+
+    prefetchEnumOptionsForAuthenticatedUser(!!user);
+});
 
 // Service worker:
 // - Production: register and update the PWA service worker.
