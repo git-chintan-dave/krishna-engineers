@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import {computed, ref, watch} from 'vue';
+import {router} from '@inertiajs/vue3';
 import {Boxes, Factory, Users, Wallet} from '@lucide/vue';
 
 import AppPageHeader from '@/components/common/AppPageHeader.vue';
@@ -10,44 +11,33 @@ import AttendanceTab from './attendanceTab.vue';
 import StocksTab from './stocksTab.vue';
 import SalaryTab from '../SuperAdmin/salaryTab.vue';
 
+import type {SalaryDashboard, StockDashboard} from '@/types/dashboard';
+
 type Tab = 'production' | 'attendance' | 'salary' | 'stocks';
 
-interface SalaryPeriod {
-    label: string;
-    startDate: string;
-    endDate: string;
-    totalPayable: number;
-    paidAmount: number;
-    pendingAmount: number;
-    employeeCount: number;
-    paidEmployees: number;
-    pendingEmployees: number;
-    breakdown: {
-        baseSalary: number;
-        incentive: number;
-        deduction: number;
-        upad: number;
-        paidLoan: number;
-        adjustment: number;
-    };
-    employees: {
-        id: number | string;
-        name: string;
-        amount: number;
-        status: 'paid' | 'pending';
-        paidAt?: string | null;
-    }[];
-}
-
-const props = defineProps<{
-    showSalary: boolean;
-    salaryDashboard: {
-        currentPeriod: SalaryPeriod;
-        previousPeriod: SalaryPeriod;
-    };
-}>();
+const props = withDefaults(
+    defineProps<{
+        showSalary: boolean;
+        salaryDashboard?: SalaryDashboard | null;
+        rawMaterialStock?: StockDashboard | null;
+        toolStock?: StockDashboard | null;
+    }>(),
+    {
+        salaryDashboard: undefined,
+        rawMaterialStock: undefined,
+        toolStock: undefined,
+    },
+);
 
 const activeTab = ref<Tab>('production');
+
+// salary loading state
+const salaryLoaded = ref(false);
+const salaryLoading = ref(false);
+
+// Stock loading state
+const stockLoaded = ref(false);
+const stockLoading = ref(false);
 
 const tabs = computed<SegmentedTabItem<Tab>[]>(() => [
     {
@@ -88,11 +78,21 @@ const activeComponent = computed(
 );
 
 const activeComponentProps = computed(() => {
-    if (activeTab.value === 'salary') {
-        return props.salaryDashboard;
-    }
+    switch (activeTab.value) {
+        case 'salary':
+            return {
+                salaryDashboard: props.salaryDashboard,
+            };
 
-    return {};
+        case 'stocks':
+            return {
+                rawMaterialStock: props.rawMaterialStock,
+                toolStock: props.toolStock,
+            };
+
+        default:
+            return {};
+    }
 });
 
 const tabDescription = computed(() => {
@@ -106,6 +106,52 @@ const tabDescription = computed(() => {
     return descriptions[activeTab.value];
 });
 
+// Load stock data when the Stocks tab is opened for the first time.
+watch(activeTab, (tab) => {
+    if (tab === 'salary') {
+        if (
+            !props.showSalary ||
+            salaryLoaded.value ||
+            salaryLoading.value
+        ) {
+            return;
+        }
+
+        salaryLoading.value = true;
+
+        router.reload({
+            only: ['salaryDashboard'],
+            onSuccess: () => {
+                salaryLoaded.value = true;
+            },
+            onFinish: () => {
+                salaryLoading.value = false;
+            },
+        });
+
+        return;
+    }
+
+    if (tab === 'stocks') {
+        if (stockLoaded.value || stockLoading.value) {
+            return;
+        }
+
+        stockLoading.value = true;
+
+        router.reload({
+            only: ['rawMaterialStock', 'toolStock'],
+            onSuccess: () => {
+                stockLoaded.value = true;
+            },
+            onFinish: () => {
+                stockLoading.value = false;
+            },
+        });
+    }
+});
+
+// Keep the selected tab valid when salary access changes.
 watch(
     () => props.showSalary,
     (showSalary) => {
@@ -117,12 +163,10 @@ watch(
 </script>
 
 <template>
-    <main
-        class="w-full min-w-0 max-w-full space-y-5 p-4 md:px-6 md:py-5"
-    >
+    <main class="w-full min-w-0 max-w-full space-y-5 p-4 md:px-6 md:py-5">
         <!-- Sticky dashboard header and tabs -->
         <div
-            class="sticky top-(--app-header-height,0px) z-30 border-b border-border bg-background/95 backdrop-blur-md flex flex-col md:flex-row md:items-center min-w-0"
+            class="sticky top-(--app-header-height,0px) z-30 flex min-w-0 flex-col border-b border-border bg-background/95 backdrop-blur-md md:flex-row md:items-center"
         >
             <AppPageHeader
                 title="Administration dashboard"
