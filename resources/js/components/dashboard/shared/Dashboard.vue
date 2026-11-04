@@ -4,34 +4,52 @@ import {router} from '@inertiajs/vue3';
 import {Boxes, Factory, Users, Wallet} from '@lucide/vue';
 
 import AppPageHeader from '@/components/common/AppPageHeader.vue';
-import SegmentedTabs, {type SegmentedTabItem,} from '@/components/common/SegmentedTabs.vue';
+import SegmentedTabs, {type SegmentedTabItem} from '@/components/common/SegmentedTabs.vue';
 
 import ProductionTab from './productionTab.vue';
 import AttendanceTab from './attendanceTab.vue';
 import StocksTab from './stocksTab.vue';
 import SalaryTab from '../SuperAdmin/salaryTab.vue';
 
-import type {SalaryDashboard, StockDashboard} from '@/types/dashboard';
+import type {
+    ManagementAttendanceDashboard,
+    ProductionDashboard,
+    SalaryDashboard,
+    StockDashboard,
+} from '@/types/dashboard';
 
 type Tab = 'production' | 'attendance' | 'salary' | 'stocks';
 
 const props = withDefaults(
     defineProps<{
+        showProduction: boolean;
         showSalary: boolean;
+        productionDashboard?: ProductionDashboard | null;
+        attendanceDashboard?: ManagementAttendanceDashboard | null;
         salaryDashboard?: SalaryDashboard | null;
         rawMaterialStock?: StockDashboard | null;
         toolStock?: StockDashboard | null;
     }>(),
     {
+        productionDashboard: undefined,
+        attendanceDashboard: undefined,
         salaryDashboard: undefined,
         rawMaterialStock: undefined,
         toolStock: undefined,
     },
 );
 
-const activeTab = ref<Tab>('production');
+const activeTab = ref<Tab>(props.showProduction ? 'production' : 'attendance');
 
-// salary loading state
+// Production loading state
+const productionLoaded = ref(false);
+const productionLoading = ref(false);
+
+// Attendance loading state
+const attendanceLoaded = ref(false);
+const attendanceLoading = ref(false);
+
+// Salary loading state
 const salaryLoaded = ref(false);
 const salaryLoading = ref(false);
 
@@ -40,24 +58,24 @@ const stockLoaded = ref(false);
 const stockLoading = ref(false);
 
 const tabs = computed<SegmentedTabItem<Tab>[]>(() => [
-    {
-        value: 'production',
-        label: 'Production',
-        icon: Factory,
-    },
+    ...(props.showProduction
+        ? [{
+            value: 'production' as const,
+            label: 'Production',
+            icon: Factory,
+        }]
+        : []),
     {
         value: 'attendance',
         label: 'Attendance',
         icon: Users,
     },
     ...(props.showSalary
-        ? [
-            {
-                value: 'salary' as const,
-                label: 'Salary',
-                icon: Wallet,
-            },
-        ]
+        ? [{
+            value: 'salary' as const,
+            label: 'Salary',
+            icon: Wallet,
+        }]
         : []),
     {
         value: 'stocks',
@@ -79,6 +97,16 @@ const activeComponent = computed(
 
 const activeComponentProps = computed(() => {
     switch (activeTab.value) {
+        case 'production':
+            return {
+                productionDashboard: props.productionDashboard,
+            };
+
+        case 'attendance':
+            return {
+                attendanceDashboard: props.attendanceDashboard,
+            };
+
         case 'salary':
             return {
                 salaryDashboard: props.salaryDashboard,
@@ -106,57 +134,80 @@ const tabDescription = computed(() => {
     return descriptions[activeTab.value];
 });
 
-// Load stock data when the Stocks tab is opened for the first time.
-watch(activeTab, (tab) => {
-    if (tab === 'salary') {
-        if (
-            !props.showSalary ||
-            salaryLoaded.value ||
-            salaryLoading.value
-        ) {
-            return;
-        }
-
-        salaryLoading.value = true;
-
-        router.reload({
-            only: ['salaryDashboard'],
-            onSuccess: () => {
-                salaryLoaded.value = true;
-            },
-            onFinish: () => {
-                salaryLoading.value = false;
-            },
-        });
-
-        return;
-    }
-
-    if (tab === 'stocks') {
-        if (stockLoaded.value || stockLoading.value) {
-            return;
-        }
-
-        stockLoading.value = true;
-
-        router.reload({
-            only: ['rawMaterialStock', 'toolStock'],
-            onSuccess: () => {
-                stockLoaded.value = true;
-            },
-            onFinish: () => {
-                stockLoading.value = false;
-            },
-        });
-    }
-});
-
-// Keep the selected tab valid when salary access changes.
 watch(
-    () => props.showSalary,
-    (showSalary) => {
+    activeTab,
+    (tab) => {
+        if (tab === 'production' && !productionLoaded.value && !productionLoading.value) {
+            productionLoading.value = true;
+
+            router.reload({
+                only: ['productionDashboard'],
+                onSuccess: () => {
+                    productionLoaded.value = true;
+                },
+                onFinish: () => {
+                    productionLoading.value = false;
+                },
+            });
+        }
+
+        if (tab === 'attendance' && !attendanceLoaded.value && !attendanceLoading.value) {
+            attendanceLoading.value = true;
+
+            router.reload({
+                only: ['attendanceDashboard'],
+                onSuccess: () => {
+                    attendanceLoaded.value = true;
+                },
+                onFinish: () => {
+                    attendanceLoading.value = false;
+                },
+            });
+        }
+
+        if (tab === 'salary' && !salaryLoaded.value && !salaryLoading.value) {
+            salaryLoading.value = true;
+
+            router.reload({
+                only: ['salaryDashboard'],
+                onSuccess: () => {
+                    salaryLoaded.value = true;
+                },
+                onFinish: () => {
+                    salaryLoading.value = false;
+                },
+            });
+        }
+
+        if (tab === 'stocks' && !stockLoaded.value && !stockLoading.value) {
+            stockLoading.value = true;
+
+            router.reload({
+                only: ['rawMaterialStock', 'toolStock'],
+                onSuccess: () => {
+                    stockLoaded.value = true;
+                },
+                onFinish: () => {
+                    stockLoading.value = false;
+                },
+            });
+        }
+    },
+    {immediate: true},
+);
+
+// Keep selected tab valid when access changes.
+watch(
+    () => [props.showProduction, props.showSalary],
+    ([showProduction, showSalary]) => {
+        if (!showProduction && activeTab.value === 'production') {
+            activeTab.value = 'attendance';
+        }
+
         if (!showSalary && activeTab.value === 'salary') {
-            activeTab.value = 'production';
+            activeTab.value = 'production' && showProduction
+                ? 'production'
+                : 'attendance';
         }
     },
 );
@@ -164,7 +215,6 @@ watch(
 
 <template>
     <main class="w-full min-w-0 max-w-full space-y-5 p-4 md:px-6 md:py-5">
-        <!-- Sticky dashboard header and tabs -->
         <div
             class="sticky top-(--app-header-height,0px) z-30 flex min-w-0 flex-col border-b border-border bg-background/95 backdrop-blur-md md:flex-row md:items-center"
         >
@@ -183,7 +233,6 @@ watch(
             </div>
         </div>
 
-        <!-- Selected dashboard tab -->
         <section class="min-w-0">
             <Transition
                 name="dashboard-tab"
