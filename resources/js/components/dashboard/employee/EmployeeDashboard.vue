@@ -141,7 +141,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <main class="w-full min-w-0 space-y-5 overflow-x-hidden p-4 md:px-6 md:py-5">
+    <main class="w-full min-w-0 space-y-5 overflow-x-hidden p-4 pt-0 md:px-6 md:pb-5">
         <div class="space-y-6">
             <SectionHeader
                 title="My Attendance"

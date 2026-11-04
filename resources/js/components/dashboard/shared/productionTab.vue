@@ -32,6 +32,8 @@ const periodTabs = [
     {value: 'previous', label: 'Previous Month'},
 ] as const;
 
+const isLoading = computed(() => props.productionDashboard === undefined);
+
 const currentPeriod = computed<ProductionPeriod | null>(() => {
     if (!props.productionDashboard) return null;
 
@@ -173,6 +175,7 @@ const maxDailyQuantity = computed(() =>
 
 <template>
     <div class="space-y-6">
+        <!-- Header -->
         <SectionHeader
             title="Production Overview"
             description="Company-wide operator and bandsaw production."
@@ -189,7 +192,34 @@ const maxDailyQuantity = computed(() =>
             </template>
         </SectionHeader>
 
-        <template v-if="currentPeriod">
+        <!-- Loading state -->
+        <div
+            v-if="isLoading"
+            class="space-y-6"
+        >
+            <!-- Summary cards -->
+            <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <div
+                    v-for="item in 8"
+                    :key="item"
+                    class="h-28 animate-pulse rounded-xl border border-border bg-muted/40"
+                />
+            </div>
+
+            <!-- Production quality -->
+            <div class="h-32 animate-pulse rounded-xl border border-border bg-muted/40" />
+
+            <!-- Machine / section-size breakdown -->
+            <div class="h-80 animate-pulse rounded-xl border border-border bg-muted/40" />
+
+            <div class="h-80 animate-pulse rounded-xl border border-border bg-muted/40" />
+
+            <!-- Daily production -->
+            <div class="h-[420px] animate-pulse rounded-xl border border-border bg-muted/40" />
+        </div>
+
+        <!-- Loaded state -->
+        <template v-else-if="currentPeriod">
             <!-- Selected period -->
             <div class="flex items-center gap-2 text-sm text-muted-foreground">
                 <CalendarDays class="size-4"/>
@@ -473,6 +503,7 @@ const maxDailyQuantity = computed(() =>
             </p>
         </template>
 
+        <!-- Unavailable state -->
         <div
             v-else
             class="rounded-xl border bg-card p-8 text-center"

@@ -214,7 +214,7 @@ watch(
 </script>
 
 <template>
-    <main class="w-full min-w-0 max-w-full space-y-5 p-4 md:px-6 md:py-5">
+    <main class="w-full min-w-0 max-w-full space-y-5 p-4 pt-0 md:px-6 md:pb-5">
         <div
             class="sticky top-(--app-header-height,0px) z-30 flex min-w-0 flex-col border-b border-border bg-background/95 backdrop-blur-md md:flex-row md:items-center"
         >
