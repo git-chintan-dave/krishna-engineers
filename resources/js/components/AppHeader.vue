@@ -801,7 +801,7 @@ watch(
     <!-- Breadcrumbs -->
     <div class="h-12 w-full border-b border-sidebar-border/70">
         <div
-            class="mx-auto flex h-12 w-full min-w-0 items-center px-4 text-neutral-500 md:max-w-7xl"
+            class="mx-auto flex h-12 w-full min-w-0 items-center px-4 md:px-6 text-neutral-500 md:max-w-7xl"
         >
             <Breadcrumbs
                 v-if="props.breadcrumbs.length > 0"
