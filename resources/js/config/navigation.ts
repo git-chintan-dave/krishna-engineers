@@ -205,7 +205,16 @@ export function getMainNavItems(role?: string): NavItem[] {
             ];
 
         case 'supervisor':
-            return [dashboardItem, workLogsNav, peopleNav];
+            return [
+                dashboardItem,
+                masterDataNav,
+                inventoryNav,
+                workLogsNav,
+                {
+                    ...peopleNav,
+                    items: [...peopleItems],
+                },
+            ];
 
         case 'super_admin':
         default:

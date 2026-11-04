@@ -198,14 +198,14 @@ watch(
 
 // Keep selected tab valid when access changes.
 watch(
-    () => [props.showProduction, props.showSalary],
+    () => [props.showProduction, props.showSalary] as const,
     ([showProduction, showSalary]) => {
         if (!showProduction && activeTab.value === 'production') {
             activeTab.value = 'attendance';
         }
 
         if (!showSalary && activeTab.value === 'salary') {
-            activeTab.value = 'production' && showProduction
+            activeTab.value = showProduction
                 ? 'production'
                 : 'attendance';
         }
