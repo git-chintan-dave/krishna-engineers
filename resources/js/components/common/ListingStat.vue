@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type {Component} from 'vue';
 import {computed} from 'vue';
-import {ArrowDownRight, ArrowUpRight, Minus} from '@lucide/vue';
+import {ArrowDownRight, ArrowUpRight, Minus,} from '@lucide/vue';
 
 type StatVariant =
     | 'default'
@@ -77,6 +77,10 @@ const trendClasses = computed(() => {
     }
 });
 
+const accessibleLabel = computed(
+    () => props.valueLabel || `${props.label}: ${props.value}`,
+);
+
 function handleClick() {
     if (props.clickable && !props.loading) {
         emit('click');
@@ -89,7 +93,7 @@ function handleClick() {
         :is="clickable ? 'button' : 'div'"
         :type="clickable ? 'button' : undefined"
         :aria-pressed="clickable ? active : undefined"
-        :aria-label="clickable ? `${label}: ${value}` : valueLabel"
+        :aria-label="accessibleLabel"
         :aria-busy="loading || undefined"
         :disabled="clickable && loading"
         class="flex min-w-0 items-start justify-between gap-2.5 rounded-lg border border-border bg-card p-3 text-left transition-colors"
@@ -117,7 +121,6 @@ function handleClick() {
 
                 <p
                     class="mt-1 text-xl font-semibold leading-7 tracking-tight tabular-nums"
-                    :aria-label="valueLabel"
                 >
                     {{ value }}
                 </p>
@@ -142,6 +145,7 @@ function handleClick() {
                             :is="trendIcon"
                             class="size-3.5 shrink-0"
                         />
+
                         {{ trend.value }}
 
                         <span

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {nextTick, onBeforeUnmount, onMounted, ref,} from 'vue';
+import {onBeforeUnmount, onMounted, ref} from 'vue';
 
 import AppPageHeader from '@/components/common/AppPageHeader.vue';
 import ScrollToTop from '@/components/common/ScrollToTop.vue';
@@ -24,59 +24,48 @@ const pageHeaderRef = ref<HTMLElement | null>(null);
 let pageHeaderResizeObserver: ResizeObserver | undefined;
 
 const updatePageHeaderHeight = (): void => {
-    const element = pageHeaderRef.value;
+    const header = pageHeaderRef.value;
     const container = listingContentRef.value;
 
-    if (!element || !container) {
-        return;
-    }
+    if (!header || !container) return;
 
     container.style.setProperty(
         '--app-page-header-height',
-        `${element.getBoundingClientRect().height}px`,
+        `${header.getBoundingClientRect().height}px`,
     );
 };
 
-onMounted(async () => {
-    await nextTick();
-
-    const element = pageHeaderRef.value;
-
-    if (!element) {
-        return;
-    }
-
+onMounted(() => {
     updatePageHeaderHeight();
+
+    const header = pageHeaderRef.value;
+
+    if (!header) return;
 
     if (typeof ResizeObserver !== 'undefined') {
         pageHeaderResizeObserver = new ResizeObserver(
             updatePageHeaderHeight,
         );
 
-        pageHeaderResizeObserver.observe(element);
+        pageHeaderResizeObserver.observe(header);
     }
 
-    window.addEventListener(
-        'resize',
-        updatePageHeaderHeight,
-    );
+    window.addEventListener('resize', updatePageHeaderHeight);
 });
 
 onBeforeUnmount(() => {
     pageHeaderResizeObserver?.disconnect();
 
-    window.removeEventListener(
-        'resize',
-        updatePageHeaderHeight,
-    );
+    window.removeEventListener('resize', updatePageHeaderHeight);
 });
 </script>
 
 <template>
     <main
         ref="listingContentRef"
-        class="w-full min-w-0 max-w-full divide-y divide-border p-4 md:px-6 md:pb-5 pt-0"
+        class="w-full min-w-0 max-w-full divide-y divide-border p-4 pt-0 md:px-6 md:pb-5"
     >
+        <!-- Sticky page header -->
         <div
             ref="pageHeaderRef"
             class="sticky top-(--app-header-height,0px) z-30 flex min-w-0 border-b border-border bg-background/95 backdrop-blur-md"
@@ -91,6 +80,7 @@ onBeforeUnmount(() => {
             </AppPageHeader>
         </div>
 
+        <!-- Statistics -->
         <section
             v-if="$slots.stats"
             aria-label="Statistics"
@@ -99,6 +89,7 @@ onBeforeUnmount(() => {
             <slot name="stats" />
         </section>
 
+        <!-- Filters -->
         <section
             v-if="$slots.filters"
             aria-label="Filters"
@@ -107,6 +98,7 @@ onBeforeUnmount(() => {
             <slot name="filters" />
         </section>
 
+        <!-- Table -->
         <section
             v-if="$slots.table"
             aria-label="Data table"
@@ -115,6 +107,7 @@ onBeforeUnmount(() => {
             <slot name="table" />
         </section>
 
+        <!-- Pagination -->
         <section
             v-if="$slots.pagination"
             aria-label="Pagination"
@@ -122,6 +115,9 @@ onBeforeUnmount(() => {
         >
             <slot name="pagination" />
         </section>
+
+        <!-- Additional content -->
+        <slot />
     </main>
 
     <ScrollToTop />

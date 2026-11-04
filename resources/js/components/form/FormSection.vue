@@ -12,7 +12,7 @@ withDefaults(
 </script>
 
 <template>
-    <section class="w-full min-w-0 rounded-lg border bg-background">
+    <section class="w-full min-w-0 rounded-lg border bg-card">
         <div v-if="title || description" class="mb-4 space-y-1 px-4 py-4 md:px-6 border-b">
             <h2
                 v-if="title"

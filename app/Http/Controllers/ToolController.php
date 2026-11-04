@@ -24,6 +24,10 @@ class ToolController extends Controller
 
     private const string IMAGE_DIRECTORY = 'tools';
 
+    private const string MODULE_NAME = 'Tool';
+
+    private const string INDEX_ROUTE = 'tools.index';
+
     public function __construct(
         private readonly FileUploadService $fileUploadService,
     ) {}

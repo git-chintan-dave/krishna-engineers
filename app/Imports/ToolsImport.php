@@ -100,7 +100,7 @@ class ToolsImport implements SkipsEmptyRows, ToCollection, WithChunkReading, Wit
                 ->whereIn('type', array_unique(array_column($records, 'type')))
                 ->whereIn('name', array_unique(array_column($records, 'name')))
                 ->get(['id', 'type', 'name'])
-                ->keyBy(fn (Tool $tool) => mb_strtolower($tool->type)
+                ->keyBy(fn (Tool $tool) => mb_strtolower($tool->type->value)
                     .'|'
                     .mb_strtolower(trim($tool->name)));
 
